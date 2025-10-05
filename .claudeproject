@@ -1,0 +1,1289 @@
+{
+  "name": "Wealth Vault",
+  "description": "Ultimate personal finance management platform with modular architecture, AI-powered insights, and tier-based monetization",
+  "version": "0.1.0",
+  "type": "monorepo",
+  
+  "overview": {
+    "summary": "Wealth Vault is a comprehensive personal finance platform that gives users complete visibility and control over their financial life through 7 interconnected modules: Income Tracking, Expenses, Savings, Portfolio, Goals, Subscriptions, and Installments. Built with a modular, event-driven architecture where each module is a standalone piece of functionality that can be easily added, removed, or modified.",
+    "key_principles": [
+      "Modular architecture - each module is self-contained with its own models, API, UI, and business logic",
+      "Event-driven communication - modules interact through pub/sub events, not direct dependencies",
+      "Single source of truth - all configuration (tiers, features, defaults, actions) managed from admin panel",
+      "Tier-based access control - features and limits dynamically enforced based on user subscription tier",
+      "Mobile-first responsive design - optimized for mobile, tablet, and desktop with consistent UI/UX",
+      "AI-powered automation - intelligent categorization, insights, and recommendations using Claude/OpenAI APIs",
+      "Privacy-first - GDPR compliant, end-to-end encryption, user data ownership"
+    ],
+    "business_model": "Freemium SaaS with three tiers: Starter (free), Growth ($10/mo), Wealth ($20/mo)",
+    "target_audience": "Technical professionals, investors, and financially-conscious individuals seeking comprehensive finance tracking"
+  },
+
+  "tech_stack": {
+    "frontend": {
+      "framework": "Next.js 14+ (App Router)",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS + shadcn/ui components",
+      "state_management": {
+        "server_state": "RTK Query (Redux Toolkit Query) - handles all API calls, caching, data fetching",
+        "client_state": "Zustand - lightweight global state for UI preferences (theme, sidebar, widget layouts)"
+      },
+      "auth": "NextAuth.js (Auth.js v5) with Google OAuth (Apple OAuth in Phase 2)",
+      "charts": "Recharts (primary) + D3.js (advanced visualizations like Sankey diagrams)",
+      "animations": "Framer Motion + React Swipeable (swipe gestures)",
+      "forms": "React Hook Form + Zod validation",
+      "file_handling": "React Dropzone, Papa Parse (CSV), XLSX/SheetJS (Excel), PDF.js",
+      "utilities": "date-fns, lodash, clsx"
+    },
+    "backend": {
+      "framework": "FastAPI (Python 3.11+)",
+      "orm": "SQLAlchemy 2.0 (async)",
+      "database": "PostgreSQL 15+",
+      "migrations": "Alembic",
+      "cache": "Redis",
+      "background_jobs": "Celery + Redis",
+      "file_storage": "Vercel Blob Storage",
+      "ai": "Anthropic API (Claude) / OpenAI API",
+      "external_apis": [
+        "Exchange Rate API (currency conversion)",
+        "Yahoo Finance / Alpha Vantage (stock prices)"
+      ]
+    },
+    "payments": "Stripe (subscriptions, invoicing, customer portal)",
+    "deployment": {
+      "frontend": "Vercel",
+      "backend": "Render or Railway",
+      "database": "Railway PostgreSQL or Supabase",
+      "redis": "Upstash (serverless Redis)",
+      "monitoring": "Sentry (error tracking), PostHog/Plausible (analytics)"
+    }
+  },
+
+  "architecture": {
+    "monorepo_structure": "Simple folder-based monorepo with /frontend and /backend directories",
+    "module_pattern": {
+      "description": "Each module (Income, Expenses, Savings, etc.) is self-contained with well-defined interfaces",
+      "structure": {
+        "backend": "/backend/app/modules/{module_name}/ containing models, schemas, services, api routes",
+        "frontend": "/frontend/app/(dashboard)/{module_name}/ containing pages, components, hooks",
+        "config": "Each module has module.config.ts defining metadata, routes, dependencies, tier access"
+      },
+      "communication": "Event-bus (pub/sub) for inter-module communication - modules publish events, others subscribe",
+      "data_sharing": "Modules expose public APIs for data access, avoiding tight coupling"
+    },
+    "permissions": {
+      "roles": "USER (default) and ADMIN",
+      "tiers": "starter (free), growth ($10/mo), wealth ($20/mo)",
+      "enforcement": "Backend decorators (@require_feature, @admin_only) + frontend hooks (useFeatureAccess) + middleware"
+    },
+    "api_versioning": "All endpoints under /api/v1/ for future-proofing",
+    "authentication_flow": "User → NextAuth.js → Google OAuth → JWT → FastAPI validates JWT → Returns data"
+  },
+
+  "core_modules": [
+    {
+      "name": "Income Tracking",
+      "key": "income",
+      "description": "Track multiple income sources (salary, freelance, dividends, etc.) with recurring/one-time support",
+      "tier_access": "starter (3 sources max), growth (10 sources), wealth (unlimited)",
+      "features": ["Income sources CRUD", "Income transactions", "Trend charts", "YTD statistics", "File upload support"]
+    },
+    {
+      "name": "Monthly Expenses",
+      "key": "expenses",
+      "description": "Track expenses with AI-powered categorization from bank statement uploads",
+      "tier_access": "All tiers (AI categorization: growth+)",
+      "features": ["Transaction CRUD", "AI categorization", "Bank statement upload (CSV/Excel/PDF)", "Spending by category charts", "Monthly trends", "Budget tracking"]
+    },
+    {
+      "name": "Total Savings",
+      "key": "savings",
+      "description": "Track savings across multiple accounts with multi-currency support",
+      "tier_access": "starter (3 accounts), growth (10 accounts), wealth (unlimited)",
+      "features": ["Account CRUD", "Balance history", "Multi-currency (growth+)", "Net worth timeline", "Currency conversion"]
+    },
+    {
+      "name": "Portfolio",
+      "key": "portfolio",
+      "description": "Investment portfolio tracking with multi-portfolio support and real-time prices",
+      "tier_access": "growth (20 positions, 15min prices), wealth (unlimited, real-time)",
+      "features": ["Multi-portfolio support", "Position tracking", "Performance charts", "Asset allocation", "Stock price API integration"]
+    },
+    {
+      "name": "Financial Goals",
+      "key": "goals",
+      "description": "Set and track financial goals with automatic progress updates from other modules",
+      "tier_access": "growth+",
+      "features": ["Goal CRUD", "Progress tracking", "Milestone celebrations", "Timeline visualization", "Goal recommendations"]
+    },
+    {
+      "name": "Subscriptions",
+      "key": "subscriptions",
+      "description": "Track recurring subscriptions with renewal reminders and cost analysis",
+      "tier_access": "starter (5 max), growth (20 max), wealth (unlimited)",
+      "features": ["Subscription CRUD", "Renewal calendar", "Cost breakdown", "Auto-detection from statements", "Renewal reminders (Celery)"]
+    },
+    {
+      "name": "Installments",
+      "key": "installments",
+      "description": "Track loans and payment plans with debt payoff timelines",
+      "tier_access": "starter (2 max), growth (10 max), wealth (unlimited)",
+      "features": ["Installment CRUD", "Payment tracking", "Payoff timeline", "Debt-free date projection", "Payment reminders"]
+    }
+  ],
+
+  "design_system": {
+    "theme": {
+      "modes": ["light", "dark", "system"],
+      "color_philosophy": "Professional and minimalistic with subtle shadows, rounded corners, ample whitespace",
+      "primary_colors": {
+        "light": {
+          "background": "#FFFFFF / #F8F9FA",
+          "text": "#1A1A1A / #6B7280",
+          "accent": "#3B82F6",
+          "success": "#10B981",
+          "warning": "#F59E0B",
+          "danger": "#EF4444"
+        },
+        "dark": {
+          "background": "#0F172A / #1E293B",
+          "text": "#F1F5F9 / #94A3B8",
+          "accent": "#60A5FA",
+          "success": "#34D399",
+          "warning": "#FBBF24",
+          "danger": "#F87171"
+        }
+      },
+      "storage": "All colors stored in centralized theme config file for easy swapping"
+    },
+    "typography": "Inter (sans), JetBrains Mono (monospace)",
+    "layout": {
+      "structure": "Sidebar + Main Content Area with widget grid dashboard",
+      "sidebar": "Collapsible on mobile (hamburger menu), always visible on desktop, icons + text",
+      "widgets": "Card-based responsive grid (1 col mobile, 2 col tablet, 3-4 col desktop)",
+      "panels": "Slide-in from right (desktop) or bottom (mobile) for forms/details"
+    },
+    "components": {
+      "reusable": ["EmptyState", "LoadingState (skeleton)", "ErrorState", "SlideInPanel", "Modal", "Toast", "DataTable", "ChartWrapper"],
+      "consistency": "All modules follow same template: Header (metrics + actions) → Filters → Visualization → Data List/Table"
+    },
+    "interactions": {
+      "swipe_gestures": "User-configurable swipe actions on mobile/tablet (left/right reveal actions like edit, delete, categorize)",
+      "animations": "Framer Motion for smooth transitions (300ms), spring physics for natural feel",
+      "toasts": "Top-right (desktop), top-center (mobile/tablet) for all actions",
+      "pagination": "Hybrid approach - desktop: traditional pagination, mobile: load more button"
+    }
+  },
+
+  "development_roadmap": {
+    "phase_0": {
+      "duration": "Week 1-2",
+      "title": "Project Setup, Auth, Roles & Tiers",
+      "goal": "Set up monorepo, authentication, and foundational permission system",
+      "tasks": {
+        "backend_setup": [
+          "Initialize FastAPI project structure",
+          "Configure PostgreSQL connection with SQLAlchemy",
+          "Set up Alembic for database migrations",
+          "Configure Redis connection",
+          "Set up Celery for background tasks",
+          "Create base models (User with role and tier fields, timestamps, soft delete)",
+          "Implement error handling & logging",
+          "Set up API versioning (/api/v1/)",
+          "Configure CORS for Next.js frontend"
+        ],
+        "frontend_setup": [
+          "Initialize Next.js 14 with App Router",
+          "Configure TypeScript (strict mode) & ESLint",
+          "Set up Tailwind CSS",
+          "Install and configure shadcn/ui components",
+          "Set up RTK Query store",
+          "Set up Zustand for UI state (theme, sidebar)",
+          "Configure theme system (light/dark/system) - store in centralized theme file",
+          "Create base layout structure (sidebar, header)",
+          "Set up Prettier and ESLint rules (no 'any' types)"
+        ],
+        "authentication": [
+          "Set up NextAuth.js with Google OAuth",
+          "Create backend OAuth endpoint (/api/v1/auth/oauth)",
+          "Implement JWT validation in FastAPI",
+          "Create protected route middleware (frontend - middleware.ts)",
+          "Create auth dependency for protected routes (backend - get_current_user)",
+          "Build login page UI",
+          "Build user profile page (basic)",
+          "Extend NextAuth session type with role & tier"
+        ],
+        "roles_and_tiers": [
+          "Create users table with role (USER/ADMIN) and tier (starter/growth/wealth) fields",
+          "Create tiers table (name, display_name, price_monthly, price_annual)",
+          "Create features table (key, name, description, module)",
+          "Create tier_features table (tier_id, feature_id, enabled, limit_value)",
+          "Seed initial tiers (Starter $0, Growth $10, Wealth $20)",
+          "Seed initial features (income_tracking, portfolio_tracking, ai_categorization, etc.)",
+          "Seed tier-feature mappings (which features for which tiers)",
+          "Create Alembic migration for all tables",
+          "Create permission system (app/core/permissions.py)",
+          "Create role-based decorators (@admin_only, @require_role)",
+          "Create tier-based decorators (@require_feature)",
+          "Create usage limit check functions (check_usage_limit)",
+          "Add role/tier to JWT payload",
+          "Create useFeatureAccess hook (frontend)",
+          "Create FeatureGate component (frontend)",
+          "Update sidebar with tier-aware navigation (show locks for premium features)",
+          "Create upgrade flow UI placeholder",
+          "Add admin panel route protection",
+          "Test permission system (admin routes, tier restrictions, usage limits)"
+        ],
+        "infrastructure": [
+          "Create .env.example files (frontend and backend)",
+          "Set up GitHub repo with monorepo structure",
+          "Configure CI/CD pipelines (GitHub Actions - basic)",
+          "Deploy to Vercel (frontend - staging)",
+          "Deploy to Render/Railway (backend - staging)",
+          "Set up PostgreSQL on Railway/Supabase",
+          "Set up Redis (Upstash)",
+          "Configure environment variables for staging"
+        ],
+        "documentation": [
+          "Create README.md with setup instructions",
+          "Document environment variables",
+          "Create architecture documentation (/docs/architecture.md)",
+          "Document API conventions",
+          "Document module pattern"
+        ]
+      },
+      "deliverables": [
+        "Working dev environment (Next.js + FastAPI + PostgreSQL + Redis)",
+        "Google OAuth login flow with NextAuth.js",
+        "Role-based access control (USER/ADMIN)",
+        "Tier-based access control (starter/growth/wealth)",
+        "Database schema with users, tiers, features, tier_features tables",
+        "Permission decorators and hooks (@admin_only, @require_feature, useFeatureAccess)",
+        "Deployed staging environments (Vercel + Render)",
+        "Basic dashboard layout (empty with sidebar)"
+      ]
+    },
+    
+    "phase_1": {
+      "duration": "Week 3-4",
+      "title": "Module Framework & Income Tracking",
+      "goal": "Establish modular architecture pattern and build first complete module as template",
+      "tasks": {
+        "module_system": [
+          "Create module registry system (moduleRegistry.ts)",
+          "Define module configuration structure (module.config.ts template)",
+          "Create event bus for inter-module communication (pub/sub pattern)",
+          "Set up module API pattern (how modules expose data)",
+          "Create module loading/routing system",
+          "Document module architecture pattern"
+        ],
+        "database_income": [
+          "Design income tables schema (income_sources, income_transactions)",
+          "Create SQLAlchemy models for Income (IncomeSource, IncomeTransaction)",
+          "Create Alembic migration",
+          "Add database indexes on frequently queried fields"
+        ],
+        "backend_income": [
+          "Income sources CRUD endpoints (POST, GET, PUT, DELETE /api/v1/income/sources)",
+          "Income transactions CRUD endpoints (/api/v1/income/transactions)",
+          "Income statistics endpoint (total, by month, by source - /api/v1/income/stats)",
+          "File upload endpoint for CSV/Excel parsing (/api/v1/income/upload)",
+          "Pydantic schemas for validation (IncomeSourceCreate, IncomeSourceResponse, etc.)",
+          "Add tier checks (@require_feature('income_tracking'))",
+          "Add usage limit checks (max sources based on tier)",
+          "Unit tests for income endpoints",
+          "Create income module config"
+        ],
+        "frontend_income": [
+          "Income page layout following module template (app/(dashboard)/income/page.tsx)",
+          "Income sources list component with cards",
+          "Add/Edit income source form in slide-in panel",
+          "Income transactions list component",
+          "Income summary widget for dashboard",
+          "Income trend chart (Recharts - line/bar chart)",
+          "Income by source pie chart",
+          "File upload component with drag & drop",
+          "RTK Query hooks for income API (useGetIncomeSourcesQuery, useAddIncomeSourceMutation, etc.)",
+          "Empty state component for income module",
+          "Loading state (skeleton) for income module",
+          "Error state component",
+          "Add tier checks and upgrade prompts when limits hit",
+          "Create income module config (module.config.ts)"
+        ],
+        "reusable_components": [
+          "EmptyState component (reusable across modules)",
+          "LoadingState component with skeleton screens",
+          "ErrorState component",
+          "SlideInPanel component (right slide-in for forms)",
+          "Modal/Dialog component",
+          "Toast notification system (top-right desktop, top-center mobile)",
+          "DataTable component (sortable, filterable, with pagination)",
+          "Chart wrapper components"
+        ],
+        "testing": [
+          "Backend API tests for income module (pytest)",
+          "Frontend component tests for income module (Jest + React Testing Library)"
+        ]
+      },
+      "deliverables": [
+        "Complete Income Tracking module (end-to-end)",
+        "Reusable component library",
+        "Module architecture pattern established",
+        "First module on production",
+        "Template for building future modules"
+      ]
+    },
+    
+    "phase_2": {
+      "duration": "Week 5-7",
+      "title": "Expenses & Savings Modules",
+      "goal": "Build second and third modules using established pattern and add AI categorization",
+      "tasks": {
+        "database": [
+          "Expenses tables schema & migration (expense_transactions, expense_categories)",
+          "Savings accounts tables schema & migration (savings_accounts, account_balances)",
+          "Create default expense categories (Groceries, Dining, Transport, etc.)"
+        ],
+        "backend_expenses": [
+          "Expense transactions CRUD endpoints (/api/v1/expenses/transactions)",
+          "Category management endpoints (/api/v1/expenses/categories)",
+          "File upload & parsing endpoint (bank statements - CSV/Excel/PDF)",
+          "AI categorization endpoint using Claude API (/api/v1/expenses/categorize)",
+          "Expense statistics & analytics (/api/v1/expenses/stats)",
+          "Monthly expense summary endpoint",
+          "Pydantic schemas",
+          "Tier checks and usage limits",
+          "Tests"
+        ],
+        "backend_savings": [
+          "Savings accounts CRUD endpoints (/api/v1/savings/accounts)",
+          "Account balance history tracking",
+          "Multi-currency support endpoints",
+          "Currency conversion API integration (exchangerate-api.com)",
+          "Savings statistics (/api/v1/savings/stats)",
+          "Net worth calculation endpoint",
+          "Pydantic schemas",
+          "Tier checks (multi-currency for growth+)",
+          "Tests"
+        ],
+        "frontend_expenses": [
+          "Expenses page with transaction list",
+          "Add/Edit transaction form (slide-in panel)",
+          "Category selector component",
+          "File upload with AI categorization flow",
+          "Spending by category chart (pie chart - Recharts)",
+          "Spending trend chart (bar chart showing last 6 months)",
+          "Monthly expense summary widget for dashboard",
+          "Uncategorized transactions alert/badge",
+          "RTK Query hooks",
+          "Budget vs actual visualization (optional)",
+          "Empty/Loading/Error states",
+          "Tier checks and upgrade prompts"
+        ],
+        "frontend_savings": [
+          "Savings accounts page",
+          "Add/Edit account form (slide-in panel)",
+          "Multi-currency selector (dropdown with flags)",
+          "Account balance cards with progress bars (% of total)",
+          "Net worth timeline chart (area chart showing growth over time)",
+          "Currency breakdown widget (pie chart)",
+          "Savings summary widget for dashboard",
+          "Currency conversion display (EUR → $11,340 USD)",
+          "RTK Query hooks",
+          "Empty/Loading/Error states",
+          "Multi-currency feature gate (growth+ only)"
+        ],
+        "ai_integration": [
+          "Set up Claude API / OpenAI API credentials",
+          "Create categorization prompt templates",
+          "Implement learning from user corrections (store corrections, improve prompts)",
+          "Add AI insights generation (basic spending insights)",
+          "Error handling for AI API calls"
+        ],
+        "dashboard": [
+          "Create Overview dashboard page (app/(dashboard)/page.tsx)",
+          "Widget grid layout system (responsive: 1/2/3-4 columns)",
+          "Net Worth card widget (total, change %, sparkline)",
+          "Monthly Cash Flow widget (income - expenses = net)",
+          "Recent Transactions widget (last 5-10 transactions)",
+          "Quick Actions widget (Upload, Add Transaction, Add Goal buttons)",
+          "Widget loading states",
+          "Widget empty states"
+        ]
+      },
+      "deliverables": [
+        "Expenses module complete with AI categorization",
+        "Savings module complete with multi-currency",
+        "AI-powered categorization working",
+        "Functional overview dashboard with 4-5 widgets",
+        "Currency conversion integrated"
+      ]
+    },
+    
+    "phase_3": {
+      "duration": "Week 8-10",
+      "title": "Portfolio & Goals Modules",
+      "goal": "Add investment tracking and goal setting with inter-module connections",
+      "tasks": {
+        "database": [
+          "Portfolios tables schema & migration (portfolios, portfolio_positions)",
+          "Goals tables schema & migration (goals, goal_milestones)",
+          "Add indexes for portfolio and goal queries"
+        ],
+        "backend_portfolio": [
+          "Portfolio CRUD endpoints (/api/v1/portfolio/portfolios)",
+          "Portfolio positions CRUD endpoints (/api/v1/portfolio/positions)",
+          "Multi-portfolio support (user can have multiple portfolios)",
+          "Stock price API integration (Yahoo Finance / Alpha Vantage)",
+          "Real-time price updates endpoint (tier-based: 15min delay for growth, real-time for wealth)",
+          "Portfolio performance calculations (gains/losses, ROI, time-weighted returns)",
+          "Asset allocation calculations (% stocks, bonds, crypto, etc.)",
+          "Portfolio statistics endpoint (/api/v1/portfolio/stats)",
+          "Portfolio comparison endpoint (compare multiple portfolios)",
+          "Pydantic schemas",
+          "Tier checks (portfolio_tracking for growth+, position limits)",
+          "Tests"
+        ],
+        "backend_goals": [
+          "Goals CRUD endpoints (/api/v1/goals)",
+          "Goal types support (savings, debt payoff, investment, net worth)",
+          "Progress calculation logic (auto-update from other modules via events)",
+          "Milestone tracking",
+          "Goal recommendations endpoint (AI-powered suggestions)",
+          "Goal statistics endpoint",
+          "Pydantic schemas",
+          "Tier checks (goals feature for growth+)",
+          "Tests"
+        ],
+        "frontend_portfolio": [
+          "Portfolios page with multi-portfolio view",
+          "Portfolio selector dropdown",
+          "Add/Edit portfolio form (slide-in panel)",
+          "Add/Edit position form (slide-in panel with ticker search)",
+          "Portfolio performance chart (line chart showing value over time)",
+          "Asset allocation donut chart",
+          "Portfolio comparison view (side-by-side)",
+          "Individual portfolio detail view (expandable cards)",
+          "Position list with current prices and gains/losses",
+          "Portfolio summary widget for dashboard",
+          "Real-time price updates (polling based on tier)",
+          "RTK Query hooks",
+          "Empty/Loading/Error states",
+          "Feature gate (growth+ only)",
+          "Position limit enforcement with upgrade prompt"
+        ],
+        "frontend_goals": [
+          "Goals page with goal cards",
+          "Add/Edit goal form (slide-in panel)",
+          "Goal type selector (savings, debt, investment, net worth)",
+          "Goal progress bars with % complete",
+          "Goal timeline visualization (chart showing progress over time)",
+          "Goal status indicators (on track / ahead / behind with colors)",
+          "Monthly progress summary (auto-generated on 1st of month)",
+          "Goals widget for dashboard (top 3 goals with progress)",
+          "Milestone celebrations (confetti animation when goal reached)",
+          "RTK Query hooks",
+          "Empty/Loading/Error states",
+          "Feature gate (growth+ only)"
+        ],
+        "inter_module_integration": [
+          "Goals automatically track progress from Income/Expenses/Savings/Portfolio modules",
+          "Event bus connections: income:added → update savings goals",
+          "Event bus connections: expense:added → update spending goals",
+          "Event bus connections: portfolio:updated → update investment goals",
+          "Dashboard aggregates data from all modules (net worth = savings + portfolio)",
+          "Test event flow between modules"
+        ]
+      },
+      "deliverables": [
+        "Portfolio module with multi-portfolio support",
+        "Goals module with automatic progress tracking",
+        "Modules communicate via event bus",
+        "Dashboard shows aggregated insights from all modules",
+        "Stock price integration working"
+      ]
+    },
+    
+    "phase_4": {
+      "duration": "Week 11-12",
+      "title": "Subscriptions & Installments Modules",
+      "goal": "Add recurring payment and debt tracking to complete all Phase 1 modules",
+      "tasks": {
+        "database": [
+          "Subscriptions tables schema & migration (subscriptions)",
+          "Installments tables schema & migration (installments, installment_payments)",
+          "Payment schedules tables"
+        ],
+        "backend_subscriptions": [
+          "Subscriptions CRUD endpoints (/api/v1/subscriptions)",
+          "Billing cycle tracking logic (monthly, annual, custom)",
+          "Upcoming renewals calculation endpoint (/api/v1/subscriptions/upcoming)",
+          "Auto-detection from bank statements using AI",
+          "Subscription cost analytics (/api/v1/subscriptions/stats)",
+          "Renewal reminder system (Celery scheduled task - check daily)",
+          "Email notification for upcoming renewals",
+          "Pydantic schemas",
+          "Tier checks (subscription limits: 5 for starter, 20 for growth, unlimited for wealth)",
+          "Tests"
+        ],
+        "backend_installments": [
+          "Installments CRUD endpoints (/api/v1/installments)",
+          "Payment tracking (record each payment)",
+          "Debt payoff calculation logic (remaining balance, months left)",
+          "Payoff timeline generation",
+          "Interest calculation (if applicable)",
+          "Payment reminder system (Celery scheduled task)",
+          "Email notification for upcoming payments",
+          "Debt statistics endpoint (/api/v1/installments/stats)",
+          "Pydantic schemas",
+          "Tier checks (installment limits)",
+          "Tests"
+        ],
+        "frontend_subscriptions": [
+          "Subscriptions page",
+          "Add/Edit subscription form (slide-in panel)",
+          "Billing cycle selector (monthly/annual/custom)",
+          "Upcoming renewals calendar view",
+          "Subscription cost breakdown (pie chart by category)",
+          "Category grouping (Entertainment, Productivity, Health, etc.)",
+          "Renewal alerts (toast notifications 3 days before)",
+          "Subscription summary widget for dashboard (next 7 days)",
+          "Auto-detection results review (from bank statements)",
+          "Usage tracking (gym check-ins, streaming watch time - optional)",
+          "RTK Query hooks",
+          "Empty/Loading/Error states",
+          "Tier limits enforcement"
+        ],
+        "frontend_installments": [
+          "Installments page",
+          "Add/Edit installment form (slide-in panel)",
+          "Debt payoff timeline chart (stacked area showing multiple loans)",
+          "Payment schedule visualization",
+          "Next payment alerts (toast notifications)",
+          "Installment summary widget for dashboard",
+          "Total debt overview card",
+          "Debt-free date projection",
+          "Progress bars for each loan (% paid off)",
+          "RTK Query hooks",
+          "Empty/Loading/Error states",
+          "Tier limits enforcement"
+        ],
+        "background_jobs": [
+          "Set up Celery with Redis broker",
+          "Daily subscription renewal check task (runs at midnight)",
+          "Daily installment payment reminder task",
+          "Weekly expense summary email task",
+          "Monthly financial report generation task",
+          "Email service integration (SendGrid / Resend / Amazon SES)",
+          "Email templates (renewal reminder, payment reminder, weekly summary)",
+          "Test Celery tasks"
+        ]
+      },
+      "deliverables": [
+        "Subscriptions module complete",
+        "Installments module complete",
+        "All 7 Phase 1 modules functional",
+        "Background job system working (Celery + Redis)",
+        "Email notifications sending"
+      ]
+    },
+    
+    "phase_5": {
+      "duration": "Week 13-14",
+      "title": "Tier System & Monetization",
+      "goal": "Implement subscription tiers and Stripe payment integration",
+      "tasks": {
+        "database": [
+          "User subscriptions table (user_id, stripe_subscription_id, status, current_period_end)",
+          "Payment history table (user_id, amount, date, status, invoice_id)",
+          "Update users table with stripe_customer_id"
+        ],
+        "backend_tier_system": [
+          "Tier configuration endpoints for admin (/api/v1/admin/tiers)",
+          "Feature management endpoints for admin (/api/v1/admin/features)",
+          "Tier validation middleware (check on every request)",
+          "Usage tracking system (count uploads, accounts, etc.)",
+          "Tier upgrade/downgrade logic",
+          "Subscription status sync with Stripe"
+        ],
+        "stripe_integration": [
+          "Set up Stripe account (test mode)",
+          "Create Stripe products & prices (Starter $0, Growth $10/mo, Wealth $20/mo)",
+          "Create annual pricing ($100/yr, $200/yr)",
+          "Implement Stripe Checkout session endpoint (/api/v1/billing/create-checkout)",
+          "Webhook endpoint for subscription events (/api/v1/billing/webhook)",
+          "Handle webhook events: checkout.session.completed, customer.subscription.updated, invoice.payment_succeeded, etc.",
+          "Customer portal integration (Stripe manages billing for users)",
+          "Subscription management endpoints (/api/v1/billing/subscription)",
+          "Payment method management endpoints",
+          "Invoice generation and retrieval",
+          "Test webhooks with Stripe CLI"
+        ],
+        "frontend_subscription_management": [
+          "Pricing page (public - /pricing)",
+          "Tier comparison table with features",
+          "Subscription settings page (Settings → Subscription tab)",
+          "Upgrade/downgrade flow (redirect to Stripe Checkout)",
+          "Payment method management UI (using Stripe Elements)",
+          "Billing history page (list of past invoices)",
+          "Usage stats display (You're using 2/3 income sources)",
+          "Current plan display with benefits",
+          "Cancel subscription flow (with confirmation)",
+          "Reactivate subscription option"
+        ],
+        "feature_gating": [
+          "Implement tier checks in all modules (already done, verify all work)",
+          "Display upgrade prompts when hitting limits (modal with pricing)",
+          "Lock premium features for free tier (show with lock icon)",
+          "Graceful feature degradation (disable AI for starter tier)",
+          "Test all tier restrictions across modules"
+        ],
+        "admin_panel_tier_management": [
+          "Tier CRUD interface in admin panel",
+          "Feature assignment interface (drag-drop or checkboxes)",
+          "Pricing configuration UI",
+          "Subscription analytics dashboard (MRR, churn, conversions)",
+          "Revenue charts"
+        ]
+      },
+      "deliverables": [
+        "3-tier subscription system live (Starter/Growth/Wealth)",
+        "Stripe payment integration working",
+        "Feature gating implemented across all modules",
+        "Users can upgrade/downgrade tiers",
+        "Webhooks handling subscription events"
+      ]
+    },
+    
+    "phase_6": {
+      "duration": "Week 15-16",
+      "title": "Admin Panel & Configuration",
+      "goal": "Build comprehensive admin panel with dynamic configuration system",
+      "tasks": {
+        "backend_admin_endpoints": [
+          "Admin authentication & authorization (role check)",
+          "User management endpoints (/api/v1/admin/users - list, search, filter)",
+          "User detail endpoint with tier override",
+          "User impersonation endpoint (generate token as user)",
+          "Ban/suspend user endpoint",
+          "Platform analytics endpoints (DAU, MAU, signups, revenue)",
+          "System configuration endpoints (/api/v1/admin/config)",
+          "Action configurator endpoints (swipe gestures)",
+          "Content management endpoints (FAQs, help articles)",
+          "Audit log endpoints (track admin actions)"
+        ],
+        "frontend_admin_dashboard": [
+          "Admin panel route (/admin) with protection (admins only)",
+          "Admin dashboard overview with KPIs",
+          "User acquisition chart (signups over time)",
+          "Revenue chart (MRR, ARR)",
+          "Engagement metrics (DAU/MAU)",
+          "Quick stats cards (total users, active subs, churn rate)"
+        ],
+        "frontend_user_management": [
+          "User management page (/admin/users)",
+          "User list with search (by email, name)",
+          "User list with filters (tier, status, signup date)",
+          "User detail view (profile, subscription, usage stats)",
+          "Tier override button (manually change user's tier)",
+          "Impersonate user button (view app as this user)",
+          "Ban/suspend user button with confirmation",
+          "User activity timeline"
+        ],
+        "frontend_tier_management": [
+          "Tier management page (/admin/tiers) - already started in Phase 5",
+          "Feature management page (/admin/features)",
+          "Drag-drop or checkbox interface to assign features to tiers",
+          "Set limits per tier (max accounts, uploads, etc.)",
+          "Enable/disable features globally"
+        ],
+        "frontend_configuration": [
+          "Configuration page (/admin/config)",
+          "Default dashboard widgets selector (checkboxes for widgets)",
+          "Default categories editor (add/remove/reorder expense categories)",
+          "API keys configuration (Exchange Rate API, Stock API, Claude API)",
+          "Email template editor (basic - HTML templates)",
+          "App-wide settings (maintenance mode toggle, feature announcements)"
+        ],
+        "frontend_action_configurator": [
+          "Action configurator page (/admin/actions)",
+          "Swipe actions configuration per module",
+          "Available actions list (edit, delete, categorize, etc.)",
+          "Default action assignments (swipe left/right)",
+          "Preview of swipe actions"
+        ],
+        "frontend_analytics": [
+          "Analytics page (/admin/analytics)",
+          "User acquisition charts (daily/weekly/monthly signups)",
+          "Engagement metrics dashboard (sessions, retention cohorts)",
+          "Revenue analytics (MRR breakdown by tier, LTV)",
+          "Feature usage stats (which modules are most used)",
+          "Churn analysis (when/why users cancel)"
+        ],
+        "frontend_content_management": [
+          "Content management page (/admin/content)",
+          "FAQs editor (WYSIWYG or markdown)",
+          "Help articles editor",
+          "Announcement system (create in-app announcements)",
+          "Publish/unpublish content"
+        ],
+        "frontend_system_logs": [
+          "System logs page (/admin/logs)",
+          "Error logs from backend",
+          "Audit trail (admin actions: who changed what when)",
+          "Filter logs by type, date, user"
+        ],
+        "configuration_system": [
+          "Dynamic widget configuration (stored in DB)",
+          "Default category management (CRUD for categories)",
+          "Swipe gesture configuration (stored in DB, applied to users)",
+          "Email template system (store templates in DB)"
+        ],
+        "analytics_integration": [
+          "Set up PostHog or Plausible",
+          "Track key user events (signup, login, module_visited, feature_used)",
+          "Set up conversion funnels (free → paid)",
+          "Set up retention cohorts",
+          "Dashboard to view analytics"
+        ],
+        "monitoring": [
+          "Set up Sentry for error tracking",
+          "Backend error logging with context",
+          "Frontend error boundaries",
+          "Performance monitoring (API response times, page load times)",
+          "Alerting for critical errors"
+        ]
+      },
+      "deliverables": [
+        "Full admin panel operational",
+        "User management with impersonation",
+        "Dynamic configuration system (widgets, categories, actions)",
+        "Analytics tracking implemented",
+        "Error monitoring active (Sentry)"
+      ]
+    },
+    
+    "phase_7": {
+      "duration": "Week 17-18",
+      "title": "User Experience & Polish",
+      "goal": "Enhance UI/UX, add user customization, and optimize performance",
+      "tasks": {
+        "user_settings": [
+          "Complete Settings page (/settings) with tabs",
+          "Account tab: profile info editor (name, email, avatar upload)",
+          "Subscription tab: current plan, usage stats, upgrade/cancel",
+          "Appearance tab: theme selector (light/dark/system), font size, view density",
+          "Preferences tab: currency (primary/secondary), date format, number format, start of week, fiscal year",
+          "Security tab: change password, 2FA setup (prep for Phase 2), active sessions, login history",
+          "Notifications tab: email notifications on/off, frequency (daily/weekly), push notifications (prep)",
+          "Privacy tab: data sharing preferences, analytics opt-in/out, marketing emails",
+          "Export Data tab: download all data (GDPR), export reports (PDF/Excel), scheduled exports",
+          "Swipe Gestures tab: customize swipe actions per module (checkboxes)"
+        ],
+        "dashboard_customization": [
+          "Drag & drop widget reordering (react-dnd or similar)",
+          "Show/hide widgets (checkboxes in settings)",
+          "Widget size adjustment (small/medium/large)",
+          "Save custom layouts per user (store in DB)",
+          "Reset to default button"
+        ],
+        "advanced_interactions": [
+          "Implement swipe gestures on mobile/tablet (React Swipeable)",
+          "User-configurable swipe actions (read from user preferences)",
+          "Smooth animations with Framer Motion (page transitions, modal open/close)",
+          "Loading state improvements (skeleton screens match actual layout)",
+          "Optimistic UI updates (update UI immediately, rollback on error)",
+          "Keyboard shortcuts (basic: Esc to close, Cmd+K for quick add - document in help)"
+        ],
+        "responsive_design": [
+          "Mobile optimization for all modules (test on iPhone, Android)",
+          "Tablet layout refinements (2-column layouts)",
+          "Desktop layout refinements (3-4 column layouts)",
+          "Test on various browsers (Chrome, Firefox, Safari, Edge)",
+          "Fix any responsive issues"
+        ],
+        "onboarding": [
+          "Welcome tour for new users (first login - interactive tooltips)",
+          "Product tour (highlight key features)",
+          "Quick setup wizard (add first income source, expense, account)",
+          "Sample data option (generate demo data for testing)",
+          "Skip tour option"
+        ],
+        "help_and_support": [
+          "In-app help center (/help)",
+          "Contextual help tooltips (? icons next to complex features)",
+          "FAQ page (pull from admin-created content)",
+          "Contact support form",
+          "Feature request form",
+          "Bug report form (with screenshot upload)"
+        ],
+        "performance_optimization": [
+          "Code splitting optimization (lazy load routes)",
+          "Image optimization (Next.js Image component)",
+          "Bundle size reduction (analyze with webpack-bundle-analyzer)",
+          "API response caching (RTK Query handles most, verify settings)",
+          "Database query optimization (add indexes, use EXPLAIN ANALYZE)",
+          "Lighthouse audit (target score > 90 for Performance, Accessibility, Best Practices, SEO)",
+          "Fix Lighthouse issues"
+        ],
+        "accessibility": [
+          "Add ARIA labels to all interactive elements",
+          "Keyboard navigation (tab order, focus management)",
+          "Screen reader testing (NVDA, VoiceOver)",
+          "Color contrast compliance (WCAG AA minimum)",
+          "Focus management (visible focus indicators)",
+          "Alt text for all images"
+        ]
+      },
+      "deliverables": [
+        "Polished, professional UI/UX",
+        "Fully responsive design (mobile/tablet/desktop)",
+        "User customization features (dashboard, swipe gestures)",
+        "Onboarding experience for new users",
+        "Performance optimized (Lighthouse > 90)",
+        "Accessibility compliant"
+      ]
+    },
+    
+    "phase_8": {
+      "duration": "Week 19-20",
+      "title": "AI Features & Insights",
+      "goal": "Enhance AI capabilities with personalized recommendations and insights",
+      "tasks": {
+        "ai_powered_insights": [
+          "Monthly financial health report generation (AI-generated summary)",
+          "Spending anomaly detection (detect unusual spending patterns)",
+          "Saving opportunities identification (AI suggests where to cut costs)",
+          "Budget recommendations (AI suggests optimal budget based on history)",
+          "Investment suggestions (basic - diversification, rebalancing)",
+          "Goal recommendations (AI suggests goals based on financial situation)"
+        ],
+        "enhanced_categorization": [
+          "Improve AI categorization accuracy (fine-tune prompts)",
+          "Learn from user corrections (store corrections in DB, use in future prompts)",
+          "Multi-language support prep (detect language, translate categories)",
+          "Custom category suggestions (AI suggests new categories based on transactions)"
+        ],
+        "smart_notifications": [
+          "Unusual spending alerts (spending 2x average in a category)",
+          "Bill payment reminders (subscriptions, installments)",
+          "Goal milestone celebrations (toast + email when goal reached)",
+          "Savings opportunity alerts (You could save $50/mo by canceling X)",
+          "Portfolio rebalancing suggestions (Your stocks are 80%, consider diversifying)"
+        ],
+        "predictive_analytics": [
+          "Cash flow forecasting (predict next month's income/expenses based on history)",
+          "Expense prediction (predict future expenses in each category)",
+          "Savings rate projection (at current rate, you'll save $X by end of year)",
+          "Goal completion date estimation (You'll reach your goal by June 2026 at current pace)",
+          "Net worth trajectory (predict net worth growth over next 12 months)"
+        ],
+        "ai_insights_widget": [
+          "Create AI Insights widget for dashboard",
+          "Personalized tips (3-5 tips based on user's data)",
+          "Action items (suggested actions to improve finances)",
+          "Trend analysis (Your spending is up 15% this month vs last)",
+          "Comparative insights (You spent $200 more on dining vs 3-month average)"
+        ],
+        "chatbot_optional": [
+          "Basic financial Q&A chatbot (if time allows)",
+          "Query your data with natural language (Show me dining expenses last month)",
+          "Chat interface in dashboard",
+          "Use Claude API for natural language understanding"
+        ]
+      },
+      "deliverables": [
+        "Advanced AI insights across platform",
+        "Predictive analytics features",
+        "Smart notification system",
+        "Personalized recommendations (spending, saving, investing)",
+        "Enhanced AI categorization with learning"
+      ]
+    },
+    
+    "phase_9": {
+      "duration": "Week 21-22",
+      "title": "Testing, Security & Compliance",
+      "goal": "Comprehensive testing, security hardening, and legal compliance",
+      "tasks": {
+        "testing": [
+          "Backend unit tests for all modules (pytest, target >80% coverage)",
+          "Backend integration tests (test API endpoints end-to-end)",
+          "Frontend component tests (Jest + React Testing Library)",
+          "Frontend E2E tests (Playwright - test critical user flows)",
+          "API contract tests (ensure frontend/backend contracts match)",
+          "Load testing backend (use Locust or k6, simulate 100+ concurrent users)",
+          "Security testing (OWASP Top 10 checks)",
+          "Test tier restrictions (verify free users can't access premium features)",
+          "Test payment flows (Stripe test mode)"
+        ],
+        "security": [
+          "Security audit (manual review + automated tools)",
+          "SQL injection prevention review (verify SQLAlchemy parameterizes queries)",
+          "XSS prevention review (verify React escapes user input)",
+          "CSRF protection (verify enabled in FastAPI)",
+          "Rate limiting on API endpoints (especially auth, expensive operations)",
+          "Input validation hardening (verify all inputs validated with Pydantic/Zod)",
+          "Secrets management review (no secrets in code, use env vars)",
+          "SSL/TLS configuration (HTTPS everywhere in production)",
+          "Database encryption at rest (enable in PostgreSQL)",
+          "Implement 2FA (optional, can be Phase 2)",
+          "Content Security Policy (CSP) headers",
+          "Security headers (X-Frame-Options, X-Content-Type-Options, etc.)"
+        ],
+        "compliance": [
+          "GDPR compliance review and implementation",
+          "Write Privacy Policy (clear, concise, compliant)",
+          "Write Terms of Service",
+          "Cookie consent banner (only if using non-essential cookies)",
+          "Data export functionality (Settings → Export Data - already done)",
+          "Data deletion functionality (delete account permanently)",
+          "Consent management (track user consent for data processing)",
+          "CCPA compliance (if targeting US - similar to GDPR)",
+          "PCI DSS compliance review (Stripe handles most, verify we don't store card data)",
+          "Data retention policy (define how long to keep user data)",
+          "Security incident response plan (document steps if breach occurs)"
+        ],
+        "documentation": [
+          "Complete API documentation (OpenAPI/Swagger from FastAPI)",
+          "User guide (how to use each module, screenshots)",
+          "Admin guide (how to use admin panel)",
+          "Developer documentation (how to add new modules, architecture)",
+          "Deployment guide (how to deploy to production)",
+          "Disaster recovery plan (backup/restore procedures)"
+        ],
+        "bug_fixing": [
+          "Fix all critical bugs (blocking user flows)",
+          "Fix all high-priority bugs (major features broken)",
+          "Address medium-priority bugs (nice-to-have fixes)",
+          "Polish edge cases (what happens if user has 0 income sources, etc.)",
+          "Test error handling (network errors, API errors, validation errors)"
+        ]
+      },
+      "deliverables": [
+        "Comprehensive test coverage (>80% backend, critical paths frontend)",
+        "Security hardened (OWASP compliant, rate-limited, encrypted)",
+        "GDPR/CCPA compliant (privacy policy, data export/delete)",
+        "Complete documentation (API, user guide, admin guide)",
+        "Critical bugs fixed"
+      ]
+    },
+    
+    "phase_10": {
+      "duration": "Week 23-24",
+      "title": "Launch Preparation & Marketing",
+      "goal": "Beta testing, marketing materials, and public launch",
+      "tasks": {
+        "beta_testing": [
+          "Invite beta testers (10-50 users, mix of technical and non-technical)",
+          "Create beta signup form",
+          "Onboard beta testers (send welcome email, setup guide)",
+          "Collect feedback (surveys, interviews, analytics)",
+          "Monitor beta usage (errors, engagement, drop-off points)",
+          "Fix critical issues found during beta",
+          "Gather testimonials from happy beta users"
+        ],
+        "marketing_site": [
+          "Create public landing page (homepage - pitch the value)",
+          "Features page (detail all modules and capabilities)",
+          "Pricing page (public - /pricing)",
+          "About page (mission, team, story)",
+          "Blog setup (for launch post and future content)",
+          "SEO optimization (meta tags, sitemap, structured data)",
+          "Social media images (Open Graph, Twitter Cards)"
+        ],
+        "content_creation": [
+          "Write launch blog post (What is Wealth Vault, why we built it)",
+          "Create demo video (3-5 min walkthrough of key features)",
+          "Take screenshots for marketing (hero shots, module screenshots)",
+          "Prepare Product Hunt assets (logo, banner, screenshots, tagline)",
+          "Write social media posts (Twitter, LinkedIn, Reddit)",
+          "Create email templates (welcome email, feature announcement)",
+          "Write press release (optional)"
+        ],
+        "production_setup": [
+          "Production database setup (Railway/Supabase - paid tier, backups enabled)",
+          "Production Redis setup (Upstash - paid tier)",
+          "Production Celery workers (scale up for email sending)",
+          "CDN setup for static assets (Vercel handles this)",
+          "Backup strategy (automated daily backups, test restore)",
+          "Monitoring dashboards (Sentry, analytics, uptime monitoring)",
+          "Alerting setup (PagerDuty, Slack, email for critical errors)",
+          "Domain setup (custom domain, DNS, SSL certificate)",
+          "Production environment variables (switch to production API keys)"
+        ],
+        "legal": [
+          "Privacy Policy finalized (reviewed by lawyer if possible)",
+          "Terms of Service finalized",
+          "Cookie Policy (if needed)",
+          "GDPR consent flows (cookie banner, data processing consent)",
+          "Refund policy (define refund terms for subscriptions)"
+        ],
+        "launch_checklist": [
+          "All core features working (7 modules functional)",
+          "No critical bugs (blocking user flows)",
+          "Performance acceptable (Lighthouse > 90, <2s page load)",
+          "Security reviewed (penetration test if budget allows)",
+          "Analytics tracking (events firing correctly)",
+          "Customer support plan (email support, response time SLA)",
+          "Incident response plan (what to do if site goes down)",
+          "Backup/restore tested",
+          "Stripe in production mode (live API keys)"
+        ],
+        "launch": [
+          "Soft launch to small audience (friends, family, early supporters)",
+          "Monitor for issues (errors, performance, user feedback)",
+          "Fix any issues found",
+          "Public launch announcement (blog, social media, email list)",
+          "Product Hunt launch (prepare for day-of engagement)",
+          "Post in relevant communities (Reddit, Hacker News, Indie Hackers)",
+          "Email existing waitlist (if you have one)",
+          "Monitor launch metrics (signups, activation, engagement)"
+        ]
+      },
+      "deliverables": [
+        "Beta tested and refined (10-50 users)",
+        "Marketing materials ready (landing page, video, screenshots)",
+        "Production environment stable and monitored",
+        "Public launch complete 🚀",
+        "Product Hunt launch",
+        "Initial users onboarded"
+      ]
+    },
+    
+    "post_launch_phase_2": {
+      "planned_features": [
+        "Net Worth Module (aggregated view of all assets and liabilities, including real estate, vehicles, credit cards, mortgages)",
+        "Reports Module (custom report builder, scheduled email reports, PDF/Excel exports, tax reports)",
+        "Apple OAuth (alternative login method)",
+        "Budget Planning Module (set budgets per category, track budget vs actual, envelope budgeting)",
+        "Mobile App (React Native or PWA for offline access)",
+        "Family Accounts (multi-user support, shared expenses, role-based permissions)",
+        "Tax Center (tax document uploads, deduction tracking, tax-advantaged accounts, tax estimation)",
+        "Bill Pay Integration (pay bills directly from app)",
+        "Bank Account Integration (Plaid/Teller for automatic transaction sync)",
+        "Investment Automation (auto-invest rules, dividend reinvestment)",
+        "Charitable Giving Tracker (track donations, tax deductions)",
+        "Business/Freelancer Features (invoicing, client management, expense tracking, profit/loss statements)"
+      ],
+      "ongoing_tasks": [
+        "User feedback implementation",
+        "Feature requests from users",
+        "Performance improvements",
+        "Bug fixes",
+        "Security updates",
+        "AI model improvements (better categorization, more accurate predictions)",
+        "Marketing and user acquisition",
+        "Customer support"
+      ]
+    }
+  },
+
+  "coding_guidelines": {
+    "general": [
+      "Write clean, maintainable, well-documented code",
+      "Follow module pattern - each module is self-contained",
+      "Use TypeScript on frontend, type hints on backend",
+      "Follow RESTful API conventions",
+      "Write tests for new features",
+      "Handle errors gracefully with user-friendly messages",
+      "Optimize for performance (lazy loading, code splitting)",
+      "Ensure responsive design (mobile-first)",
+      "Add tier checks to all new features",
+      "Use event bus for inter-module communication"
+    ],
+    "frontend": [
+      "Use Next.js App Router (not Pages Router)",
+      "Use 'use client' only when necessary (prefer server components)",
+      "Use shadcn/ui components for UI elements",
+      "Use Tailwind utility classes (no custom CSS unless absolutely needed)",
+      "Use RTK Query for all API calls",
+      "Use Zustand sparingly for UI state only",
+      "Create reusable components in /components",
+      "Follow consistent naming: PascalCase for components, camelCase for functions",
+      "Use React Hook Form + Zod for forms",
+      "Use Framer Motion for animations",
+      "Always add loading and error states",
+      "Implement empty states for all lists/tables",
+      "CRITICAL: NO 'any' types allowed - always use proper TypeScript types",
+      "CRITICAL: Code must have ZERO ESLint errors before committing",
+      "CRITICAL: Code must have ZERO Prettier formatting issues",
+      "CRITICAL: Code must have ZERO TypeScript errors",
+      "Use strict TypeScript configuration (strict: true in tsconfig.json)",
+      "Define proper interfaces/types for all props, state, and API responses",
+      "Use generic types appropriately (Array<T>, Record<K, V>, etc.)",
+      "Prefer 'unknown' over 'any' if type is truly unknown, then narrow with type guards",
+      "Use 'as const' for literal types and readonly arrays/objects",
+      "Export types/interfaces that may be reused across components"
+    ],
+    "backend": [
+      "Use async/await for all database operations",
+      "Use Pydantic schemas for request/response validation",
+      "Follow FastAPI best practices (dependency injection, async routes)",
+      "Add docstrings to all functions",
+      "Use SQLAlchemy models for database interactions",
+      "Create migrations with Alembic for schema changes",
+      "Add permission decorators to all protected routes",
+      "Return consistent API responses (success/error format)",
+      "Use background tasks (Celery) for long-running operations",
+      "Log important events and errors"
+    ],
+    "database": [
+      "Use UUIDs for primary keys",
+      "Add created_at and updated_at timestamps to all tables",
+      "Create indexes on frequently queried fields",
+      "Use foreign keys and constraints appropriately",
+      "Normalize data but denormalize for performance when needed",
+      "Use soft deletes where appropriate (deleted_at column)"
+    ],
+    "security": [
+      "Never expose sensitive data in API responses",
+      "Validate and sanitize all user inputs",
+      "Use parameterized queries (SQLAlchemy ORM handles this)",
+      "Implement rate limiting on authentication endpoints",
+      "Store secrets in environment variables, never in code",
+      "Use HTTPS everywhere in production",
+      "Implement CORS properly"
+    ],
+    "code_quality_enforcement": {
+      "frontend": {
+        "linting": "Run 'npm run lint' before every commit - must pass with 0 errors and 0 warnings",
+        "formatting": "Run 'npm run format' or use Prettier on save - code must be consistently formatted",
+        "type_checking": "Run 'npm run type-check' (or 'tsc --noEmit') - must pass with 0 errors",
+        "no_any_types": "NEVER use 'any' type - use proper types, generics, or 'unknown' with type guards",
+        "strict_mode": "TypeScript strict mode must be enabled - all strictness flags should be true"
+      },
+      "pre_commit_checklist": [
+        "✓ No ESLint errors or warnings",
+        "✓ No Prettier formatting issues",
+        "✓ No TypeScript errors",
+        "✓ No 'any' types in the code",
+        "✓ All functions and components properly typed",
+        "✓ Props interfaces defined for all components",
+        "✓ API response types defined"
+      ]
+    }
+  },
+
+  "creativity_guidelines": {
+    "encouraged": [
+      "Suggest improvements to UI/UX when you see opportunities",
+      "Propose additional features that align with the module's purpose",
+      "Recommend better chart types or visualizations for data",
+      "Suggest performance optimizations",
+      "Propose better error messages or user feedback",
+      "Recommend accessibility improvements",
+      "Suggest edge cases that should be handled",
+      "Propose better naming for variables, functions, or components",
+      "Recommend code refactoring when you see repetition or complexity",
+      "Suggest additional tests or test cases",
+      "Propose stricter type definitions when you see loose typing"
+    ],
+    "constraints": [
+      "Stay within the defined tech stack (no random library additions without asking)",
+      "Follow the modular architecture - don't create tight coupling between modules",
+      "Respect tier-based access control - don't make premium features free",
+      "Maintain design consistency - follow established UI patterns",
+      "Don't deviate from the roadmap phases without explicit approval",
+      "Keep mobile-first approach in mind",
+      "Ensure all changes are testable and maintainable",
+      "Never compromise on code quality - no 'any' types, no lint errors, no formatting issues"
+    ],
+    "communication": [
+      "Explain your creative suggestions clearly",
+      "Provide rationale for why a suggestion improves the codebase",
+      "Flag potential issues or trade-offs with your suggestions",
+      "Ask clarifying questions when requirements are ambiguous",
+      "Suggest alternatives when you encounter blockers",
+      "Document any non-obvious decisions in code comments"
+    ]
+  },
+
+  "configuration_files": {
+    "frontend": {
+      "package.json": "Dependencies, scripts, project metadata",
+      "next.config.js": "Next.js configuration",
+      "tailwind.config.ts": "Tailwind CSS configuration with theme colors",
+      "tsconfig.json": "TypeScript configuration (strict mode enabled)",
+      ".eslintrc.json": "ESLint configuration (must pass with 0 errors)",
+      ".prettierrc": "Prettier configuration for consistent formatting",
+      ".env.local": "Environment variables (NEXTAUTH_URL, API_URL, etc.)",
+      "middleware.ts": "Route protection and tier-based access"
+    },
+    "backend": {
+      "requirements.txt": "Python dependencies",
+      "pyproject.toml": "Python project configuration",
+      "alembic.ini": "Alembic migration configuration",
+      ".env": "Environment variables (DATABASE_URL, REDIS_URL, API keys)",
+      "app/core/config.py": "Application settings and configuration"
+    },
+    "shared": {
+      ".gitignore": "Files to ignore in version control",
+      "README.md": "Project documentation",
+      ".prettierrc": "Code formatting rules",
+      ".eslintrc.json": "Linting rules"
+    }
+  },
+
+  "important_notes": {
+    "manual_review": "All changes will be manually reviewed before deployment. Feel free to be creative but ensure code quality.",
+    "ask_when_unsure": "If a requirement is unclear or you need to make a significant architectural decision, ask for clarification rather than making assumptions.",
+    "incremental_development": "Build features incrementally - start with basic functionality, then enhance. Don't try to make everything perfect in the first iteration.",
+    "user_experience_first": "Always prioritize user experience. A feature that works but is confusing to use is not done.",
+    "test_as_you_go": "Write tests alongside features, not as an afterthought.",
+    "document_decisions": "Add comments explaining 'why' for non-obvious code decisions.",
+    "zero_tolerance_for_any": "The 'any' type is forbidden. Proper typing is non-negotiable. If you're unsure of a type, use 'unknown' and narrow it with type guards.",
+    "code_quality_is_mandatory": "Code must pass all linting, formatting, and type-checking before being considered complete. No exceptions."
+  },
+
+  "helpful_commands": {
+    "frontend": {
+      "dev": "cd frontend && npm run dev (starts Next.js on http://localhost:3000)",
+      "build": "cd frontend && npm run build",
+      "test": "cd frontend && npm test",
+      "lint": "cd frontend && npm run lint (must pass with 0 errors)",
+      "lint_fix": "cd frontend && npm run lint -- --fix",
+      "format": "cd frontend && npm run format (Prettier)",
+      "format_check": "cd frontend && npm run format:check",
+      "type_check": "cd frontend && npm run type-check (or tsc --noEmit)"
+    },
+    "backend": {
+      "dev": "cd backend && uvicorn app.main:app --reload (starts FastAPI on http://localhost:8000)",
+      "migrate": "cd backend && alembic upgrade head",
+      "new_migration": "cd backend && alembic revision --autogenerate -m 'description'",
+      "test": "cd backend && pytest",
+      "lint": "cd backend && ruff check .",
+      "format": "cd backend && black ."
+    },
+    "database": {
+      "psql": "psql postgresql://user:password@localhost:5432/wealthvault_dev",
+      "reset": "Drop and recreate database (use carefully!)"
+    }
+  },
+
+  "external_resources": {
+    "documentation": {
+      "nextjs": "https://nextjs.org/docs",
+      "fastapi": "https://fastapi.tiangolo.com/",
+      "shadcn": "https://ui.shadcn.com/",
+      "tailwind": "https://tailwindcss.com/docs",
+      "recharts": "https://recharts.org/",
+      "sqlalchemy": "https://docs.sqlalchemy.org/",
+      "stripe": "https://stripe.com/docs/api",
+      "typescript": "https://www.typescriptlang.org/docs/"
+    },
+    "apis": {
+      "anthropic": "https://docs.anthropic.com/",
+      "openai": "https://platform.openai.com/docs",
+      "exchange_rates": "https://exchangerate-api.com/docs",
+      "yahoo_finance": "https://github.com/ranaroussi/yfinance"
+    }
+  },
+
+  "success_criteria": {
+    "phase_completion": "A phase is complete when all deliverables are functional, tested, and reviewed",
+    "module_completion": "A module is complete when it has backend API, frontend UI, tests, tier checks, and documentation",
+    "code_quality": "Code should be readable, maintainable, performant, and follow established patterns. Frontend code must have 0 lint/prettier/TypeScript errors and NO 'any' types.",
+    "user_experience": "Features should be intuitive, responsive, accessible, and provide helpful feedback"
+  }
+}
