@@ -1,6 +1,6 @@
 /**
- * Income Source Form Component
- * Form for creating and editing income sources
+ * Expense Form Component
+ * Form for creating and editing expenses
  */
 'use client';
 
@@ -9,11 +9,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
-  useCreateIncomeSourceMutation,
-  useUpdateIncomeSourceMutation,
-  useGetIncomeSourceQuery,
-  IncomeFrequency,
-} from '@/lib/api/incomeApi';
+  useCreateExpenseMutation,
+  useUpdateExpenseMutation,
+  useGetExpenseQuery,
+  ExpenseFrequency,
+} from '@/lib/api/expensesApi';
 import {
   Dialog,
   DialogContent,
@@ -37,7 +37,7 @@ import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 
 // Form validation schema
-const incomeSourceSchema = z.object({
+const expenseSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional(),
   category: z.string().max(50).optional(),
@@ -45,6 +45,7 @@ const incomeSourceSchema = z.object({
   currency: z.string().length(3),
   frequency: z.enum([
     'one_time',
+    'daily',
     'weekly',
     'biweekly',
     'monthly',
@@ -57,16 +58,17 @@ const incomeSourceSchema = z.object({
   end_date: z.string().optional(),
 });
 
-type FormData = z.infer<typeof incomeSourceSchema>;
+type FormData = z.infer<typeof expenseSchema>;
 
-interface IncomeSourceFormProps {
-  sourceId?: string | null;
+interface ExpenseFormProps {
+  expenseId?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const FREQUENCY_OPTIONS = [
   { value: 'one_time', label: 'One-time' },
+  { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
   { value: 'biweekly', label: 'Bi-weekly' },
   { value: 'monthly', label: 'Monthly' },
@@ -75,33 +77,36 @@ const FREQUENCY_OPTIONS = [
 ];
 
 const CATEGORY_OPTIONS = [
-  { value: 'Salary', label: 'Salary' },
-  { value: 'Freelance', label: 'Freelance' },
-  { value: 'Business', label: 'Business' },
-  { value: 'Investment', label: 'Investment' },
-  { value: 'Rental', label: 'Rental' },
-  { value: 'Dividends', label: 'Dividends' },
-  { value: 'Interest', label: 'Interest' },
-  { value: 'Gift', label: 'Gift' },
+  { value: 'Food & Dining', label: 'Food & Dining' },
+  { value: 'Transportation', label: 'Transportation' },
+  { value: 'Housing', label: 'Housing' },
+  { value: 'Utilities', label: 'Utilities' },
+  { value: 'Healthcare', label: 'Healthcare' },
+  { value: 'Entertainment', label: 'Entertainment' },
+  { value: 'Shopping', label: 'Shopping' },
+  { value: 'Personal Care', label: 'Personal Care' },
+  { value: 'Education', label: 'Education' },
+  { value: 'Insurance', label: 'Insurance' },
+  { value: 'Debt Payments', label: 'Debt Payments' },
   { value: 'Other', label: 'Other' },
 ];
 
-export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceFormProps) {
-  const isEditing = Boolean(sourceId);
+export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
+  const isEditing = Boolean(expenseId);
 
   const {
-    data: existingSource,
-    isLoading: isLoadingSource,
+    data: existingExpense,
+    isLoading: isLoadingExpense,
     error: loadError,
-  } = useGetIncomeSourceQuery(sourceId!, {
-    skip: !sourceId,
+  } = useGetExpenseQuery(expenseId!, {
+    skip: !expenseId,
   });
 
-  const [createSource, { isLoading: isCreating, error: createError }] =
-    useCreateIncomeSourceMutation();
+  const [createExpense, { isLoading: isCreating, error: createError }] =
+    useCreateExpenseMutation();
 
-  const [updateSource, { isLoading: isUpdating, error: updateError }] =
-    useUpdateIncomeSourceMutation();
+  const [updateExpense, { isLoading: isUpdating, error: updateError }] =
+    useUpdateExpenseMutation();
 
   const {
     register,
@@ -111,7 +116,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
     setValue,
     watch,
   } = useForm<FormData>({
-    resolver: zodResolver(incomeSourceSchema),
+    resolver: zodResolver(expenseSchema),
     defaultValues: {
       currency: 'USD',
       frequency: 'monthly',
@@ -120,43 +125,39 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
     },
   });
 
-  // Load existing source data or reset for new source
+  // Load existing expense data or reset for new expense
   useEffect(() => {
-    if (isEditing && existingSource) {
-      const isOneTime = existingSource.frequency === 'one_time';
+    if (isEditing && existingExpense) {
+      const isOneTime = existingExpense.frequency === 'one_time';
       const formData = {
-        name: existingSource.name,
-        description: existingSource.description || '',
-        category: existingSource.category || '',
-        amount: existingSource.amount,
-        currency: existingSource.currency,
-        frequency: existingSource.frequency as IncomeFrequency,
-        is_active: existingSource.is_active,
+        name: existingExpense.name,
+        description: existingExpense.description || '',
+        category: existingExpense.category || '',
+        amount: existingExpense.amount,
+        currency: existingExpense.currency,
+        frequency: existingExpense.frequency as ExpenseFrequency,
+        is_active: existingExpense.is_active,
         // Extract date directly from string to avoid timezone conversion
-        date: isOneTime && existingSource.date
-          ? existingSource.date.split('T')[0]
+        date: isOneTime && existingExpense.date
+          ? existingExpense.date.split('T')[0]
           : '',
-        start_date: !isOneTime && existingSource.start_date
-          ? existingSource.start_date.split('T')[0]
+        start_date: !isOneTime && existingExpense.start_date
+          ? existingExpense.start_date.split('T')[0]
           : '',
-        end_date: !isOneTime && existingSource.end_date
-          ? existingSource.end_date.split('T')[0]
+        end_date: !isOneTime && existingExpense.end_date
+          ? existingExpense.end_date.split('T')[0]
           : '',
       };
 
-      // Reset the form with the data
       reset(formData);
 
-      // Explicitly set category and frequency to ensure Select components update
-      // Use setTimeout to ensure this happens after render
       setTimeout(() => {
-        if (existingSource.category) {
-          setValue('category', existingSource.category, { shouldDirty: true });
+        if (existingExpense.category) {
+          setValue('category', existingExpense.category, { shouldDirty: true });
         }
-        setValue('frequency', existingSource.frequency as IncomeFrequency, { shouldDirty: true });
+        setValue('frequency', existingExpense.frequency as ExpenseFrequency, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
-      // Reset to defaults when creating new source
       reset({
         name: '',
         description: '',
@@ -170,20 +171,19 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         end_date: '',
       });
     }
-  }, [isEditing, existingSource, isOpen, reset, setValue]);
+  }, [isEditing, existingExpense, isOpen, reset, setValue]);
 
   const onSubmit = async (data: FormData) => {
     try {
       const isOneTime = data.frequency === 'one_time';
 
-      // Prepare submit data based on frequency type
       const submitData: {
         name: string;
         description?: string;
         category?: string;
         amount: number;
         currency: string;
-        frequency: IncomeFrequency;
+        frequency: ExpenseFrequency;
         is_active: boolean;
         date?: string;
         start_date?: string;
@@ -207,16 +207,16 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         submitData.end_date = data.end_date ? `${data.end_date}T00:00:00` : undefined;
       }
 
-      if (isEditing && sourceId) {
-        await updateSource({ id: sourceId, data: submitData }).unwrap();
+      if (isEditing && expenseId) {
+        await updateExpense({ id: expenseId, data: submitData }).unwrap();
       } else {
-        await createSource(submitData).unwrap();
+        await createExpense(submitData).unwrap();
       }
 
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save income source:', error);
+      console.error('Failed to save expense:', error);
     }
   };
 
@@ -238,27 +238,26 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Income Source' : 'Add Income Source'}
+            {isEditing ? 'Edit Expense' : 'Add Expense'}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Update the details of your income source.'
-              : 'Add a new income source to track your earnings.'}
+              ? 'Update the details of your expense.'
+              : 'Add a new expense to track your spending.'}
           </DialogDescription>
         </DialogHeader>
 
-        {isLoadingSource ? (
+        {isLoadingExpense ? (
           <LoadingForm count={6} />
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Full-time Salary"
+                placeholder="e.g., Grocery Shopping"
                 {...register('name')}
               />
               {errors.name && (
@@ -266,12 +265,11 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               )}
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this income source"
+                placeholder="Brief description of this expense"
                 rows={3}
                 {...register('description')}
               />
@@ -282,7 +280,6 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               )}
             </div>
 
-            {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select
@@ -302,7 +299,6 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               </Select>
             </div>
 
-            {/* Amount and Currency */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount *</Label>
@@ -334,13 +330,12 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               </div>
             </div>
 
-            {/* Frequency */}
             <div className="space-y-2">
               <Label htmlFor="frequency">Frequency *</Label>
               <Select
                 value={watch('frequency')}
                 onValueChange={(value) =>
-                  setValue('frequency', value as IncomeFrequency)
+                  setValue('frequency', value as ExpenseFrequency)
                 }
               >
                 <SelectTrigger>
@@ -356,7 +351,6 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               </Select>
             </div>
 
-            {/* Date Fields - Conditional based on frequency */}
             {watch('frequency') === 'one_time' ? (
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
@@ -393,7 +387,6 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               </div>
             )}
 
-            {/* Active Status */}
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -402,7 +395,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                 {...register('is_active')}
               />
               <Label htmlFor="is_active" className="cursor-pointer">
-                Active income source
+                Active expense
               </Label>
             </div>
 
@@ -414,8 +407,8 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                 {isLoading
                   ? 'Saving...'
                   : isEditing
-                  ? 'Update Source'
-                  : 'Add Source'}
+                  ? 'Update Expense'
+                  : 'Add Expense'}
               </Button>
             </DialogFooter>
           </form>
