@@ -12,6 +12,7 @@ from app.core.exceptions import WealthVaultException
 from app.core.redis import close_redis
 from app.api.v1.auth import router as auth_router
 from app.modules.income.api import router as income_router
+from app.modules.expenses.router import router as expenses_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -101,6 +102,7 @@ async def health_check() -> dict[str, str]:
 # Include routers
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(income_router, prefix="/api/v1")
+app.include_router(expenses_router)
 
 
 # Root endpoint

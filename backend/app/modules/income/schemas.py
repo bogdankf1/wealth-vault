@@ -35,15 +35,16 @@ class IncomeSourceBase(BaseModel):
     @field_validator("date", "start_date", "end_date", mode="before")
     @classmethod
     def validate_dates(cls, v: Optional[datetime]) -> Optional[datetime]:
-        """Convert timezone-aware datetimes to naive UTC."""
+        """Convert timezone-aware datetimes to naive datetime, preserving the date."""
         if v is None:
             return None
         if isinstance(v, str):
             # Parse string to datetime
             from dateutil import parser
             v = parser.parse(v)
+        # If timezone-aware, just strip timezone (don't convert to UTC)
+        # This preserves the local date that the user selected
         if hasattr(v, 'tzinfo') and v.tzinfo is not None:
-            # Convert to UTC and remove timezone
             return v.replace(tzinfo=None)
         return v
 
