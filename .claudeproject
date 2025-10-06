@@ -164,8 +164,74 @@
       "panels": "Slide-in from right (desktop) or bottom (mobile) for forms/details"
     },
     "components": {
-      "reusable": ["EmptyState", "LoadingState (skeleton)", "ErrorState", "SlideInPanel", "Modal", "Toast", "DataTable", "ChartWrapper", "MonthFilter"],
-      "consistency": "All modules follow same template: Header (metrics + actions) → Filters (MonthFilter for time-based modules) → Visualization → Data List/Table",
+      "reusable": ["EmptyState", "LoadingState (skeleton)", "ErrorState", "SlideInPanel", "Modal", "Toast", "DataTable", "ChartWrapper", "SearchFilter", "MonthFilter", "ModuleHeader", "StatsCards", "DeleteConfirmDialog"],
+      "consistency": "All modules follow same template: ModuleHeader (title + actions) → StatsCards (metrics) → Filters (SearchFilter + MonthFilter) → Data List/Table → DeleteConfirmDialog",
+      "module_header": {
+        "component": "ModuleHeader (components/ui/module-header.tsx)",
+        "description": "Standard header for all module pages with title, description, and primary action button",
+        "usage": "Displays module title, optional description, and action button (e.g., 'Add Income Source')",
+        "props": {
+          "title": "Module title (required)",
+          "description": "Optional subtitle/description",
+          "actionLabel": "Button text (default: 'Add New')",
+          "actionIcon": "Lucide icon component (default: Plus)",
+          "onAction": "Callback when button is clicked",
+          "children": "Additional custom content (e.g., extra buttons)"
+        },
+        "consistency_requirement": "MUST use this component as the first element on all module pages"
+      },
+      "stats_cards": {
+        "component": "StatsCards (components/ui/stats-cards.tsx)",
+        "description": "Grid of statistics cards showing key metrics for a module",
+        "usage": "Pass array of StatCard objects with title, value, description, icon",
+        "props": {
+          "stats": "Array of StatCard objects",
+          "className": "Optional additional CSS classes"
+        },
+        "stat_card_interface": {
+          "title": "Card title (e.g., 'Total Sources')",
+          "value": "Main metric value (string or number)",
+          "description": "Optional subtitle/context",
+          "icon": "Lucide icon component",
+          "iconClassName": "Optional icon styling"
+        },
+        "consistency_requirement": "Use for displaying 2-4 key metrics at the top of module pages"
+      },
+      "delete_confirm_dialog": {
+        "component": "DeleteConfirmDialog (components/ui/delete-confirm-dialog.tsx)",
+        "description": "Reusable confirmation dialog for all delete operations",
+        "usage": "Displays confirmation modal before deleting items",
+        "props": {
+          "open": "Dialog visibility state",
+          "onOpenChange": "Callback for state changes",
+          "onConfirm": "Callback when delete is confirmed",
+          "title": "Dialog title (default: 'Are you sure?')",
+          "description": "Optional custom description",
+          "isDeleting": "Loading state during deletion",
+          "itemName": "Name of item being deleted (e.g., 'income source')"
+        },
+        "consistency_requirement": "MUST use instead of browser confirm() or custom alert dialogs for all delete operations"
+      },
+      "search_filter": {
+        "component": "SearchFilter (components/ui/search-filter.tsx)",
+        "description": "Reusable search bar with category dropdown for filtering module data by name and category",
+        "usage": "Displays search input and category select. Filters items by name search query and selected category",
+        "props": {
+          "searchQuery": "Current search query string",
+          "onSearchChange": "Callback for search input changes",
+          "selectedCategory": "Currently selected category (or null)",
+          "onCategoryChange": "Callback for category selection",
+          "categories": "Array of available categories",
+          "searchPlaceholder": "Search input placeholder (default: 'Search by name...')",
+          "categoryPlaceholder": "Category dropdown placeholder (default: 'All Categories')"
+        },
+        "filtering_logic": {
+          "search": "Case-insensitive name search using .toLowerCase().includes()",
+          "category": "Exact match filtering by category field",
+          "helper_function": "filterBySearchAndCategory() utility function handles all filtering logic"
+        },
+        "consistency_requirement": "MUST use this component across all modules for name search and category filtering"
+      },
       "month_filter": {
         "component": "MonthFilter (components/ui/month-filter.tsx)",
         "description": "Reusable month/year filter for time-based modules (Income, Expenses, Subscriptions, Installments)",
@@ -176,6 +242,11 @@
           "helper_function": "filterByMonth() utility function handles all filtering logic"
         },
         "consistency_requirement": "MUST use this component across all time-based modules to maintain consistent UX"
+      },
+      "combined_filtering": {
+        "description": "SearchFilter and MonthFilter work together in a pipeline",
+        "order": "Apply filters in sequence: MonthFilter → SearchFilter (search + category)",
+        "example": "const monthFiltered = filterByMonth(items, month, ...); const final = filterBySearchAndCategory(monthFiltered, query, category, ...);"
       }
     },
     "interactions": {
