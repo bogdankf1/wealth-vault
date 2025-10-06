@@ -164,8 +164,19 @@
       "panels": "Slide-in from right (desktop) or bottom (mobile) for forms/details"
     },
     "components": {
-      "reusable": ["EmptyState", "LoadingState (skeleton)", "ErrorState", "SlideInPanel", "Modal", "Toast", "DataTable", "ChartWrapper"],
-      "consistency": "All modules follow same template: Header (metrics + actions) → Filters → Visualization → Data List/Table"
+      "reusable": ["EmptyState", "LoadingState (skeleton)", "ErrorState", "SlideInPanel", "Modal", "Toast", "DataTable", "ChartWrapper", "MonthFilter"],
+      "consistency": "All modules follow same template: Header (metrics + actions) → Filters (MonthFilter for time-based modules) → Visualization → Data List/Table",
+      "month_filter": {
+        "component": "MonthFilter (components/ui/month-filter.tsx)",
+        "description": "Reusable month/year filter for time-based modules (Income, Expenses, Subscriptions, Installments)",
+        "usage": "Displays a month picker with Clear button. Filters items based on frequency type (one-time vs recurring)",
+        "filtering_logic": {
+          "one_time": "Checks if item's date field matches selected month/year",
+          "recurring": "Checks if selected month overlaps with item's start_date/end_date range",
+          "helper_function": "filterByMonth() utility function handles all filtering logic"
+        },
+        "consistency_requirement": "MUST use this component across all time-based modules to maintain consistent UX"
+      }
     },
     "interactions": {
       "swipe_gestures": "User-configurable swipe actions on mobile/tablet (left/right reveal actions like edit, delete, categorize)",

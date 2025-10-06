@@ -3,9 +3,10 @@ Permission system with decorators for role and tier-based access control.
 """
 from functools import wraps
 from typing import Callable, Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.models.user import User, UserRole
@@ -14,14 +15,14 @@ from app.core.exceptions import ForbiddenException, TierLimitException
 
 
 async def get_current_user(
-    token: str,
+    authorization: str = Header(..., description="Bearer token"),
     db: AsyncSession = Depends(get_db)
 ) -> User:
     """
-    Get current authenticated user from token.
+    Get current authenticated user from Authorization header.
 
     Args:
-        token: JWT token
+        authorization: Authorization header (Bearer token)
         db: Database session
 
     Returns:
@@ -32,6 +33,14 @@ async def get_current_user(
     """
     from app.core.security import verify_token
 
+    # Extract token from "Bearer <token>" format
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authorization header format. Expected: Bearer <token>"
+        )
+
+    token = authorization.replace("Bearer ", "")
     user_id = verify_token(token)
     if not user_id:
         raise HTTPException(
@@ -39,7 +48,12 @@ async def get_current_user(
             detail="Could not validate credentials"
         )
 
-    result = await db.execute(select(User).where(User.id == user_id))
+    # Eagerly load tier relationship to avoid lazy loading issues
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.tier))
+        .where(User.id == user_id)
+    )
     user = result.scalar_one_or_none()
 
     if not user:

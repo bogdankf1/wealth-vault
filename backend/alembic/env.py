@@ -13,6 +13,7 @@ from alembic import context
 from app.core.database import Base
 from app.models.user import User
 from app.models.tier import Tier, Feature, TierFeature
+from app.modules.income.models import IncomeSource, IncomeTransaction
 
 # this is the Alembic Config object
 config = context.config
