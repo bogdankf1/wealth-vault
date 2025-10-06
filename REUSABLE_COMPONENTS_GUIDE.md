@@ -292,7 +292,7 @@ export default function ModulePage() {
   const statsCards: StatCard[] = stats ? [] : [];
 
   // Apply all filters: month -> search/category
-  const monthFilteredItems = filterByMonth(items, selectedMonth, ...);
+  const monthFilteredItems = filterByMonth(items, selectedMonth);
   const filteredItems = filterBySearchAndCategory(
     monthFilteredItems,
     searchQuery,
