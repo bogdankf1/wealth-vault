@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -265,20 +266,18 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
             />
           </div>
 
-          {/* Submit Buttons */}
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={isCreating || isUpdating || isLoadingAccount}
-            >
-              {isCreating || isUpdating ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-            </Button>
-          </div>
-        </form>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating || isUpdating || isLoadingAccount}
+              >
+                {isCreating || isUpdating ? 'Saving...' : isEditing ? 'Update Account' : 'Add Account'}
+              </Button>
+            </DialogFooter>
+          </form>
       </DialogContent>
     </Dialog>
   );
