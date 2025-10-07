@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -387,16 +388,13 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
               </div>
             )}
 
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
+            <div className="flex items-center justify-between">
+              <Label htmlFor="is_active">Active Expense</Label>
+              <Switch
                 id="is_active"
-                className="h-4 w-4 rounded border-gray-300"
-                {...register('is_active')}
+                checked={watch('is_active')}
+                onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
               />
-              <Label htmlFor="is_active" className="cursor-pointer">
-                Active expense
-              </Label>
             </div>
 
             <DialogFooter>

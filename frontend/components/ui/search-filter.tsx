@@ -22,6 +22,7 @@ export interface SearchFilterProps {
   categories: string[];
   searchPlaceholder?: string;
   categoryPlaceholder?: string;
+  categoryLabels?: Record<string, string>;
 }
 
 export function SearchFilter({
@@ -32,6 +33,7 @@ export function SearchFilter({
   categories,
   searchPlaceholder = 'Search by name...',
   categoryPlaceholder = 'All Categories',
+  categoryLabels,
 }: SearchFilterProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -59,7 +61,7 @@ export function SearchFilter({
           <SelectItem value="all">{categoryPlaceholder}</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category} value={category}>
-              {category}
+              {categoryLabels?.[category] || category}
             </SelectItem>
           ))}
         </SelectContent>
