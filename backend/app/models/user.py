@@ -47,6 +47,7 @@ class User(BaseModel):
     subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
     installments = relationship("Installment", back_populates="user", cascade="all, delete-orphan")
     goals = relationship("Goal", back_populates="user", cascade="all, delete-orphan")
+    portfolio_assets = relationship("PortfolioAsset", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email={self.email}, role={self.role})>"
