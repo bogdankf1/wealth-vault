@@ -207,11 +207,11 @@ export default function SavingsPage() {
                     )}
                   </div>
 
-                  {account.notes && (
-                    <div className="min-h-[40px]">
+                  <div className="min-h-[40px]">
+                    {account.notes && (
                       <p className="text-sm text-muted-foreground line-clamp-2">{account.notes}</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   <div className="flex gap-2 pt-2">
                     <Button
