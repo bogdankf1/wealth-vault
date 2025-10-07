@@ -16,6 +16,7 @@ from app.modules.expenses.router import router as expenses_router
 from app.modules.savings.router import router as savings_router
 from app.modules.subscriptions.router import router as subscriptions_router
 from app.modules.installments.router import router as installments_router
+from app.modules.goals.router import router as goals_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -109,6 +110,7 @@ app.include_router(expenses_router)
 app.include_router(savings_router)
 app.include_router(subscriptions_router)
 app.include_router(installments_router)
+app.include_router(goals_router)
 
 
 # Root endpoint
