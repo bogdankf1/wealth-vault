@@ -15,6 +15,7 @@ from app.modules.income.api import router as income_router
 from app.modules.expenses.router import router as expenses_router
 from app.modules.savings.router import router as savings_router
 from app.modules.subscriptions.router import router as subscriptions_router
+from app.modules.installments.router import router as installments_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -107,6 +108,7 @@ app.include_router(income_router, prefix="/api/v1")
 app.include_router(expenses_router)
 app.include_router(savings_router)
 app.include_router(subscriptions_router)
+app.include_router(installments_router)
 
 
 # Root endpoint
