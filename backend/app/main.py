@@ -18,6 +18,7 @@ from app.modules.subscriptions.router import router as subscriptions_router
 from app.modules.installments.router import router as installments_router
 from app.modules.goals.router import router as goals_router
 from app.modules.portfolio.router import router as portfolio_router
+from app.modules.dashboard.router import router as dashboard_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -113,6 +114,7 @@ app.include_router(subscriptions_router)
 app.include_router(installments_router)
 app.include_router(goals_router)
 app.include_router(portfolio_router)
+app.include_router(dashboard_router)
 
 
 # Root endpoint
