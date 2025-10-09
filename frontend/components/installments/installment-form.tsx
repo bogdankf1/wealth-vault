@@ -47,7 +47,7 @@ const installmentSchema = z.object({
   currency: z.string().length(3),
   interest_rate: z.number().min(0).max(100).optional(),
   frequency: z.enum(['weekly', 'biweekly', 'monthly'] as const),
-  number_of_payments: z.number().min(1, 'Must have at least one payment'),
+  number_of_payments: z.number().min(1, 'Must have at least one payment').optional(),
   payments_made: z.number().min(0),
   is_active: z.boolean(),
   start_date: z.string().min(1, 'Start date is required'),
@@ -124,33 +124,35 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
   const totalAmount = watch('total_amount');
   const amountPerPayment = watch('amount_per_payment');
   const numberOfPayments = watch('number_of_payments');
+  const interestRate = watch('interest_rate');
 
-  // Auto-calculate payment amount when total amount or number of payments changes
-  useEffect(() => {
-    if (!isEditing && totalAmount > 0 && numberOfPayments > 0) {
-      const calculated = totalAmount / numberOfPayments;
-      const currentPayment = watch('amount_per_payment');
-
-      // Only update if the current value is 0 or exactly matches the previous calculation
-      // This allows manual editing while still providing auto-calculation
-      if (currentPayment === 0 || Math.abs(currentPayment - calculated) < 0.01) {
-        setValue('amount_per_payment', Number(calculated.toFixed(2)));
-      }
-    }
-  }, [totalAmount, numberOfPayments, isEditing, setValue, watch]);
-
-  // Auto-calculate number of payments when total amount or payment amount changes
+  // Calculate number of payments based on total amount, payment amount, and interest rate
   useEffect(() => {
     if (!isEditing && totalAmount > 0 && amountPerPayment > 0) {
-      const calculated = Math.ceil(totalAmount / amountPerPayment);
-      const currentNumber = watch('number_of_payments');
+      let calculatedPayments: number;
 
-      // Only update if significantly different (to avoid infinite loops)
-      if (currentNumber === 0 || currentNumber === 12) {
-        setValue('number_of_payments', calculated);
+      if (interestRate && interestRate > 0) {
+        // Calculate with compound interest
+        // Formula: n = -log(1 - (P * r) / PMT) / log(1 + r)
+        // Where: P = principal (total_amount), r = periodic interest rate, PMT = payment amount
+        const periodicRate = (interestRate / 100) / 12; // Monthly rate
+        const numerator = Math.log(1 - (totalAmount * periodicRate) / amountPerPayment);
+        const denominator = Math.log(1 + periodicRate);
+
+        if (numerator >= 0 || amountPerPayment <= totalAmount * periodicRate) {
+          // Payment is too small to cover interest
+          calculatedPayments = Math.ceil(totalAmount / amountPerPayment);
+        } else {
+          calculatedPayments = Math.ceil(-numerator / denominator);
+        }
+      } else {
+        // Simple calculation without interest
+        calculatedPayments = Math.ceil(totalAmount / amountPerPayment);
       }
+
+      setValue('number_of_payments', calculatedPayments);
     }
-  }, [totalAmount, amountPerPayment, isEditing, setValue, watch]);
+  }, [totalAmount, amountPerPayment, interestRate, isEditing, setValue]);
 
   // Load existing installment data or reset for new installment
   useEffect(() => {
@@ -193,7 +195,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         currency: 'USD',
         interest_rate: 0,
         frequency: 'monthly',
-        number_of_payments: 12,
+        number_of_payments: undefined,
         payments_made: 0,
         is_active: true,
         start_date: new Date().toISOString().split('T')[0],
@@ -205,6 +207,9 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
   const onSubmit = async (data: FormData) => {
     try {
+      // Ensure number_of_payments is set (should be auto-calculated)
+      const finalNumberOfPayments = data.number_of_payments || Math.ceil(data.total_amount / data.amount_per_payment);
+
       const submitData: {
         name: string;
         description?: string;
@@ -229,7 +234,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         currency: data.currency,
         interest_rate: data.interest_rate,
         frequency: data.frequency,
-        number_of_payments: data.number_of_payments,
+        number_of_payments: finalNumberOfPayments,
         payments_made: data.payments_made,
         is_active: data.is_active,
         // Keep date-only format to avoid timezone issues
@@ -418,13 +423,18 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="number_of_payments">Total # of Payments *</Label>
+                <Label htmlFor="number_of_payments">Total # of Payments</Label>
                 <Input
                   id="number_of_payments"
                   type="number"
-                  placeholder="12"
+                  placeholder="Auto-calculated"
                   {...register('number_of_payments', { valueAsNumber: true })}
+                  disabled
+                  className="bg-muted cursor-not-allowed"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Calculated automatically based on loan amount, payment amount, and interest rate
+                </p>
                 {errors.number_of_payments && (
                   <p className="text-sm text-destructive">
                     {errors.number_of_payments.message}
