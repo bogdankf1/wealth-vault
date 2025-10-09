@@ -37,6 +37,7 @@ out/
 *.tsbuildinfo
 frontend/.env.local
 frontend/.env.*.local
+!frontend/lib/
 
 # IDE
 .vscode/
