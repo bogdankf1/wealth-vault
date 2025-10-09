@@ -123,7 +123,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
   // Watch fields for auto-calculation
   const totalAmount = watch('total_amount');
   const amountPerPayment = watch('amount_per_payment');
-  const numberOfPayments = watch('number_of_payments');
   const interestRate = watch('interest_rate');
 
   // Calculate number of payments based on total amount, payment amount, and interest rate
