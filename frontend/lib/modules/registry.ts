@@ -12,12 +12,10 @@ class ModuleRegistryImpl implements ModuleRegistry {
 
   register(config: ModuleConfig): void {
     this.modules.set(config.key, config);
-    console.log(`[ModuleRegistry] Registered module: ${config.key}`);
   }
 
   unregister(key: ModuleKey): void {
     this.modules.delete(key);
-    console.log(`[ModuleRegistry] Unregistered module: ${key}`);
   }
 
   get(key: ModuleKey): ModuleConfig | undefined {

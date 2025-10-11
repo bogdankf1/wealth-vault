@@ -103,6 +103,92 @@ export interface DashboardOverviewResponse {
   alerts: FinancialAlert[];
 }
 
+// Analytics types
+export interface IncomeVsExpensesDataPoint {
+  month: string;
+  income: number;
+  expenses: number;
+}
+
+export interface IncomeVsExpensesChartResponse {
+  data: IncomeVsExpensesDataPoint[];
+}
+
+export interface ExpenseByCategoryDataPoint {
+  category: string;
+  amount: number;
+  percentage: number;
+  [key: string]: string | number; // Index signature for Recharts compatibility
+}
+
+export interface ExpenseByCategoryChartResponse {
+  data: ExpenseByCategoryDataPoint[];
+  total: number;
+}
+
+export interface MonthlySpendingDataPoint {
+  month: string;
+  amount: number;
+}
+
+export interface MonthlySpendingChartResponse {
+  data: MonthlySpendingDataPoint[];
+  average: number;
+  total: number;
+}
+
+export interface NetWorthTrendDataPoint {
+  month: string;
+  netWorth: number;
+  assets: number;
+  liabilities: number;
+}
+
+export interface NetWorthTrendChartResponse {
+  data: NetWorthTrendDataPoint[];
+}
+
+export interface AnalyticsParams {
+  start_date: string;
+  end_date: string;
+}
+
+// API response types for transformResponse
+interface IncomeVsExpensesApiResponse {
+  data: Array<{
+    month: string;
+    income: string;
+    expenses: string;
+  }>;
+}
+
+interface ExpenseByCategoryApiResponse {
+  data: Array<{
+    category: string;
+    amount: string;
+    percentage: string;
+  }>;
+  total: string;
+}
+
+interface MonthlySpendingApiResponse {
+  data: Array<{
+    month: string;
+    amount: string;
+  }>;
+  average: string;
+  total: string;
+}
+
+interface NetWorthTrendApiResponse {
+  data: Array<{
+    month: string;
+    net_worth: string;
+    assets: string;
+    liabilities: string;
+  }>;
+}
+
 // API endpoints
 export const dashboardApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -144,6 +230,70 @@ export const dashboardApi = apiSlice.injectEndpoints({
       }),
       providesTags: ['Dashboard'],
     }),
+
+    // Analytics endpoints
+    getIncomeVsExpensesChart: builder.query<IncomeVsExpensesChartResponse, AnalyticsParams>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/income-vs-expenses',
+        params,
+      }),
+      transformResponse: (response: IncomeVsExpensesApiResponse) => ({
+        data: response.data.map((item) => ({
+          month: item.month,
+          income: parseFloat(item.income),
+          expenses: parseFloat(item.expenses),
+        })),
+      }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
+
+    getExpenseByCategoryChart: builder.query<ExpenseByCategoryChartResponse, AnalyticsParams>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/expense-by-category',
+        params,
+      }),
+      transformResponse: (response: ExpenseByCategoryApiResponse) => ({
+        data: response.data.map((item) => ({
+          category: item.category,
+          amount: parseFloat(item.amount),
+          percentage: parseFloat(item.percentage),
+        })),
+        total: parseFloat(response.total),
+      }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
+
+    getMonthlySpendingChart: builder.query<MonthlySpendingChartResponse, AnalyticsParams>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/monthly-spending',
+        params,
+      }),
+      transformResponse: (response: MonthlySpendingApiResponse) => ({
+        data: response.data.map((item) => ({
+          month: item.month,
+          amount: parseFloat(item.amount),
+        })),
+        average: parseFloat(response.average),
+        total: parseFloat(response.total),
+      }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
+
+    getNetWorthTrendChart: builder.query<NetWorthTrendChartResponse, AnalyticsParams>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/net-worth-trend',
+        params,
+      }),
+      transformResponse: (response: NetWorthTrendApiResponse) => ({
+        data: response.data.map((item) => ({
+          month: item.month,
+          netWorth: parseFloat(item.net_worth),
+          assets: parseFloat(item.assets),
+          liabilities: parseFloat(item.liabilities),
+        })),
+      }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
   }),
 });
 
@@ -154,4 +304,8 @@ export const {
   useGetFinancialHealthQuery,
   useGetRecentActivityQuery,
   useGetUpcomingPaymentsQuery,
+  useGetIncomeVsExpensesChartQuery,
+  useGetExpenseByCategoryChartQuery,
+  useGetMonthlySpendingChartQuery,
+  useGetNetWorthTrendChartQuery,
 } = dashboardApi;

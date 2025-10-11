@@ -105,11 +105,6 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
     },
   });
 
-  // Watch fields for auto-calculation
-  const targetAmount = watch('target_amount');
-  const currentAmount = watch('current_amount');
-  const monthlyContribution = watch('monthly_contribution');
-
   // Load existing goal data or reset for new goal
   useEffect(() => {
     if (isEditing && existingGoal) {

@@ -3,9 +3,15 @@
  */
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useGetDashboardOverviewQuery } from '@/lib/api/dashboardApi';
+import {
+  useGetDashboardOverviewQuery,
+  useGetIncomeVsExpensesChartQuery,
+  useGetExpenseByCategoryChartQuery,
+  useGetMonthlySpendingChartQuery,
+  useGetNetWorthTrendChartQuery,
+} from '@/lib/api/dashboardApi';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -23,7 +29,6 @@ import {
   ArrowDownRight,
   Activity,
   Target,
-  DollarSign,
   PiggyBank,
   CreditCard,
   TrendingUpIcon,
@@ -31,7 +36,6 @@ import {
   Info,
   Plus,
   Minus,
-  Goal,
   AlertTriangle,
   AlertCircle,
   CheckCircle,
@@ -44,6 +48,11 @@ import { GoalForm } from '@/components/goals/goal-form';
 import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
 import { InstallmentForm } from '@/components/installments/installment-form';
 import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
+import { TimeRangeFilter, TimeRange } from '@/components/dashboard/time-range-filter';
+import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
+import { ExpenseByCategoryChart } from '@/components/dashboard/expense-by-category-chart';
+import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
+import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useGetDashboardOverviewQuery();
@@ -54,6 +63,32 @@ export default function DashboardPage() {
   const [isGoalFormOpen, setIsGoalFormOpen] = useState(false);
   const [isSubscriptionFormOpen, setIsSubscriptionFormOpen] = useState(false);
   const [isInstallmentFormOpen, setIsInstallmentFormOpen] = useState(false);
+
+  // Time range state for analytics
+  const [timeRange, setTimeRange] = useState<TimeRange>(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    return { start, end: now, label: 'Last 3 Months' };
+  });
+
+  // Analytics params
+  const analyticsParams = useMemo(() => ({
+    start_date: timeRange.start.toISOString(),
+    end_date: timeRange.end.toISOString(),
+  }), [timeRange]);
+
+  // Analytics queries
+  const { data: incomeVsExpensesData, isLoading: isLoadingIncomeVsExpenses } =
+    useGetIncomeVsExpensesChartQuery(analyticsParams);
+
+  const { data: expenseByCategoryData, isLoading: isLoadingExpenseByCategory } =
+    useGetExpenseByCategoryChartQuery(analyticsParams);
+
+  const { data: monthlySpendingData, isLoading: isLoadingMonthlySpending } =
+    useGetMonthlySpendingChartQuery(analyticsParams);
+
+  const { data: netWorthTrendData, isLoading: isLoadingNetWorthTrend } =
+    useGetNetWorthTrendChartQuery(analyticsParams);
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -546,6 +581,53 @@ export default function DashboardPage() {
           </div>
         )}
       </Card>
+
+      {/* Analytics Section */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Financial Analytics</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Visualize your financial trends and patterns
+          </p>
+        </div>
+
+        {/* Time Range Filter */}
+        <TimeRangeFilter
+          onRangeChange={setTimeRange}
+          defaultPeriod="last_3_months"
+        />
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Income vs Expenses Chart */}
+          <IncomeVsExpensesChart
+            data={incomeVsExpensesData?.data || []}
+            isLoading={isLoadingIncomeVsExpenses}
+            chartType="area"
+          />
+
+          {/* Expense by Category Chart */}
+          <ExpenseByCategoryChart
+            data={expenseByCategoryData?.data || []}
+            isLoading={isLoadingExpenseByCategory}
+            chartType="donut"
+          />
+
+          {/* Monthly Spending Chart */}
+          <MonthlySpendingChart
+            data={monthlySpendingData?.data || []}
+            isLoading={isLoadingMonthlySpending}
+            showAverage={true}
+          />
+
+          {/* Net Worth Trend Chart */}
+          <NetWorthTrendChart
+            data={netWorthTrendData?.data || []}
+            isLoading={isLoadingNetWorthTrend}
+            chartType="area"
+          />
+        </div>
+      </div>
 
       {/* Quick Action Dialogs */}
       <IncomeSourceForm

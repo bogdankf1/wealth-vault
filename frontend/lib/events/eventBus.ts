@@ -26,8 +26,6 @@ class EventBus {
     const handlers = this.events.get(event)!;
     handlers.add(handler as EventHandler);
 
-    console.log(`[EventBus] Subscribed to: ${event}`);
-
     // Return unsubscribe function
     return {
       unsubscribe: () => {
@@ -35,7 +33,6 @@ class EventBus {
         if (handlers.size === 0) {
           this.events.delete(event);
         }
-        console.log(`[EventBus] Unsubscribed from: ${event}`);
       },
     };
   }
@@ -47,11 +44,8 @@ class EventBus {
     const handlers = this.events.get(event);
 
     if (!handlers || handlers.size === 0) {
-      console.log(`[EventBus] No handlers for: ${event}`);
       return;
     }
-
-    console.log(`[EventBus] Emitting: ${event}`, data);
 
     // Execute all handlers
     const promises = Array.from(handlers).map((handler) => {
@@ -84,7 +78,6 @@ class EventBus {
    */
   off(event: string): void {
     this.events.delete(event);
-    console.log(`[EventBus] Removed all handlers for: ${event}`);
   }
 
   /**
@@ -92,7 +85,6 @@ class EventBus {
    */
   clear(): void {
     this.events.clear();
-    console.log('[EventBus] Cleared all events');
   }
 
   /**

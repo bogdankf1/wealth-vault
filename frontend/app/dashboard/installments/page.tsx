@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Calendar } from 'lucide-react';
+import { CreditCard, TrendingDown, DollarSign, Edit, Trash2 } from 'lucide-react';
 import {
   useListInstallmentsQuery,
   useGetInstallmentStatsQuery,
