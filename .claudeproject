@@ -551,14 +551,29 @@
     },
     
     "phase_3": {
+      "status": "COMPLETED ✓",
+      "completed_date": "2025-10-09",
       "duration": "Week 10-12",
       "title": "AI Features & File Upload",
       "goal": "Add AI-powered features and file upload/parsing for automated data entry",
+      "completed_features": [
+        "✅ CSV File Upload - Drag & drop interface with file validation",
+        "✅ Statement Parsing - Automatic column detection and date parsing (supports Ukrainian Monobank format)",
+        "✅ AI Categorization - GPT-4o-mini integration with smart category suggestions",
+        "✅ Batch Processing - Efficient categorization of multiple transactions",
+        "✅ Interactive Category Editing - Dropdown selects for quick category corrections",
+        "✅ Import to Expenses - One-click import of parsed and categorized transactions",
+        "✅ Shared Category System - Centralized expense categories across frontend and backend",
+        "✅ Data Sorting - Most recent transactions first across all modules",
+        "✅ Environment Loading - Automatic .env file loading with dotenv"
+      ],
       "tasks": {
         "database": [
-          "Portfolios tables schema & migration (portfolios, portfolio_positions)",
-          "Goals tables schema & migration (goals, goal_milestones)",
-          "Add indexes for portfolio and goal queries"
+          "✅ AI-related tables (uploaded_files, ai_insights, categorization_corrections)",
+          "✅ Indexes for AI and file queries",
+          "⏸ Portfolios tables schema & migration (portfolios, portfolio_positions) - Deferred",
+          "⏸ Goals tables schema & migration (goals, goal_milestones) - Deferred",
+          "⏸ Add indexes for portfolio and goal queries - Deferred"
         ],
         "backend_portfolio": [
           "Portfolio CRUD endpoints (/api/v1/portfolio/portfolios)",

@@ -98,7 +98,12 @@ async def list_expenses(
     total = await db.scalar(count_query)
 
     # Apply pagination and ordering
-    query = query.order_by(Expense.created_at.desc()).offset(skip).limit(limit)
+    # Sort by the actual expense date (date for one-time, start_date for recurring)
+    # Use COALESCE to handle both fields, with nulls last
+    query = query.order_by(
+        func.coalesce(Expense.date, Expense.start_date).desc(),
+        Expense.created_at.desc()
+    ).offset(skip).limit(limit)
 
     result = await db.execute(query)
     expenses = result.scalars().all()

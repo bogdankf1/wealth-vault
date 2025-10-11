@@ -61,8 +61,12 @@ async def list_income_sources(
     total_result = await db.execute(count_query)
     total = total_result.scalar_one()
 
-    # Apply pagination
-    query = query.order_by(IncomeSource.created_at.desc())
+    # Apply pagination and ordering
+    # Sort by the actual income date (date for one-time, start_date for recurring)
+    query = query.order_by(
+        func.coalesce(IncomeSource.date, IncomeSource.start_date).desc(),
+        IncomeSource.created_at.desc()
+    )
     query = query.offset((page - 1) * page_size).limit(page_size)
 
     # Execute query

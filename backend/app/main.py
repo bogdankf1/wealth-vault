@@ -5,6 +5,10 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from app.core.config import settings
 from app.core.logging_config import setup_logging, get_logger
@@ -19,6 +23,7 @@ from app.modules.installments.router import router as installments_router
 from app.modules.goals.router import router as goals_router
 from app.modules.portfolio.router import router as portfolio_router
 from app.modules.dashboard.router import router as dashboard_router
+from app.modules.ai.router import router as ai_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -115,6 +120,7 @@ app.include_router(installments_router)
 app.include_router(goals_router)
 app.include_router(portfolio_router)
 app.include_router(dashboard_router)
+app.include_router(ai_router, prefix="/api/v1")
 
 
 # Root endpoint
