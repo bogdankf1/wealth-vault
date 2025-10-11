@@ -721,14 +721,69 @@
     },
 
     "phase_5": {
+      "status": "COMPLETED ✓",
+      "completed_date": "2025-10-11",
       "duration": "Week 15-16",
-      "title": "Subscriptions & Installments Modules (Deferred)",
-      "goal": "Add recurring payment and debt tracking to complete all Phase 1 modules",
+      "title": "Budget Management Module",
+      "goal": "Add budget tracking with spending limits, progress monitoring, and alerts",
+      "completed_features": [
+        "✅ Budget CRUD - Create, read, update, delete budgets",
+        "✅ Multi-Category Support - Budget by expense category (Housing, Food, etc.)",
+        "✅ Time Periods - Monthly, quarterly, and yearly budget cycles",
+        "✅ Progress Tracking - Real-time spent vs budgeted with percentage calculations",
+        "✅ Three-State System - Green (under 80%), Amber (80-100%), Red (overspent)",
+        "✅ Alert Thresholds - Configurable alerts (default 80% of budget used)",
+        "✅ Rollover Support - Optional carry-over of unused budget to next period",
+        "✅ Budget Overview Widget - Dashboard widget showing all active budgets aggregated",
+        "✅ Top Categories Display - Shows top 3 spending categories with progress bars",
+        "✅ Smart Alerts - Identifies budgets near limit or overspent",
+        "✅ Quick Action Integration - Add Budget button in dashboard Quick Actions",
+        "✅ Info Tooltips - Calculation explanations for budget metrics",
+        "✅ Responsive Design - Works on mobile, tablet, and desktop"
+      ],
       "tasks": {
         "database": [
-          "Subscriptions tables schema & migration (subscriptions)",
-          "Installments tables schema & migration (installments, installment_payments)",
-          "Payment schedules tables"
+          "✅ Budgets table schema with all required fields (name, category, amount, period, etc.)",
+          "✅ Created Alembic migration for budgets table",
+          "✅ Added indexes for user_id and category queries"
+        ],
+        "backend_budgets": [
+          "✅ Budget CRUD endpoints (/api/v1/budgets)",
+          "✅ Budget overview endpoint with aggregated stats (/api/v1/budgets/overview)",
+          "✅ Individual budget progress endpoint (/api/v1/budgets/{id})",
+          "✅ Real-time spending calculation from expenses",
+          "✅ Percentage used and remaining calculations",
+          "✅ Alert detection (near limit, overspent)",
+          "✅ Support for three time periods (monthly, quarterly, yearly)",
+          "✅ Pydantic schemas for validation",
+          "✅ Tier checks (budget limits based on tier)",
+          "✅ Multi-currency support"
+        ],
+        "frontend_budgets": [
+          "✅ Budgets page with list view (/dashboard/budgets)",
+          "✅ Budget form component with validation",
+          "✅ Time range filter (preset periods and custom dates)",
+          "✅ Budget cards showing progress bars and status",
+          "✅ Three-state color coding (green/amber/red)",
+          "✅ Budget Overview Widget for dashboard",
+          "✅ Add Budget quick action in dashboard",
+          "✅ RTK Query integration (budgetsApi)",
+          "✅ Info tooltips for metrics",
+          "✅ Empty/Loading/Error states",
+          "✅ Delete confirmation dialog"
+        ],
+        "ui_improvements": [
+          "✅ Standardized widget title and subtitle styling",
+          "✅ Added info tooltips to all dashboard widgets",
+          "✅ Clarification text for Budget Overview period",
+          "✅ Consistent padding across all pages",
+          "✅ Responsive grid layouts"
+        ],
+        "code_quality": [
+          "✅ Fixed TypeScript errors in budget-form.tsx",
+          "✅ Fixed TypeScript errors in budgetsApi.ts",
+          "✅ Removed unused imports",
+          "✅ All linting and formatting checks passing"
         ],
         "backend_subscriptions": [
           "Subscriptions CRUD endpoints (/api/v1/subscriptions)",
@@ -783,29 +838,31 @@
           "RTK Query hooks",
           "Empty/Loading/Error states",
           "Tier limits enforcement"
-        ],
-        "background_jobs": [
-          "Set up Celery with Redis broker",
-          "Daily subscription renewal check task (runs at midnight)",
-          "Daily installment payment reminder task",
-          "Weekly expense summary email task",
-          "Monthly financial report generation task",
-          "Email service integration (SendGrid / Resend / Amazon SES)",
-          "Email templates (renewal reminder, payment reminder, weekly summary)",
-          "Test Celery tasks"
         ]
       },
       "deliverables": [
-        "Subscriptions module complete",
-        "Installments module complete",
-        "All 7 Phase 1 modules functional",
-        "Background job system working (Celery + Redis)",
-        "Email notifications sending"
+        "✅ Budget module complete with full CRUD",
+        "✅ Budget Overview Widget on dashboard",
+        "✅ Real-time spending tracking against budgets",
+        "✅ Three-state progress visualization",
+        "✅ Alert system for budget limits",
+        "✅ Multi-currency and multi-period support",
+        "✅ Dashboard integration with Quick Actions",
+        "✅ Info tooltips for all widgets",
+        "✅ All TypeScript and linting errors resolved"
+      ],
+      "technical_highlights": [
+        "Backend: SQLAlchemy aggregations for spending calculations",
+        "Frontend: RTK Query with Budget tag for cache invalidation",
+        "Budget Progress: Real-time calculation from Expense transactions",
+        "Three-State System: Green (<80%), Amber (80-100%), Red (>100%)",
+        "Time Periods: Support for monthly, quarterly, and yearly cycles",
+        "Rollover: Optional carry-over of unused budget amounts"
       ]
     },
     
-    "phase_5": {
-      "duration": "Week 13-14",
+    "phase_6": {
+      "duration": "Week 17-18",
       "title": "Tier System & Monetization",
       "goal": "Implement subscription tiers and Stripe payment integration",
       "tasks": {
@@ -870,9 +927,9 @@
         "Webhooks handling subscription events"
       ]
     },
-    
-    "phase_6": {
-      "duration": "Week 15-16",
+
+    "phase_7": {
+      "duration": "Week 19-20",
       "title": "Admin Panel & Configuration",
       "goal": "Build comprehensive admin panel with dynamic configuration system",
       "tasks": {
@@ -978,9 +1035,9 @@
         "Error monitoring active (Sentry)"
       ]
     },
-    
-    "phase_7": {
-      "duration": "Week 17-18",
+
+    "phase_8": {
+      "duration": "Week 21-22",
       "title": "User Experience & Polish",
       "goal": "Enhance UI/UX, add user customization, and optimize performance",
       "tasks": {
@@ -1060,9 +1117,9 @@
         "Accessibility compliant"
       ]
     },
-    
-    "phase_8": {
-      "duration": "Week 19-20",
+
+    "phase_9": {
+      "duration": "Week 23-24",
       "title": "AI Features & Insights",
       "goal": "Enhance AI capabilities with personalized recommendations and insights",
       "tasks": {
@@ -1116,9 +1173,9 @@
         "Enhanced AI categorization with learning"
       ]
     },
-    
-    "phase_9": {
-      "duration": "Week 21-22",
+
+    "phase_10": {
+      "duration": "Week 25-26",
       "title": "Testing, Security & Compliance",
       "goal": "Comprehensive testing, security hardening, and legal compliance",
       "tasks": {
@@ -1184,9 +1241,9 @@
         "Critical bugs fixed"
       ]
     },
-    
-    "phase_10": {
-      "duration": "Week 23-24",
+
+    "phase_11": {
+      "duration": "Week 27-28",
       "title": "Launch Preparation & Marketing",
       "goal": "Beta testing, marketing materials, and public launch",
       "tasks": {
