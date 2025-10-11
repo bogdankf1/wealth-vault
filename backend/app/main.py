@@ -24,6 +24,7 @@ from app.modules.goals.router import router as goals_router
 from app.modules.portfolio.router import router as portfolio_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.ai.router import router as ai_router
+from app.modules.budgets.router import router as budgets_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -121,6 +122,7 @@ app.include_router(goals_router)
 app.include_router(portfolio_router)
 app.include_router(dashboard_router)
 app.include_router(ai_router, prefix="/api/v1")
+app.include_router(budgets_router)
 
 
 # Root endpoint
