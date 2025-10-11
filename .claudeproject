@@ -650,8 +650,79 @@
     },
     
     "phase_4": {
-      "duration": "Week 11-12",
-      "title": "Subscriptions & Installments Modules",
+      "status": "COMPLETED ✓",
+      "completed_date": "2025-10-11",
+      "duration": "Week 13-14",
+      "title": "Analytics & Insights Dashboard",
+      "goal": "Add interactive data visualizations and analytics to dashboard for financial insights",
+      "completed_features": [
+        "✅ Time Range Filter - Preset periods and custom date picker",
+        "✅ Income vs Expenses Chart - Monthly cash flow comparison with summary stats",
+        "✅ Expense by Category Chart - Pie/donut chart with percentage breakdown",
+        "✅ Monthly Spending Chart - Bar chart with average reference and insights",
+        "✅ Net Worth Trend Chart - Wealth progression based on cumulative cash flow",
+        "✅ Proper One-Time Income Handling - Shows income spikes in correct months",
+        "✅ Smart Statistics - Excludes zero-spending months from averages",
+        "✅ String-to-Number Conversion - Transforms API Decimal strings to numbers",
+        "✅ Responsive Chart Layouts - 2-column grid on desktop, stacked on mobile"
+      ],
+      "tasks": {
+        "frontend_components": [
+          "✅ TimeRangeFilter component with presets and custom range picker",
+          "✅ IncomeVsExpensesChart component with area/line visualization",
+          "✅ ExpenseByCategoryChart component with pie/donut chart",
+          "✅ MonthlySpendingChart component with bar chart and insights",
+          "✅ NetWorthTrendChart component with wealth progression"
+        ],
+        "backend_analytics": [
+          "✅ Income vs Expenses endpoint with date filtering (one-time + recurring)",
+          "✅ Expense by Category endpoint with percentage calculations",
+          "✅ Monthly Spending endpoint with statistics",
+          "✅ Net Worth Trend endpoint with cumulative cash flow",
+          "✅ Proper timezone handling (strip timezone info)",
+          "✅ Monthly aggregation using dateutil.relativedelta",
+          "✅ Removed incorrect deleted_at checks for Expense model"
+        ],
+        "frontend_integration": [
+          "✅ Integrated analytics section into dashboard page",
+          "✅ Added RTK Query hooks with transformResponse",
+          "✅ String-to-number conversion for API Decimal values",
+          "✅ Time range state management with useMemo",
+          "✅ Automatic chart updates on time range change",
+          "✅ Fixed read-only array mutations",
+          "✅ Added missing Recharts Cell import"
+        ],
+        "data_quality": [
+          "✅ Exclude zero-spending months from statistics",
+          "✅ Proper one-time income date matching",
+          "✅ Recurring income date range validation",
+          "✅ Cumulative cash flow for net worth progression",
+          "✅ Baseline assets + cash flow for accurate net worth"
+        ]
+      },
+      "deliverables": [
+        "✅ 5 chart widgets integrated into dashboard",
+        "✅ 4 analytics API endpoints working correctly",
+        "✅ Time range filtering with preset and custom options",
+        "✅ Proper handling of one-time and recurring income",
+        "✅ Smart statistics excluding zero values",
+        "✅ Accurate net worth progression based on cash flow",
+        "✅ All charts responsive and accessible",
+        "✅ Empty states for charts with no data"
+      ],
+      "technical_highlights": [
+        "Backend: Monthly aggregation with relativedelta, timezone-naive datetime handling",
+        "Frontend: RTK Query with transformResponse for type conversion",
+        "Charts: Recharts with custom tooltips and legends",
+        "Income Calculation: Separate queries for one-time and recurring sources",
+        "Net Worth: Baseline assets + cumulative (income - expenses)",
+        "Statistics: Non-zero filtering for meaningful averages"
+      ]
+    },
+
+    "phase_5": {
+      "duration": "Week 15-16",
+      "title": "Subscriptions & Installments Modules (Deferred)",
       "goal": "Add recurring payment and debt tracking to complete all Phase 1 modules",
       "tasks": {
         "database": [

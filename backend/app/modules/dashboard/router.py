@@ -1,6 +1,7 @@
 """
 Dashboard API endpoints for aggregating financial data.
 """
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -18,6 +19,10 @@ from app.modules.dashboard.schemas import (
     RecentActivityItem,
     UpcomingPayment,
     FinancialAlert,
+    IncomeVsExpensesChartResponse,
+    ExpenseByCategoryChartResponse,
+    MonthlySpendingChartResponse,
+    NetWorthTrendChartResponse,
 )
 from app.modules.dashboard import service
 
@@ -171,3 +176,81 @@ async def get_upcoming_payments(
     Returns list sorted by due date (earliest first).
     """
     return await service.get_upcoming_payments(db, current_user.id, days)
+
+
+# Analytics endpoints for charts
+
+@router.get("/analytics/income-vs-expenses", response_model=IncomeVsExpensesChartResponse)
+async def get_income_vs_expenses_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get income vs expenses chart data for the specified period.
+
+    Query Parameters:
+    - start_date: Start date (ISO format)
+    - end_date: End date (ISO format)
+
+    Returns monthly aggregated income and expenses data.
+    """
+    return await service.get_income_vs_expenses_chart(db, current_user.id, start_date, end_date)
+
+
+@router.get("/analytics/expense-by-category", response_model=ExpenseByCategoryChartResponse)
+async def get_expense_by_category_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get expense breakdown by category for the specified period.
+
+    Query Parameters:
+    - start_date: Start date (ISO format)
+    - end_date: End date (ISO format)
+
+    Returns expenses grouped by category with percentages.
+    """
+    return await service.get_expense_by_category_chart(db, current_user.id, start_date, end_date)
+
+
+@router.get("/analytics/monthly-spending", response_model=MonthlySpendingChartResponse)
+async def get_monthly_spending_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get monthly spending patterns for the specified period.
+
+    Query Parameters:
+    - start_date: Start date (ISO format)
+    - end_date: End date (ISO format)
+
+    Returns monthly aggregated spending with average.
+    """
+    return await service.get_monthly_spending_chart(db, current_user.id, start_date, end_date)
+
+
+@router.get("/analytics/net-worth-trend", response_model=NetWorthTrendChartResponse)
+async def get_net_worth_trend_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get net worth trend for the specified period.
+
+    Query Parameters:
+    - start_date: Start date (ISO format)
+    - end_date: End date (ISO format)
+
+    Returns monthly net worth, assets, and liabilities data.
+    """
+    return await service.get_net_worth_trend_chart(db, current_user.id, start_date, end_date)

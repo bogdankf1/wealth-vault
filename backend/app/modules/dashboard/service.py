@@ -24,6 +24,14 @@ from app.modules.dashboard.schemas import (
     RecentActivityItem,
     UpcomingPayment,
     FinancialAlert,
+    IncomeVsExpensesChartResponse,
+    IncomeVsExpensesDataPoint,
+    ExpenseByCategoryChartResponse,
+    ExpenseByCategoryDataPoint,
+    MonthlySpendingChartResponse,
+    MonthlySpendingDataPoint,
+    NetWorthTrendChartResponse,
+    NetWorthTrendDataPoint,
 )
 
 
@@ -563,3 +571,371 @@ async def get_financial_alerts(
     alerts.sort(key=lambda x: x.priority, reverse=True)
 
     return alerts
+
+
+# ============================================================================
+# Analytics Functions for Charts
+# ============================================================================
+
+async def get_income_vs_expenses_chart(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
+) -> IncomeVsExpensesChartResponse:
+    """
+    Get income vs expenses chart data for the specified period.
+    Groups data by month.
+    """
+    from calendar import month_abbr
+    from dateutil.relativedelta import relativedelta
+
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
+    data_points = []
+    current = start_date.replace(day=1)
+
+    while current <= end_date:
+        month_start = current
+        month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+
+        # Calculate income for this month
+        monthly_income = Decimal('0')
+
+        # Get one-time income sources that fall in this month
+        onetime_income_query = select(IncomeSource).where(
+            and_(
+                IncomeSource.user_id == user_id,
+                IncomeSource.is_active == True,
+                IncomeSource.deleted_at.is_(None),
+                IncomeSource.frequency == 'one_time',
+                IncomeSource.date.is_not(None),
+                IncomeSource.date >= month_start,
+                IncomeSource.date <= month_end
+            )
+        )
+        onetime_result = await db.execute(onetime_income_query)
+        onetime_sources = onetime_result.scalars().all()
+
+        for source in onetime_sources:
+            monthly_income += source.amount
+
+        # Get recurring income sources that are active in this month
+        recurring_income_query = select(IncomeSource).where(
+            and_(
+                IncomeSource.user_id == user_id,
+                IncomeSource.is_active == True,
+                IncomeSource.deleted_at.is_(None),
+                IncomeSource.frequency != 'one_time',
+                IncomeSource.start_date.is_not(None),
+                IncomeSource.start_date <= month_end,
+                or_(
+                    IncomeSource.end_date.is_(None),
+                    IncomeSource.end_date >= month_start
+                )
+            )
+        )
+        recurring_result = await db.execute(recurring_income_query)
+        recurring_sources = recurring_result.scalars().all()
+
+        for source in recurring_sources:
+            monthly_income += source.calculate_monthly_amount()
+
+        # Calculate expenses for this month
+        expense_query = select(func.sum(Expense.amount)).where(
+            and_(
+                Expense.user_id == user_id,
+                or_(
+                    and_(
+                        Expense.date.is_not(None),
+                        Expense.date >= month_start,
+                        Expense.date <= month_end
+                    ),
+                    and_(
+                        Expense.start_date.is_not(None),
+                        Expense.start_date >= month_start,
+                        Expense.start_date <= month_end
+                    )
+                ),
+            )
+        )
+        expense_result = await db.execute(expense_query)
+        monthly_expenses = expense_result.scalar() or Decimal('0')
+
+        # Format month label
+        month_label = f"{month_abbr[current.month]} {current.year}"
+
+        data_points.append(IncomeVsExpensesDataPoint(
+            month=month_label,
+            income=monthly_income,
+            expenses=monthly_expenses
+        ))
+
+        current += relativedelta(months=1)
+
+    return IncomeVsExpensesChartResponse(data=data_points)
+
+
+async def get_expense_by_category_chart(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
+) -> ExpenseByCategoryChartResponse:
+    """
+    Get expense breakdown by category for the specified period.
+    """
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
+    # Query expenses grouped by category
+    query = select(
+        Expense.category,
+        func.sum(Expense.amount).label('total_amount')
+    ).where(
+        and_(
+            Expense.user_id == user_id,
+            or_(
+                and_(
+                    Expense.date.is_not(None),
+                    Expense.date >= start_date,
+                    Expense.date <= end_date
+                ),
+                and_(
+                    Expense.start_date.is_not(None),
+                    Expense.start_date >= start_date,
+                    Expense.start_date <= end_date
+                )
+            )
+        )
+    ).group_by(Expense.category)
+
+    result = await db.execute(query)
+    category_data = result.all()
+
+    # Calculate total and percentages
+    total = sum(row.total_amount for row in category_data)
+
+    if total == 0:
+        return ExpenseByCategoryChartResponse(data=[], total=Decimal('0'))
+
+    data_points = [
+        ExpenseByCategoryDataPoint(
+            category=row.category,
+            amount=row.total_amount,
+            percentage=float((row.total_amount / total) * 100)
+        )
+        for row in category_data
+    ]
+
+    # Sort by amount descending
+    data_points.sort(key=lambda x: x.amount, reverse=True)
+
+    return ExpenseByCategoryChartResponse(data=data_points, total=total)
+
+
+async def get_monthly_spending_chart(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
+) -> MonthlySpendingChartResponse:
+    """
+    Get monthly spending patterns for the specified period.
+    """
+    from calendar import month_abbr
+    from dateutil.relativedelta import relativedelta
+
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
+    data_points = []
+    current = start_date.replace(day=1)
+
+    while current <= end_date:
+        month_start = current
+        month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+
+        # Calculate expenses for this month
+        expense_query = select(func.sum(Expense.amount)).where(
+            and_(
+                Expense.user_id == user_id,
+                or_(
+                    and_(
+                        Expense.date.is_not(None),
+                        Expense.date >= month_start,
+                        Expense.date <= month_end
+                    ),
+                    and_(
+                        Expense.start_date.is_not(None),
+                        Expense.start_date >= month_start,
+                        Expense.start_date <= month_end
+                    )
+                ),
+            )
+        )
+        expense_result = await db.execute(expense_query)
+        monthly_amount = expense_result.scalar() or Decimal('0')
+
+        # Format month label
+        month_label = f"{month_abbr[current.month]} {current.year}"
+
+        data_points.append(MonthlySpendingDataPoint(
+            month=month_label,
+            amount=monthly_amount
+        ))
+
+        current += relativedelta(months=1)
+
+    # Calculate total and average
+    total = sum(dp.amount for dp in data_points)
+    average = total / len(data_points) if data_points else Decimal('0')
+
+    return MonthlySpendingChartResponse(
+        data=data_points,
+        average=average,
+        total=total
+    )
+
+
+async def get_net_worth_trend_chart(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
+) -> NetWorthTrendChartResponse:
+    """
+    Get net worth trend for the specified period.
+
+    Note: This is a simplified version that calculates current net worth
+    for each month. For historical accuracy, you would need to store
+    snapshots of portfolio values and account balances.
+    """
+    from calendar import month_abbr
+    from dateutil.relativedelta import relativedelta
+
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
+    # Get current net worth as the baseline
+    current_net_worth_data = await get_net_worth(db, user_id)
+    current_total_assets = Decimal(current_net_worth_data.total_assets)
+    current_total_liabilities = Decimal(current_net_worth_data.total_liabilities)
+
+    # Get savings account balances (these are part of assets)
+    savings_query = select(func.sum(SavingsAccount.current_balance)).where(
+        SavingsAccount.user_id == user_id
+    )
+    savings_result = await db.execute(savings_query)
+    current_savings = savings_result.scalar() or Decimal('0')
+
+    # Get portfolio value (these are part of assets)
+    portfolio_query = select(func.sum(PortfolioAsset.current_value)).where(
+        PortfolioAsset.user_id == user_id
+    )
+    portfolio_result = await db.execute(portfolio_query)
+    current_portfolio = portfolio_result.scalar() or Decimal('0')
+
+    # Calculate the baseline liquid assets (savings + portfolio)
+    baseline_liquid_assets = current_savings + current_portfolio
+
+    data_points = []
+    current = start_date.replace(day=1)
+    cumulative_cash_flow = Decimal('0')
+
+    while current <= end_date:
+        month_start = current
+        month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+
+        # Calculate income for this month (reuse logic from income_vs_expenses)
+        monthly_income = Decimal('0')
+
+        # One-time income
+        onetime_income_query = select(IncomeSource).where(
+            and_(
+                IncomeSource.user_id == user_id,
+                IncomeSource.is_active == True,
+                IncomeSource.deleted_at.is_(None),
+                IncomeSource.frequency == 'one_time',
+                IncomeSource.date.is_not(None),
+                IncomeSource.date >= month_start,
+                IncomeSource.date <= month_end
+            )
+        )
+        onetime_result = await db.execute(onetime_income_query)
+        onetime_sources = onetime_result.scalars().all()
+        for source in onetime_sources:
+            monthly_income += source.amount
+
+        # Recurring income
+        recurring_income_query = select(IncomeSource).where(
+            and_(
+                IncomeSource.user_id == user_id,
+                IncomeSource.is_active == True,
+                IncomeSource.deleted_at.is_(None),
+                IncomeSource.frequency != 'one_time',
+                IncomeSource.start_date.is_not(None),
+                IncomeSource.start_date <= month_end,
+                or_(
+                    IncomeSource.end_date.is_(None),
+                    IncomeSource.end_date >= month_start
+                )
+            )
+        )
+        recurring_result = await db.execute(recurring_income_query)
+        recurring_sources = recurring_result.scalars().all()
+        for source in recurring_sources:
+            monthly_income += source.calculate_monthly_amount()
+
+        # Calculate expenses for this month
+        expense_query = select(func.sum(Expense.amount)).where(
+            and_(
+                Expense.user_id == user_id,
+                or_(
+                    and_(
+                        Expense.date.is_not(None),
+                        Expense.date >= month_start,
+                        Expense.date <= month_end
+                    ),
+                    and_(
+                        Expense.start_date.is_not(None),
+                        Expense.start_date >= month_start,
+                        Expense.start_date <= month_end
+                    )
+                ),
+            )
+        )
+        expense_result = await db.execute(expense_query)
+        monthly_expenses = expense_result.scalar() or Decimal('0')
+
+        # Update cumulative cash flow
+        cumulative_cash_flow += (monthly_income - monthly_expenses)
+
+        # Calculate net worth for this month
+        # Assets = baseline liquid assets + cumulative cash flow
+        month_assets = baseline_liquid_assets + cumulative_cash_flow
+        # Liabilities remain constant (we don't track historical changes)
+        month_liabilities = current_total_liabilities
+        month_net_worth = month_assets - month_liabilities
+
+        # Format month label
+        month_label = f"{month_abbr[current.month]} {current.year}"
+
+        data_points.append(NetWorthTrendDataPoint(
+            month=month_label,
+            net_worth=month_net_worth,
+            assets=month_assets,
+            liabilities=month_liabilities
+        ))
+
+        current += relativedelta(months=1)
+
+    return NetWorthTrendChartResponse(data=data_points)

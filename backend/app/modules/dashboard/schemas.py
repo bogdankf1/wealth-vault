@@ -106,3 +106,63 @@ class DashboardOverviewResponse(BaseModel):
     recent_activity: list[RecentActivityItem]
     upcoming_payments: list[UpcomingPayment]
     alerts: list[FinancialAlert]
+
+
+# Analytics schemas for charts
+class IncomeVsExpensesDataPoint(BaseModel):
+    """Schema for income vs expenses chart data point."""
+
+    month: str  # e.g., "Jan 2025"
+    income: Decimal
+    expenses: Decimal
+
+
+class IncomeVsExpensesChartResponse(BaseModel):
+    """Schema for income vs expenses chart response."""
+
+    data: list[IncomeVsExpensesDataPoint]
+
+
+class ExpenseByCategoryDataPoint(BaseModel):
+    """Schema for expense by category data point."""
+
+    category: str
+    amount: Decimal
+    percentage: float
+
+
+class ExpenseByCategoryChartResponse(BaseModel):
+    """Schema for expense by category chart response."""
+
+    data: list[ExpenseByCategoryDataPoint]
+    total: Decimal
+
+
+class MonthlySpendingDataPoint(BaseModel):
+    """Schema for monthly spending data point."""
+
+    month: str
+    amount: Decimal
+
+
+class MonthlySpendingChartResponse(BaseModel):
+    """Schema for monthly spending chart response."""
+
+    data: list[MonthlySpendingDataPoint]
+    average: Decimal
+    total: Decimal
+
+
+class NetWorthTrendDataPoint(BaseModel):
+    """Schema for net worth trend data point."""
+
+    month: str
+    net_worth: Decimal = 0
+    assets: Decimal = 0
+    liabilities: Decimal = 0
+
+
+class NetWorthTrendChartResponse(BaseModel):
+    """Schema for net worth trend chart response."""
+
+    data: list[NetWorthTrendDataPoint]
