@@ -6,6 +6,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip as ChartTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   PieChart,
   Pie,
@@ -14,7 +15,7 @@ import {
   Tooltip,
   PieLabelRenderProps,
 } from 'recharts';
-import { PieChartIcon } from 'lucide-react';
+import { PieChartIcon, Info } from 'lucide-react';
 
 interface CategoryData {
   category: string;
@@ -152,13 +153,24 @@ export function ExpenseByCategoryChart({
   };
 
   return (
-    <Card className="p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-1">Expenses by Category</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Spending breakdown across categories
-        </p>
-      </div>
+    <TooltipProvider>
+      <Card className="p-6">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold">Expenses by Category</h3>
+            <ChartTooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Shows expense breakdown by category. Hover over slices to see amounts and percentages. Helps identify where most money is spent.</p>
+              </TooltipContent>
+            </ChartTooltip>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Spending breakdown across categories
+          </p>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart */}
@@ -270,6 +282,7 @@ export function ExpenseByCategoryChart({
           </div>
         </div>
       )}
-    </Card>
+      </Card>
+    </TooltipProvider>
   );
 }

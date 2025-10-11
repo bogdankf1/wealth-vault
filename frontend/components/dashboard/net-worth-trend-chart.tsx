@@ -6,6 +6,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip as ChartTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   LineChart,
   Line,
@@ -19,7 +20,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Info } from 'lucide-react';
 
 interface NetWorthDataPoint {
   month: string;
@@ -125,13 +126,24 @@ export function NetWorthTrendChart({
   };
 
   return (
-    <Card className="p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-1">Net Worth Trend</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Track your wealth growth over time
-        </p>
-      </div>
+    <TooltipProvider>
+      <Card className="p-6">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold">Net Worth Trend</h3>
+            <ChartTooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Visualizes net worth changes over time. Net Worth = Assets (portfolio + savings) - Liabilities (debts). Helps track wealth building progress.</p>
+              </TooltipContent>
+            </ChartTooltip>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Track your wealth growth over time
+          </p>
+        </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -371,6 +383,7 @@ export function NetWorthTrendChart({
           </div>
         </div>
       </div>
-    </Card>
+      </Card>
+    </TooltipProvider>
   );
 }

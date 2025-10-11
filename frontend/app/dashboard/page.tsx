@@ -44,10 +44,12 @@ import {
 } from 'lucide-react';
 import { IncomeSourceForm } from '@/components/income/income-source-form';
 import { ExpenseForm } from '@/components/expenses/expense-form';
+import { BudgetForm } from '@/components/budgets/budget-form';
 import { GoalForm } from '@/components/goals/goal-form';
 import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
 import { InstallmentForm } from '@/components/installments/installment-form';
 import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
+import { BudgetOverviewWidget } from '@/components/dashboard/budget-overview-widget';
 import { TimeRangeFilter, TimeRange } from '@/components/dashboard/time-range-filter';
 import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
 import { ExpenseByCategoryChart } from '@/components/dashboard/expense-by-category-chart';
@@ -60,6 +62,7 @@ export default function DashboardPage() {
   // Dialog states for Quick Actions
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
+  const [isBudgetFormOpen, setIsBudgetFormOpen] = useState(false);
   const [isGoalFormOpen, setIsGoalFormOpen] = useState(false);
   const [isSubscriptionFormOpen, setIsSubscriptionFormOpen] = useState(false);
   const [isInstallmentFormOpen, setIsInstallmentFormOpen] = useState(false);
@@ -194,7 +197,7 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <Button
               onClick={() => setIsIncomeFormOpen(true)}
               className="h-auto py-4 flex flex-col gap-2"
@@ -220,6 +223,20 @@ export default function DashboardPage() {
               </div>
               <span className="text-xs text-gray-600 dark:text-gray-400">
                 Track expense
+              </span>
+            </Button>
+
+            <Button
+              onClick={() => setIsBudgetFormOpen(true)}
+              className="h-auto py-4 flex flex-col gap-2"
+              variant="outline"
+            >
+              <div className="flex items-center gap-2">
+                <Wallet className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <span className="font-medium">Add Budget</span>
+              </div>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Set spending limit
               </span>
             </Button>
 
@@ -269,6 +286,9 @@ export default function DashboardPage() {
 
         {/* AI Insights Widget */}
         <AIInsightsWidget />
+
+        {/* Budget Overview Widget */}
+        <BudgetOverviewWidget />
 
         {/* Financial Alerts & Notifications */}
         {data.alerts && data.alerts.length > 0 && (
@@ -639,6 +659,10 @@ export default function DashboardPage() {
         isOpen={isExpenseFormOpen}
         onClose={() => setIsExpenseFormOpen(false)}
         expenseId={null}
+      />
+      <BudgetForm
+        open={isBudgetFormOpen}
+        onClose={() => setIsBudgetFormOpen(false)}
       />
       <SubscriptionForm
         isOpen={isSubscriptionFormOpen}

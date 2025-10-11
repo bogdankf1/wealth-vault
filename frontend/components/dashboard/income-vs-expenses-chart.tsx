@@ -7,6 +7,12 @@
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Tooltip as ChartTooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   LineChart,
   Line,
   AreaChart,
@@ -18,7 +24,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Info } from 'lucide-react';
 
 interface ChartDataPoint {
   month: string;
@@ -122,13 +128,28 @@ export function IncomeVsExpensesChart({
   };
 
   return (
-    <Card className="p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-1">Income vs Expenses</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Cash flow trend over time
-        </p>
-      </div>
+    <TooltipProvider>
+      <Card className="p-6">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold">Income vs Expenses</h3>
+            <ChartTooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p className="font-semibold mb-1">How it works:</p>
+                <p className="text-sm">Visualizes your cash flow by comparing total income against total expenses over time.</p>
+                <p className="text-sm mt-2">• Green line: Income from all sources</p>
+                <p className="text-sm">• Red line: All expenses</p>
+                <p className="text-sm">• Net: Difference between income and expenses</p>
+              </TooltipContent>
+            </ChartTooltip>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Cash flow trend over time
+          </p>
+        </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -253,5 +274,6 @@ export function IncomeVsExpensesChart({
         )}
       </ResponsiveContainer>
     </Card>
+    </TooltipProvider>
   );
 }

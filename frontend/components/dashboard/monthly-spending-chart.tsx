@@ -6,6 +6,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip as ChartTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   BarChart,
   Bar,
@@ -17,7 +18,7 @@ import {
   ReferenceLine,
   Cell,
 } from 'recharts';
-import { BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Info } from 'lucide-react';
 
 interface MonthlySpendingData {
   month: string;
@@ -147,13 +148,24 @@ export function MonthlySpendingChart({
   };
 
   return (
-    <Card className="p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-1">Monthly Spending Patterns</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Track your spending habits over time
-        </p>
-      </div>
+    <TooltipProvider>
+      <Card className="p-6">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold">Monthly Spending Patterns</h3>
+            <ChartTooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Tracks total monthly spending over time. Shows spending trends and patterns. Includes average spending line for comparison.</p>
+              </TooltipContent>
+            </ChartTooltip>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Track your spending habits over time
+          </p>
+        </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -281,6 +293,7 @@ export function MonthlySpendingChart({
           </div>
         </div>
       )}
-    </Card>
+      </Card>
+    </TooltipProvider>
   );
 }

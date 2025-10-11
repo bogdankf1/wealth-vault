@@ -4,11 +4,17 @@
  */
 'use client';
 
-import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, RefreshCw, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useGetFinancialInsightsQuery } from '@/lib/api/aiApi';
 
 export function AIInsightsWidget() {
@@ -70,27 +76,41 @@ export function AIInsightsWidget() {
       insights.anomalies.length > 0);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle>AI Insights</CardTitle>
+    <TooltipProvider>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <CardTitle>AI Insights</CardTitle>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="font-semibold mb-1">How it works:</p>
+                  <p className="text-sm">AI analyzes your financial data to provide personalized recommendations:</p>
+                  <p className="text-sm mt-2">• Spending patterns and anomalies</p>
+                  <p className="text-sm">• Savings opportunities</p>
+                  <p className="text-sm">• Budget optimization suggestions</p>
+                  <p className="text-sm">• Financial health improvements</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">Powered by AI</Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => refetch()}
+                title="Refresh insights"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">Powered by AI</Badge>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => refetch()}
-              title="Refresh insights"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        <CardDescription>Personalized financial recommendations</CardDescription>
-      </CardHeader>
+          <CardDescription>Personalized financial recommendations</CardDescription>
+        </CardHeader>
       <CardContent>
         {!hasInsights ? (
           <div className="text-center py-8">
@@ -165,5 +185,6 @@ export function AIInsightsWidget() {
         )}
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }

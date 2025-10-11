@@ -17,7 +17,8 @@ import {
   Receipt,
   LogOut,
   Menu,
-  X
+  X,
+  Wallet
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ import { cn } from '@/lib/utils';
 const navigation = [
   { name: 'Income', href: '/dashboard/income', icon: TrendingUp, tier: 'starter' },
   { name: 'Expenses', href: '/dashboard/expenses', icon: DollarSign, tier: 'starter' },
+  { name: 'Budgets', href: '/dashboard/budgets', icon: Wallet, tier: 'starter' },
   { name: 'Savings', href: '/dashboard/savings', icon: PiggyBank, tier: 'starter' },
   { name: 'Portfolio', href: '/dashboard/portfolio', icon: LineChart, tier: 'growth' },
   { name: 'Goals', href: '/dashboard/goals', icon: Target, tier: 'growth' },
