@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
+import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
 
 // Form validation schema
 const expenseSchema = z.object({
@@ -75,21 +76,6 @@ const FREQUENCY_OPTIONS = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'quarterly', label: 'Quarterly' },
   { value: 'annually', label: 'Annually' },
-];
-
-const CATEGORY_OPTIONS = [
-  { value: 'Food & Dining', label: 'Food & Dining' },
-  { value: 'Transportation', label: 'Transportation' },
-  { value: 'Housing', label: 'Housing' },
-  { value: 'Utilities', label: 'Utilities' },
-  { value: 'Healthcare', label: 'Healthcare' },
-  { value: 'Entertainment', label: 'Entertainment' },
-  { value: 'Shopping', label: 'Shopping' },
-  { value: 'Personal Care', label: 'Personal Care' },
-  { value: 'Education', label: 'Education' },
-  { value: 'Insurance', label: 'Insurance' },
-  { value: 'Debt Payments', label: 'Debt Payments' },
-  { value: 'Other', label: 'Other' },
 ];
 
 export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {

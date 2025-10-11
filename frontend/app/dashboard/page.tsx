@@ -43,6 +43,7 @@ import { ExpenseForm } from '@/components/expenses/expense-form';
 import { GoalForm } from '@/components/goals/goal-form';
 import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
 import { InstallmentForm } from '@/components/installments/installment-form';
+import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useGetDashboardOverviewQuery();
@@ -230,6 +231,9 @@ export default function DashboardPage() {
             </Button>
           </div>
         </Card>
+
+        {/* AI Insights Widget */}
+        <AIInsightsWidget />
 
         {/* Financial Alerts & Notifications */}
         {data.alerts && data.alerts.length > 0 && (

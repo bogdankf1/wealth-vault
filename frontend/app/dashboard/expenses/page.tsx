@@ -5,7 +5,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2 } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload } from 'lucide-react';
+import Link from 'next/link';
 import {
   useListExpensesQuery,
   useGetExpenseStatsQuery,
@@ -153,12 +154,21 @@ export default function ExpensesPage() {
   return (
     <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
-      <ModuleHeader
-        title="Expense Tracking"
-        description="Track and manage your expenses"
-        actionLabel="Add Expense"
-        onAction={handleAddExpense}
-      />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Expense Tracking</h1>
+          <p className="text-muted-foreground">Track and manage your expenses</p>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/dashboard/expenses/import">
+            <Button variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Import Statement
+            </Button>
+          </Link>
+          <Button onClick={handleAddExpense}>Add Expense</Button>
+        </div>
+      </div>
 
       {/* Statistics Cards */}
       {isLoadingStats ? (
