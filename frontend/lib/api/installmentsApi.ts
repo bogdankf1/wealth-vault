@@ -162,7 +162,7 @@ export const installmentsApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Installments', id: 'STATS' }],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

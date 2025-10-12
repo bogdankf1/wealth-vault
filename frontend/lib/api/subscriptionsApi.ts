@@ -143,7 +143,7 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Subscriptions', id: 'STATS' }],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

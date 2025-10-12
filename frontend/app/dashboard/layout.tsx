@@ -18,10 +18,13 @@ import {
   LogOut,
   Menu,
   X,
-  Wallet
+  Wallet,
+  Sparkles,
+  Settings
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 const navigation = [
@@ -35,6 +38,11 @@ const navigation = [
   { name: 'Installments', href: '/dashboard/installments', icon: Receipt, tier: 'starter' },
 ];
 
+const bottomNavigation = [
+  { name: 'Pricing', href: '/dashboard/pricing', icon: Sparkles, tier: 'starter' },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings, tier: 'starter' },
+];
+
 export default function DashboardLayout({
   children,
 }: {
@@ -42,6 +50,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { data: currentUser } = useGetCurrentUserQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -107,6 +116,34 @@ export default function DashboardLayout({
                 </Link>
               );
             })}
+
+            {/* Divider */}
+            <div className="py-2">
+              <div className="border-t dark:border-gray-700" />
+            </div>
+
+            {/* Bottom Navigation */}
+            {bottomNavigation.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={cn(
+                    'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                    isActive
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  )}
+                >
+                  <Icon className="mr-3 h-5 w-5" />
+                  {item.name}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* User section */}
@@ -133,7 +170,7 @@ export default function DashboardLayout({
                     {session?.user?.name || 'User'}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                    {session?.user?.tier || 'starter'} tier
+                    {currentUser?.tier?.name || session?.user?.tier || 'starter'} tier
                   </p>
                 </div>
               </div>

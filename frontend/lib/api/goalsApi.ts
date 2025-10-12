@@ -152,7 +152,7 @@ export const goalsApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Goals', id: 'STATS' }],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

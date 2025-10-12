@@ -23,6 +23,8 @@ import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { useTierCheck, getFeatureDisplayName } from '@/lib/hooks/use-tier-check';
+import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   one_time: 'One-time',
@@ -41,6 +43,7 @@ export default function IncomePage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   const {
     data: sourcesData,
@@ -57,7 +60,16 @@ export default function IncomePage() {
 
   const [deleteSource, { isLoading: isDeleting }] = useDeleteIncomeSourceMutation();
 
+  // Tier check for income sources
+  const currentCount = sourcesData?.items?.length || 0;
+  const tierCheck = useTierCheck('incomeSources', currentCount);
+
   const handleAddSource = () => {
+    // Check tier limits before opening form
+    if (!tierCheck.canAdd) {
+      setShowUpgradeDialog(true);
+      return;
+    }
     setEditingSourceId(null);
     setIsFormOpen(true);
   };
@@ -323,6 +335,16 @@ export default function IncomePage() {
         title="Delete Income Source"
         itemName="income source"
         isDeleting={isDeleting}
+      />
+
+      {/* Upgrade Prompt Dialog */}
+      <UpgradePromptDialog
+        isOpen={showUpgradeDialog}
+        onClose={() => setShowUpgradeDialog(false)}
+        feature={getFeatureDisplayName('incomeSources')}
+        currentTier={tierCheck.currentTier}
+        requiredTier={tierCheck.requiredTier || 'growth'}
+        currentLimit={tierCheck.limit}
       />
     </div>
   );

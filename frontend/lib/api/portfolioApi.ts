@@ -160,7 +160,7 @@ export const portfolioApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Portfolio', id: 'STATS' }],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

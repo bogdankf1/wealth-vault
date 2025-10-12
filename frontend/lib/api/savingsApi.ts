@@ -162,7 +162,7 @@ export const savingsApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Saving', id: 'STATS' }],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

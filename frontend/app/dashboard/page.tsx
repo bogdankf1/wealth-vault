@@ -55,9 +55,11 @@ import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses
 import { ExpenseByCategoryChart } from '@/components/dashboard/expense-by-category-chart';
 import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
 import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
+import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useGetDashboardOverviewQuery();
+  const { data: currentUser } = useGetCurrentUserQuery();
 
   // Dialog states for Quick Actions
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
@@ -284,8 +286,8 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* AI Insights Widget */}
-        <AIInsightsWidget />
+        {/* AI Insights Widget - Only for Wealth tier */}
+        {currentUser?.tier?.name === 'wealth' && <AIInsightsWidget />}
 
         {/* Budget Overview Widget */}
         <BudgetOverviewWidget />
