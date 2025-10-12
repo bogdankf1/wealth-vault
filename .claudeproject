@@ -986,9 +986,7 @@
           "Ban/suspend user endpoint",
           "Platform analytics endpoints (DAU, MAU, signups, revenue)",
           "System configuration endpoints (/api/v1/admin/config)",
-          "Action configurator endpoints (swipe gestures)",
-          "Content management endpoints (FAQs, help articles)",
-          "Audit log endpoints (track admin actions)"
+          "Action configurator endpoints (swipe gestures)"
         ],
         "frontend_admin_dashboard": [
           "Admin panel route (/admin) with protection (admins only)",
@@ -1038,46 +1036,26 @@
           "Feature usage stats (which modules are most used)",
           "Churn analysis (when/why users cancel)"
         ],
-        "frontend_content_management": [
-          "Content management page (/admin/content)",
-          "FAQs editor (WYSIWYG or markdown)",
-          "Help articles editor",
-          "Announcement system (create in-app announcements)",
-          "Publish/unpublish content"
-        ],
-        "frontend_system_logs": [
-          "System logs page (/admin/logs)",
-          "Error logs from backend",
-          "Audit trail (admin actions: who changed what when)",
-          "Filter logs by type, date, user"
-        ],
         "configuration_system": [
           "Dynamic widget configuration (stored in DB)",
           "Default category management (CRUD for categories)",
           "Swipe gesture configuration (stored in DB, applied to users)",
           "Email template system (store templates in DB)"
-        ],
-        "analytics_integration": [
-          "Set up PostHog or Plausible",
-          "Track key user events (signup, login, module_visited, feature_used)",
-          "Set up conversion funnels (free → paid)",
-          "Set up retention cohorts",
-          "Dashboard to view analytics"
-        ],
-        "monitoring": [
-          "Set up Sentry for error tracking",
-          "Backend error logging with context",
-          "Frontend error boundaries",
-          "Performance monitoring (API response times, page load times)",
-          "Alerting for critical errors"
         ]
       },
       "deliverables": [
         "Full admin panel operational",
         "User management with impersonation",
-        "Dynamic configuration system (widgets, categories, actions)",
-        "Analytics tracking implemented",
-        "Error monitoring active (Sentry)"
+        "Dynamic configuration system (widgets, categories, actions)"
+      ],
+      "deferred_to_phase_2": [
+        "Analytics integration (PostHog/Plausible)",
+        "User event tracking and conversion funnels",
+        "Content management system (FAQs, help articles)",
+        "Error monitoring (Sentry)",
+        "Performance monitoring and alerting",
+        "Audit logs and admin action tracking",
+        "System logs page (error logs, admin trail)"
       ]
     },
 
@@ -1325,8 +1303,7 @@
           "Production Celery workers (scale up for email sending)",
           "CDN setup for static assets (Vercel handles this)",
           "Backup strategy (automated daily backups, test restore)",
-          "Monitoring dashboards (Sentry, analytics, uptime monitoring)",
-          "Alerting setup (PagerDuty, Slack, email for critical errors)",
+          "Uptime monitoring (UptimeRobot or similar)",
           "Domain setup (custom domain, DNS, SSL certificate)",
           "Production environment variables (switch to production API keys)"
         ],
@@ -1342,7 +1319,6 @@
           "No critical bugs (blocking user flows)",
           "Performance acceptable (Lighthouse > 90, <2s page load)",
           "Security reviewed (penetration test if budget allows)",
-          "Analytics tracking (events firing correctly)",
           "Customer support plan (email support, response time SLA)",
           "Incident response plan (what to do if site goes down)",
           "Backup/restore tested",
@@ -1374,7 +1350,6 @@
         "Net Worth Module (aggregated view of all assets and liabilities, including real estate, vehicles, credit cards, mortgages)",
         "Reports Module (custom report builder, scheduled email reports, PDF/Excel exports, tax reports)",
         "Apple OAuth (alternative login method)",
-        "Budget Planning Module (set budgets per category, track budget vs actual, envelope budgeting)",
         "Mobile App (React Native or PWA for offline access)",
         "Family Accounts (multi-user support, shared expenses, role-based permissions)",
         "Tax Center (tax document uploads, deduction tracking, tax-advantaged accounts, tax estimation)",
@@ -1383,6 +1358,15 @@
         "Investment Automation (auto-invest rules, dividend reinvestment)",
         "Charitable Giving Tracker (track donations, tax deductions)",
         "Business/Freelancer Features (invoicing, client management, expense tracking, profit/loss statements)"
+      ],
+      "deferred_features_from_phase_1": [
+        "Analytics integration (PostHog/Plausible - user event tracking, conversion funnels, retention cohorts)",
+        "Content management system (FAQs editor, help articles, announcement system)",
+        "Error monitoring (Sentry integration with alerting)",
+        "Performance monitoring (API response times, page load tracking)",
+        "Advanced alerting (PagerDuty, Slack integration for critical errors)",
+        "Audit logs and admin action tracking",
+        "System logs page (error logs, admin activity trail)"
       ],
       "ongoing_tasks": [
         "User feedback implementation",
