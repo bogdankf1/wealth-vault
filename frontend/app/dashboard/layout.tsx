@@ -20,7 +20,8 @@ import {
   X,
   Wallet,
   Sparkles,
-  Settings
+  Settings,
+  Shield
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -144,6 +145,23 @@ export default function DashboardLayout({
                 </Link>
               );
             })}
+
+            {/* Admin Link (only for admins) */}
+            {currentUser?.role === 'ADMIN' && (
+              <Link
+                href="/admin"
+                onClick={() => setSidebarOpen(false)}
+                className={cn(
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                  pathname.startsWith('/admin')
+                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                    : 'text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
+                )}
+              >
+                <Shield className="mr-3 h-5 w-5" />
+                Admin Panel
+              </Link>
+            )}
           </nav>
 
           {/* User section */}

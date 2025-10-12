@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { CreditCard, Calendar, CheckCircle2, XCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { CreditCard, Calendar, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   useGetSubscriptionStatusQuery,
   useCancelSubscriptionMutation,
-  useCreatePortalSessionMutation,
   useGetPaymentHistoryQuery,
 } from '@/lib/api/billingApi';
 import {
@@ -32,25 +31,8 @@ export function SubscriptionSettings() {
   const { data: subscriptionStatus, isLoading } = useGetSubscriptionStatusQuery();
   const { data: paymentHistory } = useGetPaymentHistoryQuery({ limit: 10, offset: 0 });
   const [cancelSubscription] = useCancelSubscriptionMutation();
-  const [createPortalSession] = useCreatePortalSessionMutation();
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-
-  const handleManageBilling = async () => {
-    try {
-      const result = await createPortalSession({
-        return_url: `${window.location.origin}/dashboard/settings`,
-      }).unwrap();
-
-      window.location.href = result.url;
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to open billing portal',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleCancelSubscription = async () => {
     try {

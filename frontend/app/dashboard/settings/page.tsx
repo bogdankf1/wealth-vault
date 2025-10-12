@@ -5,7 +5,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, CreditCard, Bell, Shield } from 'lucide-react';
+import { User, CreditCard } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AccountSettings } from '@/components/settings/account-settings';
 import { SubscriptionSettings } from '@/components/settings/subscription-settings';
