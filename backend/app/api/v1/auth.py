@@ -10,6 +10,7 @@ import httpx
 from app.core.database import get_db
 from app.core.security import create_access_token
 from app.core.config import settings
+from app.core.permissions import get_current_user
 from app.models.user import User
 from app.models.tier import Tier
 from app.schemas.user import GoogleAuthRequest, TokenResponse, UserResponse, OAuthUserInfo
@@ -143,7 +144,7 @@ async def google_oauth(
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
-    current_user: User = Depends(lambda: None)  # Will be implemented with proper dependency
+    current_user: User = Depends(get_current_user)
 ) -> UserResponse:
     """
     Get current user information.

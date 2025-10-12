@@ -25,6 +25,7 @@ from app.modules.portfolio.router import router as portfolio_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.ai.router import router as ai_router
 from app.modules.budgets.router import router as budgets_router
+from app.api.v1.billing import router as billing_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -40,6 +41,22 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Wealth Vault API...")
     logger.info(f"Version: {settings.APP_VERSION}")
     logger.info(f"Debug mode: {settings.DEBUG}")
+
+    # Import all module models to ensure SQLAlchemy can resolve relationships
+    # Do this here to avoid circular imports
+    try:
+        from app.modules.income.models import IncomeSource  # noqa: F401
+        from app.modules.expenses.models import Expense  # noqa: F401
+        from app.modules.subscriptions.models import Subscription  # noqa: F401
+        from app.modules.installments.models import Installment  # noqa: F401
+        from app.modules.savings.models import SavingsAccount, BalanceHistory  # noqa: F401
+        from app.modules.portfolio.models import PortfolioAsset  # noqa: F401
+        from app.modules.goals.models import Goal  # noqa: F401
+        from app.modules.budgets.models import Budget  # noqa: F401
+        from app.modules.ai.models import AIInsight  # noqa: F401
+        logger.info("All module models loaded successfully")
+    except Exception as e:
+        logger.error(f"Failed to load module models: {e}")
 
     yield
 
@@ -123,6 +140,7 @@ app.include_router(portfolio_router)
 app.include_router(dashboard_router)
 app.include_router(ai_router, prefix="/api/v1")
 app.include_router(budgets_router)
+app.include_router(billing_router, prefix="/api/v1")
 
 
 # Root endpoint

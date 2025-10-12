@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_GROWTH_PRICE_ID: str = ""
+    STRIPE_WEALTH_PRICE_ID: str = ""
 
     # Email (for future use)
     SMTP_HOST: str = ""

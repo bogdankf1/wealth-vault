@@ -41,3 +41,4 @@ ruff==0.7.3
 
 # CORS
 python-dotenv==1.0.1
+stripe==13.0.1

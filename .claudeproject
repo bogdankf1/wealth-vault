@@ -862,69 +862,114 @@
     },
     
     "phase_6": {
+      "status": "COMPLETED ✓",
+      "completed_date": "2025-10-12",
       "duration": "Week 17-18",
-      "title": "Tier System & Monetization",
-      "goal": "Implement subscription tiers and Stripe payment integration",
+      "title": "Stripe Integration & Settings Page",
+      "goal": "Implement Stripe payment integration and subscription management UI",
+      "completed_features": [
+        "✅ Stripe Integration - Full checkout, webhooks, and subscription management",
+        "✅ Database Schema - Subscriptions and payment history tables with Alembic migrations",
+        "✅ Stripe Webhooks - checkout.session.completed, customer.subscription.* events",
+        "✅ Pricing Page - Public pricing page with tier comparison and Stripe Checkout integration",
+        "✅ Settings Page - Tab-based interface with Account and Subscription tabs",
+        "✅ Subscription Management - View current plan, billing details, payment history, cancel subscription",
+        "✅ Billing API - Complete backend billing module with CRUD endpoints",
+        "✅ AI Feature Gating - AI Insights widget hidden for non-Wealth tier users",
+        "✅ Clean Logging - Replaced debug prints with proper logger.exception()",
+        "✅ Nullable Period Dates - Fixed Pydantic validation for subscriptions without billing cycles",
+        "✅ Simplified UI - Removed redundant sections, consistent design with other modules"
+      ],
       "tasks": {
         "database": [
-          "User subscriptions table (user_id, stripe_subscription_id, status, current_period_end)",
-          "Payment history table (user_id, amount, date, status, invoice_id)",
-          "Update users table with stripe_customer_id"
+          "✅ User subscriptions table (user_id, stripe_subscription_id, status, current_period_start, current_period_end)",
+          "✅ Payment history table (user_id, stripe_invoice_id, amount, currency, status, paid_at)",
+          "✅ Updated users table with stripe_customer_id",
+          "✅ Made current_period_start and current_period_end nullable (for non-paid tiers)",
+          "✅ Created Alembic migrations for billing tables"
         ],
         "backend_tier_system": [
-          "Tier configuration endpoints for admin (/api/v1/admin/tiers)",
-          "Feature management endpoints for admin (/api/v1/admin/features)",
-          "Tier validation middleware (check on every request)",
-          "Usage tracking system (count uploads, accounts, etc.)",
-          "Tier upgrade/downgrade logic",
-          "Subscription status sync with Stripe"
+          "✅ Tier validation with permission decorators (@require_feature)",
+          "✅ Tier info included in JWT and current user responses",
+          "✅ Subscription status synced from Stripe webhooks",
+          "⏸ Tier configuration endpoints for admin - Deferred to Phase 7",
+          "⏸ Feature management endpoints for admin - Deferred to Phase 7",
+          "⏸ Usage tracking system - Deferred to Phase 7"
         ],
         "stripe_integration": [
-          "Set up Stripe account (test mode)",
-          "Create Stripe products & prices (Starter $0, Growth $10/mo, Wealth $20/mo)",
-          "Create annual pricing ($100/yr, $200/yr)",
-          "Implement Stripe Checkout session endpoint (/api/v1/billing/create-checkout)",
-          "Webhook endpoint for subscription events (/api/v1/billing/webhook)",
-          "Handle webhook events: checkout.session.completed, customer.subscription.updated, invoice.payment_succeeded, etc.",
-          "Customer portal integration (Stripe manages billing for users)",
-          "Subscription management endpoints (/api/v1/billing/subscription)",
-          "Payment method management endpoints",
-          "Invoice generation and retrieval",
-          "Test webhooks with Stripe CLI"
+          "✅ Stripe account set up (test mode)",
+          "✅ Stripe products & prices created (Starter $0, Growth $10/mo, Wealth $20/mo)",
+          "✅ Stripe Checkout session endpoint (/api/v1/billing/create-checkout-session)",
+          "✅ Webhook endpoint for subscription events (/api/v1/billing/webhook)",
+          "✅ Handle webhook events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted",
+          "✅ Subscription management endpoints (GET status, POST cancel, POST update)",
+          "✅ Payment history endpoint (GET /api/v1/billing/payment-history)",
+          "✅ Fixed webhook handling with proper logging",
+          "✅ Tested webhooks with Stripe CLI and test events",
+          "⏸ Customer portal integration - Removed (requires portal configuration)",
+          "⏸ Annual pricing - Deferred to Phase 7",
+          "⏸ Payment method management endpoints - Deferred to Phase 7"
         ],
         "frontend_subscription_management": [
-          "Pricing page (public - /pricing)",
-          "Tier comparison table with features",
-          "Subscription settings page (Settings → Subscription tab)",
-          "Upgrade/downgrade flow (redirect to Stripe Checkout)",
-          "Payment method management UI (using Stripe Elements)",
-          "Billing history page (list of past invoices)",
-          "Usage stats display (You're using 2/3 income sources)",
-          "Current plan display with benefits",
-          "Cancel subscription flow (with confirmation)",
-          "Reactivate subscription option"
+          "✅ Pricing page (public - /dashboard/pricing) with tier comparison",
+          "✅ Stripe Checkout integration with redirect flow",
+          "✅ Settings page (/dashboard/settings) with tab interface",
+          "✅ Account tab - User profile info (name, email, member since)",
+          "✅ Subscription tab - Current plan, billing details, payment history, cancel flow",
+          "✅ Current plan display for all users (shows tier regardless of subscription status)",
+          "✅ Billing details conditional display (only if subscription has period dates)",
+          "✅ Payment history with status indicators (succeeded, failed, pending)",
+          "✅ Cancel subscription flow with AlertDialog confirmation",
+          "✅ View Pricing Plans button linking to pricing page",
+          "✅ Simplified action buttons (removed Manage Billing, removed redundant sections)",
+          "✅ Updated sidebar navigation (changed Subscription to Settings)",
+          "⏸ Reactivate subscription option - Deferred",
+          "⏸ Usage stats display - Deferred to Phase 7"
         ],
         "feature_gating": [
-          "Implement tier checks in all modules (already done, verify all work)",
-          "Display upgrade prompts when hitting limits (modal with pricing)",
-          "Lock premium features for free tier (show with lock icon)",
-          "Graceful feature degradation (disable AI for starter tier)",
-          "Test all tier restrictions across modules"
+          "✅ AI Insights widget hidden for non-Wealth tier users (frontend/app/dashboard/page.tsx)",
+          "✅ Tier checks present in navigation sidebar (tier property on nav items)",
+          "⏸ Display upgrade prompts when hitting limits - Deferred to Phase 7",
+          "⏸ Lock premium features with lock icon - Deferred to Phase 7",
+          "⏸ Test all tier restrictions across modules - Deferred to Phase 7"
         ],
-        "admin_panel_tier_management": [
-          "Tier CRUD interface in admin panel",
-          "Feature assignment interface (drag-drop or checkboxes)",
-          "Pricing configuration UI",
-          "Subscription analytics dashboard (MRR, churn, conversions)",
-          "Revenue charts"
+        "code_quality": [
+          "✅ Removed all debug/console.log statements from backend",
+          "✅ Added proper logging with logger.exception() for webhook errors",
+          "✅ Fixed Pydantic schema validation errors (Optional period dates)",
+          "✅ Fixed TypeScript type errors in frontend components",
+          "✅ All lint and type checks passing",
+          "✅ Consistent UI/UX padding and spacing across Settings page"
         ]
       },
       "deliverables": [
-        "3-tier subscription system live (Starter/Growth/Wealth)",
-        "Stripe payment integration working",
-        "Feature gating implemented across all modules",
-        "Users can upgrade/downgrade tiers",
-        "Webhooks handling subscription events"
+        "✅ Stripe integration complete and working",
+        "✅ Database schema for subscriptions and payments",
+        "✅ Webhook handling for subscription lifecycle events",
+        "✅ Public pricing page with Stripe Checkout",
+        "✅ Settings page with Account and Subscription tabs",
+        "✅ Subscription management UI (view, cancel, payment history)",
+        "✅ AI feature gating (Wealth tier only)",
+        "✅ Clean, consistent UI matching other modules",
+        "✅ All debug statements removed and proper logging in place"
+      ],
+      "technical_highlights": [
+        "Backend: FastAPI billing module with Stripe SDK integration",
+        "Webhooks: Signature verification and event handling with proper error logging",
+        "Database: Nullable period dates to support users without active billing cycles",
+        "Frontend: RTK Query billingApi with mutations and queries",
+        "Settings: Tab-based UI with shadcn/ui Tabs component",
+        "Feature Gating: Conditional rendering based on currentUser.tier.name",
+        "UI/UX: Consistent design patterns matching Expenses and other modules"
+      ],
+      "deferred_to_later_phases": [
+        "Stripe Customer Portal integration (requires portal configuration in Stripe dashboard)",
+        "Admin panel for tier/feature management",
+        "Usage tracking and limit enforcement",
+        "Upgrade prompts and lock icons for premium features",
+        "Annual pricing options",
+        "Payment method management UI",
+        "Comprehensive tier restriction testing across all modules"
       ]
     },
 
