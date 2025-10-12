@@ -6,15 +6,17 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import { apiSlice } from './api/apiSlice';
 import { aiApi } from './api/aiApi';
 import { budgetsApi } from './api/budgetsApi';
+import { preferencesApi } from './api/preferencesApi';
 
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
     [aiApi.reducerPath]: aiApi.reducer,
     [budgetsApi.reducerPath]: budgetsApi.reducer,
+    [preferencesApi.reducerPath]: preferencesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware, aiApi.middleware, budgetsApi.middleware),
+    getDefaultMiddleware().concat(apiSlice.middleware, aiApi.middleware, budgetsApi.middleware, preferencesApi.middleware),
 });
 
 // Enable refetchOnFocus and refetchOnReconnect
