@@ -26,6 +26,10 @@ from app.modules.dashboard.router import router as dashboard_router
 from app.modules.ai.router import router as ai_router
 from app.modules.budgets.router import router as budgets_router
 from app.api.v1.billing import router as billing_router
+from app.api.v1.admin.users import router as admin_users_router
+from app.api.v1.admin.tiers import router as admin_tiers_router
+from app.api.v1.admin.config import router as admin_config_router
+from app.api.v1.admin.analytics import router as admin_analytics_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -141,6 +145,12 @@ app.include_router(dashboard_router)
 app.include_router(ai_router, prefix="/api/v1")
 app.include_router(budgets_router)
 app.include_router(billing_router, prefix="/api/v1")
+
+# Admin routers
+app.include_router(admin_users_router, prefix="/api/v1/admin")
+app.include_router(admin_tiers_router, prefix="/api/v1/admin")
+app.include_router(admin_config_router, prefix="/api/v1/admin")
+app.include_router(admin_analytics_router, prefix="/api/v1/admin")
 
 
 # Root endpoint
