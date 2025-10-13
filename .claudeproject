@@ -1095,8 +1095,256 @@
       ]
     },
 
+    "phase_7_5": {
+      "status": "NOT_STARTED",
+      "duration": "Week 20-21",
+      "title": "Multi-Currency Support",
+      "goal": "Implement comprehensive multi-currency support across all modules with real-time exchange rates and admin-configurable currencies",
+      "overview": {
+        "description": "Add multi-currency functionality throughout the entire application, allowing users to set their preferred currency and work with multiple currencies across all financial data. Initial support for USD, EUR, and UAH with ability to add more currencies from admin panel.",
+        "tier_access": "All tiers (Growth+ for multi-currency accounts as per original spec)",
+        "default_currency": "USD",
+        "supported_currencies_initial": ["USD", "EUR", "UAH"],
+        "exchange_rate_provider": "Exchange Rate API (https://exchangerate-api.com/)",
+        "conversion_strategy": "Real-time rates with 1-hour cache, fallback to last known rates"
+      },
+      "scope": {
+        "affected_modules": [
+          "Income Tracking - income sources and transactions in different currencies",
+          "Expenses - transactions with currency support",
+          "Savings - multi-currency accounts (Growth+ tier)",
+          "Subscriptions - subscription costs in any currency",
+          "Installments - loans in different currencies",
+          "Goals - goal targets in user's preferred currency",
+          "Portfolio - assets in different currencies",
+          "Budgets - budget limits in user's currency",
+          "Dashboard - all aggregated metrics with currency conversion",
+          "Admin Panel - currency management interface"
+        ],
+        "user_preferences": "Users can set preferred currency in Settings (stored in user_preferences table)",
+        "display_rules": "Always display amounts in user's preferred currency, with original currency shown in tooltips/details"
+      },
+      "tasks": {
+        "database_schema": [
+          "Create currencies table (code, name, symbol, decimal_places, is_active, created_by_admin)",
+          "Create exchange_rates table (from_currency, to_currency, rate, fetched_at, source)",
+          "Add currency columns to all financial tables (income_sources, expenses, savings_accounts, subscriptions, installments, goals, portfolio_assets, budgets)",
+          "Add preferred_currency to user_preferences table (default: USD)",
+          "Add display_currency to user_preferences (default: same as preferred_currency)",
+          "Create Alembic migration for all currency-related schema changes",
+          "Seed initial currencies (USD, EUR, UAH) with proper symbols and metadata",
+          "Add indexes on currency columns for query performance"
+        ],
+        "backend_currency_service": [
+          "Create currency service module (app/services/currency_service.py)",
+          "Implement exchange rate fetching from Exchange Rate API",
+          "Implement rate caching with Redis (1-hour TTL)",
+          "Implement fallback to last known rate if API fails",
+          "Create currency conversion functions (convert_amount, get_exchange_rate)",
+          "Create batch conversion function (for dashboard aggregations)",
+          "Implement rate refresh background task (Celery - hourly)",
+          "Add error handling and retry logic for API failures",
+          "Create currency formatting utility (format by locale and symbol)",
+          "Implement historical rate storage (for accurate past conversions)"
+        ],
+        "backend_admin_currency_endpoints": [
+          "Currency management endpoints (/api/v1/admin/currencies)",
+          "List all currencies (GET /api/v1/admin/currencies)",
+          "Add new currency (POST /api/v1/admin/currencies)",
+          "Update currency (PUT /api/v1/admin/currencies/{code})",
+          "Activate/deactivate currency (PATCH /api/v1/admin/currencies/{code}/status)",
+          "Delete currency (DELETE /api/v1/admin/currencies/{code} - only if not in use)",
+          "Exchange rate management (GET /api/v1/admin/exchange-rates)",
+          "Manual rate override (POST /api/v1/admin/exchange-rates/override)",
+          "Trigger rate refresh (POST /api/v1/admin/exchange-rates/refresh)",
+          "Currency usage stats (GET /api/v1/admin/currencies/stats)"
+        ],
+        "backend_user_currency_endpoints": [
+          "Get available currencies (GET /api/v1/currencies - returns active currencies only)",
+          "Get current exchange rates (GET /api/v1/currencies/rates)",
+          "Convert amount (POST /api/v1/currencies/convert - {amount, from, to})",
+          "Batch convert (POST /api/v1/currencies/convert/batch)",
+          "Update user preferred currency in preferences (already exists, enhance)",
+          "Get currency by code (GET /api/v1/currencies/{code})"
+        ],
+        "backend_module_updates": [
+          "Update Income module: add currency to IncomeSource model and schemas",
+          "Update Income API: return amounts in user's preferred currency with conversion",
+          "Update Expenses module: add currency to Expense model and schemas",
+          "Update Expenses API: support currency in create/update, convert for display",
+          "Update Savings module: add currency to SavingsAccount model (already partially done)",
+          "Update Savings API: convert balances to user's currency for aggregations",
+          "Update Subscriptions module: add currency to Subscription model",
+          "Update Installments module: add currency to Installment model",
+          "Update Goals module: add currency to Goal model",
+          "Update Portfolio module: add currency to PortfolioAsset model (for non-USD stocks)",
+          "Update Budgets module: add currency to Budget model",
+          "Update Dashboard API: convert all aggregated metrics to user's preferred currency",
+          "Update all stats endpoints: apply currency conversion before returning totals"
+        ],
+        "backend_migration_strategy": [
+          "Create migration to add currency columns (default: USD for existing data)",
+          "Backfill existing records with USD currency",
+          "Create currencies seed data (USD, EUR, UAH)",
+          "Fetch and store initial exchange rates",
+          "Test migration on staging database",
+          "Document rollback procedure"
+        ],
+        "frontend_currency_components": [
+          "Create CurrencySelect component (dropdown with currency symbols and flags)",
+          "Create CurrencyDisplay component (formats amount with proper symbol and locale)",
+          "Create CurrencyInput component (numeric input with currency selector)",
+          "Create ExchangeRateDisplay component (shows current rate between two currencies)",
+          "Create CurrencyConverter component (quick convert tool)",
+          "Create MultiCurrencyAmount component (shows amount in multiple currencies)",
+          "Add currency icons/flags (use emoji flags or icon library)",
+          "Create CurrencyBadge component (displays currency code with symbol)"
+        ],
+        "frontend_preferences_update": [
+          "Add Currency section to Preferences tab in Settings",
+          "Add 'Preferred Currency' selector (affects how data is stored by default)",
+          "Add 'Display Currency' selector (affects how data is displayed)",
+          "Add 'Show Original Currency' toggle (show source currency in tooltips)",
+          "Add 'Auto-convert on display' toggle",
+          "Update preferencesApi to handle currency preferences",
+          "Add currency format preview in settings"
+        ],
+        "frontend_module_updates": [
+          "Update Income forms: add currency selector to income source form",
+          "Update Income display: show amounts in user's currency with conversion info",
+          "Update Expenses forms: add currency selector to expense form",
+          "Update Expenses display: show amounts with currency, add multi-currency filter",
+          "Update Savings forms: add currency selector to account form",
+          "Update Savings display: convert balances to display currency",
+          "Update Subscriptions forms: add currency selector",
+          "Update Installments forms: add currency selector",
+          "Update Goals forms: add currency selector for target amount",
+          "Update Portfolio: show asset values in user's currency",
+          "Update Budgets forms: add currency selector",
+          "Update Dashboard: display all metrics in user's currency with conversion tooltips"
+        ],
+        "frontend_admin_currency_ui": [
+          "Create Currency Management page (/admin/currencies)",
+          "Currency list table with code, name, symbol, status",
+          "Add Currency dialog (code, name, symbol, decimal_places)",
+          "Edit Currency dialog",
+          "Activate/Deactivate currency toggle",
+          "Delete currency with confirmation (only if unused)",
+          "Exchange Rates page (/admin/exchange-rates)",
+          "Rate list table with currency pairs and last update time",
+          "Manual rate override dialog",
+          "Refresh rates button",
+          "Rate update history log",
+          "Currency usage statistics (which currencies are most used)"
+        ],
+        "frontend_ux_enhancements": [
+          "Add currency conversion tooltips (hover over amount to see original currency)",
+          "Add 'View in original currency' toggle on detail pages",
+          "Add multi-currency summary cards on dashboard",
+          "Add exchange rate widget showing rates for user's common currencies",
+          "Add currency trend charts (rate changes over time)",
+          "Add 'as of [date/time]' for exchange rate displays",
+          "Add warning icon when exchange rates are stale (>24 hours old)",
+          "Add offline fallback message when rates can't be fetched"
+        ],
+        "api_types_and_validation": [
+          "Define Currency type/interface (code, name, symbol, decimalPlaces, isActive)",
+          "Define ExchangeRate type/interface (from, to, rate, fetchedAt)",
+          "Define CurrencyAmount type/interface (amount, currency, displayAmount, displayCurrency)",
+          "Update all API response types to include currency fields",
+          "Add Zod schemas for currency validation in forms",
+          "Add Pydantic schemas for currency validation in backend",
+          "Ensure all currency codes follow ISO 4217 standard"
+        ],
+        "caching_and_performance": [
+          "Cache exchange rates in Redis (1-hour TTL)",
+          "Cache user's preferred currency in frontend (localStorage + React state)",
+          "Batch currency conversions for dashboard (single API call)",
+          "Pre-fetch exchange rates on app load",
+          "Lazy load currency conversions for list views (convert on scroll)",
+          "Add loading states for currency conversions",
+          "Optimize database queries with currency filters"
+        ],
+        "testing": [
+          "Backend unit tests for currency service",
+          "Test exchange rate fetching and caching",
+          "Test currency conversion accuracy",
+          "Test API fallback when rate service is down",
+          "Test all module APIs with different currencies",
+          "Frontend component tests for currency components",
+          "E2E test: Create income in EUR, view in USD",
+          "E2E test: Change preferred currency and verify updates",
+          "E2E test: Admin adds new currency",
+          "Test tier restrictions (multi-currency accounts for Growth+)",
+          "Test historical data with currency changes"
+        ],
+        "documentation": [
+          "Document currency service architecture",
+          "Document exchange rate update strategy",
+          "Document admin guide for adding currencies",
+          "Document user guide for currency preferences",
+          "Document API currency parameters",
+          "Document migration guide for existing users",
+          "Add inline help tooltips explaining currency features"
+        ],
+        "edge_cases_and_validations": [
+          "Handle currency change for existing data (keep original, convert on display)",
+          "Validate currency exists before allowing selection",
+          "Prevent deletion of currencies in use",
+          "Handle exchange rate unavailability gracefully",
+          "Validate amount precision based on currency decimal places",
+          "Handle zero/negative amounts in conversions",
+          "Prevent circular currency conversions",
+          "Handle very large amounts (avoid overflow)",
+          "Display warning when converting between cryptocurrencies (if added later)",
+          "Handle rate refresh failures (retry logic)"
+        ]
+      },
+      "deliverables": [
+        "Complete multi-currency support across all 7 core modules",
+        "Currency management interface in admin panel",
+        "User currency preferences in Settings",
+        "Real-time exchange rate integration with caching",
+        "Currency conversion utility functions (frontend and backend)",
+        "Reusable currency components (CurrencySelect, CurrencyDisplay, CurrencyInput)",
+        "Database schema with currency support",
+        "Exchange rates auto-refresh background job",
+        "Initial currencies seeded (USD, EUR, UAH)",
+        "All existing data migrated with USD as default",
+        "Dashboard and stats endpoints with currency conversion",
+        "Comprehensive testing (unit, integration, E2E)",
+        "Documentation and user guides"
+      ],
+      "technical_highlights": {
+        "backend": "Currency service with Exchange Rate API integration, Redis caching, Celery background refresh",
+        "database": "Currency and exchange_rates tables, currency columns on all financial tables",
+        "frontend": "Reusable currency components with proper TypeScript types, RTK Query for currency API",
+        "conversion_strategy": "Store in original currency, convert on display to user's preferred currency",
+        "caching": "1-hour Redis cache for rates, fallback to last known rate",
+        "tier_check": "Multi-currency savings accounts limited to Growth+ tier",
+        "admin_control": "Full currency CRUD from admin panel, manual rate overrides"
+      },
+      "migration_notes": [
+        "All existing financial data will be set to USD currency by default",
+        "Users' preferred_currency will be set to USD by default",
+        "Exchange rates will be fetched and cached on first deployment",
+        "No data loss - original amounts preserved with currency metadata",
+        "Rollback plan: Remove currency columns, revert to single-currency mode"
+      ],
+      "future_enhancements": [
+        "Support for cryptocurrency (BTC, ETH, etc.)",
+        "Historical exchange rates for accurate past conversions",
+        "Custom exchange rate providers (for cryptocurrencies)",
+        "Multi-currency income/expense reports",
+        "Currency hedging recommendations",
+        "Automatic currency detection from bank statements",
+        "Currency conversion fees tracking",
+        "Forward/future rates for planning"
+      ]
+    },
+
     "phase_8": {
-      "duration": "Week 21-22",
+      "duration": "Week 22-23",
       "title": "User Experience & Polish",
       "goal": "Enhance UI/UX, add user customization, and optimize performance",
       "tasks": {
