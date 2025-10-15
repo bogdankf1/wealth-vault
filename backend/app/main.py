@@ -31,6 +31,7 @@ from app.api.v1.admin.users import router as admin_users_router
 from app.api.v1.admin.tiers import router as admin_tiers_router
 from app.api.v1.admin.config import router as admin_config_router
 from app.api.v1.admin.analytics import router as admin_analytics_router
+from app.modules.currency.router import router as currency_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -60,6 +61,7 @@ async def lifespan(app: FastAPI):
         from app.modules.budgets.models import Budget  # noqa: F401
         from app.modules.ai.models import AIInsight  # noqa: F401
         from app.models.user_preferences import UserPreferences  # noqa: F401
+        from app.modules.currency.models import Currency, ExchangeRate  # noqa: F401
         logger.info("All module models loaded successfully")
     except Exception as e:
         logger.error(f"Failed to load module models: {e}")
@@ -148,6 +150,7 @@ app.include_router(ai_router, prefix="/api/v1")
 app.include_router(budgets_router)
 app.include_router(billing_router, prefix="/api/v1")
 app.include_router(preferences_router, prefix="/api/v1/preferences", tags=["preferences"])
+app.include_router(currency_router, prefix="/api/v1")
 
 # Admin routers
 app.include_router(admin_users_router, prefix="/api/v1/admin")

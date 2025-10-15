@@ -68,7 +68,7 @@ async def create_expense(
     return expense
 
 
-@router.get("", response_model=ExpenseListResponse)
+@router.get("")
 @require_feature("expense_tracking")
 async def list_expenses(
     page: int = Query(1, ge=1),
@@ -89,12 +89,38 @@ async def list_expenses(
         is_active=is_active
     )
 
-    return ExpenseListResponse(
-        items=expenses,
-        total=total,
-        page=page,
-        page_size=page_size
-    )
+    # Convert to dict and include display fields
+    expense_dicts = []
+    for expense in expenses:
+        expense_dict = {
+            "id": str(expense.id),
+            "user_id": str(expense.user_id),
+            "name": expense.name,
+            "description": expense.description,
+            "category": expense.category,
+            "amount": float(expense.amount) if expense.amount else 0,
+            "currency": expense.currency,
+            "frequency": expense.frequency,
+            "date": expense.date.isoformat() if expense.date else None,
+            "start_date": expense.start_date.isoformat() if expense.start_date else None,
+            "end_date": expense.end_date.isoformat() if expense.end_date else None,
+            "is_active": expense.is_active,
+            "tags": expense.tags,
+            "monthly_equivalent": float(expense.monthly_equivalent) if expense.monthly_equivalent else None,
+            "created_at": expense.created_at.isoformat(),
+            "updated_at": expense.updated_at.isoformat(),
+            "display_amount": float(expense.display_amount) if hasattr(expense, 'display_amount') and expense.display_amount is not None else None,
+            "display_currency": expense.display_currency if hasattr(expense, 'display_currency') and expense.display_currency is not None else None,
+            "display_monthly_equivalent": float(expense.display_monthly_equivalent) if hasattr(expense, 'display_monthly_equivalent') and expense.display_monthly_equivalent is not None else None,
+        }
+        expense_dicts.append(expense_dict)
+
+    return {
+        "items": expense_dicts,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
 
 
 @router.get("/stats", response_model=ExpenseStats)

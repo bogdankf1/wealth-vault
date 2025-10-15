@@ -22,7 +22,8 @@ class UserPreferences(BaseModel):
     # Locale preferences
     language = Column(String(10), default="en", nullable=False)
     timezone = Column(String(50), default="UTC", nullable=False)
-    currency = Column(String(3), default="USD", nullable=False)
+    currency = Column(String(3), default="USD", nullable=False)  # Preferred currency for data entry
+    display_currency = Column(String(3), nullable=True)  # Currency to display amounts in (defaults to currency)
     date_format = Column(String(20), default="MM/DD/YYYY", nullable=False)
 
     # Notification preferences

@@ -18,12 +18,14 @@ class Transaction:
         amount: float,
         balance: Optional[float] = None,
         category: Optional[str] = None,
+        currency: Optional[str] = "USD",
     ):
         self.date = date
         self.description = description
         self.amount = amount
         self.balance = balance
         self.category = category
+        self.currency = currency
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -32,6 +34,7 @@ class Transaction:
             "amount": self.amount,
             "balance": self.balance,
             "category": self.category,
+            "currency": self.currency,
         }
 
 
@@ -75,6 +78,9 @@ class StatementParser:
             balance_col = StatementParser._find_column(
                 df.columns, ["balance", "running balance", "available balance"]
             )
+            currency_col = StatementParser._find_column(
+                df.columns, ["operation currency", "currency", "transaction currency", "ccy"]
+            )
 
             if not all([date_col, desc_col, amount_col]):
                 raise ValueError(
@@ -99,12 +105,18 @@ class StatementParser:
                     if balance_col and pd.notna(row[balance_col]):
                         balance = StatementParser._parse_amount(str(row[balance_col]))
 
+                    # Parse currency if available
+                    currency = "USD"  # default
+                    if currency_col and pd.notna(row[currency_col]):
+                        currency = str(row[currency_col]).strip().upper()
+
                     transactions.append(
                         Transaction(
                             date=date,
                             description=description,
                             amount=amount,
                             balance=balance,
+                            currency=currency,
                         )
                     )
                 except (ValueError, TypeError) as e:
@@ -139,6 +151,9 @@ class StatementParser:
             balance_col = StatementParser._find_column(
                 df.columns, ["balance", "running balance"]
             )
+            currency_col = StatementParser._find_column(
+                df.columns, ["operation currency", "currency", "transaction currency", "ccy"]
+            )
 
             if not all([date_col, desc_col, amount_col]):
                 raise ValueError("Could not detect required columns in Excel file")
@@ -153,12 +168,18 @@ class StatementParser:
                     if balance_col and pd.notna(row[balance_col]):
                         balance = StatementParser._parse_amount(str(row[balance_col]))
 
+                    # Parse currency if available
+                    currency = "USD"  # default
+                    if currency_col and pd.notna(row[currency_col]):
+                        currency = str(row[currency_col]).strip().upper()
+
                     transactions.append(
                         Transaction(
                             date=date,
                             description=description,
                             amount=amount,
                             balance=balance,
+                            currency=currency,
                         )
                     )
                 except (ValueError, TypeError):

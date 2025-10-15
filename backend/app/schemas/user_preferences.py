@@ -52,6 +52,7 @@ class UserPreferencesBase(BaseModel):
     language: str = Field(default="en", max_length=10)
     timezone: str = Field(default="UTC", max_length=50)
     currency: str = Field(default="USD", min_length=3, max_length=3)
+    display_currency: Optional[str] = Field(None, min_length=3, max_length=3)
     date_format: str = Field(default="MM/DD/YYYY", max_length=20)
     email_notifications: EmailNotifications = Field(default_factory=EmailNotifications)
     push_notifications: PushNotifications = Field(default_factory=PushNotifications)
@@ -73,6 +74,7 @@ class UserPreferencesUpdate(BaseModel):
     language: Optional[str] = Field(None, max_length=10)
     timezone: Optional[str] = Field(None, max_length=50)
     currency: Optional[str] = Field(None, min_length=3, max_length=3)
+    display_currency: Optional[str] = Field(None, min_length=3, max_length=3)
     date_format: Optional[str] = Field(None, max_length=20)
     email_notifications: Optional[EmailNotifications] = None
     push_notifications: Optional[PushNotifications] = None

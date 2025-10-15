@@ -9,6 +9,61 @@ from decimal import Decimal
 
 from app.modules.expenses.models import Expense, ExpenseFrequency
 from app.modules.expenses.schemas import ExpenseCreate, ExpenseUpdate, ExpenseStats
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
+
+async def convert_expense_to_display_currency(db: AsyncSession, user_id: UUID, expense: Expense) -> None:
+    """
+    Convert expense amount to user's display currency.
+    Modifies the expense object in-place, adding display_amount and display_currency attributes.
+    """
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # If expense is already in display currency, no conversion needed
+    if expense.currency == display_currency:
+        expense.display_amount = expense.amount
+        expense.display_currency = display_currency
+        expense.display_monthly_equivalent = expense.monthly_equivalent
+        return
+
+    # Convert using currency service
+    currency_service = CurrencyService(db)
+    converted_amount = await currency_service.convert_amount(
+        expense.amount,
+        expense.currency,
+        display_currency
+    )
+
+    # Set converted values as display values
+    if converted_amount is not None:
+        expense.display_amount = converted_amount
+        expense.display_currency = display_currency
+
+        # Also convert monthly equivalent
+        if expense.monthly_equivalent:
+            converted_monthly = await currency_service.convert_amount(
+                expense.monthly_equivalent,
+                expense.currency,
+                display_currency
+            )
+            expense.display_monthly_equivalent = converted_monthly if converted_monthly else expense.monthly_equivalent
+        else:
+            expense.display_monthly_equivalent = None
+    else:
+        # Fallback to original values if conversion fails
+        expense.display_amount = expense.amount
+        expense.display_currency = expense.currency
+        expense.display_monthly_equivalent = expense.monthly_equivalent
 
 
 def calculate_monthly_equivalent(amount: Decimal, frequency: ExpenseFrequency) -> Decimal:
@@ -73,7 +128,13 @@ async def get_expense(
             Expense.user_id == user_id
         )
     )
-    return result.scalar_one_or_none()
+    expense = result.scalar_one_or_none()
+
+    if expense:
+        # Convert to user's display currency
+        await convert_expense_to_display_currency(db, user_id, expense)
+
+    return expense
 
 
 async def list_expenses(
@@ -107,6 +168,10 @@ async def list_expenses(
 
     result = await db.execute(query)
     expenses = result.scalars().all()
+
+    # Convert all expenses to user's display currency
+    for expense in expenses:
+        await convert_expense_to_display_currency(db, user_id, expense)
 
     return list(expenses), total or 0
 
@@ -159,7 +224,10 @@ async def get_expense_stats(
     user_id: UUID
 ) -> ExpenseStats:
     """Calculate expense statistics"""
-    # Get all active expenses
+    # Get user preferences for display currency
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # Get all expenses
     result = await db.execute(
         select(Expense).where(
             Expense.user_id == user_id
@@ -167,10 +235,13 @@ async def get_expense_stats(
     )
     expenses = result.scalars().all()
 
+    # Convert all expenses to display currency
+    currency_service = CurrencyService(db)
+
     total_expenses = len(expenses)
     active_expenses = sum(1 for e in expenses if e.is_active)
 
-    # Calculate totals by frequency
+    # Calculate totals by frequency (in display currency)
     total_daily = Decimal(0)
     total_weekly = Decimal(0)
     total_monthly = Decimal(0)
@@ -183,7 +254,33 @@ async def get_expense_stats(
         if not expense.is_active:
             continue
 
-        amount = Decimal(str(expense.amount))
+        # Convert amount to display currency
+        if expense.currency == display_currency:
+            converted_amount = expense.amount
+            converted_monthly_equiv = expense.monthly_equivalent or Decimal(0)
+        else:
+            converted_amount = await currency_service.convert_amount(
+                expense.amount,
+                expense.currency,
+                display_currency
+            )
+            if converted_amount is None:
+                # Fallback to original if conversion fails
+                converted_amount = expense.amount
+
+            # Convert monthly equivalent too
+            if expense.monthly_equivalent:
+                converted_monthly_equiv = await currency_service.convert_amount(
+                    expense.monthly_equivalent,
+                    expense.currency,
+                    display_currency
+                )
+                if converted_monthly_equiv is None:
+                    converted_monthly_equiv = expense.monthly_equivalent
+            else:
+                converted_monthly_equiv = Decimal(0)
+
+        amount = Decimal(str(converted_amount))
 
         # Add to total based on frequency
         if expense.frequency == ExpenseFrequency.DAILY:
@@ -199,9 +296,9 @@ async def get_expense_stats(
         elif expense.frequency == ExpenseFrequency.ANNUALLY:
             total_annual += amount
 
-        # Add to category totals (using monthly equivalent)
+        # Add to category totals (using converted monthly equivalent)
         if expense.category:
-            monthly_equiv = Decimal(str(expense.monthly_equivalent or 0))
+            monthly_equiv = Decimal(str(converted_monthly_equiv))
             expenses_by_category[expense.category] = (
                 expenses_by_category.get(expense.category, Decimal(0)) + monthly_equiv
             )
@@ -223,5 +320,5 @@ async def get_expense_stats(
         total_monthly_expense=total_monthly_expense,
         total_annual_expense=total_annual_expense,
         expenses_by_category=expenses_by_category,
-        currency="USD"
+        currency=display_currency
     )
