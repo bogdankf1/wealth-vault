@@ -173,7 +173,7 @@ export default function ImportStatementPage() {
           description: `Imported from ${uploadedFilename}`,
           category: transaction.category,
           amount: Math.abs(transaction.amount),
-          currency: 'USD',
+          currency: transaction.currency || 'USD',
           frequency: 'one_time',
           date: new Date(transaction.date).toISOString(),
           is_active: true,
@@ -192,10 +192,10 @@ export default function ImportStatementPage() {
     setImporting(false);
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number, currency: string = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
     }).format(Math.abs(amount));
   };
 
@@ -372,7 +372,7 @@ export default function ImportStatementPage() {
                                   transaction.amount < 0 ? 'text-red-600' : 'text-green-600'
                                 }`}
                               >
-                                {transaction.amount < 0 ? '-' : '+'}{formatCurrency(transaction.amount)}
+                                {transaction.amount < 0 ? '-' : '+'}{formatCurrency(transaction.amount, transaction.currency)}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -420,7 +420,7 @@ export default function ImportStatementPage() {
                                     </Select>
                                   </TableCell>
                                   <TableCell className="text-right text-red-600">
-                                    -{formatCurrency(transaction.amount)}
+                                    -{formatCurrency(transaction.amount, transaction.currency)}
                                   </TableCell>
                                 </TableRow>
                               );
@@ -455,7 +455,7 @@ export default function ImportStatementPage() {
                                     <Badge variant="outline">{transaction.category}</Badge>
                                   </TableCell>
                                   <TableCell className="text-right text-green-600">
-                                    +{formatCurrency(transaction.amount)}
+                                    +{formatCurrency(transaction.amount, transaction.currency)}
                                   </TableCell>
                                 </TableRow>
                               );

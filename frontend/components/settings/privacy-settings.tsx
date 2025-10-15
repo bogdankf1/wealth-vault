@@ -213,11 +213,11 @@ export function PrivacySettings() {
         <CardContent className="space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Data export functionality is currently in development. Once available, you'll be able to download all your financial data.
+              Data export functionality is currently in development. Once available, you&apos;ll be able to download all your financial data.
             </p>
           </div>
           <p className="text-sm text-muted-foreground">
-            You will be able to request a copy of all your personal data. We'll prepare a downloadable file containing
+            You will be able to request a copy of all your personal data. We&apos;ll prepare a downloadable file containing
             all your information including income sources, expenses, goals, and account details.
           </p>
           <Button onClick={handleExportData} variant="outline" disabled className="cursor-not-allowed opacity-50">

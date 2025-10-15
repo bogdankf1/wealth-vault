@@ -184,7 +184,7 @@ export function SecuritySettings() {
         <CardContent className="space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Two-Factor Authentication is currently in development. Once available, you'll be able to add an extra layer of security to your account.
+              Two-Factor Authentication is currently in development. Once available, you&apos;ll be able to add an extra layer of security to your account.
             </p>
           </div>
           <div className="flex items-center justify-between opacity-50">
@@ -237,7 +237,7 @@ export function SecuritySettings() {
         <CardContent className="space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Session tracking is currently in development. The sessions shown below are examples of what you'll see once this feature is live.
+              Session tracking is currently in development. The sessions shown below are examples of what you&apos;ll see once this feature is live.
             </p>
           </div>
           {sessions.map((session) => (

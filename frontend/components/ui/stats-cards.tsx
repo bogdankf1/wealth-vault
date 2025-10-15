@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 
 export interface StatCard {
   title: string;
-  value: string | number;
+  value: string | number | React.ReactNode;
   description?: string;
   icon: LucideIcon;
   iconClassName?: string;

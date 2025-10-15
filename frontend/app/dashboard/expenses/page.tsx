@@ -23,6 +23,7 @@ import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { CurrencyDisplay } from '@/components/currency';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   one_time: 'One-time',
@@ -90,15 +91,6 @@ export default function ExpensesPage() {
     setEditingExpenseId(null);
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   // Get unique categories from expenses
   const uniqueCategories = React.useMemo(() => {
     if (!expensesData?.items) return [];
@@ -137,13 +129,13 @@ export default function ExpensesPage() {
         },
         {
           title: 'Monthly Spending',
-          value: formatCurrency(stats.total_monthly_expense, stats.currency),
+          value: <CurrencyDisplay amount={stats.total_monthly_expense} currency={stats.currency} decimals={0} />,
           description: `From ${stats.active_expenses} active ${stats.active_expenses === 1 ? 'expense' : 'expenses'}`,
           icon: TrendingDown,
         },
         {
           title: 'Annual Spending',
-          value: formatCurrency(stats.total_annual_expense, stats.currency),
+          value: <CurrencyDisplay amount={stats.total_annual_expense} currency={stats.currency} decimals={0} />,
           description: 'Projected yearly expenses',
           icon: Calendar,
         },
@@ -261,21 +253,36 @@ export default function ExpensesPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-2xl font-bold">
-                        {formatCurrency(expense.amount, expense.currency)}
+                        <CurrencyDisplay
+                          amount={expense.display_amount ?? expense.amount}
+                          currency={expense.display_currency ?? expense.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {FREQUENCY_LABELS[expense.frequency] || expense.frequency}
+                        {expense.display_currency && expense.display_currency !== expense.currency && (
+                          <span className="ml-1 text-xs">
+                            (orig: {expense.amount} {expense.currency})
+                          </span>
+                        )}
                       </p>
                     </div>
 
                     <div className="rounded-lg bg-muted p-3 min-h-[60px]">
-                      {expense.monthly_equivalent ? (
+                      {(expense.display_monthly_equivalent ?? expense.monthly_equivalent) ? (
                         <>
                           <p className="text-xs text-muted-foreground">
                             Monthly equivalent
                           </p>
                           <p className="text-sm font-semibold">
-                            {formatCurrency(expense.monthly_equivalent, expense.currency)}
+                            <CurrencyDisplay
+                              amount={expense.display_monthly_equivalent ?? expense.monthly_equivalent ?? 0}
+                              currency={expense.display_currency ?? expense.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
                           </p>
                         </>
                       ) : (

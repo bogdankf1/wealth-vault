@@ -1,16 +1,4 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { getSession } from 'next-auth/react';
-
-const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  prepareHeaders: async (headers) => {
-    const session = await getSession();
-    if (session?.accessToken) {
-      headers.set('Authorization', `Bearer ${session.accessToken}`);
-    }
-    return headers;
-  },
-});
+import { apiSlice } from './apiSlice';
 
 export interface EmailNotifications {
   marketing: boolean;
@@ -47,6 +35,7 @@ export interface UserPreferences {
   language: string;
   timezone: string;
   currency: string;
+  display_currency?: string;
   date_format: string;
   email_notifications: EmailNotifications;
   push_notifications: PushNotifications;
@@ -64,6 +53,7 @@ export interface UserPreferencesUpdate {
   language?: string;
   timezone?: string;
   currency?: string;
+  display_currency?: string;
   date_format?: string;
   email_notifications?: EmailNotifications;
   push_notifications?: PushNotifications;
@@ -72,10 +62,7 @@ export interface UserPreferencesUpdate {
   dashboard_layout?: DashboardLayout;
 }
 
-export const preferencesApi = createApi({
-  reducerPath: 'preferencesApi',
-  baseQuery: baseQuery,
-  tagTypes: ['Preferences'],
+export const preferencesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getMyPreferences: builder.query<UserPreferences, void>({
       query: () => '/api/v1/preferences/me',
@@ -87,14 +74,14 @@ export const preferencesApi = createApi({
         method: 'PUT',
         body: preferences,
       }),
-      invalidatesTags: ['Preferences'],
+      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, 'Dashboard'],
     }),
     resetMyPreferences: builder.mutation<UserPreferences, void>({
       query: () => ({
         url: '/api/v1/preferences/me/reset',
         method: 'POST',
       }),
-      invalidatesTags: ['Preferences'],
+      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, 'Dashboard'],
     }),
   }),
 });

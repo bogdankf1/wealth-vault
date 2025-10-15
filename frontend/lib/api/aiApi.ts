@@ -23,6 +23,7 @@ export interface ParsedTransaction {
   amount: number;
   balance?: number;
   category?: string;
+  currency?: string;
 }
 
 export interface ParseStatementRequest {

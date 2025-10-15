@@ -37,6 +37,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
+import { CurrencyInput } from '@/components/currency';
 
 // Form validation schema
 const expenseSchema = z.object({
@@ -143,19 +144,14 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
           setValue('category', existingExpense.category, { shouldDirty: true });
         }
         setValue('frequency', existingExpense.frequency as ExpenseFrequency, { shouldDirty: true });
+        setValue('currency', existingExpense.currency, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
-        name: '',
-        description: '',
-        category: '',
-        amount: 0,
         currency: 'USD',
         frequency: 'monthly',
         is_active: true,
-        date: '',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
+        date: new Date().toISOString().split('T')[0],
       });
     }
   }, [isEditing, existingExpense, isOpen, reset, setValue]);
@@ -286,36 +282,16 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
               </Select>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount *</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...register('amount', { valueAsNumber: true })}
-                />
-                {errors.amount && (
-                  <p className="text-sm text-destructive">{errors.amount.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  placeholder="USD"
-                  maxLength={3}
-                  {...register('currency')}
-                />
-                {errors.currency && (
-                  <p className="text-sm text-destructive">
-                    {errors.currency.message}
-                  </p>
-                )}
-              </div>
-            </div>
+            <CurrencyInput
+              key={`currency-${existingExpense?.id || 'new'}-${watch('currency')}`}
+              label="Amount"
+              amount={watch('amount')?.toString() || ''}
+              currency={watch('currency')}
+              onAmountChange={(value) => setValue('amount', parseFloat(value) || 0)}
+              onCurrencyChange={(value) => setValue('currency', value)}
+              required
+              error={errors.amount?.message}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="frequency">Frequency *</Label>
