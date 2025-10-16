@@ -31,6 +31,10 @@ export interface IncomeSource {
   created_at: string;
   updated_at: string;
   monthly_equivalent?: number;
+  // Display values (converted to user's preferred currency)
+  display_amount?: number | null;
+  display_currency?: string | null;
+  display_monthly_equivalent?: number | null;
 }
 
 export interface IncomeTransaction {

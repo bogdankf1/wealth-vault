@@ -5,7 +5,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingUp, Calendar, Edit, Trash2 } from 'lucide-react';
+import { TrendingUp, Calendar, Edit, Trash2 } from 'lucide-react';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListIncomeSourcesQuery,
   useGetIncomeStatsQuery,
@@ -101,14 +102,6 @@ export default function IncomePage() {
     setEditingSourceId(null);
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Get unique categories from income sources
   const uniqueCategories = React.useMemo(() => {
@@ -144,17 +137,31 @@ export default function IncomePage() {
           title: 'Total Sources',
           value: stats.total_sources,
           description: `${stats.active_sources} active`,
-          icon: DollarSign,
+          icon: TrendingUp,
         },
         {
           title: 'Monthly Income',
-          value: formatCurrency(stats.total_monthly_income, stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_monthly_income}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: `From ${stats.active_sources} active ${stats.active_sources === 1 ? 'source' : 'sources'}`,
           icon: TrendingUp,
         },
         {
           title: 'Annual Income',
-          value: formatCurrency(stats.total_annual_income, stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_annual_income}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: 'Projected yearly income',
           icon: Calendar,
         },
@@ -218,7 +225,7 @@ export default function IncomePage() {
           <ApiErrorState error={sourcesError} onRetry={refetchSources} />
         ) : !sourcesData?.items || sourcesData.items.length === 0 ? (
           <EmptyState
-            icon={DollarSign}
+            icon={TrendingUp}
             title="No income sources yet"
             description="Start tracking your income by adding your first income source."
             actionLabel="Add Income Source"
@@ -227,7 +234,7 @@ export default function IncomePage() {
         ) : !filteredSources || filteredSources.length === 0 ? (
           selectedMonth ? (
             <EmptyState
-              icon={DollarSign}
+              icon={TrendingUp}
               title="No income sources for this month"
               description={`No income sources found for ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
               actionLabel="Clear Filter"
@@ -235,7 +242,7 @@ export default function IncomePage() {
             />
           ) : (
             <EmptyState
-              icon={DollarSign}
+              icon={TrendingUp}
               title="No income sources yet"
               description="Start tracking your income by adding your first income source."
               actionLabel="Add Income Source"
@@ -263,27 +270,44 @@ export default function IncomePage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-2xl font-bold">
-                        {formatCurrency(source.amount, source.currency)}
+                        <CurrencyDisplay
+                          amount={source.display_amount ?? source.amount}
+                          currency={source.display_currency ?? source.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {FREQUENCY_LABELS[source.frequency] || source.frequency}
+                        {source.display_currency && source.display_currency !== source.currency && (
+                          <span className="ml-1 text-xs">
+                            (orig: {source.amount} {source.currency})
+                          </span>
+                        )}
                       </p>
                     </div>
 
-                    <div className="rounded-lg bg-muted p-3 min-h-[60px]">
-                      {source.monthly_equivalent ? (
-                        <>
-                          <p className="text-xs text-muted-foreground">
-                            Monthly equivalent
-                          </p>
-                          <p className="text-sm font-semibold">
-                            {formatCurrency(source.monthly_equivalent, source.currency)}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">\u00A0</p>
-                      )}
-                    </div>
+                    {source.frequency !== 'one_time' && (
+                      <div className="rounded-lg bg-muted p-3">
+                        {(source.display_monthly_equivalent ?? source.monthly_equivalent) ? (
+                          <>
+                            <p className="text-xs text-muted-foreground">
+                              Monthly equivalent
+                            </p>
+                            <p className="text-sm font-semibold">
+                              <CurrencyDisplay
+                                amount={source.display_monthly_equivalent ?? source.monthly_equivalent ?? 0}
+                                currency={source.display_currency ?? source.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">&nbsp;</p>
+                        )}
+                      </div>
+                    )}
 
                     <div className="min-h-[24px]">
                       {source.category && (
