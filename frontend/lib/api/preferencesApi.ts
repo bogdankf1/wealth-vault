@@ -74,14 +74,14 @@ export const preferencesApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: preferences,
       }),
-      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, 'Dashboard'],
+      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, { type: 'Subscriptions', id: 'STATS' }, { type: 'Subscriptions', id: 'LIST' }, 'Dashboard'],
     }),
     resetMyPreferences: builder.mutation<UserPreferences, void>({
       query: () => ({
         url: '/api/v1/preferences/me/reset',
         method: 'POST',
       }),
-      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, 'Dashboard'],
+      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, { type: 'Subscriptions', id: 'STATS' }, { type: 'Subscriptions', id: 'LIST' }, 'Dashboard'],
     }),
   }),
 });

@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { Calendar, TrendingDown, RefreshCw, Edit, Trash2 } from 'lucide-react';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListSubscriptionsQuery,
   useGetSubscriptionStatsQuery,
@@ -93,14 +94,6 @@ export default function SubscriptionsPage() {
     setEditingSubscriptionId(null);
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Get unique categories from subscriptions
   const uniqueCategories = React.useMemo(() => {
@@ -141,13 +134,27 @@ export default function SubscriptionsPage() {
         },
         {
           title: 'Monthly Cost',
-          value: formatCurrency(stats.monthly_cost, stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={stats.monthly_cost}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: `From ${stats.active_subscriptions} active ${stats.active_subscriptions === 1 ? 'subscription' : 'subscriptions'}`,
           icon: TrendingDown,
         },
         {
           title: 'Annual Cost',
-          value: formatCurrency(stats.total_annual_cost, stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_annual_cost}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: 'Projected yearly cost',
           icon: Calendar,
         },
@@ -281,10 +288,20 @@ export default function SubscriptionsPage() {
                     <div className="space-y-3">
                       <div>
                         <div className="text-2xl font-bold">
-                          {formatCurrency(subscription.amount, subscription.currency)}
+                          <CurrencyDisplay
+                            amount={subscription.display_amount ?? subscription.amount}
+                            currency={subscription.display_currency ?? subscription.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {FREQUENCY_LABELS[subscription.frequency] || subscription.frequency}
+                          {subscription.display_currency && subscription.display_currency !== subscription.currency && (
+                            <span className="ml-1 text-xs">
+                              (orig: {subscription.amount} {subscription.currency})
+                            </span>
+                          )}
                         </p>
                       </div>
 
