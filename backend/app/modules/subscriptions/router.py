@@ -17,6 +17,10 @@ from app.modules.subscriptions.schemas import (
     SubscriptionListResponse,
     SubscriptionStats
 )
+from app.modules.subscriptions.service import (
+    convert_subscription_to_display_currency,
+    get_user_display_currency
+)
 
 router = APIRouter(prefix="/api/v1/subscriptions", tags=["subscriptions"])
 
@@ -79,8 +83,33 @@ async def list_subscriptions(
         is_active=is_active
     )
 
+    # Convert each subscription to display currency
+    subscription_dicts = []
+    for subscription in subscriptions:
+        await convert_subscription_to_display_currency(db, current_user.id, subscription)
+
+        subscription_dict = {
+            "id": str(subscription.id),
+            "user_id": str(subscription.user_id),
+            "name": subscription.name,
+            "description": subscription.description,
+            "category": subscription.category,
+            "amount": float(subscription.amount) if subscription.amount else 0,
+            "currency": subscription.currency,
+            "frequency": subscription.frequency,
+            "start_date": subscription.start_date.isoformat() if subscription.start_date else None,
+            "end_date": subscription.end_date.isoformat() if subscription.end_date else None,
+            "is_active": subscription.is_active,
+            "created_at": subscription.created_at,
+            "updated_at": subscription.updated_at,
+            "display_amount": float(subscription.display_amount) if hasattr(subscription, 'display_amount') and subscription.display_amount is not None else None,
+            "display_currency": subscription.display_currency if hasattr(subscription, 'display_currency') and subscription.display_currency is not None else None,
+            "display_monthly_equivalent": float(subscription.display_monthly_equivalent) if hasattr(subscription, 'display_monthly_equivalent') and subscription.display_monthly_equivalent is not None else None,
+        }
+        subscription_dicts.append(subscription_dict)
+
     return SubscriptionListResponse(
-        items=subscriptions,
+        items=subscription_dicts,
         total=total,
         page=page,
         page_size=page_size
@@ -94,7 +123,11 @@ async def get_subscription_stats(
     current_user: User = Depends(get_current_user)
 ):
     """Get subscription statistics"""
-    return await service.get_subscription_stats(db, current_user.id)
+    stats = await service.get_subscription_stats(db, current_user.id)
+    # Update currency to user's display currency
+    display_currency = await get_user_display_currency(db, current_user.id)
+    stats.currency = display_currency
+    return stats
 
 
 @router.get("/{subscription_id}", response_model=SubscriptionResponse)
@@ -111,7 +144,30 @@ async def get_subscription(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Subscription not found"
         )
-    return subscription
+
+    # Convert to display currency
+    await convert_subscription_to_display_currency(db, current_user.id, subscription)
+
+    subscription_dict = {
+        "id": str(subscription.id),
+        "user_id": str(subscription.user_id),
+        "name": subscription.name,
+        "description": subscription.description,
+        "category": subscription.category,
+        "amount": float(subscription.amount) if subscription.amount else 0,
+        "currency": subscription.currency,
+        "frequency": subscription.frequency,
+        "start_date": subscription.start_date.isoformat() if subscription.start_date else None,
+        "end_date": subscription.end_date.isoformat() if subscription.end_date else None,
+        "is_active": subscription.is_active,
+        "created_at": subscription.created_at,
+        "updated_at": subscription.updated_at,
+        "display_amount": float(subscription.display_amount) if hasattr(subscription, 'display_amount') and subscription.display_amount is not None else None,
+        "display_currency": subscription.display_currency if hasattr(subscription, 'display_currency') and subscription.display_currency is not None else None,
+        "display_monthly_equivalent": float(subscription.display_monthly_equivalent) if hasattr(subscription, 'display_monthly_equivalent') and subscription.display_monthly_equivalent is not None else None,
+    }
+
+    return subscription_dict
 
 
 @router.put("/{subscription_id}", response_model=SubscriptionResponse)

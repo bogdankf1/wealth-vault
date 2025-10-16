@@ -14,6 +14,75 @@ from app.modules.subscriptions.schemas import (
     SubscriptionUpdate,
     SubscriptionStats
 )
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
+
+async def convert_subscription_to_display_currency(db: AsyncSession, user_id: UUID, subscription: Subscription) -> None:
+    """
+    Convert subscription amount to user's display currency.
+    Modifies the subscription object in-place, adding display_amount and display_currency attributes.
+    """
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # If subscription is already in display currency, no conversion needed
+    if subscription.currency == display_currency:
+        subscription.display_amount = subscription.amount
+        subscription.display_currency = display_currency
+        # Calculate and set display_monthly_equivalent
+        subscription.display_monthly_equivalent = calculate_monthly_equivalent(subscription.amount, subscription.frequency)
+        return
+
+    # Convert using currency service
+    currency_service = CurrencyService(db)
+    converted_amount = await currency_service.convert_amount(
+        subscription.amount,
+        subscription.currency,
+        display_currency
+    )
+
+    # Set converted values as display values
+    if converted_amount is not None:
+        subscription.display_amount = converted_amount
+        subscription.display_currency = display_currency
+
+        # Also convert monthly equivalent
+        monthly_amount = calculate_monthly_equivalent(subscription.amount, subscription.frequency)
+        if monthly_amount:
+            converted_monthly = await currency_service.convert_amount(
+                monthly_amount,
+                subscription.currency,
+                display_currency
+            )
+            subscription.display_monthly_equivalent = converted_monthly if converted_monthly else monthly_amount
+        else:
+            subscription.display_monthly_equivalent = None
+    else:
+        # Fallback to original values if conversion fails
+        subscription.display_amount = subscription.amount
+        subscription.display_currency = subscription.currency
+        subscription.display_monthly_equivalent = calculate_monthly_equivalent(subscription.amount, subscription.frequency)
+
+
+def calculate_monthly_equivalent(amount: Decimal, frequency: str) -> Decimal:
+    """Calculate monthly equivalent amount based on frequency"""
+    frequency_to_monthly = {
+        "monthly": 1,
+        "quarterly": Decimal("0.333333"),
+        "annually": Decimal("0.083333"),
+        "biannually": Decimal("0.166667"),
+    }
+    multiplier = frequency_to_monthly.get(frequency, 1)
+    return amount * Decimal(str(multiplier))
 
 
 async def create_subscription(

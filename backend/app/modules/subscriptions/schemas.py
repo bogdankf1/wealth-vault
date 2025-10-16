@@ -52,6 +52,11 @@ class SubscriptionResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    # Display values (converted to user's preferred currency)
+    display_amount: Optional[Decimal] = None
+    display_currency: Optional[str] = None
+    display_monthly_equivalent: Optional[Decimal] = None
+
     class Config:
         from_attributes = True
 
