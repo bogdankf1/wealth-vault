@@ -96,6 +96,11 @@ class IncomeSourceResponse(IncomeSourceBase):
     updated_at: datetime
     monthly_equivalent: Optional[Decimal] = Field(None, description="Monthly equivalent amount")
 
+    # Display values (converted to user's preferred currency)
+    display_amount: Optional[Decimal] = None
+    display_currency: Optional[str] = None
+    display_monthly_equivalent: Optional[Decimal] = None
+
     model_config = {
         "from_attributes": True
     }

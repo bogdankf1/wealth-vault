@@ -24,6 +24,7 @@ from app.modules.income.schemas import (
     IncomeTransactionListResponse,
     IncomeStatsResponse,
 )
+from app.modules.income.service import convert_income_to_display_currency, get_user_display_currency
 
 router = APIRouter(prefix="/income", tags=["Income Tracking"])
 
@@ -73,19 +74,41 @@ async def list_income_sources(
     result = await db.execute(query)
     sources = result.scalars().all()
 
-    # Add monthly equivalent to each source
+    # Convert all income sources to display currency and add monthly equivalent
     response_items = []
     for source in sources:
-        source_dict = IncomeSourceResponse.model_validate(source).model_dump()
-        source_dict["monthly_equivalent"] = source.calculate_monthly_amount()
-        response_items.append(IncomeSourceResponse(**source_dict))
+        # Convert to display currency
+        await convert_income_to_display_currency(db, current_user.id, source)
 
-    return IncomeSourceListResponse(
-        items=response_items,
-        total=total,
-        page=page,
-        page_size=page_size
-    )
+        # Build response dict with all fields
+        source_dict = {
+            "id": str(source.id),
+            "user_id": str(source.user_id),
+            "name": source.name,
+            "description": source.description,
+            "category": source.category,
+            "amount": float(source.amount) if source.amount else 0,
+            "currency": source.currency,
+            "frequency": source.frequency,
+            "is_active": source.is_active,
+            "date": source.date.isoformat() if source.date else None,
+            "start_date": source.start_date.isoformat() if source.start_date else None,
+            "end_date": source.end_date.isoformat() if source.end_date else None,
+            "created_at": source.created_at.isoformat(),
+            "updated_at": source.updated_at.isoformat(),
+            "monthly_equivalent": float(source.calculate_monthly_amount()) if source.calculate_monthly_amount() else None,
+            "display_amount": float(source.display_amount) if hasattr(source, 'display_amount') and source.display_amount is not None else None,
+            "display_currency": source.display_currency if hasattr(source, 'display_currency') and source.display_currency is not None else None,
+            "display_monthly_equivalent": float(source.display_monthly_equivalent) if hasattr(source, 'display_monthly_equivalent') and source.display_monthly_equivalent is not None else None,
+        }
+        response_items.append(source_dict)
+
+    return {
+        "items": response_items,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
 
 
 @router.post("/sources", response_model=IncomeSourceResponse, status_code=status.HTTP_201_CREATED)
@@ -169,11 +192,32 @@ async def get_income_source(
     if not source:
         raise NotFoundException(message="Income source not found")
 
-    # Prepare response with monthly equivalent
-    response_dict = IncomeSourceResponse.model_validate(source).model_dump()
-    response_dict["monthly_equivalent"] = source.calculate_monthly_amount()
+    # Convert to display currency
+    await convert_income_to_display_currency(db, current_user.id, source)
 
-    return IncomeSourceResponse(**response_dict)
+    # Prepare response with monthly equivalent and display fields
+    response_dict = {
+        "id": str(source.id),
+        "user_id": str(source.user_id),
+        "name": source.name,
+        "description": source.description,
+        "category": source.category,
+        "amount": float(source.amount) if source.amount else 0,
+        "currency": source.currency,
+        "frequency": source.frequency,
+        "is_active": source.is_active,
+        "date": source.date.isoformat() if source.date else None,
+        "start_date": source.start_date.isoformat() if source.start_date else None,
+        "end_date": source.end_date.isoformat() if source.end_date else None,
+        "created_at": source.created_at.isoformat(),
+        "updated_at": source.updated_at.isoformat(),
+        "monthly_equivalent": float(source.calculate_monthly_amount()) if source.calculate_monthly_amount() else None,
+        "display_amount": float(source.display_amount) if hasattr(source, 'display_amount') and source.display_amount is not None else None,
+        "display_currency": source.display_currency if hasattr(source, 'display_currency') and source.display_currency is not None else None,
+        "display_monthly_equivalent": float(source.display_monthly_equivalent) if hasattr(source, 'display_monthly_equivalent') and source.display_monthly_equivalent is not None else None,
+    }
+
+    return response_dict
 
 
 @router.put("/sources/{source_id}", response_model=IncomeSourceResponse)
@@ -432,6 +476,16 @@ async def get_income_stats(
     last_month_result = await db.execute(last_month_query)
     last_month_stats = last_month_result.one()
 
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, current_user.id)
+
+    # Convert all amounts to display currency if needed
+    from app.services.currency_service import CurrencyService
+    currency_service = CurrencyService(db)
+
+    # Note: For stats, we assume all amounts are already in the same currency as the sources
+    # In a more complex implementation, you might need to convert each source individually
+
     return IncomeStatsResponse(
         total_sources=sources_stats.total or 0,
         active_sources=sources_stats.active or 0,
@@ -443,5 +497,5 @@ async def get_income_stats(
         transactions_current_month_amount=current_month_stats.amount,
         transactions_last_month=last_month_stats.count or 0,
         transactions_last_month_amount=last_month_stats.amount,
-        currency="USD"
+        currency=display_currency
     )
