@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
+import { CurrencyInput } from '@/components/currency/currency-input';
 
 // Form validation schema
 const installmentSchema = z.object({
@@ -183,6 +184,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
           setValue('category', existingInstallment.category, { shouldDirty: true });
         }
         setValue('frequency', existingInstallment.frequency as InstallmentFrequency, { shouldDirty: true });
+        setValue('currency', existingInstallment.currency, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
@@ -336,49 +338,37 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </Select>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="total_amount">Total Loan Amount *</Label>
-                <Input
-                  id="total_amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...register('total_amount', { valueAsNumber: true })}
-                />
-                {errors.total_amount && (
-                  <p className="text-sm text-destructive">{errors.total_amount.message}</p>
-                )}
-              </div>
+            <CurrencyInput
+              key={`currency-${existingInstallment?.id || 'new'}-${watch('currency')}`}
+              label="Total Loan Amount"
+              amount={watch('total_amount')?.toString() || ''}
+              currency={watch('currency')}
+              onAmountChange={(value) => setValue('total_amount', parseFloat(value) || 0)}
+              onCurrencyChange={(value) => setValue('currency', value)}
+              required
+              error={errors.total_amount?.message}
+            />
 
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="amount_per_payment">Payment Amount *</Label>
-                <Input
-                  id="amount_per_payment"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...register('amount_per_payment', { valueAsNumber: true })}
-                />
+                <div className="relative">
+                  <Input
+                    id="amount_per_payment"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={watch('amount_per_payment')?.toString() || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                        setValue('amount_per_payment', parseFloat(value) || 0);
+                      }
+                    }}
+                  />
+                </div>
                 {errors.amount_per_payment && (
                   <p className="text-sm text-destructive">{errors.amount_per_payment.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  placeholder="USD"
-                  maxLength={3}
-                  {...register('currency')}
-                />
-                {errors.currency && (
-                  <p className="text-sm text-destructive">
-                    {errors.currency.message}
-                  </p>
                 )}
               </div>
 

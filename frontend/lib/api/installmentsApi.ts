@@ -26,6 +26,11 @@ export interface Installment {
   remaining_balance?: number;
   created_at: string;
   updated_at: string;
+  // Display values (converted to user's preferred currency)
+  display_total_amount?: number | null;
+  display_amount_per_payment?: number | null;
+  display_remaining_balance?: number | null;
+  display_currency?: string | null;
 }
 
 export interface InstallmentCreate {

@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 export interface StatCard {
   title: string;
   value: string | number | React.ReactNode;
-  description?: string;
+  description?: string | React.ReactNode;
   icon: LucideIcon;
   iconClassName?: string;
 }

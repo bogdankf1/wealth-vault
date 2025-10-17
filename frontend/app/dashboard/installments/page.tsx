@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { CreditCard, TrendingDown, DollarSign, Edit, Trash2 } from 'lucide-react';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListInstallmentsQuery,
   useGetInstallmentStatsQuery,
@@ -94,15 +95,6 @@ export default function InstallmentsPage() {
     setEditingInstallmentId(null);
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   // Get unique categories from installments
   const uniqueCategories = React.useMemo(() => {
     if (!installmentsData?.items) return [];
@@ -142,7 +134,14 @@ export default function InstallmentsPage() {
         },
         {
           title: 'Total Debt',
-          value: formatCurrency(stats.total_debt, stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_debt}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: stats.debt_free_date
             ? `Debt-free by ${new Date(stats.debt_free_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
             : 'No debt-free date projected',
@@ -150,8 +149,25 @@ export default function InstallmentsPage() {
         },
         {
           title: 'Monthly Payment',
-          value: formatCurrency(stats.monthly_payment, stats.currency),
-          description: `${formatCurrency(stats.total_paid, stats.currency)} paid so far`,
+          value: (
+            <CurrencyDisplay
+              amount={stats.monthly_payment}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
+          description: (
+            <>
+              <CurrencyDisplay
+                amount={stats.total_paid}
+                currency={stats.currency}
+                showSymbol={true}
+                showCode={false}
+              />{' '}
+              paid so far
+            </>
+          ),
           icon: DollarSign,
         },
       ]
@@ -293,19 +309,50 @@ export default function InstallmentsPage() {
                         <div className="flex items-baseline justify-between mb-1">
                           <span className="text-xs text-muted-foreground">Remaining</span>
                           <span className="text-2xl font-bold">
-                            {formatCurrency(
-                              installment.remaining_balance || installment.total_amount,
-                              installment.currency
-                            )}
+                            <CurrencyDisplay
+                              amount={installment.display_remaining_balance ?? installment.remaining_balance ?? installment.display_total_amount ?? installment.total_amount}
+                              currency={installment.display_currency ?? installment.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between">
-                          <span className="text-xs text-muted-foreground">of {formatCurrency(installment.total_amount, installment.currency)} total</span>
+                          <span className="text-xs text-muted-foreground">
+                            of{' '}
+                            <CurrencyDisplay
+                              amount={installment.display_total_amount ?? installment.total_amount}
+                              currency={installment.display_currency ?? installment.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />{' '}
+                            total
+                          </span>
                           <span className="text-sm text-muted-foreground">
-                            {formatCurrency(installment.amount_per_payment, installment.currency)}{' '}
+                            <CurrencyDisplay
+                              amount={installment.display_amount_per_payment ?? installment.amount_per_payment}
+                              currency={installment.display_currency ?? installment.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />{' '}
                             {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
                           </span>
                         </div>
+                        {installment.display_currency && installment.display_currency !== installment.currency && (
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            Original: <CurrencyDisplay
+                              amount={installment.display_total_amount ?? installment.total_amount}
+                              currency={installment.display_currency ?? installment.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            /> total, <CurrencyDisplay
+                              amount={installment.display_amount_per_payment ?? installment.amount_per_payment}
+                              currency={installment.display_currency ?? installment.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            /> {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
+                          </div>
+                        )}
                       </div>
 
                       {/* Payment Progress */}
