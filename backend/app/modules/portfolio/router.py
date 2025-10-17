@@ -17,6 +17,7 @@ from app.modules.portfolio.schemas import (
     PortfolioAssetListResponse,
     PortfolioStats
 )
+from app.modules.portfolio.service import convert_asset_to_display_currency
 
 router = APIRouter(prefix="/api/v1/portfolio", tags=["portfolio"])
 
@@ -72,6 +73,10 @@ async def list_assets(
         is_active=is_active
     )
 
+    # Convert each asset to display currency
+    for asset in assets:
+        await convert_asset_to_display_currency(db, current_user.id, asset)
+
     return PortfolioAssetListResponse(
         items=assets,
         total=total,
@@ -104,6 +109,10 @@ async def get_asset(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Portfolio asset not found"
         )
+
+    # Convert to display currency
+    await convert_asset_to_display_currency(db, current_user.id, asset)
+
     return asset
 
 

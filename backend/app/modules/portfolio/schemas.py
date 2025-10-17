@@ -74,6 +74,13 @@ class PortfolioAssetResponse(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    # Display currency fields
+    display_purchase_price: Optional[Decimal] = None
+    display_current_price: Optional[Decimal] = None
+    display_total_invested: Optional[Decimal] = None
+    display_current_value: Optional[Decimal] = None
+    display_total_return: Optional[Decimal] = None
+    display_currency: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

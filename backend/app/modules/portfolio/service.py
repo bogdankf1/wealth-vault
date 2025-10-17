@@ -11,6 +11,62 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.portfolio.models import PortfolioAsset
 from app.modules.portfolio.schemas import PortfolioAssetCreate, PortfolioAssetUpdate, PortfolioStats
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
+
+async def convert_asset_to_display_currency(db: AsyncSession, user_id: UUID, asset: PortfolioAsset) -> None:
+    """
+    Convert asset amounts to user's display currency.
+    Modifies the asset object in-place, adding display_* attributes.
+    """
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # If asset is already in display currency, no conversion needed
+    if asset.currency == display_currency:
+        asset.display_purchase_price = asset.purchase_price
+        asset.display_current_price = asset.current_price
+        asset.display_total_invested = asset.total_invested
+        asset.display_current_value = asset.current_value
+        asset.display_total_return = asset.total_return
+        asset.display_currency = display_currency
+        return
+
+    # Convert using currency service
+    currency_service = CurrencyService(db)
+
+    # Convert prices and values
+    converted_purchase = await currency_service.convert_amount(asset.purchase_price, asset.currency, display_currency)
+    converted_current = await currency_service.convert_amount(asset.current_price, asset.currency, display_currency)
+    converted_invested = await currency_service.convert_amount(asset.total_invested, asset.currency, display_currency) if asset.total_invested else None
+    converted_value = await currency_service.convert_amount(asset.current_value, asset.currency, display_currency) if asset.current_value else None
+    converted_return = await currency_service.convert_amount(asset.total_return, asset.currency, display_currency) if asset.total_return else None
+
+    # Set converted values as display values
+    if all(v is not None for v in [converted_purchase, converted_current]):
+        asset.display_purchase_price = converted_purchase
+        asset.display_current_price = converted_current
+        asset.display_total_invested = converted_invested
+        asset.display_current_value = converted_value
+        asset.display_total_return = converted_return
+        asset.display_currency = display_currency
+    else:
+        # Fallback to original values if conversion fails
+        asset.display_purchase_price = asset.purchase_price
+        asset.display_current_price = asset.current_price
+        asset.display_total_invested = asset.total_invested
+        asset.display_current_value = asset.current_value
+        asset.display_total_return = asset.total_return
+        asset.display_currency = asset.currency
 
 
 def calculate_asset_metrics(
@@ -179,6 +235,10 @@ async def get_portfolio_stats(
     user_id: UUID
 ) -> PortfolioStats:
     """Get comprehensive portfolio statistics."""
+    # Get display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
     # Get all active assets
     query = select(PortfolioAsset).where(
         and_(
@@ -199,7 +259,7 @@ async def get_portfolio_stats(
             current_value=Decimal('0'),
             total_return=Decimal('0'),
             total_return_percentage=Decimal('0'),
-            currency="USD",
+            currency=display_currency,
             best_performer=None,
             worst_performer=None,
             by_asset_type={},
@@ -207,14 +267,36 @@ async def get_portfolio_stats(
             losers=0
         )
 
-    # Calculate aggregates
-    total_invested = sum(asset.total_invested or Decimal('0') for asset in assets)
-    current_value = sum(asset.current_value or Decimal('0') for asset in assets)
+    # Calculate aggregates in display currency
+    total_invested = Decimal('0')
+    current_value = Decimal('0')
+    by_asset_type = {}
+
+    for asset in assets:
+        # Convert to display currency
+        invested_display = asset.total_invested or Decimal('0')
+        value_display = asset.current_value or Decimal('0')
+
+        if asset.currency != display_currency:
+            converted_invested = await currency_service.convert_amount(asset.total_invested, asset.currency, display_currency) if asset.total_invested else None
+            converted_value = await currency_service.convert_amount(asset.current_value, asset.currency, display_currency) if asset.current_value else None
+
+            if converted_invested is not None:
+                invested_display = converted_invested
+            if converted_value is not None:
+                value_display = converted_value
+
+        total_invested += invested_display
+        current_value += value_display
+
+        # Group by asset type in display currency
+        asset_type = asset.asset_type or "Other"
+        if asset_type not in by_asset_type:
+            by_asset_type[asset_type] = Decimal('0')
+        by_asset_type[asset_type] += value_display
+
     total_return = current_value - total_invested
     total_return_percentage = (total_return / total_invested * Decimal('100')) if total_invested > 0 else Decimal('0')
-
-    # Get currency from first asset (assuming single currency for now)
-    currency = assets[0].currency if assets else "USD"
 
     # Find best and worst performers
     sorted_by_return = sorted(
@@ -241,14 +323,6 @@ async def get_portfolio_stats(
             "return_percentage": float(worst.return_percentage or 0)
         }
 
-    # Group by asset type
-    by_asset_type = {}
-    for asset in assets:
-        asset_type = asset.asset_type or "Other"
-        if asset_type not in by_asset_type:
-            by_asset_type[asset_type] = Decimal('0')
-        by_asset_type[asset_type] += asset.current_value or Decimal('0')
-
     # Count winners and losers
     winners = sum(1 for asset in assets if (asset.total_return or Decimal('0')) > 0)
     losers = sum(1 for asset in assets if (asset.total_return or Decimal('0')) < 0)
@@ -260,7 +334,7 @@ async def get_portfolio_stats(
         current_value=current_value,
         total_return=total_return,
         total_return_percentage=total_return_percentage,
-        currency=currency,
+        currency=display_currency,
         best_performer=best_performer,
         worst_performer=worst_performer,
         by_asset_type=by_asset_type,
