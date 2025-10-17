@@ -19,6 +19,7 @@ from app.modules.budgets.schemas import (
     BudgetOverviewResponse,
 )
 from app.modules.budgets import service
+from app.modules.budgets.service import convert_budget_to_display_currency
 
 router = APIRouter(prefix="/api/v1/budgets", tags=["budgets"])
 
@@ -74,6 +75,9 @@ async def list_budgets(
     )
     result = []
     for budget in budgets:
+        # Convert to display currency
+        await convert_budget_to_display_currency(db, current_user.id, budget)
+
         budget_dict = {
             "id": budget.id,
             "user_id": budget.user_id,
@@ -89,7 +93,9 @@ async def list_budgets(
             "rollover_unused": budget.rollover_unused,
             "alert_threshold": budget.alert_threshold,
             "created_at": budget.created_at,
-            "updated_at": budget.updated_at
+            "updated_at": budget.updated_at,
+            "display_amount": getattr(budget, 'display_amount', None),
+            "display_currency": getattr(budget, 'display_currency', None)
         }
         result.append(BudgetResponse(**budget_dict))
     return result

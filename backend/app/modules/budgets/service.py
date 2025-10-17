@@ -19,6 +19,75 @@ from app.modules.budgets.schemas import (
     BudgetOverviewResponse,
 )
 from app.modules.expenses.models import Expense
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
+
+async def convert_budget_to_display_currency(db: AsyncSession, user_id: UUID, budget: Budget) -> None:
+    """
+    Convert budget amounts to user's display currency.
+    Modifies the budget object in-place, adding display_* attributes.
+    """
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # If budget is already in display currency, no conversion needed
+    if budget.currency == display_currency:
+        budget.display_amount = budget.amount
+        budget.display_currency = display_currency
+        if hasattr(budget, 'spent') and budget.spent is not None:
+            budget.display_spent = budget.spent
+        if hasattr(budget, 'remaining') and budget.remaining is not None:
+            budget.display_remaining = budget.remaining
+        return
+
+    # Convert using currency service
+    currency_service = CurrencyService(db)
+
+    # Convert budget amount
+    converted_amount = await currency_service.convert_amount(
+        budget.amount,
+        budget.currency,
+        display_currency
+    )
+
+    # Set converted values as display values
+    if converted_amount is not None:
+        budget.display_amount = converted_amount
+        budget.display_currency = display_currency
+
+        # Convert spent and remaining if they exist
+        if hasattr(budget, 'spent') and budget.spent is not None:
+            converted_spent = await currency_service.convert_amount(
+                budget.spent,
+                budget.currency,
+                display_currency
+            )
+            budget.display_spent = converted_spent if converted_spent is not None else budget.spent
+
+        if hasattr(budget, 'remaining') and budget.remaining is not None:
+            converted_remaining = await currency_service.convert_amount(
+                budget.remaining,
+                budget.currency,
+                display_currency
+            )
+            budget.display_remaining = converted_remaining if converted_remaining is not None else budget.remaining
+    else:
+        # Fallback to original values if conversion fails
+        budget.display_amount = budget.amount
+        budget.display_currency = budget.currency
+        if hasattr(budget, 'spent'):
+            budget.display_spent = budget.spent
+        if hasattr(budget, 'remaining'):
+            budget.display_remaining = budget.remaining
 
 
 async def create_budget(
@@ -164,6 +233,11 @@ async def get_budget_with_progress(
         days_remaining = (budget.end_date - datetime.utcnow()).days
         days_remaining = max(0, days_remaining)
 
+    # Convert to display currency
+    budget.spent = spent
+    budget.remaining = remaining
+    await convert_budget_to_display_currency(db, user_id, budget)
+
     # Create response with budget data
     budget_response = BudgetResponse.model_validate(budget)
     budget_response.spent = spent
@@ -171,6 +245,10 @@ async def get_budget_with_progress(
     budget_response.percentage_used = percentage_used
     budget_response.is_overspent = is_overspent
     budget_response.should_alert = should_alert
+    budget_response.display_amount = getattr(budget, 'display_amount', None)
+    budget_response.display_spent = getattr(budget, 'display_spent', None)
+    budget_response.display_remaining = getattr(budget, 'display_remaining', None)
+    budget_response.display_currency = getattr(budget, 'display_currency', None)
 
     return BudgetWithProgress(
         budget=budget_response,
@@ -190,6 +268,10 @@ async def get_budget_overview(
     end_date: Optional[datetime] = None
 ) -> BudgetOverviewResponse:
     """Get comprehensive budget overview with stats and category breakdown."""
+    # Get display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
     # Get all active budgets
     budgets = await get_budgets(db, user_id, is_active=True)
 
@@ -204,7 +286,7 @@ async def get_budget_overview(
                 overall_percentage_used=0.0,
                 budgets_overspent=0,
                 budgets_near_limit=0,
-                currency="USD"
+                currency=display_currency
             ),
             by_category=[],
             alerts=[]
@@ -226,6 +308,24 @@ async def get_budget_overview(
         is_overspent = budget.is_overspent(spent)
         should_alert = budget.should_alert(spent)
 
+        # Convert to display currency
+        budget_amount_display = budget.amount
+        spent_display = spent
+        remaining_display = remaining
+
+        if budget.currency != display_currency:
+            converted_amount = await currency_service.convert_amount(budget.amount, budget.currency, display_currency)
+            if converted_amount is not None:
+                budget_amount_display = converted_amount
+
+            converted_spent = await currency_service.convert_amount(spent, budget.currency, display_currency)
+            if converted_spent is not None:
+                spent_display = converted_spent
+
+            converted_remaining = await currency_service.convert_amount(remaining, budget.currency, display_currency)
+            if converted_remaining is not None:
+                remaining_display = converted_remaining
+
         # Aggregate by category
         if budget.category not in category_data:
             category_data[budget.category] = {
@@ -233,19 +333,19 @@ async def get_budget_overview(
                 'spent': Decimal("0"),
             }
 
-        category_data[budget.category]['budgeted'] += budget.amount
-        category_data[budget.category]['spent'] += spent
+        category_data[budget.category]['budgeted'] += budget_amount_display
+        category_data[budget.category]['spent'] += spent_display
 
         # Global stats
-        total_budgeted += budget.amount
-        total_spent += spent
+        total_budgeted += budget_amount_display
+        total_spent += spent_display
 
         if is_overspent:
             budgets_overspent += 1
-            alerts.append(f"⚠️ Budget '{budget.name}' is overspent by {abs(remaining):.2f} {budget.currency}")
+            alerts.append(f"⚠️ Budget '{budget.name}' is overspent by {abs(remaining_display):.2f} {display_currency}")
         elif should_alert:
             budgets_near_limit += 1
-            alerts.append(f"⚠️ Budget '{budget.name}' is at {percentage_used:.1f}% ({spent:.2f}/{budget.amount:.2f} {budget.currency})")
+            alerts.append(f"⚠️ Budget '{budget.name}' is at {percentage_used:.1f}% ({spent_display:.2f}/{budget_amount_display:.2f} {display_currency})")
 
     # Build category summaries
     by_category = []
@@ -281,7 +381,7 @@ async def get_budget_overview(
         overall_percentage_used=overall_percentage_used,
         budgets_overspent=budgets_overspent,
         budgets_near_limit=budgets_near_limit,
-        currency=budgets[0].currency if budgets else "USD"
+        currency=display_currency
     )
 
     return BudgetOverviewResponse(

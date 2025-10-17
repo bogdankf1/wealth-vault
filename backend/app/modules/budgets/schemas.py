@@ -76,6 +76,12 @@ class BudgetResponse(BaseModel):
     is_overspent: Optional[bool] = None
     should_alert: Optional[bool] = None
 
+    # Display currency fields
+    display_amount: Optional[Decimal] = None
+    display_spent: Optional[Decimal] = None
+    display_remaining: Optional[Decimal] = None
+    display_currency: Optional[str] = None
+
     class Config:
         from_attributes = True
 
