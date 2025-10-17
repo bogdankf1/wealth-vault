@@ -341,13 +341,13 @@ export default function InstallmentsPage() {
                         {installment.display_currency && installment.display_currency !== installment.currency && (
                           <div className="mt-2 text-xs text-muted-foreground">
                             Original: <CurrencyDisplay
-                              amount={installment.display_total_amount ?? installment.total_amount}
-                              currency={installment.display_currency ?? installment.currency}
+                              amount={installment.total_amount}
+                              currency={installment.currency}
                               showSymbol={true}
                               showCode={false}
                             /> total, <CurrencyDisplay
-                              amount={installment.display_amount_per_payment ?? installment.amount_per_payment}
-                              currency={installment.display_currency ?? installment.currency}
+                              amount={installment.amount_per_payment}
+                              currency={installment.currency}
                               showSymbol={true}
                               showCode={false}
                             /> {FREQUENCY_LABELS[installment.frequency] || installment.frequency}

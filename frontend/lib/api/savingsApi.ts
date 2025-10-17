@@ -19,6 +19,9 @@ export interface SavingsAccount {
   notes?: string;
   created_at: string;
   updated_at: string;
+  // Display currency fields
+  display_current_balance?: number;
+  display_currency?: string;
 }
 
 export interface SavingsAccountCreate {

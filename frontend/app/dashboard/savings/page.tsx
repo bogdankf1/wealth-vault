@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Wallet, TrendingUp, PiggyBank, Edit, Trash2 } from 'lucide-react';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards } from '@/components/ui/stats-cards';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
@@ -82,8 +83,15 @@ export default function SavingsPage() {
     },
     {
       title: 'Net Worth',
-      value: `$${stats?.net_worth.toLocaleString() || '0'}`,
-      description: 'Total balance (USD)',
+      value: stats ? (
+        <CurrencyDisplay
+          amount={stats.net_worth}
+          currency={stats.currency}
+          showSymbol={true}
+          showCode={false}
+        />
+      ) : '0',
+      description: 'Total balance',
       icon: TrendingUp,
     },
     {
@@ -191,11 +199,23 @@ export default function SavingsPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="text-2xl font-bold">
-                      ${account.current_balance.toLocaleString()}
+                      <CurrencyDisplay
+                        amount={account.display_current_balance ?? account.current_balance}
+                        currency={account.display_currency ?? account.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {account.currency}
-                    </p>
+                    {account.display_currency && account.display_currency !== account.currency && (
+                      <p className="text-sm text-muted-foreground">
+                        Original: <CurrencyDisplay
+                          amount={account.current_balance}
+                          currency={account.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </p>
+                    )}
                   </div>
 
                   <div className="min-h-[24px] flex items-center gap-2">

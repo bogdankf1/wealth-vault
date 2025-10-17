@@ -286,16 +286,18 @@ export default function GoalsPage() {
                         {goal.display_currency && goal.display_currency !== goal.currency && (
                           <div className="mt-2 text-xs text-muted-foreground">
                             Original: <CurrencyDisplay
-                              amount={goal.display_target_amount ?? goal.target_amount}
-                              currency={goal.display_currency ?? goal.currency}
+                              amount={goal.target_amount}
+                              currency={goal.currency}
                               showSymbol={true}
                               showCode={false}
-                            /> target, <CurrencyDisplay
-                              amount={goal.display_monthly_contribution ?? goal.monthly_contribution ?? 0}
-                              currency={goal.display_currency ?? goal.currency}
-                              showSymbol={true}
-                              showCode={false}
-                            />/mo
+                            /> target{goal.monthly_contribution && goal.monthly_contribution > 0 && (
+                              <>, <CurrencyDisplay
+                                amount={goal.monthly_contribution}
+                                currency={goal.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              />/mo</>
+                            )}
                           </div>
                         )}
                       </div>

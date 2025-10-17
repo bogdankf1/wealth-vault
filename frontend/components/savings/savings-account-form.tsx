@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { CurrencyInput } from '@/components/currency/currency-input';
 import {
   useCreateAccountMutation,
   useUpdateAccountMutation,
@@ -104,6 +105,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
       setTimeout(() => {
         setValue('account_type', existingAccount.account_type as AccountType, { shouldDirty: true });
+        setValue('currency', existingAccount.currency, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
@@ -216,34 +218,17 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
             )}
           </div>
 
-          {/* Current Balance */}
-          <div className="space-y-2">
-            <Label htmlFor="current_balance">Current Balance *</Label>
-            <Input
-              id="current_balance"
-              type="number"
-              step="0.01"
-              {...register('current_balance', { valueAsNumber: true })}
-              placeholder="0.00"
-            />
-            {errors.current_balance && (
-              <p className="text-sm text-red-500">{errors.current_balance.message}</p>
-            )}
-          </div>
-
-          {/* Currency */}
-          <div className="space-y-2">
-            <Label htmlFor="currency">Currency</Label>
-            <Input
-              id="currency"
-              {...register('currency')}
-              placeholder="USD"
-              maxLength={3}
-            />
-            {errors.currency && (
-              <p className="text-sm text-red-500">{errors.currency.message}</p>
-            )}
-          </div>
+          {/* Current Balance with Currency */}
+          <CurrencyInput
+            key={`currency-${existingAccount?.id || 'new'}-${watch('currency')}`}
+            label="Current Balance"
+            amount={watch('current_balance')?.toString() || ''}
+            currency={watch('currency')}
+            onAmountChange={(value) => setValue('current_balance', parseFloat(value) || 0)}
+            onCurrencyChange={(value) => setValue('currency', value)}
+            required
+            error={errors.current_balance?.message}
+          />
 
           {/* Notes */}
           <div className="space-y-2">
