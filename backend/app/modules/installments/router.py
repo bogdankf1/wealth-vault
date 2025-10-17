@@ -17,6 +17,10 @@ from app.modules.installments.schemas import (
     InstallmentListResponse,
     InstallmentStats
 )
+from app.modules.installments.service import (
+    convert_installment_to_display_currency,
+    get_user_display_currency
+)
 
 router = APIRouter(prefix="/api/v1/installments", tags=["installments"])
 
@@ -74,8 +78,40 @@ async def list_installments(
         is_active=is_active
     )
 
+    # Convert each installment to display currency
+    installment_dicts = []
+    for installment in installments:
+        await convert_installment_to_display_currency(db, current_user.id, installment)
+
+        installment_dict = {
+            "id": str(installment.id),
+            "user_id": str(installment.user_id),
+            "name": installment.name,
+            "description": installment.description,
+            "category": installment.category,
+            "total_amount": float(installment.total_amount) if installment.total_amount else 0,
+            "amount_per_payment": float(installment.amount_per_payment) if installment.amount_per_payment else 0,
+            "currency": installment.currency,
+            "interest_rate": float(installment.interest_rate) if installment.interest_rate else None,
+            "frequency": installment.frequency,
+            "number_of_payments": installment.number_of_payments,
+            "payments_made": installment.payments_made,
+            "start_date": installment.start_date.isoformat() if installment.start_date else None,
+            "first_payment_date": installment.first_payment_date.isoformat() if installment.first_payment_date else None,
+            "end_date": installment.end_date.isoformat() if installment.end_date else None,
+            "is_active": installment.is_active,
+            "remaining_balance": float(installment.remaining_balance) if installment.remaining_balance is not None else None,
+            "created_at": installment.created_at,
+            "updated_at": installment.updated_at,
+            "display_total_amount": float(installment.display_total_amount) if hasattr(installment, 'display_total_amount') and installment.display_total_amount is not None else None,
+            "display_amount_per_payment": float(installment.display_amount_per_payment) if hasattr(installment, 'display_amount_per_payment') and installment.display_amount_per_payment is not None else None,
+            "display_remaining_balance": float(installment.display_remaining_balance) if hasattr(installment, 'display_remaining_balance') and installment.display_remaining_balance is not None else None,
+            "display_currency": installment.display_currency if hasattr(installment, 'display_currency') and installment.display_currency is not None else None,
+        }
+        installment_dicts.append(installment_dict)
+
     return InstallmentListResponse(
-        items=installments,
+        items=installment_dicts,
         total=total,
         page=page,
         page_size=page_size
@@ -89,7 +125,11 @@ async def get_installment_stats(
     db: AsyncSession = Depends(get_db)
 ):
     """Get installment statistics"""
-    return await service.get_installment_stats(db, current_user.id)
+    stats = await service.get_installment_stats(db, current_user.id)
+    # Update currency to user's display currency
+    display_currency = await get_user_display_currency(db, current_user.id)
+    stats.currency = display_currency
+    return stats
 
 
 @router.get("/{installment_id}", response_model=InstallmentResponse)
@@ -106,7 +146,37 @@ async def get_installment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Installment not found"
         )
-    return installment
+
+    # Convert to display currency
+    await convert_installment_to_display_currency(db, current_user.id, installment)
+
+    installment_dict = {
+        "id": str(installment.id),
+        "user_id": str(installment.user_id),
+        "name": installment.name,
+        "description": installment.description,
+        "category": installment.category,
+        "total_amount": float(installment.total_amount) if installment.total_amount else 0,
+        "amount_per_payment": float(installment.amount_per_payment) if installment.amount_per_payment else 0,
+        "currency": installment.currency,
+        "interest_rate": float(installment.interest_rate) if installment.interest_rate else None,
+        "frequency": installment.frequency,
+        "number_of_payments": installment.number_of_payments,
+        "payments_made": installment.payments_made,
+        "start_date": installment.start_date.isoformat() if installment.start_date else None,
+        "first_payment_date": installment.first_payment_date.isoformat() if installment.first_payment_date else None,
+        "end_date": installment.end_date.isoformat() if installment.end_date else None,
+        "is_active": installment.is_active,
+        "remaining_balance": float(installment.remaining_balance) if installment.remaining_balance is not None else None,
+        "created_at": installment.created_at,
+        "updated_at": installment.updated_at,
+        "display_total_amount": float(installment.display_total_amount) if hasattr(installment, 'display_total_amount') and installment.display_total_amount is not None else None,
+        "display_amount_per_payment": float(installment.display_amount_per_payment) if hasattr(installment, 'display_amount_per_payment') and installment.display_amount_per_payment is not None else None,
+        "display_remaining_balance": float(installment.display_remaining_balance) if hasattr(installment, 'display_remaining_balance') and installment.display_remaining_balance is not None else None,
+        "display_currency": installment.display_currency if hasattr(installment, 'display_currency') and installment.display_currency is not None else None,
+    }
+
+    return installment_dict
 
 
 @router.put("/{installment_id}", response_model=InstallmentResponse)

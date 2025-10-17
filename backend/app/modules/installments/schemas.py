@@ -87,6 +87,12 @@ class InstallmentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    # Display values (converted to user's preferred currency)
+    display_total_amount: Optional[Decimal] = None
+    display_amount_per_payment: Optional[Decimal] = None
+    display_remaining_balance: Optional[Decimal] = None
+    display_currency: Optional[str] = None
+
     class Config:
         from_attributes = True
 

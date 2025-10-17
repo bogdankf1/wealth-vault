@@ -15,6 +15,72 @@ from app.modules.installments.schemas import (
     InstallmentUpdate,
     InstallmentStats
 )
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
+
+async def convert_installment_to_display_currency(db: AsyncSession, user_id: UUID, installment: Installment) -> None:
+    """
+    Convert installment amounts to user's display currency.
+    Modifies the installment object in-place, adding display_* attributes.
+    """
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # If installment is already in display currency, no conversion needed
+    if installment.currency == display_currency:
+        installment.display_total_amount = installment.total_amount
+        installment.display_amount_per_payment = installment.amount_per_payment
+        installment.display_remaining_balance = installment.remaining_balance
+        installment.display_currency = display_currency
+        return
+
+    # Convert using currency service
+    currency_service = CurrencyService(db)
+
+    # Convert total amount
+    converted_total = await currency_service.convert_amount(
+        installment.total_amount,
+        installment.currency,
+        display_currency
+    )
+
+    # Convert payment amount
+    converted_payment = await currency_service.convert_amount(
+        installment.amount_per_payment,
+        installment.currency,
+        display_currency
+    )
+
+    # Convert remaining balance
+    converted_balance = None
+    if installment.remaining_balance is not None:
+        converted_balance = await currency_service.convert_amount(
+            installment.remaining_balance,
+            installment.currency,
+            display_currency
+        )
+
+    # Set converted values as display values
+    if converted_total is not None and converted_payment is not None:
+        installment.display_total_amount = converted_total
+        installment.display_amount_per_payment = converted_payment
+        installment.display_remaining_balance = converted_balance
+        installment.display_currency = display_currency
+    else:
+        # Fallback to original values if conversion fails
+        installment.display_total_amount = installment.total_amount
+        installment.display_amount_per_payment = installment.amount_per_payment
+        installment.display_remaining_balance = installment.remaining_balance
+        installment.display_currency = installment.currency
 
 
 def calculate_remaining_balance(
@@ -219,6 +285,10 @@ async def get_installment_stats(
     user_id: UUID
 ) -> InstallmentStats:
     """Get installment statistics"""
+    # Get display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
     # Get all installments for the user
     query = select(Installment).where(Installment.user_id == user_id)
     result = await db.execute(query)
@@ -244,23 +314,57 @@ async def get_installment_stats(
     }
 
     for installment in installments:
-        # Total debt (remaining balance)
+        # Total debt (remaining balance) - convert to display currency
         if installment.remaining_balance:
-            total_debt += installment.remaining_balance
+            remaining_in_display = installment.remaining_balance
+            if installment.currency != display_currency:
+                converted = await currency_service.convert_amount(
+                    installment.remaining_balance,
+                    installment.currency,
+                    display_currency
+                )
+                if converted is not None:
+                    remaining_in_display = converted
+            total_debt += remaining_in_display
 
-        # Monthly payment (normalize based on frequency)
+        # Monthly payment (normalize based on frequency) - convert to display currency
         if installment.is_active:
             multiplier = frequency_to_monthly.get(installment.frequency, Decimal('1'))
             monthly_equivalent = installment.amount_per_payment * multiplier
+
+            if installment.currency != display_currency:
+                converted = await currency_service.convert_amount(
+                    monthly_equivalent,
+                    installment.currency,
+                    display_currency
+                )
+                if converted is not None:
+                    monthly_equivalent = converted
             monthly_payment += monthly_equivalent
 
-        # Total paid
+        # Total paid - convert to display currency
         paid = installment.amount_per_payment * Decimal(str(installment.payments_made))
+        if installment.currency != display_currency:
+            converted = await currency_service.convert_amount(
+                paid,
+                installment.currency,
+                display_currency
+            )
+            if converted is not None:
+                paid = converted
         total_paid += paid
 
-        # By category (remaining balance)
+        # By category (remaining balance) - convert to display currency
         if installment.category:
             category_balance = installment.remaining_balance or Decimal('0')
+            if installment.currency != display_currency and category_balance > 0:
+                converted = await currency_service.convert_amount(
+                    category_balance,
+                    installment.currency,
+                    display_currency
+                )
+                if converted is not None:
+                    category_balance = converted
             by_category[installment.category] = by_category.get(installment.category, Decimal('0')) + category_balance
 
         # By frequency
@@ -289,7 +393,7 @@ async def get_installment_stats(
         total_debt=total_debt,
         monthly_payment=monthly_payment,
         total_paid=total_paid,
-        currency="USD",  # For now, assume USD
+        currency=display_currency,
         by_category=by_category,
         by_frequency=by_frequency,
         average_interest_rate=average_interest_rate,
