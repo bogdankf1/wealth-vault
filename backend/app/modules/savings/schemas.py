@@ -52,6 +52,9 @@ class SavingsAccountResponse(SavingsAccountBase):
     user_id: UUID
     created_at: datetime
     updated_at: datetime
+    # Display currency fields
+    display_current_balance: Optional[Decimal] = None
+    display_currency: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -15,6 +15,50 @@ from app.modules.savings.schemas import (
     BalanceHistoryCreate,
     SavingsStats
 )
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
+
+async def convert_account_to_display_currency(db: AsyncSession, user_id: UUID, account: SavingsAccount) -> None:
+    """
+    Convert account balance to user's display currency.
+    Modifies the account object in-place, adding display_* attributes.
+    """
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # If account is already in display currency, no conversion needed
+    if account.currency == display_currency:
+        account.display_current_balance = account.current_balance
+        account.display_currency = display_currency
+        return
+
+    # Convert using currency service
+    currency_service = CurrencyService(db)
+
+    # Convert current balance
+    converted_balance = await currency_service.convert_amount(
+        account.current_balance,
+        account.currency,
+        display_currency
+    )
+
+    # Set converted values as display values
+    if converted_balance is not None:
+        account.display_current_balance = converted_balance
+        account.display_currency = display_currency
+    else:
+        # Fallback to original values if conversion fails
+        account.display_current_balance = account.current_balance
+        account.display_currency = account.currency
 
 
 async def create_account(
@@ -205,6 +249,10 @@ async def get_savings_stats(
     user_id: UUID
 ) -> SavingsStats:
     """Get savings statistics for user"""
+    # Get display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
     # Get all accounts
     query = select(SavingsAccount).where(SavingsAccount.user_id == user_id)
     result = await db.execute(query)
@@ -213,29 +261,40 @@ async def get_savings_stats(
     total_accounts = len(accounts)
     active_accounts = sum(1 for acc in accounts if acc.is_active)
 
-    # Calculate totals by currency
+    # Calculate totals in display currency
+    total_balance = Decimal('0')
     balance_by_currency = {}
+    balance_by_type = {}
+
     for account in accounts:
         if account.is_active:
+            # Track original currency balances
             currency = account.currency
             balance_by_currency[currency] = balance_by_currency.get(currency, Decimal(0)) + account.current_balance
 
-    # Calculate totals by account type (simplified - no conversion for now)
-    balance_by_type = {}
-    for account in accounts:
-        if account.is_active:
-            acc_type = account.account_type
-            balance_by_type[acc_type] = balance_by_type.get(acc_type, Decimal(0)) + account.current_balance
+            # Convert to display currency for totals
+            balance_in_display = account.current_balance
+            if account.currency != display_currency:
+                converted = await currency_service.convert_amount(
+                    account.current_balance,
+                    account.currency,
+                    display_currency
+                )
+                if converted is not None:
+                    balance_in_display = converted
 
-    # TODO: Implement currency conversion for accurate net worth
-    # For now, assuming all balances are in USD or sum them as-is
-    total_balance_usd = sum(balance_by_currency.values())
+            total_balance += balance_in_display
+
+            # Balance by account type in display currency
+            acc_type = account.account_type
+            balance_by_type[acc_type] = balance_by_type.get(acc_type, Decimal(0)) + balance_in_display
 
     return SavingsStats(
         total_accounts=total_accounts,
         active_accounts=active_accounts,
-        total_balance_usd=total_balance_usd,
+        total_balance_usd=total_balance,
         total_balance_by_currency=balance_by_currency,
         total_balance_by_type=balance_by_type,
-        net_worth=total_balance_usd
+        net_worth=total_balance,
+        currency=display_currency
     )

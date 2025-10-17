@@ -22,6 +22,7 @@ from app.modules.savings.schemas import (
     BalanceHistoryListResponse,
     SavingsStats
 )
+from app.modules.savings.service import convert_account_to_display_currency
 
 router = APIRouter(prefix="/api/v1/savings", tags=["savings"])
 
@@ -97,6 +98,10 @@ async def list_accounts(
         is_active=is_active
     )
 
+    # Convert each account to display currency
+    for account in accounts:
+        await convert_account_to_display_currency(db, current_user.id, account)
+
     return SavingsAccountListResponse(
         items=accounts,
         total=total,
@@ -119,6 +124,10 @@ async def get_account(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Savings account not found"
         )
+
+    # Convert to display currency
+    await convert_account_to_display_currency(db, current_user.id, account)
+
     return account
 
 
