@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { Target, TrendingUp, DollarSign, Edit, Trash2, CheckCircle2 } from 'lucide-react';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListGoalsQuery,
   useGetGoalStatsQuery,
@@ -79,15 +80,6 @@ export default function GoalsPage() {
     setEditingGoalId(null);
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   // Get unique categories from goals
   const uniqueCategories = React.useMemo(() => {
     if (!goalsData?.items) return [];
@@ -117,14 +109,41 @@ export default function GoalsPage() {
         },
         {
           title: 'Total Target',
-          value: formatCurrency(stats.total_target_amount, stats.currency),
-          description: `${formatCurrency(stats.total_saved, stats.currency)} saved so far`,
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_target_amount}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
+          description: (
+            <>
+              <CurrencyDisplay
+                amount={stats.total_saved}
+                currency={stats.currency}
+                showSymbol={true}
+                showCode={false}
+              />{' '}
+              saved so far
+            </>
+          ),
           icon: DollarSign,
         },
         {
           title: 'Average Progress',
           value: `${Math.round(stats.average_progress)}%`,
-          description: `${formatCurrency(stats.total_remaining, stats.currency)} remaining`,
+          description: (
+            <>
+              <CurrencyDisplay
+                amount={stats.total_remaining}
+                currency={stats.currency}
+                showSymbol={true}
+                showCode={false}
+              />{' '}
+              remaining
+            </>
+          ),
           icon: TrendingUp,
         },
       ]
@@ -204,7 +223,10 @@ export default function GoalsPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredGoals.map((goal) => {
               const progress = goal.progress_percentage || 0;
-              const remaining = goal.target_amount - goal.current_amount;
+              const displayTarget = goal.display_target_amount ?? goal.target_amount;
+              const displayCurrent = goal.display_current_amount ?? goal.current_amount;
+              const displayCurrency = goal.display_currency ?? goal.currency;
+              const remaining = displayTarget - displayCurrent;
 
               return (
                 <Card key={goal.id} className="relative">
@@ -233,19 +255,49 @@ export default function GoalsPage() {
                         <div className="flex items-baseline justify-between mb-1">
                           <span className="text-xs text-muted-foreground">Saved</span>
                           <span className="text-2xl font-bold">
-                            {formatCurrency(goal.current_amount, goal.currency)}
+                            <CurrencyDisplay
+                              amount={displayCurrent}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between">
                           <span className="text-xs text-muted-foreground">
-                            of {formatCurrency(goal.target_amount, goal.currency)} target
+                            of <CurrencyDisplay
+                              amount={displayTarget}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            /> target
                           </span>
                           {goal.monthly_contribution && goal.monthly_contribution > 0 && (
                             <span className="text-sm text-muted-foreground">
-                              +{formatCurrency(goal.monthly_contribution, goal.currency)}/mo
+                              +<CurrencyDisplay
+                                amount={goal.display_monthly_contribution ?? goal.monthly_contribution}
+                                currency={displayCurrency}
+                                showSymbol={true}
+                                showCode={false}
+                              />/mo
                             </span>
                           )}
                         </div>
+                        {goal.display_currency && goal.display_currency !== goal.currency && (
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            Original: <CurrencyDisplay
+                              amount={goal.display_target_amount ?? goal.target_amount}
+                              currency={goal.display_currency ?? goal.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            /> target, <CurrencyDisplay
+                              amount={goal.display_monthly_contribution ?? goal.monthly_contribution ?? 0}
+                              currency={goal.display_currency ?? goal.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />/mo
+                          </div>
+                        )}
                       </div>
 
                       {/* Progress Bar */}
@@ -253,7 +305,14 @@ export default function GoalsPage() {
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{Math.round(progress)}% complete</span>
                           {remaining > 0 && (
-                            <span>{formatCurrency(remaining, goal.currency)} remaining</span>
+                            <span>
+                              <CurrencyDisplay
+                                amount={remaining}
+                                currency={displayCurrency}
+                                showSymbol={true}
+                                showCode={false}
+                              /> remaining
+                            </span>
                           )}
                         </div>
                         <Progress value={progress} className="h-2" />

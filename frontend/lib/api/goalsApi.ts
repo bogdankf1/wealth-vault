@@ -22,6 +22,11 @@ export interface Goal {
   progress_percentage?: number;
   created_at: string;
   updated_at: string;
+  // Display currency fields
+  display_target_amount?: number;
+  display_current_amount?: number;
+  display_monthly_contribution?: number;
+  display_currency?: string;
 }
 
 export interface GoalCreate {

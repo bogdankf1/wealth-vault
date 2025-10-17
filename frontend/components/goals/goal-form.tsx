@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/select';
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
+import { CurrencyInput } from '@/components/currency/currency-input';
 
 // Form validation schema
 const goalSchema = z.object({
@@ -130,6 +131,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         if (existingGoal.category) {
           setValue('category', existingGoal.category, { shouldDirty: true });
         }
+        setValue('currency', existingGoal.currency, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
@@ -266,49 +268,35 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
               </Select>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="target_amount">Target Amount *</Label>
-                <Input
-                  id="target_amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...register('target_amount', { valueAsNumber: true })}
-                />
-                {errors.target_amount && (
-                  <p className="text-sm text-destructive">{errors.target_amount.message}</p>
-                )}
-              </div>
+            <CurrencyInput
+              key={`currency-${existingGoal?.id || 'new'}-${watch('currency')}`}
+              label="Target Amount"
+              amount={watch('target_amount')?.toString() || ''}
+              currency={watch('currency')}
+              onAmountChange={(value) => setValue('target_amount', parseFloat(value) || 0)}
+              onCurrencyChange={(value) => setValue('currency', value)}
+              required
+              error={errors.target_amount?.message}
+            />
 
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="current_amount">Current Amount Saved</Label>
                 <Input
                   id="current_amount"
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   placeholder="0.00"
-                  {...register('current_amount', { valueAsNumber: true })}
+                  value={watch('current_amount')?.toString() || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      setValue('current_amount', parseFloat(value) || 0);
+                    }
+                  }}
                 />
                 {errors.current_amount && (
                   <p className="text-sm text-destructive">{errors.current_amount.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  placeholder="USD"
-                  maxLength={3}
-                  {...register('currency')}
-                />
-                {errors.currency && (
-                  <p className="text-sm text-destructive">
-                    {errors.currency.message}
-                  </p>
                 )}
               </div>
 
@@ -316,10 +304,16 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                 <Label htmlFor="monthly_contribution">Monthly Contribution (Optional)</Label>
                 <Input
                   id="monthly_contribution"
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   placeholder="0.00"
-                  {...register('monthly_contribution', { valueAsNumber: true })}
+                  value={watch('monthly_contribution')?.toString() || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      setValue('monthly_contribution', parseFloat(value) || 0);
+                    }
+                  }}
                 />
                 {errors.monthly_contribution && (
                   <p className="text-sm text-destructive">
