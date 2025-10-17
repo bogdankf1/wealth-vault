@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Plus, TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Wallet, Target, DollarSign } from 'lucide-react';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -115,33 +116,45 @@ export default function BudgetsPage() {
     setEditingBudgetId(null);
   };
 
-  const formatCurrency = (amount: number | string, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(Number(amount));
-  };
-
   // Prepare stats cards data from overview
   const statsCards: StatCard[] = overview?.stats
     ? [
         {
           title: 'Total Budgeted',
-          value: formatCurrency(overview.stats.total_budgeted, overview.stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={overview.stats.total_budgeted}
+              currency={overview.stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: `${overview.stats.active_budgets} active ${overview.stats.active_budgets === 1 ? 'budget' : 'budgets'}`,
           icon: Wallet,
         },
         {
           title: 'Total Spent',
-          value: formatCurrency(overview.stats.total_spent, overview.stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={overview.stats.total_spent}
+              currency={overview.stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: `${overview.stats.overall_percentage_used.toFixed(1)}% of budget used`,
           icon: DollarSign,
         },
         {
           title: 'Remaining',
-          value: formatCurrency(overview.stats.total_remaining, overview.stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={overview.stats.total_remaining}
+              currency={overview.stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: overview.stats.budgets_overspent > 0
             ? `${overview.stats.budgets_overspent} ${overview.stats.budgets_overspent === 1 ? 'budget' : 'budgets'} overspent`
             : `${overview.stats.budgets_near_limit} near limit`,
@@ -231,7 +244,17 @@ export default function BudgetsPage() {
                         )}
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {Number(category.spent).toLocaleString()} / {Number(category.budgeted).toLocaleString()} {overview.stats.currency}
+                        <CurrencyDisplay
+                          amount={category.spent}
+                          currency={overview.stats.currency}
+                          showSymbol={false}
+                          showCode={false}
+                        /> / <CurrencyDisplay
+                          amount={category.budgeted}
+                          currency={overview.stats.currency}
+                          showSymbol={false}
+                          showCode={true}
+                        />
                       </span>
                     </div>
                     <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -252,14 +275,26 @@ export default function BudgetsPage() {
                       </span>
                       <span className={Number(category.remaining) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                         {Number(category.remaining) >= 0 ? (
-                          <span className="flex items-center">
-                            <TrendingUp className="mr-1 h-3 w-3" />
-                            {Number(category.remaining).toLocaleString()} left
+                          <span className="flex items-center gap-1">
+                            <TrendingUp className="h-3 w-3" />
+                            <CurrencyDisplay
+                              amount={category.remaining}
+                              currency={overview.stats.currency}
+                              showSymbol={false}
+                              showCode={false}
+                            />
+                            <span>left</span>
                           </span>
                         ) : (
-                          <span className="flex items-center">
-                            <TrendingDown className="mr-1 h-3 w-3" />
-                            {Math.abs(Number(category.remaining)).toLocaleString()} over
+                          <span className="flex items-center gap-1">
+                            <TrendingDown className="h-3 w-3" />
+                            <CurrencyDisplay
+                              amount={Math.abs(Number(category.remaining))}
+                              currency={overview.stats.currency}
+                              showSymbol={false}
+                              showCode={false}
+                            />
+                            <span>over</span>
                           </span>
                         )}
                       </span>
@@ -337,11 +372,26 @@ export default function BudgetsPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-2xl font-bold">
-                        {formatCurrency(budget.amount, budget.currency)}
+                        <CurrencyDisplay
+                          amount={budget.display_amount ?? budget.amount}
+                          currency={budget.display_currency ?? budget.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {PERIOD_LABELS[budget.period] || budget.period}
                       </p>
+                      {budget.display_currency && budget.display_currency !== budget.currency && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Original: <CurrencyDisplay
+                            amount={budget.amount}
+                            currency={budget.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </p>
+                      )}
                     </div>
 
                     <div className="rounded-lg bg-muted p-3 min-h-[60px] flex items-center justify-center">

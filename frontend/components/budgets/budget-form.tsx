@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
+import { CurrencyInput } from '@/components/currency/currency-input';
 import { useCreateBudgetMutation, useUpdateBudgetMutation, Budget } from '@/lib/api/budgetsApi';
 import { toast } from 'sonner';
 
@@ -205,54 +206,16 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Budget Amount</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="currency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Currency</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="USD">USD</SelectItem>
-                        <SelectItem value="EUR">EUR</SelectItem>
-                        <SelectItem value="GBP">GBP</SelectItem>
-                        <SelectItem value="JPY">JPY</SelectItem>
-                        <SelectItem value="CAD">CAD</SelectItem>
-                        <SelectItem value="AUD">AUD</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <CurrencyInput
+              key={`currency-${budget?.id || 'new'}-${form.watch('currency')}`}
+              label="Budget Amount"
+              amount={form.watch('amount')?.toString() || ''}
+              currency={form.watch('currency')}
+              onAmountChange={(value) => form.setValue('amount', parseFloat(value) || 0)}
+              onCurrencyChange={(value) => form.setValue('currency', value)}
+              required
+              error={form.formState.errors.amount?.message}
+            />
 
             <FormField
               control={form.control}

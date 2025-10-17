@@ -1,19 +1,7 @@
 /**
  * RTK Query API for budgets module
  */
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { getSession } from 'next-auth/react';
-
-const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  prepareHeaders: async (headers) => {
-    const session = await getSession();
-    if (session?.accessToken) {
-      headers.set('Authorization', `Bearer ${session.accessToken}`);
-    }
-    return headers;
-  },
-});
+import { apiSlice } from './apiSlice';
 
 export interface Budget {
   id: string;
@@ -37,6 +25,11 @@ export interface Budget {
   percentage_used?: number;
   is_overspent?: boolean;
   should_alert?: boolean;
+  // Display currency fields
+  display_amount?: number;
+  display_spent?: number;
+  display_remaining?: number;
+  display_currency?: string;
 }
 
 export interface BudgetWithProgress {
@@ -112,10 +105,7 @@ export interface ListBudgetsParams {
   limit?: number;
 }
 
-export const budgetsApi = createApi({
-  reducerPath: 'budgetsApi',
-  baseQuery,
-  tagTypes: ['Budget', 'BudgetOverview'],
+export const budgetsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Create budget
     createBudget: builder.mutation<Budget, CreateBudgetRequest>({
@@ -124,7 +114,7 @@ export const budgetsApi = createApi({
         method: 'POST',
         body: budget,
       }),
-      invalidatesTags: ['Budget', 'BudgetOverview'],
+      invalidatesTags: [{ type: 'Budget', id: 'LIST' }, { type: 'Budget', id: 'OVERVIEW' }],
     }),
 
     // List budgets
@@ -148,7 +138,7 @@ export const budgetsApi = createApi({
         url: '/api/v1/budgets/overview',
         params: params || {},
       }),
-      providesTags: ['BudgetOverview'],
+      providesTags: [{ type: 'Budget', id: 'OVERVIEW' }],
     }),
 
     // Get budget by ID with progress
@@ -167,7 +157,7 @@ export const budgetsApi = createApi({
       invalidatesTags: (_result: Budget | undefined, _error, { id }: { id: string; data: UpdateBudgetRequest }) => [
         { type: 'Budget', id },
         { type: 'Budget', id: 'LIST' },
-        'BudgetOverview',
+        { type: 'Budget', id: 'OVERVIEW' },
       ],
     }),
 
@@ -180,10 +170,11 @@ export const budgetsApi = createApi({
       invalidatesTags: (_result: void | undefined, _error, id: string) => [
         { type: 'Budget', id },
         { type: 'Budget', id: 'LIST' },
-        'BudgetOverview',
+        { type: 'Budget', id: 'OVERVIEW' },
       ],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const {
