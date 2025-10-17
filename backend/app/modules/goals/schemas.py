@@ -74,6 +74,11 @@ class GoalResponse(BaseModel):
     progress_percentage: Optional[Decimal]
     created_at: datetime
     updated_at: datetime
+    # Display currency fields
+    display_target_amount: Optional[Decimal] = None
+    display_current_amount: Optional[Decimal] = None
+    display_monthly_contribution: Optional[Decimal] = None
+    display_currency: Optional[str] = None
 
     class Config:
         from_attributes = True

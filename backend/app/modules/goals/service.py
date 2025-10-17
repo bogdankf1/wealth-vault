@@ -15,6 +15,72 @@ from app.modules.goals.schemas import (
     GoalUpdate,
     GoalStats
 )
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
+
+async def convert_goal_to_display_currency(db: AsyncSession, user_id: UUID, goal: Goal) -> None:
+    """
+    Convert goal amounts to user's display currency.
+    Modifies the goal object in-place, adding display_* attributes.
+    """
+    display_currency = await get_user_display_currency(db, user_id)
+
+    # If goal is already in display currency, no conversion needed
+    if goal.currency == display_currency:
+        goal.display_target_amount = goal.target_amount
+        goal.display_current_amount = goal.current_amount
+        goal.display_monthly_contribution = goal.monthly_contribution
+        goal.display_currency = display_currency
+        return
+
+    # Convert using currency service
+    currency_service = CurrencyService(db)
+
+    # Convert target amount
+    converted_target = await currency_service.convert_amount(
+        goal.target_amount,
+        goal.currency,
+        display_currency
+    )
+
+    # Convert current amount
+    converted_current = await currency_service.convert_amount(
+        goal.current_amount,
+        goal.currency,
+        display_currency
+    )
+
+    # Convert monthly contribution
+    converted_contribution = None
+    if goal.monthly_contribution is not None:
+        converted_contribution = await currency_service.convert_amount(
+            goal.monthly_contribution,
+            goal.currency,
+            display_currency
+        )
+
+    # Set converted values as display values
+    if converted_target is not None and converted_current is not None:
+        goal.display_target_amount = converted_target
+        goal.display_current_amount = converted_current
+        goal.display_monthly_contribution = converted_contribution
+        goal.display_currency = display_currency
+    else:
+        # Fallback to original values if conversion fails
+        goal.display_target_amount = goal.target_amount
+        goal.display_current_amount = goal.current_amount
+        goal.display_monthly_contribution = goal.monthly_contribution
+        goal.display_currency = goal.currency
 
 
 def calculate_progress_percentage(current_amount: Decimal, target_amount: Decimal) -> Decimal:
@@ -189,6 +255,10 @@ async def get_goal_stats(
     user_id: UUID
 ) -> GoalStats:
     """Get goal statistics"""
+    # Get display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
     # Get all goals for the user
     query = select(Goal).where(Goal.user_id == user_id)
     result = await db.execute(query)
@@ -207,12 +277,34 @@ async def get_goal_stats(
     goals_behind = 0
 
     for goal in goals:
-        total_target_amount += goal.target_amount
-        total_saved += goal.current_amount
+        # Convert target amount to display currency
+        target_in_display = goal.target_amount
+        if goal.currency != display_currency:
+            converted = await currency_service.convert_amount(
+                goal.target_amount,
+                goal.currency,
+                display_currency
+            )
+            if converted is not None:
+                target_in_display = converted
+        total_target_amount += target_in_display
 
-        # By category (target amounts)
+        # Convert current amount to display currency
+        current_in_display = goal.current_amount
+        if goal.currency != display_currency:
+            converted = await currency_service.convert_amount(
+                goal.current_amount,
+                goal.currency,
+                display_currency
+            )
+            if converted is not None:
+                current_in_display = converted
+        total_saved += current_in_display
+
+        # By category (target amounts) - convert to display currency
         if goal.category:
-            by_category[goal.category] = by_category.get(goal.category, Decimal('0')) + goal.target_amount
+            category_target = target_in_display
+            by_category[goal.category] = by_category.get(goal.category, Decimal('0')) + category_target
 
         # Progress tracking
         if goal.progress_percentage:
@@ -246,7 +338,7 @@ async def get_goal_stats(
         total_saved=total_saved,
         total_remaining=max(total_remaining, Decimal('0')),
         average_progress=average_progress,
-        currency="USD",
+        currency=display_currency,
         by_category=by_category,
         goals_on_track=goals_on_track,
         goals_behind=goals_behind

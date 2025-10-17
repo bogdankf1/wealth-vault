@@ -17,6 +17,7 @@ from app.modules.goals.schemas import (
     GoalListResponse,
     GoalStats
 )
+from app.modules.goals.service import convert_goal_to_display_currency
 
 router = APIRouter(prefix="/api/v1/goals", tags=["goals"])
 
@@ -74,6 +75,10 @@ async def list_goals(
         is_completed=is_completed
     )
 
+    # Convert each goal to display currency
+    for goal in goals:
+        await convert_goal_to_display_currency(db, current_user.id, goal)
+
     return GoalListResponse(
         items=goals,
         total=total,
@@ -106,6 +111,10 @@ async def get_goal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Goal not found"
         )
+
+    # Convert to display currency
+    await convert_goal_to_display_currency(db, current_user.id, goal)
+
     return goal
 
 
