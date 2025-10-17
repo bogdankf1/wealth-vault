@@ -35,6 +35,8 @@ import {
 } from '@/components/ui/select';
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
+import { CurrencyInput } from '@/components/currency/currency-input';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 // Form validation schema
 const portfolioAssetSchema = z.object({
@@ -202,6 +204,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
   const quantity = watch('quantity') || 0;
   const purchasePrice = watch('purchase_price') || 0;
   const currentPrice = watch('current_price') || 0;
+  const selectedCurrency = watch('currency') || 'USD';
   const totalInvested = quantity * purchasePrice;
   const currentValue = quantity * currentPrice;
   const totalReturn = currentValue - totalInvested;
@@ -287,54 +290,35 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity *</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  step="0.00000001"
-                  placeholder="0.00"
-                  {...register('quantity', { valueAsNumber: true })}
-                />
-                {errors.quantity && (
-                  <p className="text-sm text-destructive">{errors.quantity.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  placeholder="USD"
-                  maxLength={3}
-                  {...register('currency')}
-                />
-                {errors.currency && (
-                  <p className="text-sm text-destructive">
-                    {errors.currency.message}
-                  </p>
-                )}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity *</Label>
+              <Input
+                id="quantity"
+                type="number"
+                step="0.00000001"
+                placeholder="0.00"
+                {...register('quantity', { valueAsNumber: true })}
+              />
+              {errors.quantity && (
+                <p className="text-sm text-destructive">{errors.quantity.message}</p>
+              )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="purchase_price">Purchase Price (per unit) *</Label>
-                <Input
-                  id="purchase_price"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...register('purchase_price', { valueAsNumber: true })}
-                />
-                {errors.purchase_price && (
-                  <p className="text-sm text-destructive">{errors.purchase_price.message}</p>
-                )}
-              </div>
+            <CurrencyInput
+              key={`currency-${assetId || 'new'}-${watch('currency')}`}
+              label="Purchase Price (per unit)"
+              amount={watch('purchase_price')?.toString() || ''}
+              currency={watch('currency')}
+              onAmountChange={(value) => setValue('purchase_price', parseFloat(value) || 0)}
+              onCurrencyChange={(value) => setValue('currency', value)}
+              required
+              error={errors.purchase_price?.message}
+              placeholder="0.00"
+            />
 
-              <div className="space-y-2">
-                <Label htmlFor="current_price">Current Price (per unit) *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="current_price">Current Price (per unit) *</Label>
+              <div className="relative flex-1">
                 <Input
                   id="current_price"
                   type="number"
@@ -342,10 +326,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                   placeholder="0.00"
                   {...register('current_price', { valueAsNumber: true })}
                 />
-                {errors.current_price && (
-                  <p className="text-sm text-destructive">{errors.current_price.message}</p>
-                )}
               </div>
+              {errors.current_price && (
+                <p className="text-sm text-destructive">{errors.current_price.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -372,19 +356,34 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                   <div>
                     <span className="text-muted-foreground">Total Invested: </span>
                     <span className="font-medium">
-                      ${totalInvested.toFixed(2)}
+                      <CurrencyDisplay
+                        amount={totalInvested}
+                        currency={selectedCurrency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
                     </span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Current Value: </span>
                     <span className="font-medium">
-                      ${currentValue.toFixed(2)}
+                      <CurrencyDisplay
+                        amount={currentValue}
+                        currency={selectedCurrency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
                     </span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Total Return: </span>
                     <span className={`font-medium ${totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      ${totalReturn.toFixed(2)}
+                      <CurrencyDisplay
+                        amount={totalReturn}
+                        currency={selectedCurrency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
                     </span>
                   </div>
                   <div>

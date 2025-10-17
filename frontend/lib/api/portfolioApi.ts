@@ -23,6 +23,13 @@ export interface PortfolioAsset {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  // Display currency fields
+  display_purchase_price?: number;
+  display_current_price?: number;
+  display_total_invested?: number;
+  display_current_value?: number;
+  display_total_return?: number;
+  display_currency?: string;
 }
 
 export interface PortfolioAssetCreate {

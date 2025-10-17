@@ -22,6 +22,7 @@ import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 export default function PortfolioPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -78,15 +79,6 @@ export default function PortfolioPage() {
     setEditingAssetId(null);
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
-
   const formatPercentage = (value: number | string) => {
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
     const sign = numValue >= 0 ? '+' : '';
@@ -116,13 +108,37 @@ export default function PortfolioPage() {
     ? [
         {
           title: 'Total Value',
-          value: formatCurrency(stats.current_value, stats.currency),
-          description: `${formatCurrency(stats.total_invested, stats.currency)} invested`,
+          value: (
+            <CurrencyDisplay
+              amount={stats.current_value}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
+          description: (
+            <span className="flex items-center gap-1">
+              <CurrencyDisplay
+                amount={stats.total_invested}
+                currency={stats.currency}
+                showSymbol={true}
+                showCode={false}
+              />
+              <span>invested</span>
+            </span>
+          ),
           icon: DollarSign,
         },
         {
           title: 'Total Return',
-          value: formatCurrency(stats.total_return, stats.currency),
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_return}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
           description: formatPercentage(stats.total_return_percentage),
           icon: stats.total_return >= 0 ? TrendingUp : TrendingDown,
         },
@@ -263,9 +279,14 @@ export default function PortfolioPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredAssets.map((asset) => {
-              const totalReturn = asset.total_return || 0;
+              const displayCurrency = asset.display_currency || asset.currency;
+              const displayCurrentValue = asset.display_current_value ?? asset.current_value ?? 0;
+              const displayTotalInvested = asset.display_total_invested ?? asset.total_invested ?? 0;
+              const displayTotalReturn = asset.display_total_return ?? asset.total_return ?? 0;
+              const displayPurchasePrice = asset.display_purchase_price ?? asset.purchase_price;
+              const displayCurrentPrice = asset.display_current_price ?? asset.current_price;
               const returnPercentage = asset.return_percentage || 0;
-              const isPositive = totalReturn >= 0;
+              const isPositive = displayTotalReturn >= 0;
 
               return (
                 <Card key={asset.id} className="relative">
@@ -293,17 +314,38 @@ export default function PortfolioPage() {
                         <div className="flex items-baseline justify-between mb-1">
                           <span className="text-xs text-muted-foreground">Current Value</span>
                           <span className="text-2xl font-bold">
-                            {formatCurrency(asset.current_value || 0, asset.currency)}
+                            <CurrencyDisplay
+                              amount={displayCurrentValue}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between">
-                          <span className="text-xs text-muted-foreground">
-                            {formatCurrency(asset.total_invested || 0, asset.currency)} invested
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <CurrencyDisplay
+                              amount={displayTotalInvested}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                            <span>invested</span>
                           </span>
                           <span className={`text-sm font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                             {formatPercentage(returnPercentage)}
                           </span>
                         </div>
+                        {asset.display_currency && asset.display_currency !== asset.currency && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Original: <CurrencyDisplay
+                              amount={asset.current_value || 0}
+                              currency={asset.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </p>
+                        )}
                       </div>
 
                       {/* Return Display */}
@@ -318,9 +360,24 @@ export default function PortfolioPage() {
                             <span className="text-xs text-muted-foreground">Total Return</span>
                           </div>
                           <span className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(totalReturn, asset.currency)}
+                            <CurrencyDisplay
+                              amount={displayTotalReturn}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
                           </span>
                         </div>
+                        {asset.display_currency && asset.display_currency !== asset.currency && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Original: <CurrencyDisplay
+                              amount={asset.total_return || 0}
+                              currency={asset.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </p>
+                        )}
                       </div>
 
                       {/* Holdings Info */}
@@ -332,15 +389,40 @@ export default function PortfolioPage() {
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Avg. Cost:</span>
                           <span className="font-semibold">
-                            {formatCurrency(asset.purchase_price, asset.currency)}
+                            <CurrencyDisplay
+                              amount={displayPurchasePrice}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Current Price:</span>
                           <span className="font-semibold">
-                            {formatCurrency(asset.current_price, asset.currency)}
+                            <CurrencyDisplay
+                              amount={displayCurrentPrice}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
                           </span>
                         </div>
+                        {asset.display_currency && asset.display_currency !== asset.currency && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Original: <CurrencyDisplay
+                              amount={asset.purchase_price}
+                              currency={asset.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            /> / <CurrencyDisplay
+                              amount={asset.current_price}
+                              currency={asset.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </p>
+                        )}
                       </div>
 
                       <div className="min-h-[24px]">
