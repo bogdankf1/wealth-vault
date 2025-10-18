@@ -16,6 +16,7 @@ import {
   PieLabelRenderProps,
 } from 'recharts';
 import { PieChartIcon, Info } from 'lucide-react';
+import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 
 interface CategoryData {
   category: string;
@@ -37,6 +38,7 @@ interface ExpenseByCategoryChartProps {
   data: CategoryData[];
   isLoading?: boolean;
   chartType?: 'pie' | 'donut';
+  currency?: string;
 }
 
 // Color palette for categories (matching our expense categories)
@@ -59,7 +61,12 @@ export function ExpenseByCategoryChart({
   data,
   isLoading = false,
   chartType = 'donut',
+  currency = 'USD',
 }: ExpenseByCategoryChartProps) {
+  // Get currency data - must be called before any returns
+  const { data: currencyData } = useGetCurrencyQuery(currency);
+  const currencySymbol = currencyData?.symbol || '$';
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -84,12 +91,11 @@ export function ExpenseByCategoryChart({
 
   // Format currency
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    const formatted = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+    return `${currencySymbol}${formatted}`;
   };
 
   // Custom tooltip

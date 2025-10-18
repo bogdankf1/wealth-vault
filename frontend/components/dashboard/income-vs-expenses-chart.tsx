@@ -25,6 +25,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { TrendingUp, TrendingDown, Info } from 'lucide-react';
+import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 
 interface ChartDataPoint {
   month: string;
@@ -46,13 +47,19 @@ interface IncomeVsExpensesChartProps {
   data: ChartDataPoint[];
   isLoading?: boolean;
   chartType?: 'line' | 'area';
+  currency?: string;
 }
 
 export function IncomeVsExpensesChart({
   data,
   isLoading = false,
   chartType = 'area',
+  currency = 'USD',
 }: IncomeVsExpensesChartProps) {
+  // Get currency data - must be called before any returns
+  const { data: currencyData } = useGetCurrencyQuery(currency);
+  const currencySymbol = currencyData?.symbol || '$';
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -79,12 +86,11 @@ export function IncomeVsExpensesChart({
 
   // Format currency
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    const formatted = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+    return `${currencySymbol}${formatted}`;
   };
 
   // Custom tooltip
@@ -210,7 +216,7 @@ export function IncomeVsExpensesChart({
             <YAxis
               className="text-xs text-gray-600 dark:text-gray-400"
               tick={{ fill: 'currentColor' }}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value) => `${currencySymbol}${(value / 1000).toFixed(0)}k`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend
@@ -245,7 +251,7 @@ export function IncomeVsExpensesChart({
             <YAxis
               className="text-xs text-gray-600 dark:text-gray-400"
               tick={{ fill: 'currentColor' }}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value) => `${currencySymbol}${(value / 1000).toFixed(0)}k`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend

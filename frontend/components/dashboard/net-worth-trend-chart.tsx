@@ -21,6 +21,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { TrendingUp, TrendingDown, Wallet, Info } from 'lucide-react';
+import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 
 interface NetWorthDataPoint {
   month: string;
@@ -43,13 +44,19 @@ interface NetWorthTrendChartProps {
   data: NetWorthDataPoint[];
   isLoading?: boolean;
   chartType?: 'line' | 'area';
+  currency?: string;
 }
 
 export function NetWorthTrendChart({
   data,
   isLoading = false,
   chartType = 'area',
+  currency = 'USD',
 }: NetWorthTrendChartProps) {
+  // Get currency data - must be called before any returns
+  const { data: currencyData } = useGetCurrencyQuery(currency);
+  const currencySymbol = currencyData?.symbol || '$';
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -82,12 +89,11 @@ export function NetWorthTrendChart({
 
   // Format currency
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    const formatted = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+    return `${currencySymbol}${formatted}`;
   };
 
   // Custom tooltip
@@ -226,9 +232,9 @@ export function NetWorthTrendChart({
               tickFormatter={(value) => {
                 const absValue = Math.abs(value);
                 if (absValue >= 1000000) {
-                  return `$${(value / 1000000).toFixed(1)}M`;
+                  return `${currencySymbol}${(value / 1000000).toFixed(1)}M`;
                 }
-                return `$${(value / 1000).toFixed(0)}k`;
+                return `${currencySymbol}${(value / 1000).toFixed(0)}k`;
               }}
             />
             <Tooltip content={<CustomTooltip />} />
@@ -288,9 +294,9 @@ export function NetWorthTrendChart({
               tickFormatter={(value) => {
                 const absValue = Math.abs(value);
                 if (absValue >= 1000000) {
-                  return `$${(value / 1000000).toFixed(1)}M`;
+                  return `${currencySymbol}${(value / 1000000).toFixed(1)}M`;
                 }
-                return `$${(value / 1000).toFixed(0)}k`;
+                return `${currencySymbol}${(value / 1000).toFixed(0)}k`;
               }}
             />
             <Tooltip content={<CustomTooltip />} />

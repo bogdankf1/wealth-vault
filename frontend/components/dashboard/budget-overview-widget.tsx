@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 export function BudgetOverviewWidget() {
   const { data: overview, isLoading, error } = useGetBudgetOverviewQuery();
@@ -115,19 +116,34 @@ export function BudgetOverviewWidget() {
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Budgeted</p>
             <p className="text-lg font-semibold">
-              {stats.currency} {stats.total_budgeted.toLocaleString()}
+              <CurrencyDisplay
+                amount={stats.total_budgeted}
+                currency={stats.currency}
+                showSymbol={true}
+                showCode={false}
+              />
             </p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Spent</p>
             <p className="text-lg font-semibold">
-              {stats.currency} {stats.total_spent.toLocaleString()}
+              <CurrencyDisplay
+                amount={stats.total_spent}
+                currency={stats.currency}
+                showSymbol={true}
+                showCode={false}
+              />
             </p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Remaining</p>
             <p className={`text-lg font-semibold ${stats.total_remaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-              {stats.currency} {stats.total_remaining.toLocaleString()}
+              <CurrencyDisplay
+                amount={stats.total_remaining}
+                currency={stats.currency}
+                showSymbol={true}
+                showCode={false}
+              />
             </p>
           </div>
         </div>
@@ -186,7 +202,17 @@ export function BudgetOverviewWidget() {
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">{category.category}</span>
                 <span className="text-muted-foreground">
-                  {category.spent.toLocaleString()} / {category.budgeted.toLocaleString()}
+                  <CurrencyDisplay
+                    amount={category.spent}
+                    currency={stats.currency}
+                    showSymbol={true}
+                    showCode={false}
+                  /> / <CurrencyDisplay
+                    amount={category.budgeted}
+                    currency={stats.currency}
+                    showSymbol={true}
+                    showCode={false}
+                  />
                 </span>
               </div>
               <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -207,14 +233,26 @@ export function BudgetOverviewWidget() {
                 </span>
                 <span className={category.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                   {category.remaining >= 0 ? (
-                    <span className="flex items-center">
-                      <TrendingUp className="mr-1 h-3 w-3" />
-                      {category.remaining.toLocaleString()} left
+                    <span className="flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      <CurrencyDisplay
+                        amount={category.remaining}
+                        currency={stats.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
+                      <span>left</span>
                     </span>
                   ) : (
-                    <span className="flex items-center">
-                      <TrendingDown className="mr-1 h-3 w-3" />
-                      {Math.abs(category.remaining).toLocaleString()} over
+                    <span className="flex items-center gap-1">
+                      <TrendingDown className="h-3 w-3" />
+                      <CurrencyDisplay
+                        amount={Math.abs(category.remaining)}
+                        currency={stats.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
+                      <span>over</span>
                     </span>
                   )}
                 </span>

@@ -19,6 +19,7 @@ import {
   Cell,
 } from 'recharts';
 import { BarChart3, TrendingUp, TrendingDown, Info } from 'lucide-react';
+import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 
 interface MonthlySpendingData {
   month: string;
@@ -40,13 +41,19 @@ interface MonthlySpendingChartProps {
   data: MonthlySpendingData[];
   isLoading?: boolean;
   showAverage?: boolean;
+  currency?: string;
 }
 
 export function MonthlySpendingChart({
   data,
   isLoading = false,
   showAverage = true,
+  currency = 'USD',
 }: MonthlySpendingChartProps) {
+  // Get currency data - must be called before any returns
+  const { data: currencyData } = useGetCurrencyQuery(currency);
+  const currencySymbol = currencyData?.symbol || '$';
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -83,12 +90,11 @@ export function MonthlySpendingChart({
 
   // Format currency
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    const formatted = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+    return `${currencySymbol}${formatted}`;
   };
 
   // Custom tooltip
@@ -224,7 +230,7 @@ export function MonthlySpendingChart({
           <YAxis
             className="text-xs text-gray-600 dark:text-gray-400"
             tick={{ fill: 'currentColor' }}
-            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+            tickFormatter={(value) => `${currencySymbol}${(value / 1000).toFixed(0)}k`}
           />
           <Tooltip content={<CustomTooltip />} />
           {showAverage && (

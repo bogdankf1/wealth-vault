@@ -56,10 +56,13 @@ import { ExpenseByCategoryChart } from '@/components/dashboard/expense-by-catego
 import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
 import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useGetDashboardOverviewQuery();
   const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: preferences } = useGetMyPreferencesQuery();
 
   // Dialog states for Quick Actions
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
@@ -116,17 +119,6 @@ export default function DashboardPage() {
   }
 
   const { net_worth, cash_flow, financial_health, recent_activity } = data;
-
-  // Format currency
-  const formatCurrency = (value: string | number) => {
-    const num = typeof value === 'string' ? parseFloat(value) : value;
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
 
   // Format percentage
   const formatPercentage = (value: string | number) => {
@@ -360,7 +352,14 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <div>
               <p className="text-3xl font-bold">
-                {formatCurrency(net_worth.net_worth)}
+                <CurrencyDisplay
+                  amount={parseFloat(net_worth.net_worth)}
+                  currency={net_worth.currency}
+                  showSymbol={true}
+                  showCode={false}
+                  
+                  
+                />
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Total net worth
@@ -373,11 +372,32 @@ export default function DashboardPage() {
                   <span className="text-sm font-medium">Assets</span>
                 </div>
                 <p className="text-xl font-semibold mt-1">
-                  {formatCurrency(net_worth.total_assets)}
+                  <CurrencyDisplay
+                    amount={parseFloat(net_worth.total_assets)}
+                    currency={net_worth.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  />
                 </p>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-1">
-                  <div>Portfolio: {formatCurrency(net_worth.portfolio_value)}</div>
-                  <div>Savings: {formatCurrency(net_worth.savings_balance)}</div>
+                  <div>Portfolio: <CurrencyDisplay
+                    amount={parseFloat(net_worth.portfolio_value)}
+                    currency={net_worth.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  /></div>
+                  <div>Savings: <CurrencyDisplay
+                    amount={parseFloat(net_worth.savings_balance)}
+                    currency={net_worth.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  /></div>
                 </div>
               </div>
               <div>
@@ -386,10 +406,24 @@ export default function DashboardPage() {
                   <span className="text-sm font-medium">Liabilities</span>
                 </div>
                 <p className="text-xl font-semibold mt-1">
-                  {formatCurrency(net_worth.total_liabilities)}
+                  <CurrencyDisplay
+                    amount={parseFloat(net_worth.total_liabilities)}
+                    currency={net_worth.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  />
                 </p>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                  <div>Debt: {formatCurrency(net_worth.total_debt)}</div>
+                  <div>Debt: <CurrencyDisplay
+                    amount={parseFloat(net_worth.total_debt)}
+                    currency={net_worth.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  /></div>
                 </div>
               </div>
             </div>
@@ -464,7 +498,16 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Income</p>
-                <p className="text-xl font-bold">{formatCurrency(cash_flow.monthly_income)}</p>
+                <p className="text-xl font-bold">
+                  <CurrencyDisplay
+                    amount={parseFloat(cash_flow.monthly_income)}
+                    currency={cash_flow.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  />
+                </p>
               </div>
             </div>
             <Tooltip>
@@ -488,7 +531,16 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
-                <p className="text-xl font-bold">{formatCurrency(cash_flow.monthly_expenses)}</p>
+                <p className="text-xl font-bold">
+                  <CurrencyDisplay
+                    amount={parseFloat(cash_flow.monthly_expenses)}
+                    currency={cash_flow.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  />
+                </p>
               </div>
             </div>
             <Tooltip>
@@ -512,7 +564,16 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Subscriptions</p>
-                <p className="text-xl font-bold">{formatCurrency(cash_flow.monthly_subscriptions)}</p>
+                <p className="text-xl font-bold">
+                  <CurrencyDisplay
+                    amount={parseFloat(cash_flow.monthly_subscriptions)}
+                    currency={cash_flow.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  />
+                </p>
               </div>
             </div>
             <Tooltip>
@@ -536,7 +597,16 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Net Cash Flow</p>
-                <p className="text-xl font-bold">{formatCurrency(cash_flow.net_cash_flow)}</p>
+                <p className="text-xl font-bold">
+                  <CurrencyDisplay
+                    amount={parseFloat(cash_flow.net_cash_flow)}
+                    currency={cash_flow.currency}
+                    showSymbol={true}
+                    showCode={false}
+                    
+                    
+                  />
+                </p>
               </div>
             </div>
             <Tooltip>
@@ -595,7 +665,15 @@ export default function DashboardPage() {
                     : 'text-red-600 dark:text-red-400'
                 }`}>
                   <p className="font-semibold">
-                    {activity.is_positive ? '+' : '-'}{formatCurrency(activity.amount)}
+                    {activity.is_positive ? '+' : '-'}
+                    <CurrencyDisplay
+                      amount={parseFloat(activity.amount)}
+                      currency={activity.currency}
+                      displayCurrency={preferences?.display_currency || preferences?.currency}
+                      showSymbol={true}
+                      showCode={false}
+                      showConversionTooltip={true}
+                    />
                   </p>
                 </div>
               </div>
@@ -626,6 +704,7 @@ export default function DashboardPage() {
             data={incomeVsExpensesData?.data || []}
             isLoading={isLoadingIncomeVsExpenses}
             chartType="area"
+            currency={preferences?.display_currency || preferences?.currency || 'USD'}
           />
 
           {/* Expense by Category Chart */}
@@ -633,6 +712,7 @@ export default function DashboardPage() {
             data={expenseByCategoryData?.data || []}
             isLoading={isLoadingExpenseByCategory}
             chartType="donut"
+            currency={preferences?.display_currency || preferences?.currency || 'USD'}
           />
 
           {/* Monthly Spending Chart */}
@@ -640,11 +720,13 @@ export default function DashboardPage() {
             data={monthlySpendingData?.data || []}
             isLoading={isLoadingMonthlySpending}
             showAverage={true}
+            currency={preferences?.display_currency || preferences?.currency || 'USD'}
           />
 
           {/* Net Worth Trend Chart */}
           <NetWorthTrendChart
             data={netWorthTrendData?.data || []}
+            currency={preferences?.display_currency || preferences?.currency || 'USD'}
             isLoading={isLoadingNetWorthTrend}
             chartType="area"
           />
