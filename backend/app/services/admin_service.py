@@ -417,14 +417,27 @@ class AdminService:
         week_start = now - timedelta(days=7)
         month_start = now - timedelta(days=30)
 
-        # Total users
-        total_users_result = await self.db.execute(select(func.count(User.id)))
+        # Total users (not deleted)
+        total_users_result = await self.db.execute(
+            select(func.count(User.id)).where(User.deleted_at.is_(None))
+        )
         total_users = total_users_result.scalar()
 
-        # Active users (logged in last 30 days) - we'll need to track this with login activity
-        # For now, count non-deleted users
+        # Active users - users with active subscriptions or created in last 30 days
+        # This is more accurate than just counting all users
         active_users_result = await self.db.execute(
-            select(func.count(User.id)).where(User.deleted_at.is_(None))
+            select(func.count(func.distinct(User.id)))
+            .select_from(User)
+            .outerjoin(UserSubscription, User.id == UserSubscription.user_id)
+            .where(
+                and_(
+                    User.deleted_at.is_(None),
+                    or_(
+                        UserSubscription.status == "active",
+                        User.created_at >= month_start
+                    )
+                )
+            )
         )
         active_users = active_users_result.scalar()
 
@@ -453,13 +466,23 @@ class AdminService:
         )
         active_subscriptions = active_subs_result.scalar()
 
-        # Revenue (MRR/ARR) - simplified calculation
-        # MRR = sum of all active monthly subscriptions
-        # This is a placeholder - in production you'd calculate this from Stripe data
-        mrr = active_subscriptions * 1000  # Placeholder: $10 per sub in cents
+        # Revenue (MRR/ARR) - Calculate from actual tier prices
+        # Get all active subscriptions with user tier information
+        active_subs_query = await self.db.execute(
+            select(UserSubscription, User, Tier)
+            .join(User, UserSubscription.user_id == User.id)
+            .outerjoin(Tier, User.tier_id == Tier.id)
+            .where(UserSubscription.status == "active")
+        )
+
+        mrr = 0.0
+        for subscription, user, tier in active_subs_query.all():
+            if tier and tier.price_monthly:
+                mrr += tier.price_monthly
+
         arr = mrr * 12
 
-        # Churn rate (simplified)
+        # Churn rate - cancelled subscriptions in the last 30 days as a percentage of active subs
         cancelled_subs_result = await self.db.execute(
             select(func.count(UserSubscription.id)).where(
                 and_(
@@ -469,7 +492,11 @@ class AdminService:
             )
         )
         cancelled_this_month = cancelled_subs_result.scalar()
-        churn_rate = (cancelled_this_month / total_subscriptions * 100) if total_subscriptions > 0 else 0.0
+
+        # Churn rate = (cancelled in period / active at start of period)
+        # Simplified: cancelled_this_month / (active_subscriptions + cancelled_this_month)
+        total_at_start = active_subscriptions + cancelled_this_month
+        churn_rate = (cancelled_this_month / total_at_start) if total_at_start > 0 else 0.0
 
         return {
             "total_users": total_users,
@@ -481,7 +508,7 @@ class AdminService:
             "active_subscriptions": active_subscriptions,
             "mrr": mrr,
             "arr": arr,
-            "churn_rate": round(churn_rate, 2),
+            "churn_rate": churn_rate,
         }
 
     async def get_user_acquisition_data(self, days: int = 30) -> List[dict]:
@@ -503,22 +530,107 @@ class AdminService:
 
     async def get_engagement_metrics(self) -> dict:
         """Get user engagement metrics."""
-        # Simplified version - in production, track actual login activity
         now = datetime.utcnow()
         day_ago = now - timedelta(days=1)
         week_ago = now - timedelta(days=7)
         month_ago = now - timedelta(days=30)
 
-        # For now, use active (non-deleted) users as proxy
-        total_users_result = await self.db.execute(
-            select(func.count(User.id)).where(User.deleted_at.is_(None))
+        # DAU - Users created or with active subscriptions in last day
+        dau_result = await self.db.execute(
+            select(func.count(func.distinct(User.id)))
+            .select_from(User)
+            .outerjoin(UserSubscription, User.id == UserSubscription.user_id)
+            .where(
+                and_(
+                    User.deleted_at.is_(None),
+                    or_(
+                        User.created_at >= day_ago,
+                        and_(
+                            UserSubscription.status == "active",
+                            UserSubscription.created_at >= day_ago
+                        )
+                    )
+                )
+            )
         )
-        total_users = total_users_result.scalar()
+        dau = dau_result.scalar() or 0
+
+        # WAU - Users created or with active subscriptions in last 7 days
+        wau_result = await self.db.execute(
+            select(func.count(func.distinct(User.id)))
+            .select_from(User)
+            .outerjoin(UserSubscription, User.id == UserSubscription.user_id)
+            .where(
+                and_(
+                    User.deleted_at.is_(None),
+                    or_(
+                        User.created_at >= week_ago,
+                        and_(
+                            UserSubscription.status == "active",
+                            UserSubscription.created_at >= week_ago
+                        )
+                    )
+                )
+            )
+        )
+        wau = wau_result.scalar() or 0
+
+        # MAU - Users created or with active subscriptions in last 30 days
+        mau_result = await self.db.execute(
+            select(func.count(func.distinct(User.id)))
+            .select_from(User)
+            .outerjoin(UserSubscription, User.id == UserSubscription.user_id)
+            .where(
+                and_(
+                    User.deleted_at.is_(None),
+                    or_(
+                        User.created_at >= month_ago,
+                        and_(
+                            UserSubscription.status == "active",
+                            UserSubscription.created_at >= month_ago
+                        )
+                    )
+                )
+            )
+        )
+        mau = mau_result.scalar() or 0
+
+        # Retention rate - Users still active after 30 days
+        # Users created 30-60 days ago
+        sixty_days_ago = now - timedelta(days=60)
+        users_created_30_60_ago = await self.db.execute(
+            select(func.count(User.id)).where(
+                and_(
+                    User.created_at >= sixty_days_ago,
+                    User.created_at < month_ago,
+                    User.deleted_at.is_(None)
+                )
+            )
+        )
+        cohort_size = users_created_30_60_ago.scalar() or 0
+
+        # How many of those users are still active (have active subscription or recent activity)
+        retained_users = await self.db.execute(
+            select(func.count(func.distinct(User.id)))
+            .select_from(User)
+            .outerjoin(UserSubscription, User.id == UserSubscription.user_id)
+            .where(
+                and_(
+                    User.created_at >= sixty_days_ago,
+                    User.created_at < month_ago,
+                    User.deleted_at.is_(None),
+                    UserSubscription.status == "active"
+                )
+            )
+        )
+        retained_count = retained_users.scalar() or 0
+
+        retention_rate_30d = (retained_count / cohort_size) if cohort_size > 0 else 0.0
 
         return {
-            "dau": total_users,  # Placeholder
-            "wau": total_users,  # Placeholder
-            "mau": total_users,  # Placeholder
-            "avg_session_duration": None,
-            "retention_rate_30d": 85.0,  # Placeholder
+            "dau": dau,
+            "wau": wau,
+            "mau": mau,
+            "avg_session_duration": None,  # Would need session tracking
+            "retention_rate_30d": retention_rate_30d,
         }
