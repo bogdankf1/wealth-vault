@@ -33,6 +33,17 @@ from app.modules.dashboard.schemas import (
     NetWorthTrendChartResponse,
     NetWorthTrendDataPoint,
 )
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency"""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
 
 
 async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
@@ -42,36 +53,81 @@ async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
     Assets = Portfolio current value + Savings balance
     Liabilities = Installments remaining balance
     Net Worth = Assets - Liabilities
+
+    All amounts are converted to user's display currency.
     """
-    # Get portfolio total value
-    portfolio_query = select(func.sum(PortfolioAsset.current_value)).where(
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # Get all portfolio assets with their currencies
+    portfolio_query = select(PortfolioAsset).where(
         and_(
             PortfolioAsset.user_id == user_id,
             PortfolioAsset.is_active == True
         )
     )
     portfolio_result = await db.execute(portfolio_query)
-    portfolio_value = portfolio_result.scalar() or Decimal('0')
+    portfolio_assets = portfolio_result.scalars().all()
 
-    # Get savings total balance
-    savings_query = select(func.sum(SavingsAccount.current_balance)).where(
+    # Convert portfolio values to display currency
+    portfolio_value = Decimal('0')
+    for asset in portfolio_assets:
+        if asset.current_value:
+            if asset.currency == display_currency:
+                portfolio_value += asset.current_value
+            else:
+                converted = await currency_service.convert_amount(
+                    asset.current_value, asset.currency, display_currency
+                )
+                if converted:
+                    portfolio_value += converted
+
+    # Get all savings accounts with their currencies
+    savings_query = select(SavingsAccount).where(
         and_(
             SavingsAccount.user_id == user_id,
             SavingsAccount.is_active == True
         )
     )
     savings_result = await db.execute(savings_query)
-    savings_balance = savings_result.scalar() or Decimal('0')
+    savings_accounts = savings_result.scalars().all()
 
-    # Get total debt (installments remaining balance)
-    installments_query = select(func.sum(Installment.remaining_balance)).where(
+    # Convert savings balances to display currency
+    savings_balance = Decimal('0')
+    for account in savings_accounts:
+        if account.current_balance:
+            if account.currency == display_currency:
+                savings_balance += account.current_balance
+            else:
+                converted = await currency_service.convert_amount(
+                    account.current_balance, account.currency, display_currency
+                )
+                if converted:
+                    savings_balance += converted
+
+    # Get all installments with their currencies
+    installments_query = select(Installment).where(
         and_(
             Installment.user_id == user_id,
             Installment.is_active == True
         )
     )
     installments_result = await db.execute(installments_query)
-    total_debt = installments_result.scalar() or Decimal('0')
+    installments = installments_result.scalars().all()
+
+    # Convert installment balances to display currency
+    total_debt = Decimal('0')
+    for installment in installments:
+        if installment.remaining_balance:
+            if installment.currency == display_currency:
+                total_debt += installment.remaining_balance
+            else:
+                converted = await currency_service.convert_amount(
+                    installment.remaining_balance, installment.currency, display_currency
+                )
+                if converted:
+                    total_debt += converted
 
     # Calculate totals
     total_assets = portfolio_value + savings_balance
@@ -85,7 +141,7 @@ async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
         portfolio_value=portfolio_value,
         savings_balance=savings_balance,
         total_debt=total_debt,
-        currency="USD"
+        currency=display_currency
     )
 
 
@@ -99,14 +155,19 @@ async def get_cash_flow(
     Calculate monthly cash flow = Income - Expenses - Subscriptions.
 
     If month/year not specified, use current month.
+    All amounts are converted to user's display currency.
     """
     # Default to current month/year
     now = datetime.utcnow()
     target_month = month or now.month
     target_year = year or now.year
 
-    # Calculate monthly income (recurring sources only)
-    income_query = select(func.sum(IncomeSource.amount)).where(
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # Get all income sources with their currencies
+    income_query = select(IncomeSource).where(
         and_(
             IncomeSource.user_id == user_id,
             IncomeSource.is_active == True,
@@ -114,7 +175,20 @@ async def get_cash_flow(
         )
     )
     income_result = await db.execute(income_query)
-    total_income = income_result.scalar() or Decimal('0')
+    income_sources = income_result.scalars().all()
+
+    # Convert income to display currency
+    total_income = Decimal('0')
+    for source in income_sources:
+        if source.amount:
+            if source.currency == display_currency:
+                total_income += source.amount
+            else:
+                converted = await currency_service.convert_amount(
+                    source.amount, source.currency, display_currency
+                )
+                if converted:
+                    total_income += converted
 
     # Get expenses for the target month
     start_date = datetime(target_year, target_month, 1)
@@ -123,7 +197,7 @@ async def get_cash_flow(
     else:
         end_date = datetime(target_year, target_month + 1, 1)
 
-    expenses_query = select(func.sum(Expense.amount)).where(
+    expenses_query = select(Expense).where(
         and_(
             Expense.user_id == user_id,
             Expense.date >= start_date,
@@ -131,10 +205,23 @@ async def get_cash_flow(
         )
     )
     expenses_result = await db.execute(expenses_query)
-    monthly_expenses = expenses_result.scalar() or Decimal('0')
+    expenses = expenses_result.scalars().all()
 
-    # Calculate monthly subscriptions
-    subscriptions_query = select(func.sum(Subscription.amount)).where(
+    # Convert expenses to display currency
+    monthly_expenses = Decimal('0')
+    for expense in expenses:
+        if expense.amount:
+            if expense.currency == display_currency:
+                monthly_expenses += expense.amount
+            else:
+                converted = await currency_service.convert_amount(
+                    expense.amount, expense.currency, display_currency
+                )
+                if converted:
+                    monthly_expenses += converted
+
+    # Get all subscriptions with their currencies
+    subscriptions_query = select(Subscription).where(
         and_(
             Subscription.user_id == user_id,
             Subscription.is_active == True,
@@ -142,7 +229,20 @@ async def get_cash_flow(
         )
     )
     subscriptions_result = await db.execute(subscriptions_query)
-    monthly_subscriptions = subscriptions_result.scalar() or Decimal('0')
+    subscriptions = subscriptions_result.scalars().all()
+
+    # Convert subscriptions to display currency
+    monthly_subscriptions = Decimal('0')
+    for subscription in subscriptions:
+        if subscription.amount:
+            if subscription.currency == display_currency:
+                monthly_subscriptions += subscription.amount
+            else:
+                converted = await currency_service.convert_amount(
+                    subscription.amount, subscription.currency, display_currency
+                )
+                if converted:
+                    monthly_subscriptions += converted
 
     # Calculate net cash flow
     net_cash_flow = total_income - monthly_expenses - monthly_subscriptions
@@ -156,7 +256,7 @@ async def get_cash_flow(
         monthly_subscriptions=monthly_subscriptions,
         net_cash_flow=net_cash_flow,
         savings_rate=savings_rate,
-        currency="USD",
+        currency=display_currency,
         month=target_month,
         year=target_year
     )
@@ -586,6 +686,7 @@ async def get_income_vs_expenses_chart(
     """
     Get income vs expenses chart data for the specified period.
     Groups data by month.
+    All amounts are converted to user's display currency.
     """
     from calendar import month_abbr
     from dateutil.relativedelta import relativedelta
@@ -593,6 +694,10 @@ async def get_income_vs_expenses_chart(
     # Remove timezone info to match database datetimes
     start_date = start_date.replace(tzinfo=None)
     end_date = end_date.replace(tzinfo=None)
+
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
 
     data_points = []
     current = start_date.replace(day=1)
@@ -621,7 +726,15 @@ async def get_income_vs_expenses_chart(
         onetime_sources = onetime_result.scalars().all()
 
         for source in onetime_sources:
-            monthly_income += source.amount
+            if source.amount:
+                if source.currency == display_currency:
+                    monthly_income += source.amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        source.amount, source.currency, display_currency
+                    )
+                    if converted:
+                        monthly_income += converted
 
         # Get recurring income sources that are active in this month
         recurring_income_query = select(IncomeSource).where(
@@ -642,10 +755,19 @@ async def get_income_vs_expenses_chart(
         recurring_sources = recurring_result.scalars().all()
 
         for source in recurring_sources:
-            monthly_income += source.calculate_monthly_amount()
+            monthly_amount = source.calculate_monthly_amount()
+            if monthly_amount:
+                if source.currency == display_currency:
+                    monthly_income += monthly_amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        monthly_amount, source.currency, display_currency
+                    )
+                    if converted:
+                        monthly_income += converted
 
         # Calculate expenses for this month
-        expense_query = select(func.sum(Expense.amount)).where(
+        expense_query = select(Expense).where(
             and_(
                 Expense.user_id == user_id,
                 or_(
@@ -663,7 +785,20 @@ async def get_income_vs_expenses_chart(
             )
         )
         expense_result = await db.execute(expense_query)
-        monthly_expenses = expense_result.scalar() or Decimal('0')
+        expenses = expense_result.scalars().all()
+
+        # Convert expenses to display currency
+        monthly_expenses = Decimal('0')
+        for expense in expenses:
+            if expense.amount:
+                if expense.currency == display_currency:
+                    monthly_expenses += expense.amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        expense.amount, expense.currency, display_currency
+                    )
+                    if converted:
+                        monthly_expenses += converted
 
         # Format month label
         month_label = f"{month_abbr[current.month]} {current.year}"
@@ -687,16 +822,18 @@ async def get_expense_by_category_chart(
 ) -> ExpenseByCategoryChartResponse:
     """
     Get expense breakdown by category for the specified period.
+    All amounts are converted to user's display currency.
     """
     # Remove timezone info to match database datetimes
     start_date = start_date.replace(tzinfo=None)
     end_date = end_date.replace(tzinfo=None)
 
-    # Query expenses grouped by category
-    query = select(
-        Expense.category,
-        func.sum(Expense.amount).label('total_amount')
-    ).where(
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # Query all expenses (need individual items for currency conversion)
+    query = select(Expense).where(
         and_(
             Expense.user_id == user_id,
             or_(
@@ -712,24 +849,42 @@ async def get_expense_by_category_chart(
                 )
             )
         )
-    ).group_by(Expense.category)
+    )
 
     result = await db.execute(query)
-    category_data = result.all()
+    expenses = result.scalars().all()
+
+    # Group by category and convert to display currency
+    category_totals = {}
+    for expense in expenses:
+        category = expense.category
+        if expense.amount:
+            if expense.currency == display_currency:
+                amount = expense.amount
+            else:
+                amount = await currency_service.convert_amount(
+                    expense.amount, expense.currency, display_currency
+                )
+                if not amount:
+                    amount = Decimal('0')
+
+            if category not in category_totals:
+                category_totals[category] = Decimal('0')
+            category_totals[category] += amount
 
     # Calculate total and percentages
-    total = sum(row.total_amount for row in category_data)
+    total = sum(category_totals.values())
 
     if total == 0:
         return ExpenseByCategoryChartResponse(data=[], total=Decimal('0'))
 
     data_points = [
         ExpenseByCategoryDataPoint(
-            category=row.category,
-            amount=row.total_amount,
-            percentage=float((row.total_amount / total) * 100)
+            category=category,
+            amount=amount,
+            percentage=float((amount / total) * 100)
         )
-        for row in category_data
+        for category, amount in category_totals.items()
     ]
 
     # Sort by amount descending
@@ -746,6 +901,7 @@ async def get_monthly_spending_chart(
 ) -> MonthlySpendingChartResponse:
     """
     Get monthly spending patterns for the specified period.
+    All amounts are converted to user's display currency.
     """
     from calendar import month_abbr
     from dateutil.relativedelta import relativedelta
@@ -753,6 +909,10 @@ async def get_monthly_spending_chart(
     # Remove timezone info to match database datetimes
     start_date = start_date.replace(tzinfo=None)
     end_date = end_date.replace(tzinfo=None)
+
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
 
     data_points = []
     current = start_date.replace(day=1)
@@ -762,8 +922,8 @@ async def get_monthly_spending_chart(
         month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
         month_end = min(month_end, end_date)
 
-        # Calculate expenses for this month
-        expense_query = select(func.sum(Expense.amount)).where(
+        # Get all expenses for this month
+        expense_query = select(Expense).where(
             and_(
                 Expense.user_id == user_id,
                 or_(
@@ -781,7 +941,20 @@ async def get_monthly_spending_chart(
             )
         )
         expense_result = await db.execute(expense_query)
-        monthly_amount = expense_result.scalar() or Decimal('0')
+        expenses = expense_result.scalars().all()
+
+        # Convert expenses to display currency
+        monthly_amount = Decimal('0')
+        for expense in expenses:
+            if expense.amount:
+                if expense.currency == display_currency:
+                    monthly_amount += expense.amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        expense.amount, expense.currency, display_currency
+                    )
+                    if converted:
+                        monthly_amount += converted
 
         # Format month label
         month_label = f"{month_abbr[current.month]} {current.year}"
@@ -816,6 +989,8 @@ async def get_net_worth_trend_chart(
     Note: This is a simplified version that calculates current net worth
     for each month. For historical accuracy, you would need to store
     snapshots of portfolio values and account balances.
+
+    All amounts are converted to user's display currency.
     """
     from calendar import month_abbr
     from dateutil.relativedelta import relativedelta
@@ -824,27 +999,15 @@ async def get_net_worth_trend_chart(
     start_date = start_date.replace(tzinfo=None)
     end_date = end_date.replace(tzinfo=None)
 
-    # Get current net worth as the baseline
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # Get current net worth as the baseline (already in display currency)
     current_net_worth_data = await get_net_worth(db, user_id)
     current_total_assets = Decimal(current_net_worth_data.total_assets)
     current_total_liabilities = Decimal(current_net_worth_data.total_liabilities)
-
-    # Get savings account balances (these are part of assets)
-    savings_query = select(func.sum(SavingsAccount.current_balance)).where(
-        SavingsAccount.user_id == user_id
-    )
-    savings_result = await db.execute(savings_query)
-    current_savings = savings_result.scalar() or Decimal('0')
-
-    # Get portfolio value (these are part of assets)
-    portfolio_query = select(func.sum(PortfolioAsset.current_value)).where(
-        PortfolioAsset.user_id == user_id
-    )
-    portfolio_result = await db.execute(portfolio_query)
-    current_portfolio = portfolio_result.scalar() or Decimal('0')
-
-    # Calculate the baseline liquid assets (savings + portfolio)
-    baseline_liquid_assets = current_savings + current_portfolio
+    baseline_liquid_assets = Decimal(current_net_worth_data.portfolio_value) + Decimal(current_net_worth_data.savings_balance)
 
     data_points = []
     current = start_date.replace(day=1)
@@ -855,7 +1018,7 @@ async def get_net_worth_trend_chart(
         month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
         month_end = min(month_end, end_date)
 
-        # Calculate income for this month (reuse logic from income_vs_expenses)
+        # Calculate income for this month
         monthly_income = Decimal('0')
 
         # One-time income
@@ -873,7 +1036,15 @@ async def get_net_worth_trend_chart(
         onetime_result = await db.execute(onetime_income_query)
         onetime_sources = onetime_result.scalars().all()
         for source in onetime_sources:
-            monthly_income += source.amount
+            if source.amount:
+                if source.currency == display_currency:
+                    monthly_income += source.amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        source.amount, source.currency, display_currency
+                    )
+                    if converted:
+                        monthly_income += converted
 
         # Recurring income
         recurring_income_query = select(IncomeSource).where(
@@ -893,10 +1064,19 @@ async def get_net_worth_trend_chart(
         recurring_result = await db.execute(recurring_income_query)
         recurring_sources = recurring_result.scalars().all()
         for source in recurring_sources:
-            monthly_income += source.calculate_monthly_amount()
+            monthly_amount = source.calculate_monthly_amount()
+            if monthly_amount:
+                if source.currency == display_currency:
+                    monthly_income += monthly_amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        monthly_amount, source.currency, display_currency
+                    )
+                    if converted:
+                        monthly_income += converted
 
         # Calculate expenses for this month
-        expense_query = select(func.sum(Expense.amount)).where(
+        expense_query = select(Expense).where(
             and_(
                 Expense.user_id == user_id,
                 or_(
@@ -914,7 +1094,20 @@ async def get_net_worth_trend_chart(
             )
         )
         expense_result = await db.execute(expense_query)
-        monthly_expenses = expense_result.scalar() or Decimal('0')
+        expenses = expense_result.scalars().all()
+
+        # Convert expenses to display currency
+        monthly_expenses = Decimal('0')
+        for expense in expenses:
+            if expense.amount:
+                if expense.currency == display_currency:
+                    monthly_expenses += expense.amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        expense.amount, expense.currency, display_currency
+                    )
+                    if converted:
+                        monthly_expenses += converted
 
         # Update cumulative cash flow
         cumulative_cash_flow += (monthly_income - monthly_expenses)
