@@ -175,7 +175,7 @@ class CurrencyService:
         from_currency: str,
         to_currency: str
     ) -> Optional[Decimal]:
-        """Get cached exchange rate if not stale."""
+        """Get cached exchange rate if not stale (most recent)."""
         cutoff_time = datetime.utcnow() - timedelta(hours=self.CACHE_TTL_HOURS)
 
         query = select(ExchangeRate).where(
@@ -184,7 +184,7 @@ class CurrencyService:
                 ExchangeRate.to_currency == to_currency,
                 ExchangeRate.fetched_at >= cutoff_time
             )
-        ).order_by(ExchangeRate.fetched_at.desc())
+        ).order_by(ExchangeRate.fetched_at.desc()).limit(1)
 
         result = await self.db.execute(query)
         rate_record = result.scalar_one_or_none()
@@ -200,13 +200,13 @@ class CurrencyService:
         from_currency: str,
         to_currency: str
     ) -> Optional[Decimal]:
-        """Get last known exchange rate (fallback for stale data)."""
+        """Get last known exchange rate (fallback for stale data - most recent)."""
         query = select(ExchangeRate).where(
             and_(
                 ExchangeRate.from_currency == from_currency,
                 ExchangeRate.to_currency == to_currency
             )
-        ).order_by(ExchangeRate.fetched_at.desc())
+        ).order_by(ExchangeRate.fetched_at.desc()).limit(1)
 
         result = await self.db.execute(query)
         rate_record = result.scalar_one_or_none()
