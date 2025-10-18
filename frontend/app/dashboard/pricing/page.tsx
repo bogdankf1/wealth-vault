@@ -5,95 +5,80 @@ import { useRouter } from 'next/navigation';
 import { Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useCreateCheckoutSessionMutation } from '@/lib/api/billingApi';
+import { useGetTiersQuery } from '@/lib/api/adminApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 interface TierFeature {
   name: string;
   included: boolean;
 }
 
-interface Tier {
-  name: string;
-  displayName: string;
-  price: number;
-  stripePriceId: string | null;
-  description: string;
-  features: TierFeature[];
-  recommended?: boolean;
-}
-
-const tiers: Tier[] = [
-  {
-    name: 'starter',
-    displayName: 'Starter',
-    price: 0,
-    stripePriceId: null,
-    description: 'Perfect for getting started with personal finance',
-    features: [
-      { name: 'Up to 5 income sources', included: true },
-      { name: 'Up to 10 expense categories', included: true },
-      { name: 'Up to 3 savings goals', included: true },
-      { name: 'Up to 5 subscriptions', included: true },
-      { name: 'Basic dashboard', included: true },
-      { name: 'Advanced analytics', included: false },
-      { name: 'AI insights', included: false },
-      { name: 'Portfolio tracking', included: false },
-      { name: 'Priority support', included: false },
-    ],
-  },
-  {
-    name: 'growth',
-    displayName: 'Growth',
-    price: 9.99,
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID || '',
-    description: 'For those serious about growing their wealth',
-    recommended: true,
-    features: [
-      { name: 'Up to 20 income sources', included: true },
-      { name: 'Up to 30 expense categories', included: true },
-      { name: 'Up to 10 savings goals', included: true },
-      { name: 'Up to 20 subscriptions', included: true },
-      { name: 'Advanced dashboard', included: true },
-      { name: 'Advanced analytics', included: true },
-      { name: 'Basic AI insights', included: true },
-      { name: 'Portfolio tracking (up to 50 assets)', included: true },
-      { name: 'Priority support', included: false },
-    ],
-  },
-  {
-    name: 'wealth',
-    displayName: 'Wealth',
-    price: 19.99,
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_WEALTH_PRICE_ID || '',
-    description: 'Ultimate platform for wealth management',
-    features: [
-      { name: 'Unlimited income sources', included: true },
-      { name: 'Unlimited expense categories', included: true },
-      { name: 'Unlimited savings goals', included: true },
-      { name: 'Unlimited subscriptions', included: true },
-      { name: 'Premium dashboard', included: true },
-      { name: 'Advanced analytics', included: true },
-      { name: 'Advanced AI insights', included: true },
-      { name: 'Portfolio tracking (unlimited assets)', included: true },
-      { name: 'Priority support', included: true },
-    ],
-  },
-];
+// Feature mappings for each tier (since backend doesn't return detailed features)
+const tierFeaturesMap: Record<string, TierFeature[]> = {
+  starter: [
+    { name: 'Up to 5 income sources', included: true },
+    { name: 'Up to 10 expense categories', included: true },
+    { name: 'Up to 3 savings goals', included: true },
+    { name: 'Up to 5 subscriptions', included: true },
+    { name: 'Basic dashboard', included: true },
+    { name: 'Advanced analytics', included: false },
+    { name: 'AI insights', included: false },
+    { name: 'Portfolio tracking', included: false },
+    { name: 'Priority support', included: false },
+  ],
+  growth: [
+    { name: 'Up to 20 income sources', included: true },
+    { name: 'Up to 30 expense categories', included: true },
+    { name: 'Up to 10 savings goals', included: true },
+    { name: 'Up to 20 subscriptions', included: true },
+    { name: 'Advanced dashboard', included: true },
+    { name: 'Advanced analytics', included: true },
+    { name: 'Basic AI insights', included: true },
+    { name: 'Portfolio tracking (up to 50 assets)', included: true },
+    { name: 'Priority support', included: false },
+  ],
+  wealth: [
+    { name: 'Unlimited income sources', included: true },
+    { name: 'Unlimited expense categories', included: true },
+    { name: 'Unlimited savings goals', included: true },
+    { name: 'Unlimited subscriptions', included: true },
+    { name: 'Premium dashboard', included: true },
+    { name: 'Advanced analytics', included: true },
+    { name: 'Advanced AI insights', included: true },
+    { name: 'Portfolio tracking (unlimited assets)', included: true },
+    { name: 'Priority support', included: true },
+  ],
+};
 
 export default function PricingPage() {
   const router = useRouter();
   const { data: user } = useGetCurrentUserQuery();
+  const { data: tiers, isLoading: tiersLoading } = useGetTiersQuery();
+  const { data: preferences } = useGetMyPreferencesQuery();
   const [createCheckoutSession, { isLoading }] = useCreateCheckoutSessionMutation();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
-  const handleSubscribe = async (tier: Tier) => {
+  const displayCurrency = preferences?.display_currency || preferences?.currency || 'USD';
+
+  // Stripe price ID mapping
+  const stripePriceIdMap: Record<string, string> = {
+    growth: process.env.NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID || '',
+    wealth: process.env.NEXT_PUBLIC_STRIPE_WEALTH_PRICE_ID || '',
+  };
+
+  const handleSubscribe = async (tier: { id: string; name: string; price_monthly: number }) => {
     if (!user) {
       router.push('/auth/signin?redirect=/dashboard/pricing');
       return;
     }
 
-    if (!tier.stripePriceId) {
+    const stripePriceId = stripePriceIdMap[tier.name];
+
+    if (!stripePriceId || tier.price_monthly === 0) {
       // Starter is free, redirect to dashboard
       router.push('/dashboard');
       return;
@@ -102,7 +87,7 @@ export default function PricingPage() {
     try {
       setLoadingTier(tier.name);
       const result = await createCheckoutSession({
-        price_id: tier.stripePriceId,
+        price_id: stripePriceId,
         success_url: `${window.location.origin}/dashboard?subscription=success`,
         cancel_url: `${window.location.origin}/dashboard/pricing?subscription=cancelled`,
       }).unwrap();
@@ -132,78 +117,117 @@ export default function PricingPage() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {tiers.map((tier) => {
-            const isCurrentTier = tier.name === currentTierName;
-
-            return (
-              <Card
-                key={tier.name}
-                className={`relative flex flex-col ${
-                  tier.recommended
-                    ? 'border-primary shadow-lg scale-105 z-10'
-                    : 'border-border'
-                }`}
-              >
-                {tier.recommended && (
-                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold rounded-bl-lg rounded-tr-lg">
-                    RECOMMENDED
-                  </div>
-                )}
-
+          {tiersLoading ? (
+            // Loading skeletons
+            Array.from({ length: 3 }).map((_, idx) => (
+              <Card key={idx} className="flex flex-col">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-2xl">{tier.displayName}</CardTitle>
-                  <CardDescription className="mt-2">{tier.description}</CardDescription>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold tracking-tight text-foreground">
-                      ${tier.price}
-                    </span>
-                    <span className="text-muted-foreground">/month</span>
-                  </div>
+                  <Skeleton className="h-8 w-32 mb-2" />
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <Skeleton className="h-12 w-40" />
                 </CardHeader>
-
                 <CardContent className="flex-1">
-                  <ul className="space-y-3">
-                    {tier.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        {feature.included ? (
-                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        ) : (
-                          <X className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                        )}
-                        <span
-                          className={
-                            feature.included
-                              ? 'text-foreground'
-                              : 'text-muted-foreground line-through'
-                          }
-                        >
-                          {feature.name}
-                        </span>
-                      </li>
+                  <div className="space-y-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <Skeleton key={i} className="h-6 w-full" />
                     ))}
-                  </ul>
+                  </div>
                 </CardContent>
-
                 <CardFooter>
-                  <Button
-                    className="w-full"
-                    variant={tier.recommended ? 'default' : 'outline'}
-                    size="lg"
-                    onClick={() => handleSubscribe(tier)}
-                    disabled={isCurrentTier || (isLoading && loadingTier === tier.name)}
-                  >
-                    {isCurrentTier
-                      ? 'Current Plan'
-                      : isLoading && loadingTier === tier.name
-                      ? 'Loading...'
-                      : tier.price === 0
-                      ? 'Get Started'
-                      : 'Subscribe'}
-                  </Button>
+                  <Skeleton className="h-10 w-full" />
                 </CardFooter>
               </Card>
-            );
-          })}
+            ))
+          ) : tiers && tiers.length > 0 ? (
+            tiers
+              .filter((tier) => tier.is_active)
+              .map((tier) => {
+                const isCurrentTier = tier.name === currentTierName;
+                const isRecommended = tier.name === 'growth';
+
+                // Get features for this tier
+                const features = tierFeaturesMap[tier.name] || [];
+
+                return (
+                  <Card
+                    key={tier.id}
+                    className={`relative flex flex-col ${
+                      isRecommended
+                        ? 'border-primary shadow-lg scale-105 z-10'
+                        : 'border-border'
+                    }`}
+                  >
+                    {isRecommended && (
+                      <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold rounded-bl-lg rounded-tr-lg">
+                        RECOMMENDED
+                      </div>
+                    )}
+
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-2xl">{tier.display_name}</CardTitle>
+                      <CardDescription className="mt-2">{tier.description}</CardDescription>
+                      <div className="mt-4">
+                        <span className="text-4xl font-bold tracking-tight text-foreground">
+                          <CurrencyDisplay
+                            amount={tier.price_monthly}
+                            currency="USD"
+                            displayCurrency={displayCurrency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </span>
+                        <span className="text-muted-foreground">/month</span>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="flex-1">
+                      <ul className="space-y-3">
+                        {features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-3">
+                            {feature.included ? (
+                              <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <X className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                            )}
+                            <span
+                              className={
+                                feature.included
+                                  ? 'text-foreground'
+                                  : 'text-muted-foreground line-through'
+                              }
+                            >
+                              {feature.name}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+
+                    <CardFooter>
+                      <Button
+                        className="w-full"
+                        variant={isRecommended ? 'default' : 'outline'}
+                        size="lg"
+                        onClick={() => handleSubscribe(tier)}
+                        disabled={isCurrentTier || (isLoading && loadingTier === tier.name)}
+                      >
+                        {isCurrentTier
+                          ? 'Current Plan'
+                          : isLoading && loadingTier === tier.name
+                          ? 'Loading...'
+                          : tier.price_monthly === 0
+                          ? 'Get Started'
+                          : 'Subscribe'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })
+          ) : (
+            <div className="col-span-3 text-center py-12">
+              <p className="text-muted-foreground">No pricing tiers available at this time.</p>
+            </div>
+          )}
         </div>
 
         {/* FAQ or Additional Info */}
