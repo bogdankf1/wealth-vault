@@ -111,7 +111,7 @@ export const currenciesApi = createApi({
         url: '/api/v1/currencies/rates/refresh',
         method: 'POST',
       }),
-      invalidatesTags: [{ type: 'ExchangeRate', id: 'LIST' }],
+      invalidatesTags: ['ExchangeRate'],
     }),
 
     // Set manual exchange rate (admin only)

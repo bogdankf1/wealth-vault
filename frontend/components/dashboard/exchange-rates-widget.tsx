@@ -6,9 +6,11 @@
 
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info } from 'lucide-react';
-import { useGetExchangeRateQuery } from '@/lib/api/currenciesApi';
+import { Info, RefreshCw } from 'lucide-react';
+import { useGetExchangeRateQuery, useRefreshExchangeRatesMutation } from '@/lib/api/currenciesApi';
+import { useState, useEffect } from 'react';
 
 interface ExchangeRatePair {
   from: string;
@@ -54,13 +56,21 @@ interface ExchangeRateItemProps {
   from: string;
   to: string;
   label: string;
+  refetchKey?: number;
 }
 
-function ExchangeRateItem({ from, to, label }: ExchangeRateItemProps) {
-  const { data, isLoading } = useGetExchangeRateQuery(
+function ExchangeRateItem({ from, to, label, refetchKey }: ExchangeRateItemProps) {
+  const { data, isLoading, refetch } = useGetExchangeRateQuery(
     { from, to, force_refresh: false },
     { refetchOnMountOrArgChange: true }
   );
+
+  // Refetch when refetchKey changes
+  useEffect(() => {
+    if (refetchKey) {
+      refetch();
+    }
+  }, [refetchKey, refetch]);
 
   if (isLoading) {
     return (
@@ -94,9 +104,6 @@ function ExchangeRateItem({ from, to, label }: ExchangeRateItemProps) {
               <span className="text-sm font-semibold tabular-nums">
                 {rate.toFixed(4)}
               </span>
-              {!isRecent && (
-                <div className="h-2 w-2 rounded-full bg-yellow-500 animate-pulse" />
-              )}
             </div>
           </div>
         </TooltipTrigger>
@@ -108,11 +115,6 @@ function ExchangeRateItem({ from, to, label }: ExchangeRateItemProps) {
             <p className="text-xs text-muted-foreground">
               Updated: {fetchedDate.toLocaleString()}
             </p>
-            {!isRecent && (
-              <p className="text-xs text-yellow-600 dark:text-yellow-500">
-                Rate is more than 1 hour old
-              </p>
-            )}
             <p className="text-xs text-muted-foreground">
               Source: {data.source}
             </p>
@@ -124,6 +126,20 @@ function ExchangeRateItem({ from, to, label }: ExchangeRateItemProps) {
 }
 
 export function ExchangeRatesWidget() {
+  const [refreshExchangeRates, { isLoading: isRefreshing }] = useRefreshExchangeRatesMutation();
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [refetchKey, setRefetchKey] = useState(Date.now());
+
+  const handleRefresh = async () => {
+    try {
+      await refreshExchangeRates().unwrap();
+      setLastRefreshed(new Date());
+      setRefetchKey(Date.now()); // Force refetch by changing key
+    } catch (error) {
+      console.error('Failed to refresh exchange rates:', error);
+    }
+  };
+
   return (
     <Card className="p-6">
       <div className="mb-6">
@@ -143,9 +159,23 @@ export function ExchangeRatesWidget() {
               </Tooltip>
             </TooltipProvider>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Refresh exchange rates"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Live currency exchange rates
+          {lastRefreshed && (
+            <span className="ml-2 text-xs text-muted-foreground">
+              (refreshed {lastRefreshed.toLocaleTimeString()})
+            </span>
+          )}
         </p>
       </div>
 
@@ -169,6 +199,7 @@ export function ExchangeRatesWidget() {
                   from={pair.from}
                   to={pair.to}
                   label={pair.label}
+                  refetchKey={refetchKey}
                 />
               ))}
             </div>
