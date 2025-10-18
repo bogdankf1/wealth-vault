@@ -92,7 +92,6 @@ function ExchangeRateItem({ from, to, label, refetchKey }: ExchangeRateItemProps
 
   const rate = parseFloat(data.rate.toString());
   const fetchedDate = new Date(data.fetched_at);
-  const isRecent = Date.now() - fetchedDate.getTime() < 3600000; // Less than 1 hour old
 
   return (
     <TooltipProvider>
