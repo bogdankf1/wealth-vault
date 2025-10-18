@@ -55,6 +55,7 @@ import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses
 import { ExpenseByCategoryChart } from '@/components/dashboard/expense-by-category-chart';
 import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
 import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
+import { ExchangeRatesWidget } from '@/components/dashboard/exchange-rates-widget';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
@@ -731,6 +732,9 @@ export default function DashboardPage() {
             chartType="area"
           />
         </div>
+
+        {/* Exchange Rates Widget */}
+        <ExchangeRatesWidget />
       </div>
 
       {/* Quick Action Dialogs */}
