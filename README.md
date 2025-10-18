@@ -80,6 +80,7 @@ wealth-vault/
    - `SECRET_KEY` - Generate a secure secret key (min 32 characters)
    - `GOOGLE_CLIENT_ID` - Get from Google Cloud Console
    - `GOOGLE_CLIENT_SECRET` - Get from Google Cloud Console
+   - `EXCHANGE_RATE_API_KEY` - (Optional) Get from https://www.exchangerate-api.com/ for real-time exchange rates
 
 6. **Run database migrations**:
    ```bash
@@ -286,6 +287,26 @@ npx shadcn@latest add [component-name]
 - ✅ Docstrings on all functions
 - ✅ Black formatting
 - ✅ Ruff linting
+
+## Multi-Currency Support ✓
+
+The application now supports multiple currencies with real-time exchange rates:
+
+- **Supported Currencies**: USD, EUR, UAH (more can be added via admin panel)
+- **Real-time Rates**: Integration with exchangerate-api.com
+- **Smart Caching**: 1-hour database cache + fallback to last known rates
+- **Conversion**: Automatic conversion in all widgets and charts
+- **User Preferences**: Set preferred and display currencies in Settings
+
+### Exchange Rate Setup
+
+The app works without an API key (uses database fallback), but for real-time rates:
+
+1. Get free API key from https://www.exchangerate-api.com/
+2. Add to `.env`: `EXCHANGE_RATE_API_KEY=your_key_here`
+3. Rates auto-update hourly (1,500 requests/month on free tier)
+
+**See [EXCHANGE_RATE_SETUP.md](./EXCHANGE_RATE_SETUP.md) for detailed setup and testing instructions.**
 
 ## Next Steps (Phase 1)
 

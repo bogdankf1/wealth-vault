@@ -193,14 +193,14 @@ async def get_exchange_rate(
             detail=f"Exchange rate not available for {from_currency}/{to_currency}"
         )
 
-    # Get the stored rate record
+    # Get the stored rate record (most recent)
     from app.modules.currency.models import ExchangeRate
     from sqlalchemy import select
 
     query = select(ExchangeRate).where(
         ExchangeRate.from_currency == from_currency.upper(),
         ExchangeRate.to_currency == to_currency.upper()
-    ).order_by(ExchangeRate.fetched_at.desc())
+    ).order_by(ExchangeRate.fetched_at.desc()).limit(1)
     result = await db.execute(query)
     rate_record = result.scalar_one_or_none()
 
