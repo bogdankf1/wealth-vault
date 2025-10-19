@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -40,7 +41,17 @@ const budgetSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   category: z.string().min(1, 'Category is required').max(50),
   description: z.string().max(500).optional(),
-  amount: z.number().positive('Amount must be positive'),
+  amount: z.number()
+    .positive('Amount must be positive')
+    .refine(
+      (val) => {
+        // Check if number has more than 2 decimal places
+        // Use toFixed to round to 2 decimals and compare
+        const rounded = Math.round(val * 100) / 100;
+        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
+      },
+      { message: 'Amount can have at most 2 decimal places' }
+    ),
   currency: z.string().length(3),
   period: z.enum(['monthly', 'quarterly', 'yearly']),
   start_date: z.string(),
@@ -78,6 +89,9 @@ const EXPENSE_CATEGORIES = [
 ];
 
 export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
+  // Local state to track the string value of amount while user is typing
+  const [amountInput, setAmountInput] = React.useState<string>('');
+
   const [createBudget, { isLoading: isCreating }] = useCreateBudgetMutation();
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation();
 
@@ -112,6 +126,18 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
         },
   });
 
+  // Set amountInput when budget changes
+  React.useEffect(() => {
+    if (budget) {
+      const amountNum = typeof budget.amount === 'string'
+        ? parseFloat(budget.amount)
+        : budget.amount;
+      setAmountInput(String(amountNum));
+    } else {
+      setAmountInput('');
+    }
+  }, [budget]);
+
   const onSubmit = async (data: BudgetFormValues) => {
     try {
       // Format dates
@@ -130,14 +156,20 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
       }
 
       form.reset();
+      setAmountInput('');
       onClose();
     } catch {
       toast.error(budget ? 'Failed to update budget' : 'Failed to create budget');
     }
   };
 
+  const handleClose = () => {
+    setAmountInput('');
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{budget ? 'Edit Budget' : 'Create Budget'}</DialogTitle>
@@ -209,9 +241,22 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
             <CurrencyInput
               key={`currency-${budget?.id || 'new'}-${form.watch('currency')}`}
               label="Budget Amount"
-              amount={form.watch('amount')?.toString() || ''}
+              amount={amountInput}
               currency={form.watch('currency')}
-              onAmountChange={(value) => form.setValue('amount', parseFloat(value) || 0)}
+              onAmountChange={(value) => {
+                // Update the local string state to allow typing decimal points
+                setAmountInput(value);
+
+                // Update the form state with the numeric value
+                if (value === '') {
+                  form.setValue('amount', 0, { shouldValidate: true });
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    form.setValue('amount', numValue, { shouldValidate: true });
+                  }
+                }
+              }}
               onCurrencyChange={(value) => form.setValue('currency', value)}
               required
               error={form.formState.errors.amount?.message}
@@ -336,7 +381,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isCreating || isUpdating}>

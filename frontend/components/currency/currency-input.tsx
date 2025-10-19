@@ -39,8 +39,9 @@ export function CurrencyInput({
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // Allow only numbers and decimal point
-    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+    // Allow only numbers and decimal point with max 2 decimal places
+    // Matches: "", "1", "1.", "1.5", "1.50", but not "1.567"
+    if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
       onAmountChange?.(value);
     }
   };

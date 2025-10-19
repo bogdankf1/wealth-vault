@@ -43,7 +43,17 @@ const installmentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional(),
   category: z.string().max(50).optional(),
-  total_amount: z.number().min(0, 'Total amount must be positive'),
+  total_amount: z.number()
+    .min(0, 'Total amount must be positive')
+    .refine(
+      (val) => {
+        // Check if number has more than 2 decimal places
+        // Use toFixed to round to 2 decimals and compare
+        const rounded = Math.round(val * 100) / 100;
+        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
+      },
+      { message: 'Amount can have at most 2 decimal places' }
+    ),
   amount_per_payment: z.number().min(0, 'Payment amount must be positive'),
   currency: z.string().length(3),
   interest_rate: z.number().min(0).max(100).optional(),
@@ -87,6 +97,9 @@ const CATEGORY_OPTIONS = [
 
 export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentFormProps) {
   const isEditing = Boolean(installmentId);
+
+  // Local state to track the string value of total_amount while user is typing
+  const [totalAmountInput, setTotalAmountInput] = React.useState<string>('');
 
   const {
     data: existingInstallment,
@@ -161,7 +174,9 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         name: existingInstallment.name,
         description: existingInstallment.description || '',
         category: existingInstallment.category || '',
-        total_amount: existingInstallment.total_amount,
+        total_amount: typeof existingInstallment.total_amount === 'string'
+          ? parseFloat(existingInstallment.total_amount)
+          : existingInstallment.total_amount,
         amount_per_payment: existingInstallment.amount_per_payment,
         currency: existingInstallment.currency,
         interest_rate: existingInstallment.interest_rate || 0,
@@ -178,6 +193,12 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       };
 
       reset(formData);
+
+      // Set the total amount input string
+      const totalAmountNum = typeof existingInstallment.total_amount === 'string'
+        ? parseFloat(existingInstallment.total_amount)
+        : existingInstallment.total_amount;
+      setTotalAmountInput(String(totalAmountNum));
 
       setTimeout(() => {
         if (existingInstallment.category) {
@@ -203,6 +224,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         first_payment_date: new Date().toISOString().split('T')[0],
         end_date: '',
       });
+      setTotalAmountInput('');
     }
   }, [isEditing, existingInstallment, isOpen, reset, setValue]);
 
@@ -259,6 +281,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
   const handleClose = () => {
     onClose();
+    setTotalAmountInput('');
     reset({
       currency: 'USD',
       frequency: 'monthly',
@@ -341,9 +364,22 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             <CurrencyInput
               key={`currency-${existingInstallment?.id || 'new'}-${watch('currency')}`}
               label="Total Loan Amount"
-              amount={watch('total_amount')?.toString() || ''}
+              amount={totalAmountInput}
               currency={watch('currency')}
-              onAmountChange={(value) => setValue('total_amount', parseFloat(value) || 0)}
+              onAmountChange={(value) => {
+                // Update the local string state to allow typing decimal points
+                setTotalAmountInput(value);
+
+                // Update the form state with the numeric value
+                if (value === '') {
+                  setValue('total_amount', 0, { shouldValidate: true });
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    setValue('total_amount', numValue, { shouldValidate: true });
+                  }
+                }
+              }}
               onCurrencyChange={(value) => setValue('currency', value)}
               required
               error={errors.total_amount?.message}

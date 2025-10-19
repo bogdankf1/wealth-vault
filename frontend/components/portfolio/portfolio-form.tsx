@@ -45,7 +45,17 @@ const portfolioAssetSchema = z.object({
   symbol: z.string().max(20).optional(),
   description: z.string().max(500).optional(),
   quantity: z.number().gt(0, 'Quantity must be greater than 0'),
-  purchase_price: z.number().gt(0, 'Purchase price must be greater than 0'),
+  purchase_price: z.number()
+    .gt(0, 'Purchase price must be greater than 0')
+    .refine(
+      (val) => {
+        // Check if number has more than 2 decimal places
+        // Use toFixed to round to 2 decimals and compare
+        const rounded = Math.round(val * 100) / 100;
+        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
+      },
+      { message: 'Amount can have at most 2 decimal places' }
+    ),
   current_price: z.number().gt(0, 'Current price must be greater than 0'),
   currency: z.string().length(3),
   purchase_date: z.string().min(1, 'Purchase date is required'),
@@ -73,6 +83,9 @@ const ASSET_TYPE_OPTIONS = [
 
 export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) {
   const isEditing = Boolean(assetId);
+
+  // Local state to track the string value of purchase_price while user is typing
+  const [purchasePriceInput, setPurchasePriceInput] = React.useState<string>('');
 
   const {
     data: existingAsset,
@@ -116,7 +129,9 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
         symbol: existingAsset.symbol || '',
         description: existingAsset.description || '',
         quantity: existingAsset.quantity,
-        purchase_price: existingAsset.purchase_price,
+        purchase_price: typeof existingAsset.purchase_price === 'string'
+          ? parseFloat(existingAsset.purchase_price)
+          : existingAsset.purchase_price,
         current_price: existingAsset.current_price,
         currency: existingAsset.currency,
         is_active: existingAsset.is_active,
@@ -124,6 +139,12 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
       };
 
       reset(formData);
+
+      // Set the purchase price input string
+      const purchasePriceNum = typeof existingAsset.purchase_price === 'string'
+        ? parseFloat(existingAsset.purchase_price)
+        : existingAsset.purchase_price;
+      setPurchasePriceInput(String(purchasePriceNum));
 
       setTimeout(() => {
         if (existingAsset.asset_type) {
@@ -143,6 +164,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
         is_active: true,
         purchase_date: new Date().toISOString().split('T')[0],
       });
+      setPurchasePriceInput('');
     }
   }, [isEditing, existingAsset, isOpen, reset, setValue]);
 
@@ -187,6 +209,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
   const handleClose = () => {
     onClose();
+    setPurchasePriceInput('');
     reset({
       currency: 'USD',
       is_active: true,
@@ -307,9 +330,22 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             <CurrencyInput
               key={`currency-${assetId || 'new'}-${watch('currency')}`}
               label="Purchase Price (per unit)"
-              amount={watch('purchase_price')?.toString() || ''}
+              amount={purchasePriceInput}
               currency={watch('currency')}
-              onAmountChange={(value) => setValue('purchase_price', parseFloat(value) || 0)}
+              onAmountChange={(value) => {
+                // Update the local string state to allow typing decimal points
+                setPurchasePriceInput(value);
+
+                // Update the form state with the numeric value
+                if (value === '') {
+                  setValue('purchase_price', 0, { shouldValidate: true });
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    setValue('purchase_price', numValue, { shouldValidate: true });
+                  }
+                }
+              }}
               onCurrencyChange={(value) => setValue('currency', value)}
               required
               error={errors.purchase_price?.message}

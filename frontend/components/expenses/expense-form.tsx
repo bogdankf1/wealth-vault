@@ -44,7 +44,17 @@ const expenseSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional(),
   category: z.string().max(50).optional(),
-  amount: z.number().min(0, 'Amount must be positive'),
+  amount: z.number()
+    .min(0, 'Amount must be positive')
+    .refine(
+      (val) => {
+        // Check if number has more than 2 decimal places
+        // Use toFixed to round to 2 decimals and compare
+        const rounded = Math.round(val * 100) / 100;
+        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
+      },
+      { message: 'Amount can have at most 2 decimal places' }
+    ),
   currency: z.string().length(3),
   frequency: z.enum([
     'one_time',
@@ -81,6 +91,9 @@ const FREQUENCY_OPTIONS = [
 
 export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
   const isEditing = Boolean(expenseId);
+
+  // Local state to track the string value of amount while user is typing
+  const [amountInput, setAmountInput] = React.useState<string>('');
 
   const {
     data: existingExpense,
@@ -121,7 +134,9 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
         name: existingExpense.name,
         description: existingExpense.description || '',
         category: existingExpense.category || '',
-        amount: existingExpense.amount,
+        amount: typeof existingExpense.amount === 'string'
+          ? parseFloat(existingExpense.amount)
+          : existingExpense.amount,
         currency: existingExpense.currency,
         frequency: existingExpense.frequency as ExpenseFrequency,
         is_active: existingExpense.is_active,
@@ -139,6 +154,12 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
       reset(formData);
 
+      // Set the amount input string
+      const amountNum = typeof existingExpense.amount === 'string'
+        ? parseFloat(existingExpense.amount)
+        : existingExpense.amount;
+      setAmountInput(String(amountNum));
+
       setTimeout(() => {
         if (existingExpense.category) {
           setValue('category', existingExpense.category, { shouldDirty: true });
@@ -153,6 +174,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
         is_active: true,
         date: new Date().toISOString().split('T')[0],
       });
+      setAmountInput('');
     }
   }, [isEditing, existingExpense, isOpen, reset, setValue]);
 
@@ -205,6 +227,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
   const handleClose = () => {
     onClose();
+    setAmountInput('');
     reset({
       currency: 'USD',
       frequency: 'monthly',
@@ -285,9 +308,22 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             <CurrencyInput
               key={`currency-${existingExpense?.id || 'new'}-${watch('currency')}`}
               label="Amount"
-              amount={watch('amount')?.toString() || ''}
+              amount={amountInput}
               currency={watch('currency')}
-              onAmountChange={(value) => setValue('amount', parseFloat(value) || 0)}
+              onAmountChange={(value) => {
+                // Update the local string state to allow typing decimal points
+                setAmountInput(value);
+
+                // Update the form state with the numeric value
+                if (value === '') {
+                  setValue('amount', 0, { shouldValidate: true });
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    setValue('amount', numValue, { shouldValidate: true });
+                  }
+                }
+              }}
               onCurrencyChange={(value) => setValue('currency', value)}
               required
               error={errors.amount?.message}

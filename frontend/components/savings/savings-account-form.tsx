@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,7 +37,17 @@ const accountSchema = z.object({
   account_type: z.enum(['checking', 'savings', 'investment', 'cash', 'crypto', 'other']),
   institution: z.string().max(100).optional(),
   account_number_last4: z.string().length(4, 'Must be exactly 4 digits').optional().or(z.literal('')),
-  current_balance: z.number().min(0, 'Balance must be positive'),
+  current_balance: z.number()
+    .min(0, 'Balance must be positive')
+    .refine(
+      (val) => {
+        // Check if number has more than 2 decimal places
+        // Use toFixed to round to 2 decimals and compare
+        const rounded = Math.round(val * 100) / 100;
+        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
+      },
+      { message: 'Amount can have at most 2 decimal places' }
+    ),
   currency: z.string().length(3),
   is_active: z.boolean(),
   notes: z.string().max(500).optional(),
@@ -62,6 +72,9 @@ const ACCOUNT_TYPE_OPTIONS = [
 
 export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccountFormProps) {
   const isEditing = Boolean(accountId);
+
+  // Local state to track the string value of current_balance while user is typing
+  const [currentBalanceInput, setCurrentBalanceInput] = React.useState<string>('');
 
   const {
     data: existingAccount,
@@ -97,11 +110,19 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
         account_type: existingAccount.account_type as AccountType,
         institution: existingAccount.institution || '',
         account_number_last4: existingAccount.account_number_last4 || '',
-        current_balance: existingAccount.current_balance,
+        current_balance: typeof existingAccount.current_balance === 'string'
+          ? parseFloat(existingAccount.current_balance)
+          : existingAccount.current_balance,
         currency: existingAccount.currency,
         is_active: existingAccount.is_active,
         notes: existingAccount.notes || '',
       });
+
+      // Set the current balance input string
+      const balanceNum = typeof existingAccount.current_balance === 'string'
+        ? parseFloat(existingAccount.current_balance)
+        : existingAccount.current_balance;
+      setCurrentBalanceInput(String(balanceNum));
 
       setTimeout(() => {
         setValue('account_type', existingAccount.account_type as AccountType, { shouldDirty: true });
@@ -118,6 +139,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
         is_active: true,
         notes: '',
       });
+      setCurrentBalanceInput('');
     }
   }, [isEditing, existingAccount, isOpen, reset, setValue]);
 
@@ -143,11 +165,16 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
     }
   };
 
+  const handleClose = () => {
+    onClose();
+    setCurrentBalanceInput('');
+  };
+
   const accountType = watch('account_type');
   const isActive = watch('is_active');
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Account' : 'Add New Account'}</DialogTitle>
@@ -222,9 +249,22 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           <CurrencyInput
             key={`currency-${existingAccount?.id || 'new'}-${watch('currency')}`}
             label="Current Balance"
-            amount={watch('current_balance')?.toString() || ''}
+            amount={currentBalanceInput}
             currency={watch('currency')}
-            onAmountChange={(value) => setValue('current_balance', parseFloat(value) || 0)}
+            onAmountChange={(value) => {
+              // Update the local string state to allow typing decimal points
+              setCurrentBalanceInput(value);
+
+              // Update the form state with the numeric value
+              if (value === '') {
+                setValue('current_balance', 0, { shouldValidate: true });
+              } else {
+                const numValue = parseFloat(value);
+                if (!isNaN(numValue)) {
+                  setValue('current_balance', numValue, { shouldValidate: true });
+                }
+              }
+            }}
             onCurrencyChange={(value) => setValue('currency', value)}
             required
             error={errors.current_balance?.message}
@@ -252,7 +292,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
               <Button

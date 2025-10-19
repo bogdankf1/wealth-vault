@@ -42,7 +42,17 @@ const goalSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional(),
   category: z.string().max(50).optional(),
-  target_amount: z.number().gt(0, 'Target amount must be greater than 0'),
+  target_amount: z.number()
+    .gt(0, 'Target amount must be greater than 0')
+    .refine(
+      (val) => {
+        // Check if number has more than 2 decimal places
+        // Use toFixed to round to 2 decimals and compare
+        const rounded = Math.round(val * 100) / 100;
+        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
+      },
+      { message: 'Amount can have at most 2 decimal places' }
+    ),
   current_amount: z.number().min(0, 'Current amount cannot be negative'),
   currency: z.string().length(3),
   monthly_contribution: z.number().min(0).optional(),
@@ -74,6 +84,9 @@ const CATEGORY_OPTIONS = [
 
 export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
   const isEditing = Boolean(goalId);
+
+  // Local state to track the string value of target_amount while user is typing
+  const [targetAmountInput, setTargetAmountInput] = React.useState<string>('');
 
   const {
     data: existingGoal,
@@ -113,7 +126,9 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         name: existingGoal.name,
         description: existingGoal.description || '',
         category: existingGoal.category || '',
-        target_amount: existingGoal.target_amount,
+        target_amount: typeof existingGoal.target_amount === 'string'
+          ? parseFloat(existingGoal.target_amount)
+          : existingGoal.target_amount,
         current_amount: existingGoal.current_amount,
         currency: existingGoal.currency,
         monthly_contribution: existingGoal.monthly_contribution || 0,
@@ -126,6 +141,12 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
       };
 
       reset(formData);
+
+      // Set the target amount input string
+      const targetAmountNum = typeof existingGoal.target_amount === 'string'
+        ? parseFloat(existingGoal.target_amount)
+        : existingGoal.target_amount;
+      setTargetAmountInput(String(targetAmountNum));
 
       setTimeout(() => {
         if (existingGoal.category) {
@@ -146,6 +167,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         start_date: new Date().toISOString().split('T')[0],
         target_date: '',
       });
+      setTargetAmountInput('');
     }
   }, [isEditing, existingGoal, isOpen, reset, setValue]);
 
@@ -191,6 +213,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
   const handleClose = () => {
     onClose();
+    setTargetAmountInput('');
     reset({
       currency: 'USD',
       is_active: true,
@@ -271,9 +294,22 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             <CurrencyInput
               key={`currency-${existingGoal?.id || 'new'}-${watch('currency')}`}
               label="Target Amount"
-              amount={watch('target_amount')?.toString() || ''}
+              amount={targetAmountInput}
               currency={watch('currency')}
-              onAmountChange={(value) => setValue('target_amount', parseFloat(value) || 0)}
+              onAmountChange={(value) => {
+                // Update the local string state to allow typing decimal points
+                setTargetAmountInput(value);
+
+                // Update the form state with the numeric value
+                if (value === '') {
+                  setValue('target_amount', 0, { shouldValidate: true });
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    setValue('target_amount', numValue, { shouldValidate: true });
+                  }
+                }
+              }}
               onCurrencyChange={(value) => setValue('currency', value)}
               required
               error={errors.target_amount?.message}

@@ -43,7 +43,17 @@ const incomeSourceSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional(),
   category: z.string().max(50).optional(),
-  amount: z.number().min(0, 'Amount must be positive'),
+  amount: z.number()
+    .min(0, 'Amount must be positive')
+    .refine(
+      (val) => {
+        // Check if number has more than 2 decimal places
+        // Use toFixed to round to 2 decimals and compare
+        const rounded = Math.round(val * 100) / 100;
+        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
+      },
+      { message: 'Amount can have at most 2 decimal places' }
+    ),
   currency: z.string().length(3),
   frequency: z.enum([
     'one_time',
@@ -91,6 +101,9 @@ const CATEGORY_OPTIONS = [
 export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceFormProps) {
   const isEditing = Boolean(sourceId);
 
+  // Local state to track the string value of amount while user is typing
+  const [amountInput, setAmountInput] = React.useState<string>('');
+
   const {
     data: existingSource,
     isLoading: isLoadingSource,
@@ -130,7 +143,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         name: existingSource.name,
         description: existingSource.description || '',
         category: existingSource.category || '',
-        amount: existingSource.amount,
+        // Ensure amount is always a number, even if API sends string
+        amount: typeof existingSource.amount === 'string'
+          ? parseFloat(existingSource.amount)
+          : existingSource.amount,
         currency: existingSource.currency,
         frequency: existingSource.frequency as IncomeFrequency,
         is_active: existingSource.is_active,
@@ -148,6 +164,12 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
       // Reset the form with the data
       reset(formData);
+
+      // Set the amount input string
+      const amountNum = typeof existingSource.amount === 'string'
+        ? parseFloat(existingSource.amount)
+        : existingSource.amount;
+      setAmountInput(String(amountNum));
 
       // Explicitly set category, frequency, and currency to ensure Select components update
       // Use setTimeout to ensure this happens after render
@@ -172,6 +194,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
       });
+      setAmountInput('');
     }
   }, [isEditing, existingSource, isOpen, reset, setValue]);
 
@@ -225,6 +248,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
   const handleClose = () => {
     onClose();
+    setAmountInput('');
     reset({
       currency: 'USD',
       frequency: 'monthly',
@@ -309,9 +333,23 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             <CurrencyInput
               key={`currency-${existingSource?.id || 'new'}-${watch('currency')}`}
               label="Amount"
-              amount={watch('amount')?.toString() || ''}
+              amount={amountInput}
               currency={watch('currency')}
-              onAmountChange={(value) => setValue('amount', parseFloat(value) || 0)}
+              onAmountChange={(value) => {
+                // Update the local string state to allow typing decimal points
+                setAmountInput(value);
+
+                // Update the form state with the numeric value
+                // Allow empty string, otherwise parse the number
+                if (value === '') {
+                  setValue('amount', 0, { shouldValidate: true });
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    setValue('amount', numValue, { shouldValidate: true });
+                  }
+                }
+              }}
               onCurrencyChange={(value) => setValue('currency', value)}
               required
               error={errors.amount?.message}
