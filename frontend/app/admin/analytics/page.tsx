@@ -15,6 +15,7 @@ import {
 import { Users, UserCheck, DollarSign, TrendingUp, TrendingDown, Activity, Target, Info } from 'lucide-react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Bar, BarChart } from 'recharts';
 import { format } from 'date-fns';
+import { getChartColor, INCOME_COLOR } from '@/lib/utils/chart-colors';
 
 export default function AnalyticsPage() {
   const { data: platformStats, isLoading: statsLoading } = useGetPlatformStatsQuery();
@@ -188,17 +189,18 @@ export default function AnalyticsPage() {
                     <YAxis className="text-xs text-gray-600 dark:text-gray-400" tick={{ fontSize: 12 }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid #e5e7eb',
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
+                        color: 'hsl(var(--foreground))',
                       }}
                     />
                     <Line
                       type="monotone"
                       dataKey="users"
-                      stroke="#3b82f6"
+                      stroke={getChartColor(1)}
                       strokeWidth={2}
-                      dot={{ fill: '#3b82f6', r: 3 }}
+                      dot={{ fill: getChartColor(1), r: 3 }}
                       activeDot={{ r: 5 }}
                     />
                   </LineChart>
@@ -235,12 +237,13 @@ export default function AnalyticsPage() {
                     <YAxis className="text-xs text-gray-600 dark:text-gray-400" tick={{ fontSize: 12 }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid #e5e7eb',
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
+                        color: 'hsl(var(--foreground))',
                       }}
                     />
-                    <Bar dataKey="users" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="users" fill={INCOME_COLOR} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

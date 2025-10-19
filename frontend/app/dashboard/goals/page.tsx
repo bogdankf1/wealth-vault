@@ -220,7 +220,7 @@ export default function GoalsPage() {
             }}
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredGoals.map((goal) => {
               const progress = goal.progress_percentage || 0;
               const displayTarget = goal.display_target_amount ?? goal.target_amount;

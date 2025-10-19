@@ -173,106 +173,106 @@ export default function DashboardPage() {
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto space-y-6 p-6">
+      <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 md:mt-2">
             Your complete financial overview
           </p>
         </div>
 
         {/* Quick Actions */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <div>
-              <h2 className="text-lg font-semibold">Quick Actions</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h2 className="text-base md:text-lg font-semibold">Quick Actions</h2>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                 Add new financial entries quickly
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
             <Button
               onClick={() => setIsIncomeFormOpen(true)}
-              className="h-auto py-4 flex flex-col gap-2"
+              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
               variant="outline"
             >
-              <div className="flex items-center gap-2">
-                <Plus className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <span className="font-medium">Add Income</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <Plus className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
+                <span className="text-xs md:text-sm font-medium">Add Income</span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">
+              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                 Record income source
               </span>
             </Button>
 
             <Button
               onClick={() => setIsExpenseFormOpen(true)}
-              className="h-auto py-4 flex flex-col gap-2"
+              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
               variant="outline"
             >
-              <div className="flex items-center gap-2">
-                <Minus className="h-5 w-5 text-red-600 dark:text-red-400" />
-                <span className="font-medium">Add Expense</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <Minus className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
+                <span className="text-xs md:text-sm font-medium">Add Expense</span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">
+              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                 Track expense
               </span>
             </Button>
 
             <Button
               onClick={() => setIsBudgetFormOpen(true)}
-              className="h-auto py-4 flex flex-col gap-2"
+              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
               variant="outline"
             >
-              <div className="flex items-center gap-2">
-                <Wallet className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                <span className="font-medium">Add Budget</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <Wallet className="h-4 w-4 md:h-5 md:w-5 text-indigo-600 dark:text-indigo-400" />
+                <span className="text-xs md:text-sm font-medium">Add Budget</span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">
+              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                 Set spending limit
               </span>
             </Button>
 
             <Button
               onClick={() => setIsSubscriptionFormOpen(true)}
-              className="h-auto py-4 flex flex-col gap-2"
+              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
               variant="outline"
             >
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                <span className="font-medium">Add Subscription</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-600 dark:text-purple-400" />
+                <span className="text-xs md:text-sm font-medium">Subscription</span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">
+              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                 Recurring payment
               </span>
             </Button>
 
             <Button
               onClick={() => setIsInstallmentFormOpen(true)}
-              className="h-auto py-4 flex flex-col gap-2"
+              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
               variant="outline"
             >
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                <span className="font-medium">Add Installment</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-orange-600 dark:text-orange-400" />
+                <span className="text-xs md:text-sm font-medium">Installment</span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">
+              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                 Payment plan
               </span>
             </Button>
 
             <Button
               onClick={() => setIsGoalFormOpen(true)}
-              className="h-auto py-4 flex flex-col gap-2"
+              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
               variant="outline"
             >
-              <div className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <span className="font-medium">Create Goal</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <Target className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-xs md:text-sm font-medium">Create Goal</span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">
+              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                 Set target
               </span>
             </Button>
@@ -287,10 +287,10 @@ export default function DashboardPage() {
 
         {/* Financial Alerts & Notifications */}
         {data.alerts && data.alerts.length > 0 && (
-          <Card className="p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold">Insights & Alerts</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+          <Card className="p-4 md:p-6">
+            <div className="mb-3 md:mb-4">
+              <h2 className="text-base md:text-lg font-semibold">Insights & Alerts</h2>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                 Important financial notifications
               </p>
             </div>
@@ -330,12 +330,12 @@ export default function DashboardPage() {
         )}
 
       {/* Top Stats Grid - Net Worth & Cash Flow */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
         {/* Net Worth Card */}
-        <Card className="p-6 col-span-1 lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
+        <Card className="p-4 md:p-6 col-span-1 md:col-span-2 xl:col-span-2">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Net Worth</h2>
+              <h2 className="text-base md:text-lg font-semibold">Net Worth</h2>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-gray-400 cursor-help" />
@@ -350,29 +350,29 @@ export default function DashboardPage() {
             </div>
             <Wallet className="h-5 w-5 text-gray-500" />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <div>
-              <p className="text-3xl font-bold">
+              <p className="text-2xl md:text-3xl font-bold">
                 <CurrencyDisplay
                   amount={parseFloat(net_worth.net_worth)}
                   currency={net_worth.currency}
                   showSymbol={true}
                   showCode={false}
-                  
-                  
+
+
                 />
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Total net worth
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+            <div className="grid grid-cols-2 gap-3 md:gap-4 pt-3 md:pt-4 border-t">
               <div>
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                  <ArrowUpRight className="h-4 w-4" />
-                  <span className="text-sm font-medium">Assets</span>
+                <div className="flex items-center gap-1 md:gap-2 text-green-600 dark:text-green-400">
+                  <ArrowUpRight className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-sm font-medium">Assets</span>
                 </div>
-                <p className="text-xl font-semibold mt-1">
+                <p className="text-lg md:text-xl font-semibold mt-1">
                   <CurrencyDisplay
                     amount={parseFloat(net_worth.total_assets)}
                     currency={net_worth.currency}
@@ -402,11 +402,11 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div>
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                  <ArrowDownRight className="h-4 w-4" />
-                  <span className="text-sm font-medium">Liabilities</span>
+                <div className="flex items-center gap-1 md:gap-2 text-red-600 dark:text-red-400">
+                  <ArrowDownRight className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-sm font-medium">Liabilities</span>
                 </div>
-                <p className="text-xl font-semibold mt-1">
+                <p className="text-lg md:text-xl font-semibold mt-1">
                   <CurrencyDisplay
                     amount={parseFloat(net_worth.total_liabilities)}
                     currency={net_worth.currency}
@@ -432,10 +432,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Financial Health Score */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Financial Health</h2>
+              <h2 className="text-base md:text-lg font-semibold">Financial Health</h2>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-gray-400 cursor-help" />
@@ -454,17 +454,17 @@ export default function DashboardPage() {
             <Activity className="h-5 w-5 text-gray-500" />
           </div>
           <div className="text-center">
-            <div className="text-5xl font-bold mb-2">
+            <div className="text-4xl md:text-5xl font-bold mb-2">
               {financial_health.score}
             </div>
-            <div className={`text-sm font-medium ${getHealthColor(financial_health.rating)}`}>
+            <div className={`text-xs md:text-sm font-medium ${getHealthColor(financial_health.rating)}`}>
               {financial_health.rating}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mt-1">
               out of 100
             </div>
           </div>
-          <div className="mt-6 space-y-2 text-sm">
+          <div className="mt-4 md:mt-6 space-y-2 text-xs md:text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">Emergency Fund</span>
               <span className="font-medium">{financial_health.emergency_fund_score}/20</span>
@@ -490,16 +490,16 @@ export default function DashboardPage() {
       </div>
 
       {/* Cash Flow Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <TrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                <TrendingUpIcon className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Income</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Income</p>
+                <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_income)}
                     currency={cash_flow.currency}
@@ -521,18 +521,18 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-xs text-gray-500">Monthly</p>
+          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                <CreditCard className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Expenses</p>
+                <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_expenses)}
                     currency={cash_flow.currency}
@@ -554,18 +554,18 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-xs text-gray-500">Monthly</p>
+          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Subscriptions</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Subscriptions</p>
+                <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_subscriptions)}
                     currency={cash_flow.currency}
@@ -587,18 +587,18 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-xs text-gray-500">Monthly</p>
+          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                <PiggyBank className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                <PiggyBank className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Net Cash Flow</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Net Cash Flow</p>
+                <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.net_cash_flow)}
                     currency={cash_flow.currency}
@@ -621,15 +621,15 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-[10px] md:text-xs text-gray-500">
             Savings Rate: {formatPercentage(cash_flow.savings_rate)}
           </p>
         </Card>
       </div>
 
       {/* Recent Activity */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
+      <Card className="p-4 md:p-6">
+        <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Recent Activity</h2>
         {recent_activity.length === 0 ? (
           <p className="text-center text-gray-500 py-8">
             No recent activity
@@ -684,10 +684,10 @@ export default function DashboardPage() {
       </Card>
 
       {/* Analytics Section */}
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         <div>
-          <h2 className="text-2xl font-bold mb-2">Financial Analytics</h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">Financial Analytics</h2>
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
             Visualize your financial trends and patterns
           </p>
         </div>
@@ -699,7 +699,7 @@ export default function DashboardPage() {
         />
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           {/* Income vs Expenses Chart */}
           <IncomeVsExpensesChart
             data={incomeVsExpensesData?.data || []}

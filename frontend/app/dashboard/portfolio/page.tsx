@@ -277,7 +277,7 @@ export default function PortfolioPage() {
             }}
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredAssets.map((asset) => {
               const displayCurrency = asset.display_currency || asset.currency;
               const displayCurrentValue = asset.display_current_value ?? asset.current_value ?? 0;

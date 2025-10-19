@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import { PieChartIcon, Info } from 'lucide-react';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
+import { getChartColors } from '@/lib/utils/chart-colors';
 
 interface CategoryData {
   category: string;
@@ -41,21 +42,8 @@ interface ExpenseByCategoryChartProps {
   currency?: string;
 }
 
-// Color palette for categories (matching our expense categories)
-const COLORS = [
-  '#ef4444', // Food & Dining - red
-  '#f59e0b', // Transportation - amber
-  '#8b5cf6', // Housing - purple
-  '#06b6d4', // Utilities - cyan
-  '#ec4899', // Healthcare - pink
-  '#10b981', // Entertainment - green
-  '#f97316', // Shopping - orange
-  '#6366f1', // Personal Care - indigo
-  '#14b8a6', // Education - teal
-  '#84cc16', // Insurance - lime
-  '#a855f7', // Debt Payments - purple
-  '#64748b', // Other - slate
-];
+// Get theme-aware colors that work in both light and dark modes
+const COLORS = getChartColors(12);
 
 export function ExpenseByCategoryChart({
   data,
@@ -69,18 +57,18 @@ export function ExpenseByCategoryChart({
 
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <Skeleton className="h-[400px] w-full" />
+      <Card className="p-4 md:p-6">
+        <Skeleton className="h-[300px] md:h-[400px] w-full" />
       </Card>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <Card className="p-6">
-        <div className="flex flex-col items-center justify-center h-[400px] text-gray-500">
+      <Card className="p-4 md:p-6">
+        <div className="flex flex-col items-center justify-center h-[300px] md:h-[400px] text-gray-500">
           <PieChartIcon className="h-12 w-12 mb-4 opacity-50" />
-          <p>No expense data available for the selected period</p>
+          <p className="text-sm md:text-base">No expense data available for the selected period</p>
         </div>
       </Card>
     );
@@ -160,10 +148,10 @@ export function ExpenseByCategoryChart({
 
   return (
     <TooltipProvider>
-      <Card className="p-6">
-        <div className="mb-6">
+      <Card className="p-4 md:p-6">
+        <div className="mb-4 md:mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold">Expenses by Category</h3>
+            <h3 className="text-base md:text-lg font-semibold">Expenses by Category</h3>
             <ChartTooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
@@ -173,7 +161,7 @@ export function ExpenseByCategoryChart({
               </TooltipContent>
             </ChartTooltip>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
             Spending breakdown across categories
           </p>
         </div>

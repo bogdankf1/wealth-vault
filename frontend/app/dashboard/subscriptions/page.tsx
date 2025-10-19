@@ -174,7 +174,7 @@ export default function SubscriptionsPage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <ModuleHeader
         title="Subscriptions"
@@ -185,7 +185,7 @@ export default function SubscriptionsPage() {
 
       {/* Statistics Cards */}
       {isLoadingStats ? (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
               <CardHeader className="space-y-2">
@@ -203,8 +203,8 @@ export default function SubscriptionsPage() {
 
       {/* Subscriptions List */}
       <div>
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
-          <h2 className="text-xl font-semibold">Subscriptions</h2>
+        <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
+          <h2 className="text-lg md:text-xl font-semibold">Subscriptions</h2>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -212,7 +212,7 @@ export default function SubscriptionsPage() {
         </div>
 
         {/* Search and Category Filter */}
-        <div className="mb-4">
+        <div className="mb-3 md:mb-4">
           <SearchFilter
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -258,7 +258,7 @@ export default function SubscriptionsPage() {
             />
           )
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSubscriptions.map((subscription) => {
               // Calculate next renewal date
               const { nextRenewal, isEnded, daysUntilRenewal } = calculateNextRenewalDate(
@@ -271,23 +271,23 @@ export default function SubscriptionsPage() {
 
               return (
                 <Card key={subscription.id} className="relative">
-                  <CardHeader>
+                  <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{subscription.name}</CardTitle>
-                        <CardDescription className="mt-1 min-h-[20px]">
+                        <CardTitle className="text-base md:text-lg truncate">{subscription.name}</CardTitle>
+                        <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                           {subscription.description || '\u00A0'}
                         </CardDescription>
                       </div>
-                      <Badge variant={subscription.is_active ? 'default' : 'secondary'}>
+                      <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                         {subscription.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
+                  <CardContent className="pt-0">
+                    <div className="space-y-2 md:space-y-3">
                       <div>
-                        <div className="text-2xl font-bold">
+                        <div className="text-xl md:text-2xl font-bold">
                           <CurrencyDisplay
                             amount={subscription.display_amount ?? subscription.amount}
                             currency={subscription.display_currency ?? subscription.currency}
@@ -298,7 +298,7 @@ export default function SubscriptionsPage() {
                         <p className="text-sm text-muted-foreground">
                           {FREQUENCY_LABELS[subscription.frequency] || subscription.frequency}
                           {subscription.display_currency && subscription.display_currency !== subscription.currency && (
-                            <span className="ml-1 text-xs">
+                            <span className="ml-1 text-[10px] md:text-xs">
                               (orig: {subscription.amount} {subscription.currency})
                             </span>
                           )}
@@ -306,23 +306,23 @@ export default function SubscriptionsPage() {
                       </div>
 
                       {/* Next Renewal Date - Key Feature */}
-                      <div className="rounded-lg bg-muted p-3 min-h-[60px]">
+                      <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextRenewal ? (
                           <>
-                            <p className="text-xs text-muted-foreground">Next Renewal</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">Next Renewal</p>
                             <p className="text-sm font-semibold">
                               {formatRenewalDate(nextRenewal)}
                             </p>
                             <Badge
                               variant={getRenewalBadgeVariant(urgency)}
-                              className="mt-1"
+                              className="mt-1 text-xs"
                             >
                               {renewalMessage}
                             </Badge>
                           </>
                         ) : (
                           <>
-                            <p className="text-xs text-muted-foreground">Status</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">Status</p>
                             <p className="text-sm font-semibold">{isEnded ? 'Ended' : 'No upcoming renewal'}</p>
                           </>
                         )}
@@ -330,7 +330,7 @@ export default function SubscriptionsPage() {
 
                       <div className="min-h-[24px]">
                         {subscription.category && (
-                          <Badge variant="outline">{subscription.category}</Badge>
+                          <Badge variant="outline" className="text-xs">{subscription.category}</Badge>
                         )}
                       </div>
 

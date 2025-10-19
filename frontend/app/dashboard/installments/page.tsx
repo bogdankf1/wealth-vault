@@ -186,7 +186,7 @@ export default function InstallmentsPage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <ModuleHeader
         title="Installments"
@@ -215,8 +215,8 @@ export default function InstallmentsPage() {
 
       {/* Installments List */}
       <div>
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
-          <h2 className="text-xl font-semibold">Installments</h2>
+        <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
+          <h2 className="text-lg md:text-xl font-semibold">Installments</h2>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -224,7 +224,7 @@ export default function InstallmentsPage() {
         </div>
 
         {/* Search and Category Filter */}
-        <div className="mb-4">
+        <div className="mb-3 md:mb-4">
           <SearchFilter
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -270,7 +270,7 @@ export default function InstallmentsPage() {
             />
           )
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredInstallments.map((installment) => {
               // Calculate next payment date
               const { nextPayment, isPaidOff, daysUntilPayment } = calculateNextPaymentDate(
@@ -289,26 +289,26 @@ export default function InstallmentsPage() {
 
               return (
                 <Card key={installment.id} className="relative">
-                  <CardHeader>
+                  <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{installment.name}</CardTitle>
-                        <CardDescription className="mt-1 min-h-[20px]">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base md:text-lg truncate">{installment.name}</CardTitle>
+                        <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                           {installment.description || '\u00A0'}
                         </CardDescription>
                       </div>
-                      <Badge variant={installment.is_active ? 'default' : 'secondary'}>
+                      <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                         {installment.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
+                  <CardContent className="pt-0">
+                    <div className="space-y-2 md:space-y-3">
                       {/* Total and Remaining Balance */}
-                      <div className="rounded-lg border bg-muted/50 p-3">
+                      <div className="rounded-lg border bg-muted/50 p-2 md:p-3">
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">Remaining</span>
-                          <span className="text-2xl font-bold">
+                          <span className="text-[10px] md:text-xs text-muted-foreground">Remaining</span>
+                          <span className="text-xl md:text-2xl font-bold">
                             <CurrencyDisplay
                               amount={installment.display_remaining_balance ?? installment.remaining_balance ?? installment.display_total_amount ?? installment.total_amount}
                               currency={installment.display_currency ?? installment.currency}
@@ -318,7 +318,7 @@ export default function InstallmentsPage() {
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between">
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] md:text-xs text-muted-foreground">
                             of{' '}
                             <CurrencyDisplay
                               amount={installment.display_total_amount ?? installment.total_amount}
@@ -328,7 +328,7 @@ export default function InstallmentsPage() {
                             />{' '}
                             total
                           </span>
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-xs md:text-sm text-muted-foreground">
                             <CurrencyDisplay
                               amount={installment.display_amount_per_payment ?? installment.amount_per_payment}
                               currency={installment.display_currency ?? installment.currency}
@@ -339,7 +339,7 @@ export default function InstallmentsPage() {
                           </span>
                         </div>
                         {installment.display_currency && installment.display_currency !== installment.currency && (
-                          <div className="mt-2 text-xs text-muted-foreground">
+                          <div className="mt-2 text-[10px] md:text-xs text-muted-foreground">
                             Original: <CurrencyDisplay
                               amount={installment.total_amount}
                               currency={installment.currency}
@@ -367,24 +367,24 @@ export default function InstallmentsPage() {
                       </div>
 
                       {/* Next Payment Date - Key Feature */}
-                      <div className="rounded-lg bg-muted p-3 min-h-[60px]">
+                      <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextPayment ? (
                           <>
-                            <p className="text-xs text-muted-foreground">Next Payment</p>
-                            <p className="text-sm font-semibold">
+                            <p className="text-[10px] md:text-xs text-muted-foreground">Next Payment</p>
+                            <p className="text-xs md:text-sm font-semibold">
                               {formatPaymentDate(nextPayment)}
                             </p>
                             <Badge
                               variant={getPaymentBadgeVariant(urgency)}
-                              className="mt-1"
+                              className="mt-1 text-xs flex-shrink-0"
                             >
                               {paymentMessage}
                             </Badge>
                           </>
                         ) : (
                           <>
-                            <p className="text-xs text-muted-foreground">Status</p>
-                            <p className="text-sm font-semibold">
+                            <p className="text-[10px] md:text-xs text-muted-foreground">Status</p>
+                            <p className="text-xs md:text-sm font-semibold">
                               {isPaidOff ? 'Paid Off' : 'No upcoming payment'}
                             </p>
                           </>
@@ -393,7 +393,7 @@ export default function InstallmentsPage() {
 
                       <div className="min-h-[24px]">
                         {installment.category && (
-                          <Badge variant="outline">{installment.category}</Badge>
+                          <Badge variant="outline" className="text-xs flex-shrink-0">{installment.category}</Badge>
                         )}
                       </div>
 

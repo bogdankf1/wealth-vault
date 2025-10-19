@@ -179,7 +179,7 @@ export default function SavingsPage() {
           description="Try adjusting your search or filters"
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredAccounts.map((account) => (
             <Card key={account.id} className="relative">
               <CardHeader>

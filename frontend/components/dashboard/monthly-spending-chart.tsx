@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import { BarChart3, TrendingUp, TrendingDown, Info } from 'lucide-react';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
+import { getChartColor, INCOME_COLOR, EXPENSE_COLOR } from '@/lib/utils/chart-colors';
 
 interface MonthlySpendingData {
   month: string;
@@ -149,8 +150,8 @@ export function MonthlySpendingChart({
 
   // Custom bar color based on amount vs average
   const getBarColor = (amount: number) => {
-    if (!showAverage) return '#3b82f6'; // blue
-    return amount > average ? '#ef4444' : '#10b981'; // red if above, green if below
+    if (!showAverage) return getChartColor(1); // blue
+    return amount > average ? EXPENSE_COLOR : INCOME_COLOR; // red if above, green if below
   };
 
   return (

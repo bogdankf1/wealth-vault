@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { BUDGET_STATUS_COLORS, getChartColor } from '@/lib/utils/chart-colors';
 
 interface BudgetProgressChartProps {
   data: BudgetSummaryByCategory[];
@@ -58,10 +59,10 @@ export function BudgetProgressChart({ data, currency }: BudgetProgressChartProps
 
   const getBarColor = (category: string) => {
     const item = data.find((d) => d.category === category);
-    if (!item) return '#10b981';
-    if (item.is_overspent) return '#ef4444';
-    if (item.percentage_used >= 80) return '#f59e0b';
-    return '#10b981';
+    if (!item) return BUDGET_STATUS_COLORS.good;
+    if (item.is_overspent) return BUDGET_STATUS_COLORS.danger;
+    if (item.percentage_used >= 80) return BUDGET_STATUS_COLORS.warning;
+    return BUDGET_STATUS_COLORS.good;
   };
 
   return (
@@ -93,7 +94,7 @@ export function BudgetProgressChart({ data, currency }: BudgetProgressChartProps
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <Bar dataKey="Budgeted" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Budgeted" fill={getChartColor(12)} radius={[4, 4, 0, 0]} />
             <Bar dataKey="Spent" radius={[4, 4, 0, 0]}>
               {chartData.map((entry) => (
                 <Cell key={entry.category} fill={getBarColor(entry.category)} />

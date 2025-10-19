@@ -143,7 +143,7 @@ export default function ExpensesPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -181,8 +181,8 @@ export default function ExpensesPage() {
 
       {/* Expenses List */}
       <div>
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold">Expenses</h2>
+        <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-lg md:text-xl font-semibold">Expenses</h2>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -190,7 +190,7 @@ export default function ExpensesPage() {
         </div>
 
         {/* Search and Category Filter */}
-        <div className="mb-4">
+        <div className="mb-3 md:mb-4">
           <SearchFilter
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -233,26 +233,26 @@ export default function ExpensesPage() {
             />
           )
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredExpenses.map((expense) => (
               <Card key={expense.id} className="relative">
-                <CardHeader>
+                <CardHeader className="pb-3 md:pb-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{expense.name}</CardTitle>
-                      <CardDescription className="mt-1 min-h-[20px]">
+                      <CardTitle className="text-base md:text-lg truncate">{expense.name}</CardTitle>
+                      <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                         {expense.description || '\u00A0'}
                       </CardDescription>
                     </div>
-                    <Badge variant={expense.is_active ? 'default' : 'secondary'}>
+                    <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                       {expense.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="pt-0">
+                  <div className="space-y-2 md:space-y-3">
                     <div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-xl md:text-2xl font-bold">
                         <CurrencyDisplay
                           amount={expense.display_amount ?? expense.amount}
                           currency={expense.display_currency ?? expense.currency}
@@ -270,10 +270,10 @@ export default function ExpensesPage() {
                       </p>
                     </div>
 
-                    <div className="rounded-lg bg-muted p-3 min-h-[60px]">
+                    <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                       {(expense.display_monthly_equivalent ?? expense.monthly_equivalent) ? (
                         <>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[10px] md:text-xs text-muted-foreground">
                             Monthly equivalent
                           </p>
                           <p className="text-sm font-semibold">
@@ -286,13 +286,13 @@ export default function ExpensesPage() {
                           </p>
                         </>
                       ) : (
-                        <p className="text-xs text-muted-foreground">\u00A0</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground">\u00A0</p>
                       )}
                     </div>
 
                     <div className="min-h-[24px]">
                       {expense.category && (
-                        <Badge variant="outline">{expense.category}</Badge>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">{expense.category}</Badge>
                       )}
                     </div>
 

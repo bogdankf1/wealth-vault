@@ -71,13 +71,13 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 transform bg-white dark:bg-gray-800 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static',
+          'fixed inset-y-0 left-0 z-50 w-64 md:w-72 transform bg-white dark:bg-gray-800 transition-transform duration-300 ease-in-out xl:translate-x-0 xl:static xl:w-64 shadow-2xl xl:shadow-none',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between px-6 border-b dark:border-gray-700">
+          <div className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6 border-b dark:border-gray-700">
             <Link href="/dashboard" className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
                 <span className="text-white font-bold">W</span>
@@ -95,7 +95,7 @@ export default function DashboardLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
+          <nav className="flex-1 space-y-1 px-2 md:px-3 py-3 md:py-4 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -106,13 +106,13 @@ export default function DashboardLayout({
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                    'flex items-center px-3 py-2.5 md:py-2 text-sm md:text-sm font-medium rounded-lg transition-colors touch-manipulation',
                     isActive
                       ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                      : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600'
                   )}
                 >
-                  <Icon className="mr-3 h-5 w-5" />
+                  <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
                   {item.name}
                 </Link>
               );
@@ -134,13 +134,13 @@ export default function DashboardLayout({
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                    'flex items-center px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
                     isActive
                       ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                      : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600'
                   )}
                 >
-                  <Icon className="mr-3 h-5 w-5" />
+                  <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
                   {item.name}
                 </Link>
               );
@@ -152,13 +152,13 @@ export default function DashboardLayout({
                 href="/admin"
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                  'flex items-center px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
                   pathname.startsWith('/admin')
                     ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                    : 'text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
+                    : 'text-indigo-700 hover:bg-indigo-50 active:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
                 )}
               >
-                <Shield className="mr-3 h-5 w-5" />
+                <Shield className="mr-3 h-5 w-5 flex-shrink-0" />
                 Admin Panel
               </Link>
             )}
@@ -206,14 +206,24 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile header */}
-        <header className="lg:hidden bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-4 py-3">
+        {/* Mobile/Tablet header */}
+        <header className="xl:hidden bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-4 py-2.5 flex items-center justify-between sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
+            className="p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 touch-manipulation"
+            aria-label="Open menu"
           >
             <Menu className="h-6 w-6" />
           </button>
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">W</span>
+            </div>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">
+              Wealth Vault
+            </span>
+          </Link>
+          <div className="w-10" /> {/* Spacer for centering */}
         </header>
 
         {/* Page content */}

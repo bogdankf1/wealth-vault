@@ -22,6 +22,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, Wallet, Info } from 'lucide-react';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
+import { getChartColor, INCOME_COLOR, EXPENSE_COLOR } from '@/lib/utils/chart-colors';
 
 interface NetWorthDataPoint {
   month: string;
@@ -104,21 +105,21 @@ export function NetWorthTrendChart({
           <p className="font-semibold mb-2">{label}</p>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500" />
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getChartColor(1) }} />
               <span className="text-sm">Net Worth:</span>
               <span className="font-semibold text-blue-600 dark:text-blue-400">
                 {formatCurrency(payload[0]?.value || 0)}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: INCOME_COLOR }} />
               <span className="text-sm">Assets:</span>
               <span className="font-semibold text-green-600 dark:text-green-400">
                 {formatCurrency(payload[1]?.value || 0)}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: EXPENSE_COLOR }} />
               <span className="text-sm">Liabilities:</span>
               <span className="font-semibold text-red-600 dark:text-red-400">
                 {formatCurrency(payload[2]?.value || 0)}
@@ -216,8 +217,8 @@ export function NetWorthTrendChart({
           <AreaChart data={data}>
             <defs>
               <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <stop offset="5%" stopColor={getChartColor(1)} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={getChartColor(1)} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
@@ -256,7 +257,7 @@ export function NetWorthTrendChart({
             <Area
               type="monotone"
               dataKey="netWorth"
-              stroke="#3b82f6"
+              stroke={getChartColor(1)}
               strokeWidth={3}
               fill="url(#netWorthGradient)"
               name="Net Worth"
@@ -264,7 +265,7 @@ export function NetWorthTrendChart({
             <Line
               type="monotone"
               dataKey="assets"
-              stroke="#10b981"
+              stroke={INCOME_COLOR}
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}
@@ -273,7 +274,7 @@ export function NetWorthTrendChart({
             <Line
               type="monotone"
               dataKey="liabilities"
-              stroke="#ef4444"
+              stroke={EXPENSE_COLOR}
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}
@@ -318,16 +319,16 @@ export function NetWorthTrendChart({
             <Line
               type="monotone"
               dataKey="netWorth"
-              stroke="#3b82f6"
+              stroke={getChartColor(1)}
               strokeWidth={3}
-              dot={{ fill: '#3b82f6', r: 4 }}
+              dot={{ fill: getChartColor(1), r: 4 }}
               activeDot={{ r: 6 }}
               name="Net Worth"
             />
             <Line
               type="monotone"
               dataKey="assets"
-              stroke="#10b981"
+              stroke={INCOME_COLOR}
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}
@@ -336,7 +337,7 @@ export function NetWorthTrendChart({
             <Line
               type="monotone"
               dataKey="liabilities"
-              stroke="#ef4444"
+              stroke={EXPENSE_COLOR}
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}

@@ -169,7 +169,7 @@ export default function IncomePage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <ModuleHeader
         title="Income Tracking"
@@ -198,8 +198,8 @@ export default function IncomePage() {
 
       {/* Income Sources List */}
       <div>
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold">Income Sources</h2>
+        <div className="mb-3 md:mb-4 flex flex-col gap-3 md:gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-lg md:text-xl font-semibold">Income Sources</h2>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -250,26 +250,26 @@ export default function IncomePage() {
             />
           )
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSources.map((source) => (
               <Card key={source.id} className="relative">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{source.name}</CardTitle>
-                      <CardDescription className="mt-1 min-h-[20px]">
+                <CardHeader className="pb-3 md:pb-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base md:text-lg truncate">{source.name}</CardTitle>
+                      <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                         {source.description || '\u00A0'}
                       </CardDescription>
                     </div>
-                    <Badge variant={source.is_active ? 'default' : 'secondary'}>
+                    <Badge variant={source.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                       {source.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="pt-0">
+                  <div className="space-y-2 md:space-y-3">
                     <div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-xl md:text-2xl font-bold">
                         <CurrencyDisplay
                           amount={source.display_amount ?? source.amount}
                           currency={source.display_currency ?? source.currency}
@@ -288,13 +288,13 @@ export default function IncomePage() {
                     </div>
 
                     {source.frequency !== 'one_time' && (
-                      <div className="rounded-lg bg-muted p-3">
+                      <div className="rounded-lg bg-muted p-2 md:p-3">
                         {(source.display_monthly_equivalent ?? source.monthly_equivalent) ? (
                           <>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[10px] md:text-xs text-muted-foreground">
                               Monthly equivalent
                             </p>
-                            <p className="text-sm font-semibold">
+                            <p className="text-xs md:text-sm font-semibold">
                               <CurrencyDisplay
                                 amount={source.display_monthly_equivalent ?? source.monthly_equivalent ?? 0}
                                 currency={source.display_currency ?? source.currency}

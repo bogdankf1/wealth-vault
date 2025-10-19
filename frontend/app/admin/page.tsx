@@ -16,6 +16,7 @@ import {
 import { Users, UserCheck, UserPlus, DollarSign, TrendingUp, TrendingDown, Activity, Info } from 'lucide-react';
 import { Line, LineChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { format } from 'date-fns';
+import { getChartColor } from '@/lib/utils/chart-colors';
 
 export default function AdminDashboard() {
   const { data: platformStats, isLoading: statsLoading, error: statsError } = useGetPlatformStatsQuery();
@@ -187,17 +188,18 @@ export default function AdminDashboard() {
                   />
                   <RechartsTooltip
                     contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
+                      color: 'hsl(var(--foreground))',
                     }}
                   />
                   <Line
                     type="monotone"
                     dataKey="users"
-                    stroke="#3b82f6"
+                    stroke={getChartColor(1)}
                     strokeWidth={2}
-                    dot={{ fill: '#3b82f6', r: 4 }}
+                    dot={{ fill: getChartColor(1), r: 4 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>

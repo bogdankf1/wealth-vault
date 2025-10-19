@@ -164,7 +164,7 @@ export default function BudgetsPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -309,8 +309,8 @@ export default function BudgetsPage() {
 
       {/* Budget List */}
       <div>
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold">Budgets</h2>
+        <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-lg md:text-xl font-semibold">Budgets</h2>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -318,7 +318,7 @@ export default function BudgetsPage() {
         </div>
 
         {/* Search and Category Filter */}
-        <div className="mb-4">
+        <div className="mb-3 md:mb-4">
           <SearchFilter
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -352,26 +352,26 @@ export default function BudgetsPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredBudgets.map((budget) => (
               <Card key={budget.id} className="relative">
-                <CardHeader>
+                <CardHeader className="pb-3 md:pb-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{budget.name}</CardTitle>
-                      <CardDescription className="mt-1 min-h-[20px]">
+                      <CardTitle className="text-base md:text-lg truncate">{budget.name}</CardTitle>
+                      <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                         {budget.description || ' '}
                       </CardDescription>
                     </div>
-                    <Badge variant={budget.is_active ? 'default' : 'secondary'}>
+                    <Badge variant={budget.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                       {budget.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="pt-0">
+                  <div className="space-y-2 md:space-y-3">
                     <div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-xl md:text-2xl font-bold">
                         <CurrencyDisplay
                           amount={budget.display_amount ?? budget.amount}
                           currency={budget.display_currency ?? budget.currency}
@@ -383,7 +383,7 @@ export default function BudgetsPage() {
                         {PERIOD_LABELS[budget.period] || budget.period}
                       </p>
                       {budget.display_currency && budget.display_currency !== budget.currency && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                           Original: <CurrencyDisplay
                             amount={budget.amount}
                             currency={budget.currency}
@@ -394,8 +394,8 @@ export default function BudgetsPage() {
                       )}
                     </div>
 
-                    <div className="rounded-lg bg-muted p-3 min-h-[60px] flex items-center justify-center">
-                      <p className="text-xs text-muted-foreground">
+                    <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px] flex items-center justify-center">
+                      <p className="text-[10px] md:text-xs text-muted-foreground">
                         Period: {budget.start_date.split('T')[0]}
                         {budget.end_date ? ` to ${budget.end_date.split('T')[0]}` : ' (ongoing)'}
                       </p>
@@ -403,7 +403,7 @@ export default function BudgetsPage() {
 
                     <div className="min-h-[24px]">
                       {budget.category && (
-                        <Badge variant="outline">{budget.category}</Badge>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">{budget.category}</Badge>
                       )}
                     </div>
 
