@@ -13,6 +13,8 @@ if database_url.startswith("postgresql://") and "+asyncpg" not in database_url:
     database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 # Create async engine
+# Note: connect_args with prepared_statement_cache_size=0 is required for Supabase pooler
+# which uses pgbouncer in transaction mode
 engine = create_async_engine(
     database_url,
     echo=settings.DEBUG,
@@ -20,6 +22,9 @@ engine = create_async_engine(
     pool_pre_ping=True,
     pool_size=10,
     max_overflow=20,
+    connect_args={
+        "prepared_statement_cache_size": 0,  # Required for pgbouncer transaction mode
+    },
 )
 
 # Create async session factory
