@@ -1,7 +1,8 @@
 """
 Application configuration and settings.
 """
-from typing import List
+from typing import List, Union
+import json
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn, field_validator
 
@@ -73,6 +74,22 @@ class Settings(BaseSettings):
                 v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
             return v
         return str(v)
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def validate_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        """Parse CORS_ORIGINS from JSON string if needed."""
+        if isinstance(v, str):
+            try:
+                # Try to parse as JSON array
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+            # If not JSON, treat as comma-separated string
+            return [origin.strip() for origin in v.split(",")]
+        return v
 
 
 settings = Settings()
