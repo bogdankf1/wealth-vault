@@ -66,8 +66,11 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def validate_database_url(cls, v: str) -> str:
-        """Ensure DATABASE_URL is properly formatted."""
+        """Ensure DATABASE_URL uses asyncpg driver for async operations."""
         if isinstance(v, str):
+            # Replace postgresql:// with postgresql+asyncpg:// for async support
+            if v.startswith("postgresql://") and "+asyncpg" not in v:
+                v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
             return v
         return str(v)
 
