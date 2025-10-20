@@ -3,6 +3,7 @@ Alembic environment configuration.
 """
 from logging.config import fileConfig
 import asyncio
+import os
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -50,8 +51,15 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     """Run migrations in async mode."""
+    # Get configuration section
+    configuration = config.get_section(config.config_ini_section, {})
+
+    # Override with DATABASE_URL from environment if present
+    if os.getenv("DATABASE_URL"):
+        configuration["sqlalchemy.url"] = os.getenv("DATABASE_URL")
+
     connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
