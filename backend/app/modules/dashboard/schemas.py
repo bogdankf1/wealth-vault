@@ -167,3 +167,19 @@ class NetWorthTrendChartResponse(BaseModel):
     """Schema for net worth trend chart response."""
 
     data: list[NetWorthTrendDataPoint]
+
+
+class IncomeBreakdownDataPoint(BaseModel):
+    """Schema for income breakdown data point."""
+
+    category: str  # "Expenses", "Subscriptions", "Installments", "Net Savings"
+    amount: Decimal
+    percentage: float
+
+
+class IncomeBreakdownChartResponse(BaseModel):
+    """Schema for income breakdown chart response."""
+
+    data: list[IncomeBreakdownDataPoint]
+    total_income: Decimal
+    currency: str

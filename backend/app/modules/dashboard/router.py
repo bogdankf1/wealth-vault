@@ -23,6 +23,7 @@ from app.modules.dashboard.schemas import (
     ExpenseByCategoryChartResponse,
     MonthlySpendingChartResponse,
     NetWorthTrendChartResponse,
+    IncomeBreakdownChartResponse,
 )
 from app.modules.dashboard import service
 
@@ -254,3 +255,21 @@ async def get_net_worth_trend_chart(
     Returns monthly net worth, assets, and liabilities data.
     """
     return await service.get_net_worth_trend_chart(db, current_user.id, start_date, end_date)
+
+
+@router.get("/analytics/income-breakdown", response_model=IncomeBreakdownChartResponse)
+async def get_income_breakdown_chart(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get income breakdown showing allocation across expenses, subscriptions, installments, and net savings.
+
+    Uses current month's cash flow data to show how monthly income is allocated.
+
+    Returns:
+    - Breakdown by category (Expenses, Subscriptions, Installments, Net Savings)
+    - Percentages of total income
+    - Total monthly income
+    """
+    return await service.get_income_breakdown_chart(db, current_user.id)

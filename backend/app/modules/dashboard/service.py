@@ -32,6 +32,8 @@ from app.modules.dashboard.schemas import (
     MonthlySpendingDataPoint,
     NetWorthTrendChartResponse,
     NetWorthTrendDataPoint,
+    IncomeBreakdownChartResponse,
+    IncomeBreakdownDataPoint,
 )
 from app.services.currency_service import CurrencyService
 
@@ -807,36 +809,89 @@ async def get_income_vs_expenses_chart(
                     if converted:
                         monthly_income += converted
 
-        # Calculate expenses for this month
+        # Calculate expenses for this month (all active expenses using monthly equivalent)
         expense_query = select(Expense).where(
             and_(
                 Expense.user_id == user_id,
-                or_(
-                    and_(
-                        Expense.date.is_not(None),
-                        Expense.date >= month_start,
-                        Expense.date <= month_end
-                    ),
-                    and_(
-                        Expense.start_date.is_not(None),
-                        Expense.start_date >= month_start,
-                        Expense.start_date <= month_end
-                    )
-                ),
+                Expense.is_active == True
             )
         )
         expense_result = await db.execute(expense_query)
         expenses = expense_result.scalars().all()
 
-        # Convert expenses to display currency
+        # Convert expenses to monthly equivalent in display currency
         monthly_expenses = Decimal('0')
         for expense in expenses:
-            if expense.amount:
+            monthly_amount = expense.monthly_equivalent
+            if monthly_amount:
                 if expense.currency == display_currency:
-                    monthly_expenses += expense.amount
+                    monthly_expenses += monthly_amount
                 else:
                     converted = await currency_service.convert_amount(
-                        expense.amount, expense.currency, display_currency
+                        monthly_amount, expense.currency, display_currency
+                    )
+                    if converted:
+                        monthly_expenses += converted
+
+        # Add subscriptions
+        subscription_query = select(Subscription).where(
+            and_(
+                Subscription.user_id == user_id,
+                Subscription.is_active == True
+            )
+        )
+        subscription_result = await db.execute(subscription_query)
+        subscriptions = subscription_result.scalars().all()
+
+        # Frequency multipliers to convert to monthly
+        frequency_to_monthly = {
+            "monthly": Decimal("1"),
+            "quarterly": Decimal("0.333333"),
+            "annually": Decimal("0.083333"),
+            "biannually": Decimal("0.166667"),
+        }
+
+        for subscription in subscriptions:
+            if subscription.amount:
+                multiplier = frequency_to_monthly.get(subscription.frequency, Decimal('1'))
+                monthly_amount = subscription.amount * multiplier
+
+                if subscription.currency == display_currency:
+                    monthly_expenses += monthly_amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        monthly_amount, subscription.currency, display_currency
+                    )
+                    if converted:
+                        monthly_expenses += converted
+
+        # Add installments
+        installment_query = select(Installment).where(
+            and_(
+                Installment.user_id == user_id,
+                Installment.is_active == True
+            )
+        )
+        installment_result = await db.execute(installment_query)
+        installments = installment_result.scalars().all()
+
+        # Installment frequency multipliers to convert to monthly
+        installment_frequency_to_monthly = {
+            "monthly": Decimal("1"),
+            "biweekly": Decimal("2.16667"),
+            "weekly": Decimal("4.33333"),
+        }
+
+        for installment in installments:
+            if installment.amount_per_payment:
+                multiplier = installment_frequency_to_monthly.get(installment.frequency, Decimal('1'))
+                monthly_amount = installment.amount_per_payment * multiplier
+
+                if installment.currency == display_currency:
+                    monthly_expenses += monthly_amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        monthly_amount, installment.currency, display_currency
                     )
                     if converted:
                         monthly_expenses += converted
@@ -863,6 +918,7 @@ async def get_expense_by_category_chart(
 ) -> ExpenseByCategoryChartResponse:
     """
     Get expense breakdown by category for the specified period.
+    Shows only actual expenses from the Expenses module, broken down by category.
     All amounts are converted to user's display currency.
     """
     # Remove timezone info to match database datetimes
@@ -942,6 +998,7 @@ async def get_monthly_spending_chart(
 ) -> MonthlySpendingChartResponse:
     """
     Get monthly spending patterns for the specified period.
+    Includes expenses, subscriptions, and installments.
     All amounts are converted to user's display currency.
     """
     from calendar import month_abbr
@@ -954,6 +1011,16 @@ async def get_monthly_spending_chart(
     # Get user's display currency
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
+
+    # Frequency multipliers for calculating monthly equivalents
+    frequency_to_monthly = {
+        'monthly': 1,
+        'quarterly': Decimal('0.333333'),  # Divide by 3
+        'annually': Decimal('0.083333'),   # Divide by 12
+        'biannually': Decimal('0.166667'), # Divide by 6
+        'biweekly': Decimal('2.16667'),    # ~26 payments per year / 12
+        'weekly': Decimal('4.33333'),      # ~52 weeks per year / 12
+    }
 
     data_points = []
     current = start_date.replace(day=1)
@@ -996,6 +1063,62 @@ async def get_monthly_spending_chart(
                     )
                     if converted:
                         monthly_amount += converted
+
+        # Add subscriptions as monthly equivalents
+        subscription_query = select(Subscription).where(
+            and_(
+                Subscription.user_id == user_id,
+                Subscription.is_active == True,
+            )
+        )
+        sub_result = await db.execute(subscription_query)
+        subscriptions = sub_result.scalars().all()
+
+        for subscription in subscriptions:
+            if subscription.amount:
+                # Convert to display currency first
+                amount_in_display = subscription.amount
+                if subscription.currency != display_currency:
+                    converted = await currency_service.convert_amount(
+                        subscription.amount,
+                        subscription.currency,
+                        display_currency
+                    )
+                    if converted is not None:
+                        amount_in_display = converted
+
+                # Calculate monthly equivalent
+                multiplier = frequency_to_monthly.get(subscription.frequency, 1)
+                monthly_equivalent = amount_in_display * Decimal(str(multiplier))
+                monthly_amount += monthly_equivalent
+
+        # Add installments as monthly equivalents
+        installment_query = select(Installment).where(
+            and_(
+                Installment.user_id == user_id,
+                Installment.is_active == True,
+            )
+        )
+        inst_result = await db.execute(installment_query)
+        installments = inst_result.scalars().all()
+
+        for installment in installments:
+            if installment.amount_per_payment:
+                # Convert to display currency
+                amount_in_display = installment.amount_per_payment
+                if installment.currency != display_currency:
+                    converted = await currency_service.convert_amount(
+                        installment.amount_per_payment,
+                        installment.currency,
+                        display_currency
+                    )
+                    if converted is not None:
+                        amount_in_display = converted
+
+                # Convert to monthly equivalent based on frequency
+                frequency_multiplier = frequency_to_monthly.get(installment.frequency, 1)
+                monthly_equivalent = amount_in_display * Decimal(str(frequency_multiplier))
+                monthly_amount += monthly_equivalent
 
         # Format month label
         month_label = f"{month_abbr[current.month]} {current.year}"
@@ -1173,3 +1296,66 @@ async def get_net_worth_trend_chart(
         current += relativedelta(months=1)
 
     return NetWorthTrendChartResponse(data=data_points)
+
+
+
+async def get_income_breakdown_chart(
+    db: AsyncSession,
+    user_id: UUID
+) -> IncomeBreakdownChartResponse:
+    """
+    Get income breakdown showing how monthly income is allocated.
+    Shows: Expenses, Subscriptions, Installments, and Net Savings.
+    All amounts are converted to user's display currency.
+    """
+    # Get cash flow data which already has all the calculations
+    cash_flow = await get_cash_flow(db, user_id)
+    
+    # Calculate percentages
+    total_income = cash_flow.monthly_income
+    
+    data_points = []
+    
+    if total_income > 0:
+        # Expenses
+        if cash_flow.monthly_expenses > 0:
+            expense_pct = float((cash_flow.monthly_expenses / total_income) * 100)
+            data_points.append(IncomeBreakdownDataPoint(
+                category="Expenses",
+                amount=cash_flow.monthly_expenses,
+                percentage=expense_pct
+            ))
+        
+        # Subscriptions
+        if cash_flow.monthly_subscriptions > 0:
+            subscription_pct = float((cash_flow.monthly_subscriptions / total_income) * 100)
+            data_points.append(IncomeBreakdownDataPoint(
+                category="Subscriptions",
+                amount=cash_flow.monthly_subscriptions,
+                percentage=subscription_pct
+            ))
+        
+        # Installments
+        if cash_flow.monthly_installments > 0:
+            installment_pct = float((cash_flow.monthly_installments / total_income) * 100)
+            data_points.append(IncomeBreakdownDataPoint(
+                category="Installments",
+                amount=cash_flow.monthly_installments,
+                percentage=installment_pct
+            ))
+        
+        # Net Savings (what's left)
+        if cash_flow.net_cash_flow > 0:
+            savings_pct = float((cash_flow.net_cash_flow / total_income) * 100)
+            data_points.append(IncomeBreakdownDataPoint(
+                category="Net Savings",
+                amount=cash_flow.net_cash_flow,
+                percentage=savings_pct
+            ))
+    
+    return IncomeBreakdownChartResponse(
+        data=data_points,
+        total_income=total_income,
+        currency=cash_flow.currency
+    )
+
