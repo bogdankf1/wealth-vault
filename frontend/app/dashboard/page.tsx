@@ -490,7 +490,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Cash Flow Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 md:gap-6">
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -571,8 +571,8 @@ export default function DashboardPage() {
                     currency={cash_flow.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   />
                 </p>
               </div>
@@ -583,7 +583,40 @@ export default function DashboardPage() {
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Sum of all active monthly and annual subscriptions</p>
+                <p className="text-sm">Sum of all active subscriptions (monthly, quarterly, annually, biannually)</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
+        </Card>
+
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Installments</p>
+                <p className="text-base md:text-xl font-bold">
+                  <CurrencyDisplay
+                    amount={parseFloat(cash_flow.monthly_installments)}
+                    currency={cash_flow.currency}
+                    showSymbol={true}
+                    showCode={false}
+
+
+                  />
+                </p>
+              </div>
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p className="font-semibold mb-1">How it is calculated:</p>
+                <p className="text-sm">Sum of all active installment payments (monthly, biweekly, weekly)</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -616,7 +649,7 @@ export default function DashboardPage() {
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Net Cash Flow = Income - Expenses - Subscriptions</p>
+                <p className="text-sm">Net Cash Flow = Income - Expenses - Subscriptions - Installments</p>
                 <p className="text-sm mt-2">Savings Rate = (Net Cash Flow / Income) × 100%</p>
               </TooltipContent>
             </Tooltip>

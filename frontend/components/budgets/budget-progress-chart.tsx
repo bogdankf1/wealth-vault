@@ -94,8 +94,8 @@ export function BudgetProgressChart({ data, currency }: BudgetProgressChartProps
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <Bar dataKey="Budgeted" fill={getChartColor(12)} radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Spent" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="Budgeted" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Spent" fill="#10b981" radius={[4, 4, 0, 0]}>
               {chartData.map((entry) => (
                 <Cell key={entry.category} fill={getBarColor(entry.category)} />
               ))}

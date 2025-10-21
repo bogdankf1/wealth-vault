@@ -18,6 +18,7 @@ export interface CashFlowResponse {
   monthly_income: string;
   monthly_expenses: string;
   monthly_subscriptions: string;
+  monthly_installments: string;
   net_cash_flow: string;
   savings_rate: string;
   currency: string;

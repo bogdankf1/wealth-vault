@@ -298,7 +298,7 @@ export default function PortfolioPage() {
                           {asset.symbol ? (
                             <span className="font-mono font-semibold">{asset.symbol}</span>
                           ) : (
-                            '\u00A0'
+                            <>&nbsp;</>
                           )}
                         </CardDescription>
                       </div>

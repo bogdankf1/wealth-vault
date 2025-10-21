@@ -294,7 +294,7 @@ export default function InstallmentsPage() {
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-base md:text-lg truncate">{installment.name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                          {installment.description || '\u00A0'}
+                          {installment.description || <>&nbsp;</>}
                         </CardDescription>
                       </div>
                       <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
@@ -338,21 +338,23 @@ export default function InstallmentsPage() {
                             {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
                           </span>
                         </div>
-                        {installment.display_currency && installment.display_currency !== installment.currency && (
-                          <div className="mt-2 text-[10px] md:text-xs text-muted-foreground">
-                            Original: <CurrencyDisplay
-                              amount={installment.total_amount}
-                              currency={installment.currency}
-                              showSymbol={true}
-                              showCode={false}
-                            /> total, <CurrencyDisplay
-                              amount={installment.amount_per_payment}
-                              currency={installment.currency}
-                              showSymbol={true}
-                              showCode={false}
-                            /> {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
-                          </div>
-                        )}
+                        <div className="mt-2 text-[10px] md:text-xs text-muted-foreground min-h-[16px]">
+                          {installment.display_currency && installment.display_currency !== installment.currency && (
+                            <>
+                              Original: <CurrencyDisplay
+                                amount={installment.total_amount}
+                                currency={installment.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              /> total, <CurrencyDisplay
+                                amount={installment.amount_per_payment}
+                                currency={installment.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              /> {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
+                            </>
+                          )}
+                        </div>
                       </div>
 
                       {/* Payment Progress */}

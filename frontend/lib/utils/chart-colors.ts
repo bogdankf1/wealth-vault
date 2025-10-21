@@ -30,32 +30,28 @@ function oklchToHex(oklchString: string): string {
 
 /**
  * Get chart color by index (1-12)
- * Returns theme-aware color that works in both light and dark modes
+ * Returns theme-aware color that works in Recharts
+ * Using direct hex colors for compatibility
  */
 export function getChartColor(index: number): string {
-  const colorVar = `--chart-${Math.max(1, Math.min(12, index))}`;
-  const value = getCSSVariable(colorVar);
+  // Use direct color values that Recharts can understand
+  const colors = [
+    '#3b82f6', // blue
+    '#10b981', // green
+    '#f59e0b', // amber
+    '#8b5cf6', // purple
+    '#ef4444', // red
+    '#ec4899', // pink
+    '#14b8a6', // teal
+    '#6366f1', // indigo
+    '#06b6d4', // cyan
+    '#f97316', // orange
+    '#a855f7', // violet
+    '#64748b', // slate
+  ];
 
-  if (!value) {
-    // Fallback colors if CSS variables aren't available
-    const fallbacks = [
-      '#3b82f6', // blue
-      '#10b981', // green
-      '#f59e0b', // amber
-      '#8b5cf6', // purple
-      '#ef4444', // red
-      '#ec4899', // pink
-      '#14b8a6', // teal
-      '#6366f1', // indigo
-      '#06b6d4', // cyan
-      '#f97316', // orange
-      '#a855f7', // violet
-      '#64748b', // slate
-    ];
-    return fallbacks[(index - 1) % fallbacks.length];
-  }
-
-  return `oklch(${value})`;
+  const safeIndex = Math.max(1, Math.min(12, index));
+  return colors[safeIndex - 1];
 }
 
 /**
@@ -67,21 +63,21 @@ export function getChartColors(count: number = 12): string[] {
 
 /**
  * Category-specific color palette for expense categories
- * Uses chart colors but with semantic names
+ * Using direct color values that work in Recharts
  */
 export const EXPENSE_CATEGORY_COLORS: Record<string, string> = {
-  'Food & Dining': 'oklch(var(--chart-5))',      // red/orange
-  'Transportation': 'oklch(var(--chart-10))',    // amber
-  'Housing': 'oklch(var(--chart-4))',            // purple
-  'Utilities': 'oklch(var(--chart-9))',          // cyan
-  'Healthcare': 'oklch(var(--chart-6))',         // pink
-  'Entertainment': 'oklch(var(--chart-2))',      // green
-  'Shopping': 'oklch(var(--chart-3))',           // yellow/lime
-  'Personal Care': 'oklch(var(--chart-8))',      // indigo
-  'Education': 'oklch(var(--chart-7))',          // teal
-  'Insurance': 'oklch(var(--chart-1))',          // blue
-  'Debt Payments': 'oklch(var(--chart-11))',     // violet
-  'Other': 'oklch(var(--chart-12))',             // slate
+  'Food & Dining': '#ef4444',      // red
+  'Transportation': '#f97316',     // orange
+  'Housing': '#8b5cf6',            // purple
+  'Utilities': '#06b6d4',          // cyan
+  'Healthcare': '#ec4899',         // pink
+  'Entertainment': '#10b981',      // green
+  'Shopping': '#f59e0b',           // amber
+  'Personal Care': '#6366f1',      // indigo
+  'Education': '#14b8a6',          // teal
+  'Insurance': '#3b82f6',          // blue
+  'Debt Payments': '#a855f7',      // violet
+  'Other': '#64748b',              // slate
 };
 
 /**
@@ -93,17 +89,19 @@ export function getExpenseCategoryColor(category: string): string {
 
 /**
  * Income/Expense specific colors that work in both modes
+ * Using direct color values that work in Recharts
  */
-export const INCOME_COLOR = 'oklch(var(--chart-2))';  // green
-export const EXPENSE_COLOR = 'oklch(var(--chart-5))'; // red
+export const INCOME_COLOR = '#10b981';   // green
+export const EXPENSE_COLOR = '#ef4444';  // red
 
 /**
  * Status colors for budgets (green, amber, red)
+ * Using direct color values that work in Recharts
  */
 export const BUDGET_STATUS_COLORS = {
-  good: 'oklch(var(--chart-2))',      // green
-  warning: 'oklch(var(--chart-10))',  // amber
-  danger: 'oklch(var(--chart-5))',    // red
+  good: '#10b981',      // green
+  warning: '#f59e0b',   // amber
+  danger: '#ef4444',    // red
 };
 
 /**

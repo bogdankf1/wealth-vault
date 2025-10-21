@@ -241,7 +241,7 @@ export default function ExpensesPage() {
                     <div className="flex-1">
                       <CardTitle className="text-base md:text-lg truncate">{expense.name}</CardTitle>
                       <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                        {expense.description || '\u00A0'}
+                        {expense.description || <>&nbsp;</>}
                       </CardDescription>
                     </div>
                     <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
@@ -286,7 +286,7 @@ export default function ExpensesPage() {
                           </p>
                         </>
                       ) : (
-                        <p className="text-[10px] md:text-xs text-muted-foreground">\u00A0</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground">&nbsp;</p>
                       )}
                     </div>
 

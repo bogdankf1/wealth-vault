@@ -85,8 +85,10 @@ const CATEGORY_OPTIONS = [
 export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
   const isEditing = Boolean(goalId);
 
-  // Local state to track the string value of target_amount while user is typing
+  // Local state to track the string value of inputs while user is typing
   const [targetAmountInput, setTargetAmountInput] = React.useState<string>('');
+  const [currentAmountInput, setCurrentAmountInput] = React.useState<string>('');
+  const [monthlyContributionInput, setMonthlyContributionInput] = React.useState<string>('');
 
   const {
     data: existingGoal,
@@ -129,9 +131,15 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         target_amount: typeof existingGoal.target_amount === 'string'
           ? parseFloat(existingGoal.target_amount)
           : existingGoal.target_amount,
-        current_amount: existingGoal.current_amount,
+        current_amount: typeof existingGoal.current_amount === 'string'
+          ? parseFloat(existingGoal.current_amount)
+          : existingGoal.current_amount,
         currency: existingGoal.currency,
-        monthly_contribution: existingGoal.monthly_contribution || 0,
+        monthly_contribution: existingGoal.monthly_contribution
+          ? (typeof existingGoal.monthly_contribution === 'string'
+            ? parseFloat(existingGoal.monthly_contribution)
+            : existingGoal.monthly_contribution)
+          : 0,
         is_active: existingGoal.is_active,
         // Extract date directly from string to avoid timezone conversion
         start_date: existingGoal.start_date.split('T')[0],
@@ -142,11 +150,23 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
       reset(formData);
 
-      // Set the target amount input string
+      // Set the input string values - parse to number first to remove any .00
       const targetAmountNum = typeof existingGoal.target_amount === 'string'
         ? parseFloat(existingGoal.target_amount)
         : existingGoal.target_amount;
       setTargetAmountInput(String(targetAmountNum));
+
+      const currentAmountNum = typeof existingGoal.current_amount === 'string'
+        ? parseFloat(existingGoal.current_amount)
+        : (existingGoal.current_amount || 0);
+      setCurrentAmountInput(String(currentAmountNum));
+
+      const monthlyContribNum = existingGoal.monthly_contribution
+        ? (typeof existingGoal.monthly_contribution === 'string'
+          ? parseFloat(existingGoal.monthly_contribution)
+          : existingGoal.monthly_contribution)
+        : 0;
+      setMonthlyContributionInput(String(monthlyContribNum));
 
       setTimeout(() => {
         if (existingGoal.category) {
@@ -168,6 +188,8 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         target_date: '',
       });
       setTargetAmountInput('');
+      setCurrentAmountInput('');
+      setMonthlyContributionInput('');
     }
   }, [isEditing, existingGoal, isOpen, reset, setValue]);
 
@@ -214,6 +236,8 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
   const handleClose = () => {
     onClose();
     setTargetAmountInput('');
+    setCurrentAmountInput('');
+    setMonthlyContributionInput('');
     reset({
       currency: 'USD',
       is_active: true,
@@ -323,11 +347,13 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   type="text"
                   inputMode="decimal"
                   placeholder="0.00"
-                  value={watch('current_amount')?.toString() || ''}
+                  value={currentAmountInput}
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                      setValue('current_amount', parseFloat(value) || 0);
+                      setCurrentAmountInput(value);
+                      const numValue = value === '' ? 0 : parseFloat(value);
+                      setValue('current_amount', isNaN(numValue) ? 0 : numValue, { shouldValidate: true });
                     }
                   }}
                 />
@@ -343,11 +369,13 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   type="text"
                   inputMode="decimal"
                   placeholder="0.00"
-                  value={watch('monthly_contribution')?.toString() || ''}
+                  value={monthlyContributionInput}
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                      setValue('monthly_contribution', parseFloat(value) || 0);
+                      setMonthlyContributionInput(value);
+                      const numValue = value === '' ? 0 : parseFloat(value);
+                      setValue('monthly_contribution', isNaN(numValue) ? 0 : numValue, { shouldValidate: true });
                     }
                   }}
                 />

@@ -258,7 +258,7 @@ export default function IncomePage() {
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-base md:text-lg truncate">{source.name}</CardTitle>
                       <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                        {source.description || '\u00A0'}
+                        {source.description || <>&nbsp;</>}
                       </CardDescription>
                     </div>
                     <Badge variant={source.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">

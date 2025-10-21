@@ -235,7 +235,7 @@ export default function GoalsPage() {
                       <div className="flex-1">
                         <CardTitle className="text-lg">{goal.name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px]">
-                          {goal.description || '\u00A0'}
+                          {goal.description || <>&nbsp;</>}
                         </CardDescription>
                       </div>
                       <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'}>
@@ -283,23 +283,25 @@ export default function GoalsPage() {
                             </span>
                           )}
                         </div>
-                        {goal.display_currency && goal.display_currency !== goal.currency && (
-                          <div className="mt-2 text-xs text-muted-foreground">
-                            Original: <CurrencyDisplay
-                              amount={goal.target_amount}
-                              currency={goal.currency}
-                              showSymbol={true}
-                              showCode={false}
-                            /> target{goal.monthly_contribution && goal.monthly_contribution > 0 && (
-                              <>, <CurrencyDisplay
-                                amount={goal.monthly_contribution}
+                        <div className="mt-2 text-xs text-muted-foreground min-h-[16px]">
+                          {goal.display_currency && goal.display_currency !== goal.currency && (
+                            <>
+                              Original: <CurrencyDisplay
+                                amount={goal.target_amount}
                                 currency={goal.currency}
                                 showSymbol={true}
                                 showCode={false}
-                              />/mo</>
-                            )}
-                          </div>
-                        )}
+                              /> target{goal.monthly_contribution && goal.monthly_contribution > 0 && (
+                                <>, <CurrencyDisplay
+                                  amount={goal.monthly_contribution}
+                                  currency={goal.currency}
+                                  showSymbol={true}
+                                  showCode={false}
+                                />/mo</>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
 
                       {/* Progress Bar */}
@@ -321,18 +323,22 @@ export default function GoalsPage() {
                       </div>
 
                       {/* Target Date */}
-                      {goal.target_date && (
-                        <div className="rounded-lg bg-muted p-3">
-                          <p className="text-xs text-muted-foreground">Target Date</p>
-                          <p className="text-sm font-semibold">
-                            {new Date(goal.target_date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        </div>
-                      )}
+                      <div className="rounded-lg bg-muted p-3 min-h-[60px]">
+                        {goal.target_date ? (
+                          <>
+                            <p className="text-xs text-muted-foreground">Target Date</p>
+                            <p className="text-sm font-semibold">
+                              {new Date(goal.target_date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">&nbsp;</p>
+                        )}
+                      </div>
 
                       <div className="min-h-[24px]">
                         {goal.category && (

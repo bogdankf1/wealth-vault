@@ -187,7 +187,7 @@ export default function SavingsPage() {
                   <div className="flex-1">
                     <CardTitle className="text-lg">{account.name}</CardTitle>
                     <CardDescription className="mt-1 min-h-[20px]">
-                      {account.institution || '\u00A0'}
+                      {account.institution || <>&nbsp;</>}
                     </CardDescription>
                   </div>
                   <Badge variant={account.is_active ? 'default' : 'secondary'}>

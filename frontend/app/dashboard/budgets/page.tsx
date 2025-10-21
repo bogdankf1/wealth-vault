@@ -382,16 +382,18 @@ export default function BudgetsPage() {
                       <p className="text-sm text-muted-foreground">
                         {PERIOD_LABELS[budget.period] || budget.period}
                       </p>
-                      {budget.display_currency && budget.display_currency !== budget.currency && (
-                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                          Original: <CurrencyDisplay
-                            amount={budget.amount}
-                            currency={budget.currency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
-                        </p>
-                      )}
+                      <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
+                        {budget.display_currency && budget.display_currency !== budget.currency && (
+                          <>
+                            Original: <CurrencyDisplay
+                              amount={budget.amount}
+                              currency={budget.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px] flex items-center justify-center">
