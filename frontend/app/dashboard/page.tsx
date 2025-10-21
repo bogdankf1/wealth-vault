@@ -11,6 +11,7 @@ import {
   useGetExpenseByCategoryChartQuery,
   useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
+  useGetIncomeBreakdownChartQuery,
 } from '@/lib/api/dashboardApi';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,6 +56,7 @@ import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses
 import { ExpenseByCategoryChart } from '@/components/dashboard/expense-by-category-chart';
 import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
 import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
+import { IncomeBreakdownChart } from '@/components/dashboard/income-breakdown-chart';
 import { ExchangeRatesWidget } from '@/components/dashboard/exchange-rates-widget';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
@@ -76,8 +78,8 @@ export default function DashboardPage() {
   // Time range state for analytics
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    return { start, end: now, label: 'Last 3 Months' };
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { start, end: now, label: 'This Month' };
   });
 
   // Analytics params
@@ -98,6 +100,9 @@ export default function DashboardPage() {
 
   const { data: netWorthTrendData, isLoading: isLoadingNetWorthTrend } =
     useGetNetWorthTrendChartQuery(analyticsParams);
+
+  const { data: incomeBreakdownData, isLoading: isLoadingIncomeBreakdown } =
+    useGetIncomeBreakdownChartQuery();
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -728,7 +733,7 @@ export default function DashboardPage() {
         {/* Time Range Filter */}
         <TimeRangeFilter
           onRangeChange={setTimeRange}
-          defaultPeriod="last_3_months"
+          defaultPeriod="this_month"
         />
 
         {/* Charts Grid */}
@@ -763,6 +768,14 @@ export default function DashboardPage() {
             currency={preferences?.display_currency || preferences?.currency || 'USD'}
             isLoading={isLoadingNetWorthTrend}
             chartType="area"
+          />
+
+          {/* Income Breakdown Chart */}
+          <IncomeBreakdownChart
+            data={incomeBreakdownData?.data || []}
+            totalIncome={incomeBreakdownData?.total_income || 0}
+            isLoading={isLoadingIncomeBreakdown}
+            currency={preferences?.display_currency || preferences?.currency || 'USD'}
           />
         </div>
 

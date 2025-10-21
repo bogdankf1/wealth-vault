@@ -149,6 +149,19 @@ export interface NetWorthTrendChartResponse {
   data: NetWorthTrendDataPoint[];
 }
 
+export interface IncomeBreakdownDataPoint {
+  category: string;
+  amount: number;
+  percentage: number;
+  [key: string]: string | number; // Index signature for Recharts compatibility
+}
+
+export interface IncomeBreakdownChartResponse {
+  data: IncomeBreakdownDataPoint[];
+  total_income: number;
+  currency: string;
+}
+
 export interface AnalyticsParams {
   start_date: string;
   end_date: string;
@@ -188,6 +201,16 @@ interface NetWorthTrendApiResponse {
     assets: string;
     liabilities: string;
   }>;
+}
+
+interface IncomeBreakdownApiResponse {
+  data: Array<{
+    category: string;
+    amount: string;
+    percentage: string;
+  }>;
+  total_income: string;
+  currency: string;
 }
 
 // API endpoints
@@ -295,6 +318,20 @@ export const dashboardApi = apiSlice.injectEndpoints({
       }),
       providesTags: ['Dashboard', 'Analytics'],
     }),
+
+    getIncomeBreakdownChart: builder.query<IncomeBreakdownChartResponse, void>({
+      query: () => '/api/v1/dashboard/analytics/income-breakdown',
+      transformResponse: (response: IncomeBreakdownApiResponse) => ({
+        data: response.data.map((item) => ({
+          category: item.category,
+          amount: parseFloat(item.amount),
+          percentage: parseFloat(item.percentage),
+        })),
+        total_income: parseFloat(response.total_income),
+        currency: response.currency,
+      }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
   }),
 });
 
@@ -309,4 +346,5 @@ export const {
   useGetExpenseByCategoryChartQuery,
   useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
+  useGetIncomeBreakdownChartQuery,
 } = dashboardApi;
