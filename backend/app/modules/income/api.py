@@ -423,8 +423,32 @@ async def get_income_stats(
     active_sources_result = await db.execute(active_sources_query)
     active_sources = active_sources_result.scalars().all()
 
-    # Calculate monthly and annual income
-    total_monthly = sum(source.calculate_monthly_amount() for source in active_sources)
+    # Get user's display currency first
+    display_currency = await get_user_display_currency(db, current_user.id)
+
+    # Convert all sources to display currency and calculate total monthly income
+    from app.services.currency_service import CurrencyService
+    currency_service = CurrencyService(db)
+
+    total_monthly = Decimal("0")
+    for source in active_sources:
+        monthly_amount = source.calculate_monthly_amount()
+        if monthly_amount:
+            # Convert to display currency if needed
+            if source.currency != display_currency:
+                converted_amount = await currency_service.convert_amount(
+                    monthly_amount,
+                    source.currency,
+                    display_currency
+                )
+                if converted_amount:
+                    total_monthly += converted_amount
+                else:
+                    # Fallback to original if conversion fails
+                    total_monthly += monthly_amount
+            else:
+                total_monthly += monthly_amount
+
     total_annual = total_monthly * 12
 
     # Get transaction stats
@@ -475,16 +499,6 @@ async def get_income_stats(
 
     last_month_result = await db.execute(last_month_query)
     last_month_stats = last_month_result.one()
-
-    # Get user's display currency
-    display_currency = await get_user_display_currency(db, current_user.id)
-
-    # Convert all amounts to display currency if needed
-    from app.services.currency_service import CurrencyService
-    currency_service = CurrencyService(db)
-
-    # Note: For stats, we assume all amounts are already in the same currency as the sources
-    # In a more complex implementation, you might need to convert each source individually
 
     return IncomeStatsResponse(
         total_sources=sources_stats.total or 0,

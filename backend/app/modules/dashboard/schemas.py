@@ -27,6 +27,7 @@ class CashFlowResponse(BaseModel):
     monthly_income: Decimal
     monthly_expenses: Decimal
     monthly_subscriptions: Decimal
+    monthly_installments: Decimal
     net_cash_flow: Decimal
     savings_rate: Decimal  # Percentage
     currency: str

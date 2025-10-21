@@ -166,86 +166,126 @@ async def get_cash_flow(
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all income sources with their currencies
+    # Get all active income sources with their currencies
     income_query = select(IncomeSource).where(
         and_(
             IncomeSource.user_id == user_id,
             IncomeSource.is_active == True,
-            IncomeSource.frequency.in_(['monthly', 'annual', 'weekly', 'biweekly'])
+            IncomeSource.deleted_at.is_(None)
         )
     )
     income_result = await db.execute(income_query)
     income_sources = income_result.scalars().all()
 
-    # Convert income to display currency
+    # Convert income to monthly equivalent in display currency
     total_income = Decimal('0')
     for source in income_sources:
-        if source.amount:
+        monthly_amount = source.calculate_monthly_amount()
+        if monthly_amount:
             if source.currency == display_currency:
-                total_income += source.amount
+                total_income += monthly_amount
             else:
                 converted = await currency_service.convert_amount(
-                    source.amount, source.currency, display_currency
+                    monthly_amount, source.currency, display_currency
                 )
                 if converted:
                     total_income += converted
 
-    # Get expenses for the target month
-    start_date = datetime(target_year, target_month, 1)
-    if target_month == 12:
-        end_date = datetime(target_year + 1, 1, 1)
-    else:
-        end_date = datetime(target_year, target_month + 1, 1)
-
+    # Get all active expenses
     expenses_query = select(Expense).where(
         and_(
             Expense.user_id == user_id,
-            Expense.date >= start_date,
-            Expense.date < end_date
+            Expense.is_active == True
         )
     )
     expenses_result = await db.execute(expenses_query)
     expenses = expenses_result.scalars().all()
 
-    # Convert expenses to display currency
+    # Convert expenses to monthly equivalent in display currency
     monthly_expenses = Decimal('0')
     for expense in expenses:
-        if expense.amount:
+        monthly_amount = expense.monthly_equivalent
+        if monthly_amount:
             if expense.currency == display_currency:
-                monthly_expenses += expense.amount
+                monthly_expenses += monthly_amount
             else:
                 converted = await currency_service.convert_amount(
-                    expense.amount, expense.currency, display_currency
+                    monthly_amount, expense.currency, display_currency
                 )
                 if converted:
                     monthly_expenses += converted
 
-    # Get all subscriptions with their currencies
+    # Get all active subscriptions
     subscriptions_query = select(Subscription).where(
         and_(
             Subscription.user_id == user_id,
-            Subscription.is_active == True,
-            Subscription.frequency.in_(['monthly', 'annually'])
+            Subscription.is_active == True
         )
     )
     subscriptions_result = await db.execute(subscriptions_query)
     subscriptions = subscriptions_result.scalars().all()
 
-    # Convert subscriptions to display currency
+    # Frequency multipliers to convert to monthly
+    frequency_to_monthly = {
+        "monthly": 1,
+        "quarterly": Decimal("0.333333"),
+        "annually": Decimal("0.083333"),
+        "biannually": Decimal("0.166667"),
+    }
+
+    # Convert subscriptions to monthly equivalent in display currency
     monthly_subscriptions = Decimal('0')
     for subscription in subscriptions:
         if subscription.amount:
+            # Calculate monthly equivalent
+            multiplier = frequency_to_monthly.get(subscription.frequency, Decimal('1'))
+            monthly_amount = subscription.amount * multiplier
+
             if subscription.currency == display_currency:
-                monthly_subscriptions += subscription.amount
+                monthly_subscriptions += monthly_amount
             else:
                 converted = await currency_service.convert_amount(
-                    subscription.amount, subscription.currency, display_currency
+                    monthly_amount, subscription.currency, display_currency
                 )
                 if converted:
                     monthly_subscriptions += converted
 
+    # Get all active installments
+    installments_query = select(Installment).where(
+        and_(
+            Installment.user_id == user_id,
+            Installment.is_active == True
+        )
+    )
+    installments_result = await db.execute(installments_query)
+    installments = installments_result.scalars().all()
+
+    # Installment frequency multipliers to convert to monthly
+    installment_frequency_to_monthly = {
+        "monthly": Decimal("1"),
+        "biweekly": Decimal("2.16667"),  # ~26 payments / 12 months
+        "weekly": Decimal("4.33333"),    # ~52 payments / 12 months
+    }
+
+    # Convert installments to monthly equivalent in display currency
+    monthly_installments = Decimal('0')
+    for installment in installments:
+        if installment.amount_per_payment:
+            # Calculate monthly equivalent
+            multiplier = installment_frequency_to_monthly.get(installment.frequency, Decimal('1'))
+            monthly_amount = installment.amount_per_payment * multiplier
+
+            if installment.currency == display_currency:
+                monthly_installments += monthly_amount
+            else:
+                converted = await currency_service.convert_amount(
+                    monthly_amount, installment.currency, display_currency
+                )
+                if converted:
+                    monthly_installments += converted
+
     # Calculate net cash flow
-    net_cash_flow = total_income - monthly_expenses - monthly_subscriptions
+    net_cash_flow = total_income - monthly_expenses - monthly_subscriptions - monthly_installments
 
     # Calculate savings rate
     savings_rate = (net_cash_flow / total_income * Decimal('100')) if total_income > 0 else Decimal('0')
@@ -254,6 +294,7 @@ async def get_cash_flow(
         monthly_income=total_income,
         monthly_expenses=monthly_expenses,
         monthly_subscriptions=monthly_subscriptions,
+        monthly_installments=monthly_installments,
         net_cash_flow=net_cash_flow,
         savings_rate=savings_rate,
         currency=display_currency,
@@ -282,7 +323,7 @@ async def get_financial_health_score(
 
     # 1. Emergency Fund Score (20 points)
     # Target: 3-6 months of expenses saved
-    monthly_expenses_total = cash_flow.monthly_expenses + cash_flow.monthly_subscriptions
+    monthly_expenses_total = cash_flow.monthly_expenses + cash_flow.monthly_subscriptions + cash_flow.monthly_installments
     target_emergency_fund = monthly_expenses_total * Decimal('3')
 
     if target_emergency_fund > 0:

@@ -195,6 +195,10 @@ async def get_subscription_stats(
     user_id: UUID
 ) -> SubscriptionStats:
     """Get subscription statistics"""
+    # Get display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
     # Get all subscriptions
     query = select(Subscription).where(Subscription.user_id == user_id)
     result = await db.execute(query)
@@ -227,14 +231,25 @@ async def get_subscription_stats(
 
     for subscription in subscriptions:
         if subscription.is_active:
+            # Convert amount to display currency first
+            amount_in_display = subscription.amount
+            if subscription.currency != display_currency:
+                converted = await currency_service.convert_amount(
+                    subscription.amount,
+                    subscription.currency,
+                    display_currency
+                )
+                if converted is not None:
+                    amount_in_display = converted
+
             # Calculate monthly cost
             multiplier = frequency_to_monthly.get(subscription.frequency, 1)
-            monthly_equivalent = subscription.amount * Decimal(str(multiplier))
+            monthly_equivalent = amount_in_display * Decimal(str(multiplier))
             monthly_cost += monthly_equivalent
 
             # Calculate annual cost
             annual_multiplier = frequency_to_annual.get(subscription.frequency, 12)
-            annual_equivalent = subscription.amount * Decimal(str(annual_multiplier))
+            annual_equivalent = amount_in_display * Decimal(str(annual_multiplier))
             total_annual_cost += annual_equivalent
 
             # Group by category
