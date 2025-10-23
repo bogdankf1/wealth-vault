@@ -919,6 +919,7 @@ async def get_expense_by_category_chart(
     """
     Get expense breakdown by category for the specified period.
     Shows only actual expenses from the Expenses module, broken down by category.
+    Uses monthly equivalents for recurring expenses (like Expenses page).
     All amounts are converted to user's display currency.
     """
     # Remove timezone info to match database datetimes
@@ -928,6 +929,16 @@ async def get_expense_by_category_chart(
     # Get user's display currency
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
+
+    # Frequency multipliers for calculating monthly equivalents
+    frequency_to_monthly = {
+        'monthly': 1,
+        'quarterly': Decimal('0.333333'),  # Divide by 3
+        'annually': Decimal('0.083333'),   # Divide by 12
+        'biannually': Decimal('0.166667'), # Divide by 6
+        'biweekly': Decimal('2.16667'),    # ~26 payments per year / 12
+        'weekly': Decimal('4.33333'),      # ~52 weeks per year / 12
+    }
 
     # Query all expenses (need individual items for currency conversion)
     query = select(Expense).where(
@@ -952,22 +963,32 @@ async def get_expense_by_category_chart(
     expenses = result.scalars().all()
 
     # Group by category and convert to display currency
+    # Only include recurring expenses (with monthly equivalents), exclude one-time expenses
     category_totals = {}
     for expense in expenses:
+        # Skip one-time expenses (they don't have monthly equivalents)
+        if expense.frequency == 'one_time':
+            continue
+
         category = expense.category
         if expense.amount:
+            # Convert to display currency first
             if expense.currency == display_currency:
-                amount = expense.amount
+                amount_in_display = expense.amount
             else:
-                amount = await currency_service.convert_amount(
+                amount_in_display = await currency_service.convert_amount(
                     expense.amount, expense.currency, display_currency
                 )
-                if not amount:
-                    amount = Decimal('0')
+                if not amount_in_display:
+                    amount_in_display = Decimal('0')
+
+            # Calculate monthly equivalent for recurring expenses
+            multiplier = frequency_to_monthly.get(expense.frequency, 1)
+            monthly_amount = amount_in_display * Decimal(str(multiplier))
 
             if category not in category_totals:
                 category_totals[category] = Decimal('0')
-            category_totals[category] += amount
+            category_totals[category] += monthly_amount
 
     # Calculate total and percentages
     total = sum(category_totals.values())
@@ -1030,36 +1051,26 @@ async def get_monthly_spending_chart(
         month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
         month_end = min(month_end, end_date)
 
-        # Get all expenses for this month
+        # Get all active expenses (use monthly equivalents for recurring expenses)
         expense_query = select(Expense).where(
             and_(
                 Expense.user_id == user_id,
-                or_(
-                    and_(
-                        Expense.date.is_not(None),
-                        Expense.date >= month_start,
-                        Expense.date <= month_end
-                    ),
-                    and_(
-                        Expense.start_date.is_not(None),
-                        Expense.start_date >= month_start,
-                        Expense.start_date <= month_end
-                    )
-                ),
+                Expense.is_active == True
             )
         )
         expense_result = await db.execute(expense_query)
         expenses = expense_result.scalars().all()
 
-        # Convert expenses to display currency
+        # Convert expenses to monthly equivalent in display currency
         monthly_amount = Decimal('0')
         for expense in expenses:
-            if expense.amount:
+            monthly_equiv = expense.monthly_equivalent
+            if monthly_equiv:
                 if expense.currency == display_currency:
-                    monthly_amount += expense.amount
+                    monthly_amount += monthly_equiv
                 else:
                     converted = await currency_service.convert_amount(
-                        expense.amount, expense.currency, display_currency
+                        monthly_equiv, expense.currency, display_currency
                     )
                     if converted:
                         monthly_amount += converted

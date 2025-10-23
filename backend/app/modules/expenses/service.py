@@ -1,6 +1,7 @@
 """
 Expenses service layer
 """
+from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, case
 from typing import Optional, List
@@ -221,11 +222,42 @@ async def delete_expense(
 
 async def get_expense_stats(
     db: AsyncSession,
-    user_id: UUID
+    user_id: UUID,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None
 ) -> ExpenseStats:
-    """Calculate expense statistics"""
+    """
+    Calculate expense statistics based on date range.
+
+    For date-based calculation:
+    - One-time expenses: included if their date falls within the range
+    - Recurring expenses: included if their start_date/end_date overlaps with the range,
+      and amount is calculated as monthly equivalent
+
+    Example for October 2025:
+    - Monthly expense (208 UAH): 208 UAH
+    - Quarterly expense (24000 UAH): 8000 UAH (monthly equivalent)
+    - One-time expense on Oct 10 (4500 UAH): 4500 UAH
+    - Total: 208 + 8000 + 4500 = 12,708 UAH
+    """
     # Get user preferences for display currency
     display_currency = await get_user_display_currency(db, user_id)
+
+    # Frequency multipliers for calculating monthly equivalents
+    frequency_to_monthly = {
+        'daily': Decimal('30'),
+        'weekly': Decimal('4.33333'),
+        'biweekly': Decimal('2.16667'),
+        'monthly': Decimal('1'),
+        'quarterly': Decimal('0.333333'),
+        'annually': Decimal('0.083333'),
+    }
+
+    # Remove timezone info to match database datetimes
+    if start_date:
+        start_date = start_date.replace(tzinfo=None)
+    if end_date:
+        end_date = end_date.replace(tzinfo=None)
 
     # Get all expenses
     result = await db.execute(
@@ -235,29 +267,60 @@ async def get_expense_stats(
     )
     expenses = result.scalars().all()
 
-    # Convert all expenses to display currency
     currency_service = CurrencyService(db)
 
-    total_expenses = len(expenses)
-    active_expenses = sum(1 for e in expenses if e.is_active)
-
-    # Calculate totals by frequency (in display currency)
+    # Calculate totals
     total_daily = Decimal(0)
     total_weekly = Decimal(0)
     total_monthly = Decimal(0)
     total_annual = Decimal(0)
-
-    # Expenses by category
+    total_one_time = Decimal(0)  # Track one-time expenses separately
     expenses_by_category: dict[str, Decimal] = {}
+
+    # Track filtered counts
+    filtered_expenses_count = 0
+    filtered_active_count = 0
 
     for expense in expenses:
         if not expense.is_active:
             continue
 
+        # Check if expense is within date range (if dates provided)
+        if start_date and end_date:
+            expense_in_range = False
+
+            if expense.frequency == 'one_time':
+                # One-time expenses: check if date is within range
+                if expense.date:
+                    expense_date = expense.date.replace(tzinfo=None) if expense.date.tzinfo else expense.date
+                    if start_date <= expense_date <= end_date:
+                        expense_in_range = True
+            else:
+                # Recurring expenses: check if start_date/end_date overlaps with range
+                expense_start = expense.start_date.replace(tzinfo=None) if expense.start_date and expense.start_date.tzinfo else expense.start_date
+                expense_end = expense.end_date.replace(tzinfo=None) if expense.end_date and expense.end_date.tzinfo else expense.end_date
+
+                if expense_start:
+                    # Expense starts before or during the range
+                    if expense_end:
+                        # Has end date: check overlap
+                        if expense_start <= end_date and expense_end >= start_date:
+                            expense_in_range = True
+                    else:
+                        # No end date: ongoing, check if it started before range ends
+                        if expense_start <= end_date:
+                            expense_in_range = True
+
+            if not expense_in_range:
+                continue
+
+        # Count this expense as it passed the filter
+        filtered_expenses_count += 1
+        filtered_active_count += 1
+
         # Convert amount to display currency
         if expense.currency == display_currency:
             converted_amount = expense.amount
-            converted_monthly_equiv = expense.monthly_equivalent or Decimal(0)
         else:
             converted_amount = await currency_service.convert_amount(
                 expense.amount,
@@ -265,24 +328,21 @@ async def get_expense_stats(
                 display_currency
             )
             if converted_amount is None:
-                # Fallback to original if conversion fails
                 converted_amount = expense.amount
-
-            # Convert monthly equivalent too
-            if expense.monthly_equivalent:
-                converted_monthly_equiv = await currency_service.convert_amount(
-                    expense.monthly_equivalent,
-                    expense.currency,
-                    display_currency
-                )
-                if converted_monthly_equiv is None:
-                    converted_monthly_equiv = expense.monthly_equivalent
-            else:
-                converted_monthly_equiv = Decimal(0)
 
         amount = Decimal(str(converted_amount))
 
-        # Add to total based on frequency
+        # Calculate monthly equivalent for the total
+        if expense.frequency == 'one_time':
+            # One-time expenses: use full amount and track separately
+            monthly_equiv = amount
+            total_one_time += amount
+        else:
+            # Recurring expenses: convert to monthly equivalent
+            multiplier = frequency_to_monthly.get(expense.frequency, Decimal('1'))
+            monthly_equiv = amount * multiplier
+
+        # Add to frequency-specific totals (for backward compatibility)
         if expense.frequency == ExpenseFrequency.DAILY:
             total_daily += amount
         elif expense.frequency == ExpenseFrequency.WEEKLY:
@@ -296,21 +356,30 @@ async def get_expense_stats(
         elif expense.frequency == ExpenseFrequency.ANNUALLY:
             total_annual += amount
 
-        # Add to category totals (using converted monthly equivalent)
+        # Add to category totals
         if expense.category:
-            monthly_equiv = Decimal(str(converted_monthly_equiv))
             expenses_by_category[expense.category] = (
                 expenses_by_category.get(expense.category, Decimal(0)) + monthly_equiv
             )
 
     # Convert everything to monthly/annual
+    # Include one-time expenses in the total when date range is provided
     total_monthly_expense = (
         total_daily * Decimal(30) +
         total_weekly * Decimal(4.33) +
         total_monthly +
-        total_annual / Decimal(12)
+        total_annual / Decimal(12) +
+        total_one_time  # Add one-time expenses to the monthly total
     )
     total_annual_expense = total_monthly_expense * Decimal(12)
+
+    # Use filtered counts if date range was provided, otherwise use all counts
+    if start_date and end_date:
+        total_expenses = filtered_expenses_count
+        active_expenses = filtered_active_count
+    else:
+        total_expenses = len(expenses)
+        active_expenses = sum(1 for e in expenses if e.is_active)
 
     return ExpenseStats(
         total_expenses=total_expenses,

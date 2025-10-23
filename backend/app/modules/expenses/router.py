@@ -1,6 +1,7 @@
 """
 Expenses API router
 """
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -126,11 +127,18 @@ async def list_expenses(
 @router.get("/stats", response_model=ExpenseStats)
 @require_feature("expense_tracking")
 async def get_expense_stats(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get expense statistics"""
-    stats = await service.get_expense_stats(db, current_user.id)
+    """
+    Get expense statistics.
+
+    If start_date and end_date are provided, calculates expenses for that period.
+    Otherwise, returns statistics for all active expenses using monthly equivalents.
+    """
+    stats = await service.get_expense_stats(db, current_user.id, start_date, end_date)
     return stats
 
 
