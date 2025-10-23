@@ -40,7 +40,10 @@ export default function ExpensesPage() {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  // Default to current month in YYYY-MM format
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -51,11 +54,25 @@ export default function ExpensesPage() {
     refetch: refetchExpenses,
   } = useListExpensesQuery({});
 
+  // Calculate date range from selectedMonth
+  const statsParams = React.useMemo(() => {
+    if (!selectedMonth) return undefined;
+
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    return {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+    };
+  }, [selectedMonth]);
+
   const {
     data: stats,
     isLoading: isLoadingStats,
     error: statsError,
-  } = useGetExpenseStatsQuery();
+  } = useGetExpenseStatsQuery(statsParams);
 
   const [deleteExpense, { isLoading: isDeleting }] = useDeleteExpenseMutation();
 
@@ -124,13 +141,17 @@ export default function ExpensesPage() {
         {
           title: 'Total Expenses',
           value: stats.total_expenses,
-          description: `${stats.active_expenses} active`,
+          description: selectedMonth
+            ? `${stats.active_expenses} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : `${stats.active_expenses} active`,
           icon: DollarSign,
         },
         {
-          title: 'Monthly Spending',
+          title: selectedMonth ? 'Period Spending' : 'Monthly Spending',
           value: <CurrencyDisplay amount={stats.total_monthly_expense} currency={stats.currency} decimals={0} />,
-          description: `From ${stats.active_expenses} active ${stats.active_expenses === 1 ? 'expense' : 'expenses'}`,
+          description: selectedMonth
+            ? `Total for ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : `From ${stats.active_expenses} active ${stats.active_expenses === 1 ? 'expense' : 'expenses'}`,
           icon: TrendingDown,
         },
         {

@@ -120,7 +120,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
     resolver: zodResolver(expenseSchema),
     defaultValues: {
       currency: 'USD',
-      frequency: 'monthly',
+      frequency: 'one_time',
       is_active: true,
       date: new Date().toISOString().split('T')[0],
     },
@@ -170,7 +170,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
     } else if (!isEditing && isOpen) {
       reset({
         currency: 'USD',
-        frequency: 'monthly',
+        frequency: 'one_time',
         is_active: true,
         date: new Date().toISOString().split('T')[0],
       });

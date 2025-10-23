@@ -152,8 +152,11 @@ export const expensesApi = apiSlice.injectEndpoints({
     }),
 
     // Expense Stats
-    getExpenseStats: builder.query<ExpenseStats, void>({
-      query: () => '/api/v1/expenses/stats',
+    getExpenseStats: builder.query<ExpenseStats, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/expenses/stats',
+        params: params || undefined,
+      }),
       providesTags: [{ type: 'Expense', id: 'STATS' }],
     }),
   }),

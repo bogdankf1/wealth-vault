@@ -151,18 +151,18 @@ export function ExpenseByCategoryChart({
       <Card className="p-4 md:p-6">
         <div className="mb-4 md:mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-base md:text-lg font-semibold">Expenses by Category</h3>
+            <h3 className="text-base md:text-lg font-semibold">Monthly Recurring Expenses by Category</h3>
             <ChartTooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="max-w-xs">Shows expense breakdown by category. Hover over slices to see amounts and percentages. Helps identify where most money is spent.</p>
+                <p className="max-w-xs">Shows monthly recurring expenses broken down by category. One-time expenses are excluded. Amounts are shown as monthly equivalents.</p>
               </TooltipContent>
             </ChartTooltip>
           </div>
           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-            Spending breakdown across categories
+            Monthly recurring expense breakdown
           </p>
         </div>
 
