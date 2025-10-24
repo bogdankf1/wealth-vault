@@ -8,7 +8,8 @@ import Link from 'next/link';
 import {
   useGetDashboardOverviewQuery,
   useGetIncomeVsExpensesChartQuery,
-  useGetExpenseByCategoryChartQuery,
+  useGetSubscriptionsByCategoryChartQuery,
+  useGetInstallmentsByCategoryChartQuery,
   useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
   useGetIncomeBreakdownChartQuery,
@@ -53,7 +54,8 @@ import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
 import { BudgetOverviewWidget } from '@/components/dashboard/budget-overview-widget';
 import { TimeRangeFilter, TimeRange } from '@/components/dashboard/time-range-filter';
 import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
-import { ExpenseByCategoryChart } from '@/components/dashboard/expense-by-category-chart';
+import { SubscriptionsByCategoryChart } from '@/components/dashboard/subscriptions-by-category-chart';
+import { InstallmentsByCategoryChart } from '@/components/dashboard/installments-by-category-chart';
 import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
 import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
 import { IncomeBreakdownChart } from '@/components/dashboard/income-breakdown-chart';
@@ -63,7 +65,6 @@ import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 
 export default function DashboardPage() {
-  const { data, isLoading, error } = useGetDashboardOverviewQuery();
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: preferences } = useGetMyPreferencesQuery();
 
@@ -82,24 +83,30 @@ export default function DashboardPage() {
     return { start, end: now, label: 'This Month' };
   });
 
-  // Analytics params
-  const analyticsParams = useMemo(() => ({
+  // Date params for queries (includes date range)
+  const dateParams = useMemo(() => ({
     start_date: timeRange.start.toISOString(),
     end_date: timeRange.end.toISOString(),
   }), [timeRange]);
 
+  // Dashboard overview query with date params
+  const { data, isLoading, error } = useGetDashboardOverviewQuery(dateParams);
+
   // Analytics queries
   const { data: incomeVsExpensesData, isLoading: isLoadingIncomeVsExpenses } =
-    useGetIncomeVsExpensesChartQuery(analyticsParams);
+    useGetIncomeVsExpensesChartQuery(dateParams);
 
-  const { data: expenseByCategoryData, isLoading: isLoadingExpenseByCategory } =
-    useGetExpenseByCategoryChartQuery(analyticsParams);
+  const { data: subscriptionsByCategoryData, isLoading: isLoadingSubscriptionsByCategory } =
+    useGetSubscriptionsByCategoryChartQuery();
+
+  const { data: installmentsByCategoryData, isLoading: isLoadingInstallmentsByCategory } =
+    useGetInstallmentsByCategoryChartQuery();
 
   const { data: monthlySpendingData, isLoading: isLoadingMonthlySpending } =
-    useGetMonthlySpendingChartQuery(analyticsParams);
+    useGetMonthlySpendingChartQuery(dateParams);
 
   const { data: netWorthTrendData, isLoading: isLoadingNetWorthTrend } =
-    useGetNetWorthTrendChartQuery(analyticsParams);
+    useGetNetWorthTrendChartQuery(dateParams);
 
   const { data: incomeBreakdownData, isLoading: isLoadingIncomeBreakdown } =
     useGetIncomeBreakdownChartQuery();
@@ -130,6 +137,18 @@ export default function DashboardPage() {
   const formatPercentage = (value: string | number) => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
     return `${num.toFixed(1)}%`;
+  };
+
+  // Get period label for display
+  const getPeriodLabel = () => {
+    return timeRange.label;
+  };
+
+  // Get period description for tooltips
+  const getPeriodDescription = () => {
+    const start = timeRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const end = timeRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${start} - ${end}`;
   };
 
   // Get health rating color
@@ -180,11 +199,18 @@ export default function DashboardPage() {
     <TooltipProvider>
       <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 md:mt-2">
-            Your complete financial overview
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 md:mt-2">
+              Your complete financial overview
+            </p>
+          </div>
+          {/* Time Range Filter */}
+          <TimeRangeFilter
+            onRangeChange={setTimeRange}
+            defaultPeriod="this_month"
+          />
         </div>
 
         {/* Quick Actions */}
@@ -543,8 +569,8 @@ export default function DashboardPage() {
                     currency={cash_flow.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   />
                 </p>
               </div>
@@ -555,11 +581,14 @@ export default function DashboardPage() {
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Sum of all expenses for the current month from the Expenses module</p>
+                <p className="text-sm">Date-based calculation for {getPeriodLabel()}</p>
+                <p className="text-sm mt-1">• One-time expenses: included if date falls in period</p>
+                <p className="text-sm">• Recurring expenses: included if overlaps with period (monthly equivalent)</p>
+                <p className="text-xs text-gray-400 mt-2">{getPeriodDescription()}</p>
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
+          <p className="text-[10px] md:text-xs text-gray-500">{getPeriodLabel()}</p>
         </Card>
 
         <Card className="p-4 md:p-6">
@@ -655,6 +684,8 @@ export default function DashboardPage() {
               <TooltipContent className="max-w-xs">
                 <p className="font-semibold mb-1">How it is calculated:</p>
                 <p className="text-sm">Net Cash Flow = Income - Expenses - Subscriptions - Installments</p>
+                <p className="text-sm mt-2">• Expenses are date-filtered for {getPeriodLabel()}</p>
+                <p className="text-sm">• Income, Subscriptions, Installments show all active (monthly equivalent)</p>
                 <p className="text-sm mt-2">Savings Rate = (Net Cash Flow / Income) × 100%</p>
               </TooltipContent>
             </Tooltip>
@@ -730,15 +761,9 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Time Range Filter */}
-        <TimeRangeFilter
-          onRangeChange={setTimeRange}
-          defaultPeriod="this_month"
-        />
-
         {/* Charts Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-          {/* Income vs Expenses Chart */}
+          {/* 1. Income vs Expenses Chart */}
           <IncomeVsExpensesChart
             data={incomeVsExpensesData?.data || []}
             isLoading={isLoadingIncomeVsExpenses}
@@ -746,15 +771,7 @@ export default function DashboardPage() {
             currency={preferences?.display_currency || preferences?.currency || 'USD'}
           />
 
-          {/* Expense by Category Chart */}
-          <ExpenseByCategoryChart
-            data={expenseByCategoryData?.data || []}
-            isLoading={isLoadingExpenseByCategory}
-            chartType="donut"
-            currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          />
-
-          {/* Monthly Spending Chart */}
+          {/* 2. Monthly Spending Chart */}
           <MonthlySpendingChart
             data={monthlySpendingData?.data || []}
             isLoading={isLoadingMonthlySpending}
@@ -762,20 +779,36 @@ export default function DashboardPage() {
             currency={preferences?.display_currency || preferences?.currency || 'USD'}
           />
 
-          {/* Net Worth Trend Chart */}
-          <NetWorthTrendChart
-            data={netWorthTrendData?.data || []}
+          {/* 3. Subscriptions by Category Chart */}
+          <SubscriptionsByCategoryChart
+            data={subscriptionsByCategoryData?.data || []}
+            isLoading={isLoadingSubscriptionsByCategory}
+            chartType="donut"
             currency={preferences?.display_currency || preferences?.currency || 'USD'}
-            isLoading={isLoadingNetWorthTrend}
-            chartType="area"
           />
 
-          {/* Income Breakdown Chart */}
+          {/* 4. Installments by Category Chart */}
+          <InstallmentsByCategoryChart
+            data={installmentsByCategoryData?.data || []}
+            isLoading={isLoadingInstallmentsByCategory}
+            chartType="donut"
+            currency={preferences?.display_currency || preferences?.currency || 'USD'}
+          />
+
+          {/* 5. Income Allocation Chart */}
           <IncomeBreakdownChart
             data={incomeBreakdownData?.data || []}
             totalIncome={incomeBreakdownData?.total_income || 0}
             isLoading={isLoadingIncomeBreakdown}
             currency={preferences?.display_currency || preferences?.currency || 'USD'}
+          />
+
+          {/* 6. Net Worth Trend Chart */}
+          <NetWorthTrendChart
+            data={netWorthTrendData?.data || []}
+            currency={preferences?.display_currency || preferences?.currency || 'USD'}
+            isLoading={isLoadingNetWorthTrend}
+            chartType="area"
           />
         </div>
 

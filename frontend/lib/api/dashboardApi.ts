@@ -167,6 +167,13 @@ export interface AnalyticsParams {
   end_date: string;
 }
 
+export interface DateRangeParams {
+  start_date?: string;
+  end_date?: string;
+  month?: number;
+  year?: number;
+}
+
 // API response types for transformResponse
 interface IncomeVsExpensesApiResponse {
   data: Array<{
@@ -216,8 +223,11 @@ interface IncomeBreakdownApiResponse {
 // API endpoints
 export const dashboardApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getDashboardOverview: builder.query<DashboardOverviewResponse, void>({
-      query: () => '/api/v1/dashboard/overview',
+    getDashboardOverview: builder.query<DashboardOverviewResponse, DateRangeParams | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/overview',
+        params: params || undefined,
+      }),
       providesTags: ['Dashboard'],
     }),
 
@@ -226,7 +236,7 @@ export const dashboardApi = apiSlice.injectEndpoints({
       providesTags: ['Dashboard'],
     }),
 
-    getCashFlow: builder.query<CashFlowResponse, { month?: number; year?: number } | void>({
+    getCashFlow: builder.query<CashFlowResponse, DateRangeParams | void>({
       query: (params) => ({
         url: '/api/v1/dashboard/cash-flow',
         params: params || undefined,
@@ -271,11 +281,21 @@ export const dashboardApi = apiSlice.injectEndpoints({
       providesTags: ['Dashboard', 'Analytics'],
     }),
 
-    getExpenseByCategoryChart: builder.query<ExpenseByCategoryChartResponse, AnalyticsParams>({
-      query: (params) => ({
-        url: '/api/v1/dashboard/analytics/expense-by-category',
-        params,
+    getSubscriptionsByCategoryChart: builder.query<ExpenseByCategoryChartResponse, void>({
+      query: () => '/api/v1/dashboard/analytics/subscriptions-by-category',
+      transformResponse: (response: ExpenseByCategoryApiResponse) => ({
+        data: response.data.map((item) => ({
+          category: item.category,
+          amount: parseFloat(item.amount),
+          percentage: parseFloat(item.percentage),
+        })),
+        total: parseFloat(response.total),
       }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
+
+    getInstallmentsByCategoryChart: builder.query<ExpenseByCategoryChartResponse, void>({
+      query: () => '/api/v1/dashboard/analytics/installments-by-category',
       transformResponse: (response: ExpenseByCategoryApiResponse) => ({
         data: response.data.map((item) => ({
           category: item.category,
@@ -343,7 +363,8 @@ export const {
   useGetRecentActivityQuery,
   useGetUpcomingPaymentsQuery,
   useGetIncomeVsExpensesChartQuery,
-  useGetExpenseByCategoryChartQuery,
+  useGetSubscriptionsByCategoryChartQuery,
+  useGetInstallmentsByCategoryChartQuery,
   useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
   useGetIncomeBreakdownChartQuery,
