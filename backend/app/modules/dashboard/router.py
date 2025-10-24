@@ -32,22 +32,32 @@ router = APIRouter(prefix="/api/v1/dashboard", tags=["Dashboard"])
 
 @router.get("/overview", response_model=DashboardOverviewResponse)
 async def get_dashboard_overview(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (overrides month/year)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (overrides month/year)"),
+    month: Optional[int] = Query(None, ge=1, le=12, description="Month (1-12), defaults to current month"),
+    year: Optional[int] = Query(None, ge=2000, le=2100, description="Year, defaults to current year"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get complete dashboard overview with all widgets.
 
+    Query Parameters:
+    - start_date: Start date for filtering (ISO format, optional)
+    - end_date: End date for filtering (ISO format, optional)
+    - month: Target month (1-12), defaults to current month (ignored if start_date/end_date provided)
+    - year: Target year, defaults to current year (ignored if start_date/end_date provided)
+
     Returns:
     - Net worth (assets vs liabilities)
-    - Monthly cash flow
+    - Monthly cash flow (with date-based expense filtering)
     - Financial health score
     - Recent activity (last 10 transactions)
     - Upcoming payments (next 7 days)
     """
     # Fetch all dashboard data
     net_worth = await service.get_net_worth(db, current_user.id)
-    cash_flow = await service.get_cash_flow(db, current_user.id)
+    cash_flow = await service.get_cash_flow(db, current_user.id, month, year, start_date, end_date)
     financial_health = await service.get_financial_health_score(db, current_user.id)
     recent_activity = await service.get_recent_activity(db, current_user.id, limit=10)
     upcoming_payments = await service.get_upcoming_payments(db, current_user.id, days=7)
@@ -86,6 +96,8 @@ async def get_net_worth(
 
 @router.get("/cash-flow", response_model=CashFlowResponse)
 async def get_cash_flow(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (overrides month/year)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (overrides month/year)"),
     month: Optional[int] = Query(None, ge=1, le=12, description="Month (1-12)"),
     year: Optional[int] = Query(None, ge=2000, le=2100, description="Year"),
     current_user: User = Depends(get_current_user),
@@ -94,20 +106,28 @@ async def get_cash_flow(
     """
     Calculate monthly cash flow.
 
-    Cash Flow = Income - Expenses - Subscriptions
+    Cash Flow = Income - Expenses - Subscriptions - Installments
 
     Query Parameters:
-    - month: Target month (1-12), defaults to current month
-    - year: Target year, defaults to current year
+    - start_date: Start date for filtering (ISO format, optional)
+    - end_date: End date for filtering (ISO format, optional)
+    - month: Target month (1-12), defaults to current month (ignored if start_date/end_date provided)
+    - year: Target year, defaults to current year (ignored if start_date/end_date provided)
+
+    Expense Calculation:
+    - Uses date-based filtering (same logic as Expenses page)
+    - One-time expenses: included if date falls within range
+    - Recurring expenses: included if overlaps with range, using monthly equivalent
 
     Returns:
     - Monthly income (recurring sources)
-    - Monthly expenses
-    - Monthly subscriptions
+    - Monthly expenses (date-filtered)
+    - Monthly subscriptions (all active)
+    - Monthly installments (all active)
     - Net cash flow
     - Savings rate (%)
     """
-    return await service.get_cash_flow(db, current_user.id, month, year)
+    return await service.get_cash_flow(db, current_user.id, month, year, start_date, end_date)
 
 
 @router.get("/financial-health", response_model=FinancialHealthResponse)
@@ -200,23 +220,32 @@ async def get_income_vs_expenses_chart(
     return await service.get_income_vs_expenses_chart(db, current_user.id, start_date, end_date)
 
 
-@router.get("/analytics/expense-by-category", response_model=ExpenseByCategoryChartResponse)
-async def get_expense_by_category_chart(
-    start_date: datetime = Query(..., description="Start date for the period"),
-    end_date: datetime = Query(..., description="End date for the period"),
+@router.get("/analytics/subscriptions-by-category", response_model=ExpenseByCategoryChartResponse)
+async def get_subscriptions_by_category_chart(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get expense breakdown by category for the specified period.
+    Get subscription breakdown by category (monthly equivalents).
 
-    Query Parameters:
-    - start_date: Start date (ISO format)
-    - end_date: End date (ISO format)
-
-    Returns expenses grouped by category with percentages.
+    Returns all active subscriptions grouped by category with percentages.
+    Amounts are shown as monthly equivalents regardless of billing frequency.
     """
-    return await service.get_expense_by_category_chart(db, current_user.id, start_date, end_date)
+    return await service.get_subscriptions_by_category_chart(db, current_user.id)
+
+
+@router.get("/analytics/installments-by-category", response_model=ExpenseByCategoryChartResponse)
+async def get_installments_by_category_chart(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get installment breakdown by category (monthly equivalents).
+
+    Returns all active installments grouped by category with percentages.
+    Amounts are shown as monthly equivalents regardless of payment frequency.
+    """
+    return await service.get_installments_by_category_chart(db, current_user.id)
 
 
 @router.get("/analytics/monthly-spending", response_model=MonthlySpendingChartResponse)
