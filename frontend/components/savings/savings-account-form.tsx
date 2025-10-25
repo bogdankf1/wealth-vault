@@ -34,7 +34,7 @@ import {
 
 const accountSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
-  account_type: z.enum(['checking', 'savings', 'investment', 'cash', 'crypto', 'other']),
+  account_type: z.enum(['crypto', 'cash', 'business', 'personal', 'fixed_deposit', 'other']),
   institution: z.string().max(100).optional(),
   account_number_last4: z.string().length(4, 'Must be exactly 4 digits').optional().or(z.literal('')),
   current_balance: z.number()
@@ -62,11 +62,11 @@ interface SavingsAccountFormProps {
 }
 
 const ACCOUNT_TYPE_OPTIONS = [
-  { value: 'checking', label: 'Checking Account' },
-  { value: 'savings', label: 'Savings Account' },
-  { value: 'investment', label: 'Investment Account' },
-  { value: 'cash', label: 'Cash' },
   { value: 'crypto', label: 'Cryptocurrency' },
+  { value: 'cash', label: 'Cash' },
+  { value: 'business', label: 'Business Account' },
+  { value: 'personal', label: 'Personal Account' },
+  { value: 'fixed_deposit', label: 'Fixed Deposits' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -97,7 +97,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
     resolver: zodResolver(accountSchema),
     defaultValues: {
       currency: 'USD',
-      account_type: 'savings',
+      account_type: 'personal',
       is_active: true,
     },
   });
@@ -131,7 +131,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
     } else if (!isEditing && isOpen) {
       reset({
         name: '',
-        account_type: 'savings',
+        account_type: 'personal',
         institution: '',
         account_number_last4: '',
         current_balance: 0,

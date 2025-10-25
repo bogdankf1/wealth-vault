@@ -88,13 +88,13 @@ const FREQUENCY_OPTIONS = [
 
 const CATEGORY_OPTIONS = [
   { value: 'Salary', label: 'Salary' },
-  { value: 'Freelance', label: 'Freelance' },
   { value: 'Business', label: 'Business' },
-  { value: 'Investment', label: 'Investment' },
+  { value: 'Freelance', label: 'Freelance' },
+  { value: 'Side Projects', label: 'Side Projects' },
+  { value: 'Investments', label: 'Investments' },
+  { value: 'Gifts', label: 'Gifts' },
+  { value: 'Refunds & Reimbursements', label: 'Refunds & Reimbursements' },
   { value: 'Rental', label: 'Rental' },
-  { value: 'Dividends', label: 'Dividends' },
-  { value: 'Interest', label: 'Interest' },
-  { value: 'Gift', label: 'Gift' },
   { value: 'Other', label: 'Other' },
 ];
 

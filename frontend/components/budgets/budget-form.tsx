@@ -36,6 +36,7 @@ import { Slider } from '@/components/ui/slider';
 import { CurrencyInput } from '@/components/currency/currency-input';
 import { useCreateBudgetMutation, useUpdateBudgetMutation, Budget } from '@/lib/api/budgetsApi';
 import { toast } from 'sonner';
+import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 
 const budgetSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -68,25 +69,6 @@ interface BudgetFormProps {
   onClose: () => void;
   budget?: Budget;
 }
-
-const EXPENSE_CATEGORIES = [
-  'Housing',
-  'Transportation',
-  'Food & Dining',
-  'Groceries',
-  'Utilities',
-  'Healthcare',
-  'Insurance',
-  'Entertainment',
-  'Shopping',
-  'Education',
-  'Personal Care',
-  'Travel',
-  'Subscriptions',
-  'Debt Payments',
-  'Savings & Investments',
-  'Other',
-];
 
 export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
   // Local state to track the string value of amount while user is typing

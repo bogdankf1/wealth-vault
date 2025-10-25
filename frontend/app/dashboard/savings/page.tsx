@@ -22,11 +22,11 @@ import {
 } from '@/lib/api/savingsApi';
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-  checking: 'Checking Account',
-  savings: 'Savings Account',
-  investment: 'Investment Account',
-  cash: 'Cash',
   crypto: 'Cryptocurrency',
+  cash: 'Cash',
+  business: 'Business Account',
+  personal: 'Personal Account',
+  fixed_deposit: 'Fixed Deposits',
   other: 'Other',
 };
 

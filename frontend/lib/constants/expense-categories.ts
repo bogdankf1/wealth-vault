@@ -4,18 +4,20 @@
  */
 
 export const EXPENSE_CATEGORIES = [
-  'Food & Dining',
+  'Groceries',
+  'Dining Out / Delivery',
+  'Clothing',
+  'Gifts',
   'Transportation',
-  'Housing',
-  'Utilities',
-  'Healthcare',
-  'Entertainment',
-  'Shopping',
   'Personal Care',
-  'Education',
-  'Insurance',
-  'Debt Payments',
-  'Other',
+  'Healthcare',
+  'Luxury & Premium Items',
+  'Postal & Shipping',
+  'Miscellaneous',
+  'Housing',
+  'Education & Learning',
+  'Travel & Vacations',
+  'Entertainment',
 ] as const;
 
 export type ExpenseCategory = typeof EXPENSE_CATEGORIES[number];

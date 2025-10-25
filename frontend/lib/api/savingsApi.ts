@@ -4,7 +4,7 @@
 import { apiSlice } from './apiSlice';
 
 // Types
-export type AccountType = 'checking' | 'savings' | 'investment' | 'cash' | 'crypto' | 'other';
+export type AccountType = 'crypto' | 'cash' | 'business' | 'personal' | 'fixed_deposit' | 'other';
 
 export interface SavingsAccount {
   id: string;
@@ -22,6 +22,8 @@ export interface SavingsAccount {
   // Display currency fields
   display_current_balance?: number;
   display_currency?: string;
+  // Account type display label
+  account_type_label?: string;
 }
 
 export interface SavingsAccountCreate {

@@ -81,18 +81,15 @@ const FREQUENCY_OPTIONS = [
 ];
 
 const CATEGORY_OPTIONS = [
-  { value: 'Personal', label: 'Personal Loan' },
-  { value: 'Auto', label: 'Auto Loan' },
-  { value: 'Student', label: 'Student Loan' },
-  { value: 'Credit Card', label: 'Credit Card' },
-  { value: 'Mortgage', label: 'Mortgage' },
-  { value: 'Home Equity', label: 'Home Equity' },
-  { value: 'Medical', label: 'Medical' },
-  { value: 'Business', label: 'Business Loan' },
-  { value: 'Electronics', label: 'Electronics' },
-  { value: 'Appliances', label: 'Appliances' },
-  { value: 'Furniture', label: 'Furniture' },
-  { value: 'Other', label: 'Other' },
+  { value: 'Personal Tech', label: 'Personal Tech' },
+  { value: 'Kitchen Appliances', label: 'Kitchen Appliances' },
+  { value: 'Health Tech', label: 'Health Tech' },
+  { value: 'Home Appliances', label: 'Home Appliances' },
+  { value: 'Miscellaneous', label: 'Miscellaneous' },
+  { value: 'Fitness Equipment', label: 'Fitness Equipment' },
+  { value: 'Housing Goods', label: 'Housing Goods' },
+  { value: 'Vehicle', label: 'Vehicle' },
+  { value: 'Property & Real Estate', label: 'Property & Real Estate' },
 ];
 
 export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentFormProps) {

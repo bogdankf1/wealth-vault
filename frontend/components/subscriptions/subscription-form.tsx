@@ -77,19 +77,15 @@ const FREQUENCY_OPTIONS = [
 ];
 
 const CATEGORY_OPTIONS = [
-  { value: 'Streaming', label: 'Streaming' },
-  { value: 'Software', label: 'Software' },
-  { value: 'Gym & Fitness', label: 'Gym & Fitness' },
   { value: 'Cloud Storage', label: 'Cloud Storage' },
-  { value: 'News & Media', label: 'News & Media' },
   { value: 'Music', label: 'Music' },
-  { value: 'Gaming', label: 'Gaming' },
-  { value: 'Professional Services', label: 'Professional Services' },
+  { value: 'Video', label: 'Video' },
   { value: 'Education', label: 'Education' },
-  { value: 'Utilities', label: 'Utilities' },
-  { value: 'Insurance', label: 'Insurance' },
-  { value: 'Memberships', label: 'Memberships' },
-  { value: 'Other', label: 'Other' },
+  { value: 'Cell Service', label: 'Cell Service' },
+  { value: 'Side Projects', label: 'Side Projects' },
+  { value: 'AI Tools', label: 'AI Tools' },
+  { value: 'Gaming', label: 'Gaming' },
+  { value: 'Miscellaneous', label: 'Miscellaneous' },
 ];
 
 export function SubscriptionForm({ subscriptionId, isOpen, onClose }: SubscriptionFormProps) {
