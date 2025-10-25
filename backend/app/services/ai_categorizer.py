@@ -14,29 +14,32 @@ from app.modules.ai.models import CategorizationCorrection
 
 # Expense categories (must match frontend categories)
 EXPENSE_CATEGORIES = [
-    "Food & Dining",
+    "Groceries",
+    "Dining Out / Delivery",
+    "Clothing",
+    "Gifts",
     "Transportation",
-    "Housing",
-    "Utilities",
-    "Healthcare",
-    "Entertainment",
-    "Shopping",
     "Personal Care",
-    "Education",
-    "Insurance",
-    "Debt Payments",
-    "Other",
+    "Healthcare",
+    "Luxury & Premium Items",
+    "Postal & Shipping",
+    "Miscellaneous",
+    "Housing",
+    "Education & Learning",
+    "Travel & Vacations",
+    "Entertainment",
 ]
 
 # Income categories
 INCOME_CATEGORIES = [
     "Salary",
-    "Freelance",
     "Business",
-    "Investment",
+    "Freelance",
+    "Side Projects",
+    "Investments",
+    "Gifts",
+    "Refunds & Reimbursements",
     "Rental",
-    "Gift",
-    "Refund",
     "Other",
 ]
 

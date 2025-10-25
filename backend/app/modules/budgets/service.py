@@ -220,8 +220,8 @@ async def get_budget_with_progress(
     # Get expenses for this budget's category and period
     expenses = await _get_expenses_for_budget(db, budget, user_id)
 
-    # Calculate spending metrics
-    spent = budget.calculate_spent_amount(expenses)
+    # Calculate spending metrics (with currency conversion)
+    spent = await _calculate_spent_amount_in_budget_currency(db, budget, expenses)
     remaining = budget.calculate_remaining(spent)
     percentage_used = budget.calculate_percentage_used(spent)
     is_overspent = budget.is_overspent(spent)
@@ -302,7 +302,7 @@ async def get_budget_overview(
 
     for budget in budgets:
         expenses = await _get_expenses_for_budget(db, budget, user_id)
-        spent = budget.calculate_spent_amount(expenses)
+        spent = await _calculate_spent_amount_in_budget_currency(db, budget, expenses)
         remaining = budget.calculate_remaining(spent)
         percentage_used = budget.calculate_percentage_used(spent)
         is_overspent = budget.is_overspent(spent)
@@ -444,3 +444,45 @@ async def _get_expenses_for_budget(
     query = select(Expense).where(and_(*conditions))
     result = await db.execute(query)
     return list(result.scalars().all())
+
+
+async def _calculate_spent_amount_in_budget_currency(
+    db: AsyncSession,
+    budget: Budget,
+    expenses: list[Expense]
+) -> Decimal:
+    """
+    Calculate total amount spent, converting each expense to the budget's currency.
+
+    Args:
+        db: Database session
+        budget: Budget instance
+        expenses: List of expenses to sum
+
+    Returns:
+        Total spent amount in budget's currency
+    """
+    currency_service = CurrencyService(db)
+    total = Decimal("0")
+
+    for expense in expenses:
+        # Expenses are already filtered by category in _get_expenses_for_budget
+        # Just check date is within budget period
+        expense_date = expense.date or expense.start_date
+        if expense_date and expense_date >= budget.start_date:
+            if budget.end_date is None or expense_date <= budget.end_date:
+                # Convert expense amount to budget currency if needed
+                expense_amount = expense.amount
+
+                if expense.currency != budget.currency:
+                    converted_amount = await currency_service.convert_amount(
+                        expense.amount,
+                        expense.currency,
+                        budget.currency
+                    )
+                    if converted_amount is not None:
+                        expense_amount = converted_amount
+
+                total += expense_amount
+
+    return total

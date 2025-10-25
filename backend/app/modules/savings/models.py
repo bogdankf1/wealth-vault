@@ -13,11 +13,11 @@ from app.core.database import Base
 
 class AccountType(str, enum.Enum):
     """Types of savings accounts"""
-    CHECKING = "checking"
-    SAVINGS = "savings"
-    INVESTMENT = "investment"
-    CASH = "cash"
     CRYPTO = "crypto"
+    CASH = "cash"
+    BUSINESS = "business"
+    PERSONAL = "personal"
+    FIXED_DEPOSIT = "fixed_deposit"
     OTHER = "other"
 
 
@@ -30,7 +30,7 @@ class SavingsAccount(Base):
 
     # Account details
     name = Column(String(100), nullable=False)
-    account_type = Column(String(20), nullable=False, default="savings")
+    account_type = Column(String(20), nullable=False, default="personal")
     institution = Column(String(100), nullable=True)  # Bank/institution name
     account_number_last4 = Column(String(4), nullable=True)  # Last 4 digits for security
 

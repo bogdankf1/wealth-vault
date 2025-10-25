@@ -1,7 +1,7 @@
 """
 Savings module Pydantic schemas
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
@@ -17,7 +17,7 @@ from app.modules.savings.models import AccountType
 class SavingsAccountBase(BaseModel):
     """Base schema for savings account"""
     name: str = Field(..., min_length=1, max_length=100, description="Account name")
-    account_type: AccountType = Field(default=AccountType.SAVINGS, description="Account type")
+    account_type: AccountType = Field(default=AccountType.PERSONAL, description="Account type")
     institution: Optional[str] = Field(None, max_length=100, description="Bank/institution name")
     account_number_last4: Optional[str] = Field(None, min_length=4, max_length=4, description="Last 4 digits")
     current_balance: Decimal = Field(..., ge=0, description="Current balance")
@@ -58,6 +58,20 @@ class SavingsAccountResponse(SavingsAccountBase):
 
     class Config:
         from_attributes = True
+
+    @computed_field
+    @property
+    def account_type_label(self) -> str:
+        """Get display label for account type"""
+        account_type_labels = {
+            "crypto": "Cryptocurrency",
+            "cash": "Cash",
+            "business": "Business Account",
+            "personal": "Personal Account",
+            "fixed_deposit": "Fixed Deposits",
+            "other": "Other"
+        }
+        return account_type_labels.get(self.account_type, self.account_type.title())
 
 
 class SavingsAccountListResponse(BaseModel):
