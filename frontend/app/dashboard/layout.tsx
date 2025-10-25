@@ -40,7 +40,7 @@ const navigation = [
   { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: CreditCard, tier: 'starter' },
   { name: 'Installments', href: '/dashboard/installments', icon: Receipt, tier: 'starter' },
   { name: 'Taxes', href: '/dashboard/taxes', icon: FileText, tier: 'starter', disabled: true },
-  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus, tier: 'starter', disabled: true },
+  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus, tier: 'starter' },
 ];
 
 const bottomNavigation = [

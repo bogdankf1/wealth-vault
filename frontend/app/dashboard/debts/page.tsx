@@ -1,0 +1,338 @@
+'use client';
+
+import { useState } from 'react';
+import { UserMinus, TrendingUp, AlertCircle, Edit, Trash2, CheckCircle2, Clock } from 'lucide-react';
+import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { ModuleHeader } from '@/components/ui/module-header';
+import { StatsCards } from '@/components/ui/stats-cards';
+import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingCards } from '@/components/ui/loading-state';
+import { ApiErrorState } from '@/components/ui/error-state';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { DebtForm } from '@/components/debts/debt-form';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import {
+  useListDebtsQuery,
+  useGetDebtStatsQuery,
+  useDeleteDebtMutation,
+  type Debt,
+} from '@/lib/api/debtsApi';
+
+export default function DebtsPage() {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingDebtId, setEditingDebtId] = useState<string | null>(null);
+  const [deletingDebt, setDeletingDebt] = useState<Debt | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+
+  const { data: debtsData, isLoading, error, refetch } = useListDebtsQuery();
+  const { data: stats } = useGetDebtStatsQuery();
+  const [deleteDebt] = useDeleteDebtMutation();
+
+  const handleEdit = (debtId: string) => {
+    setEditingDebtId(debtId);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingDebtId(null);
+  };
+
+  const handleDeleteClick = (debt: Debt) => {
+    setDeletingDebt(debt);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingDebt) return;
+
+    try {
+      await deleteDebt(deletingDebt.id).unwrap();
+      setDeletingDebt(null);
+    } catch (error) {
+      console.error('Failed to delete debt:', error);
+    }
+  };
+
+  const debts = debtsData?.items || [];
+  const hasDebts = debts.length > 0;
+
+  // Status categories
+  const statusCategories = ['Active', 'Paid', 'Overdue'];
+
+  // Filter debts
+  const filteredDebts = debts.filter((debt) => {
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = debt.debtor_name.toLowerCase().includes(query);
+      const matchesDescription = debt.description?.toLowerCase().includes(query);
+      if (!matchesName && !matchesDescription) return false;
+    }
+
+    // Status filter
+    if (selectedStatus) {
+      if (selectedStatus === 'Active' && (debt.is_paid || debt.is_overdue)) return false;
+      if (selectedStatus === 'Paid' && !debt.is_paid) return false;
+      if (selectedStatus === 'Overdue' && (!debt.is_overdue || debt.is_paid)) return false;
+    }
+
+    return true;
+  });
+
+  // Stats cards
+  const statsCards = stats
+    ? [
+        {
+          title: 'Total Owed',
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_amount_owed}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
+          description: `${stats.active_debts} active ${stats.active_debts === 1 ? 'debt' : 'debts'}`,
+          icon: UserMinus,
+        },
+        {
+          title: 'Total Paid',
+          value: (
+            <CurrencyDisplay
+              amount={stats.total_amount_paid}
+              currency={stats.currency}
+              showSymbol={true}
+              showCode={false}
+            />
+          ),
+          description: `${stats.paid_debts} paid ${stats.paid_debts === 1 ? 'debt' : 'debts'}`,
+          icon: CheckCircle2,
+        },
+        {
+          title: 'Overdue',
+          value: stats.overdue_debts,
+          description: stats.overdue_debts > 0 ? 'Require attention' : 'All on track',
+          icon: AlertCircle,
+          valueClassName: stats.overdue_debts > 0 ? 'text-red-600 dark:text-red-400' : undefined,
+        },
+      ]
+    : [];
+
+  return (
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
+      <ModuleHeader
+        title="Debts"
+        description="Track money owed to you"
+        actionLabel="Add Debt"
+        onAction={() => setIsFormOpen(true)}
+      />
+
+      {/* Statistics Cards */}
+      {isLoading ? (
+        <LoadingCards count={3} />
+      ) : stats ? (
+        <StatsCards stats={statsCards} />
+      ) : null}
+
+      {/* Search and Filters */}
+      {hasDebts && (
+        <div>
+          <SearchFilter
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedCategory={selectedStatus}
+            onCategoryChange={(status) => setSelectedStatus(status || '')}
+            categories={statusCategories}
+            searchPlaceholder="Search debts..."
+            categoryPlaceholder="All Statuses"
+          />
+        </div>
+      )}
+
+      {/* Debts List */}
+      {isLoading ? (
+        <LoadingCards count={6} />
+      ) : error ? (
+        <ApiErrorState error={error} onRetry={refetch} />
+      ) : !hasDebts ? (
+        <EmptyState
+          icon={UserMinus}
+          title="No debts yet"
+          description="Start tracking money owed to you by adding your first debt record"
+          actionLabel="Add Debt"
+          onAction={() => setIsFormOpen(true)}
+        />
+      ) : filteredDebts.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>No debts found matching your filters.</p>
+          <Button
+            variant="link"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedStatus('');
+            }}
+            className="mt-2"
+          >
+            Clear Filters
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filteredDebts.map((debt) => (
+            <Card key={debt.id} className="relative">
+              <CardHeader className="pb-3 md:pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-base md:text-lg truncate">
+                      {debt.debtor_name}
+                    </CardTitle>
+                    <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
+                      {debt.description || ' '}
+                    </CardDescription>
+                  </div>
+                  {debt.is_paid ? (
+                    <Badge variant="default" className="bg-green-600 text-xs flex-shrink-0">
+                      Paid
+                    </Badge>
+                  ) : debt.is_overdue ? (
+                    <Badge variant="destructive" className="text-xs flex-shrink-0">
+                      Overdue
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs flex-shrink-0">
+                      Active
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2 md:space-y-3">
+                  {/* Total and Paid Amounts */}
+                  <div className="rounded-lg border bg-muted/50 p-3">
+                    <div className="flex items-baseline justify-between mb-1">
+                      <span className="text-xs text-muted-foreground">Paid</span>
+                      <span className="text-2xl font-bold">
+                        <CurrencyDisplay
+                          amount={debt.display_amount_paid ?? debt.amount_paid}
+                          currency={debt.display_currency ?? debt.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        of <CurrencyDisplay
+                          amount={debt.display_amount ?? debt.amount}
+                          currency={debt.display_currency ?? debt.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        /> total
+                      </span>
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground min-h-[16px]">
+                      {debt.display_currency && debt.display_currency !== debt.currency && (
+                        <>
+                          Original: <CurrencyDisplay
+                            amount={debt.amount}
+                            currency={debt.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          /> total
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{Math.round(debt.progress_percentage || 0)}% paid</span>
+                      {debt.amount_remaining && debt.amount_remaining > 0 && (
+                        <span>
+                          <CurrencyDisplay
+                            amount={debt.amount_remaining}
+                            currency={debt.display_currency ?? debt.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          /> remaining
+                        </span>
+                      )}
+                    </div>
+                    <Progress value={debt.progress_percentage || 0} className="h-2" />
+                  </div>
+
+                  {(debt.due_date || debt.paid_date) && (
+                    <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[48px]">
+                      {debt.paid_date && (
+                        <p className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Paid: {new Date(debt.paid_date).toLocaleDateString()}
+                        </p>
+                      )}
+                      {debt.due_date && !debt.is_paid && (
+                        <p className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Due: {new Date(debt.due_date).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {debt.notes && (
+                    <div className="min-h-[40px]">
+                      <p className="text-sm text-muted-foreground line-clamp-2">{debt.notes}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(debt.id)}
+                    >
+                      <Edit className="mr-1 h-3 w-3" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteClick(debt)}
+                    >
+                      <Trash2 className="mr-1 h-3 w-3" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Debt Form Dialog */}
+      {isFormOpen && (
+        <DebtForm
+          debtId={editingDebtId}
+          isOpen={isFormOpen}
+          onClose={handleCloseForm}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={!!deletingDebt}
+        onOpenChange={(open) => !open && setDeletingDebt(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Debt"
+        description={`Are you sure you want to delete the debt from "${deletingDebt?.debtor_name}"? This action cannot be undone.`}
+        itemName="debt"
+      />
+    </div>
+  );
+}
