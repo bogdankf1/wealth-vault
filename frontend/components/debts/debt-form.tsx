@@ -28,7 +28,6 @@ import {
   useCreateDebtMutation,
   useUpdateDebtMutation,
   useGetDebtQuery,
-  type Debt,
 } from '@/lib/api/debtsApi';
 
 // Form validation schema
@@ -156,7 +155,17 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const submitData: any = {
+      const submitData: {
+        debtor_name: string;
+        description?: string;
+        amount: number;
+        amount_paid?: number;
+        currency: string;
+        is_paid: boolean;
+        notes?: string;
+        due_date?: string;
+        paid_date?: string;
+      } = {
         debtor_name: data.debtor_name,
         description: data.description,
         amount: data.amount,

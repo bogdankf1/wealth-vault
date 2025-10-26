@@ -54,7 +54,7 @@ import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
 import { InstallmentForm } from '@/components/installments/installment-form';
 import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
 import { BudgetOverviewWidget } from '@/components/dashboard/budget-overview-widget';
-import { TimeRangeFilter, TimeRange } from '@/components/dashboard/time-range-filter';
+import { MonthFilter } from '@/components/ui/month-filter';
 import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
 import { SubscriptionsByCategoryChart } from '@/components/dashboard/subscriptions-by-category-chart';
 import { InstallmentsByCategoryChart } from '@/components/dashboard/installments-by-category-chart';
@@ -80,18 +80,21 @@ export default function DashboardPage() {
   const [isSubscriptionFormOpen, setIsSubscriptionFormOpen] = useState(false);
   const [isInstallmentFormOpen, setIsInstallmentFormOpen] = useState(false);
 
-  // Time range state for analytics
-  const [timeRange, setTimeRange] = useState<TimeRange>(() => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    return { start, end: now, label: 'This Month' };
-  });
+  // Default to current month in YYYY-MM format
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
 
-  // Date params for queries (includes date range)
-  const dateParams = useMemo(() => ({
-    start_date: timeRange.start.toISOString(),
-    end_date: timeRange.end.toISOString(),
-  }), [timeRange]);
+  // Calculate date range from selectedMonth
+  const dateParams = useMemo(() => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    return {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+    };
+  }, [selectedMonth]);
 
   // Dashboard overview query with date params
   const { data, isLoading, error } = useGetDashboardOverviewQuery(dateParams);
@@ -101,10 +104,10 @@ export default function DashboardPage() {
     useGetIncomeVsExpensesChartQuery(dateParams);
 
   const { data: subscriptionsByCategoryData, isLoading: isLoadingSubscriptionsByCategory } =
-    useGetSubscriptionsByCategoryChartQuery();
+    useGetSubscriptionsByCategoryChartQuery(dateParams);
 
   const { data: installmentsByCategoryData, isLoading: isLoadingInstallmentsByCategory } =
-    useGetInstallmentsByCategoryChartQuery();
+    useGetInstallmentsByCategoryChartQuery(dateParams);
 
   const { data: monthlySpendingData, isLoading: isLoadingMonthlySpending } =
     useGetMonthlySpendingChartQuery(dateParams);
@@ -113,7 +116,7 @@ export default function DashboardPage() {
     useGetNetWorthTrendChartQuery(dateParams);
 
   const { data: incomeBreakdownData, isLoading: isLoadingIncomeBreakdown } =
-    useGetIncomeBreakdownChartQuery();
+    useGetIncomeBreakdownChartQuery(dateParams);
 
   const { data: debtStats } = useGetDebtStatsQuery();
   const { data: taxStats } = useGetTaxStatsQuery();
@@ -148,13 +151,19 @@ export default function DashboardPage() {
 
   // Get period label for display
   const getPeriodLabel = () => {
-    return timeRange.label;
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const date = new Date(year, month - 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
   // Get period description for tooltips
   const getPeriodDescription = () => {
-    const start = timeRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const end = timeRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    const start = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const end = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     return `${start} - ${end}`;
   };
 
@@ -213,10 +222,11 @@ export default function DashboardPage() {
               Your complete financial overview
             </p>
           </div>
-          {/* Time Range Filter */}
-          <TimeRangeFilter
-            onRangeChange={setTimeRange}
-            defaultPeriod="this_month"
+          {/* Month Filter */}
+          <MonthFilter
+            selectedMonth={selectedMonth}
+            onMonthChange={(month) => setSelectedMonth(month || currentMonth)}
+            label="Period:"
           />
         </div>
 
@@ -674,8 +684,8 @@ export default function DashboardPage() {
                 <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Taxes</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
-                    amount={taxStats?.total_tax_amount || 0}
-                    currency={taxStats?.currency || cash_flow.currency}
+                    amount={parseFloat(cash_flow.monthly_taxes) || 0}
+                    currency={cash_flow.currency}
                     showSymbol={true}
                     showCode={false}
                   />
@@ -688,7 +698,7 @@ export default function DashboardPage() {
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Sum of all active tax obligations (fixed amounts + percentage-based estimates)</p>
+                <p className="text-sm">Period-specific taxes based on income (only calculated when income exists in the selected period)</p>
               </TooltipContent>
             </Tooltip>
           </div>

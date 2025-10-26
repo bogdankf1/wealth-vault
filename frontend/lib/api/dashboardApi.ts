@@ -19,6 +19,7 @@ export interface CashFlowResponse {
   monthly_expenses: string;
   monthly_subscriptions: string;
   monthly_installments: string;
+  monthly_taxes: string;
   net_cash_flow: string;
   savings_rate: string;
   currency: string;
@@ -281,8 +282,11 @@ export const dashboardApi = apiSlice.injectEndpoints({
       providesTags: ['Dashboard', 'Analytics'],
     }),
 
-    getSubscriptionsByCategoryChart: builder.query<ExpenseByCategoryChartResponse, void>({
-      query: () => '/api/v1/dashboard/analytics/subscriptions-by-category',
+    getSubscriptionsByCategoryChart: builder.query<ExpenseByCategoryChartResponse, AnalyticsParams | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/subscriptions-by-category',
+        params: params || undefined,
+      }),
       transformResponse: (response: ExpenseByCategoryApiResponse) => ({
         data: response.data.map((item) => ({
           category: item.category,
@@ -294,8 +298,11 @@ export const dashboardApi = apiSlice.injectEndpoints({
       providesTags: ['Dashboard', 'Analytics'],
     }),
 
-    getInstallmentsByCategoryChart: builder.query<ExpenseByCategoryChartResponse, void>({
-      query: () => '/api/v1/dashboard/analytics/installments-by-category',
+    getInstallmentsByCategoryChart: builder.query<ExpenseByCategoryChartResponse, AnalyticsParams | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/installments-by-category',
+        params: params || undefined,
+      }),
       transformResponse: (response: ExpenseByCategoryApiResponse) => ({
         data: response.data.map((item) => ({
           category: item.category,
@@ -339,8 +346,11 @@ export const dashboardApi = apiSlice.injectEndpoints({
       providesTags: ['Dashboard', 'Analytics'],
     }),
 
-    getIncomeBreakdownChart: builder.query<IncomeBreakdownChartResponse, void>({
-      query: () => '/api/v1/dashboard/analytics/income-breakdown',
+    getIncomeBreakdownChart: builder.query<IncomeBreakdownChartResponse, AnalyticsParams | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/income-breakdown',
+        params: params || undefined,
+      }),
       transformResponse: (response: IncomeBreakdownApiResponse) => ({
         data: response.data.map((item) => ({
           category: item.category,
