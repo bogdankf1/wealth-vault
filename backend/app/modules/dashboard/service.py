@@ -238,7 +238,7 @@ async def get_cash_flow(
                 if converted:
                     total_income += converted
 
-    # Get all active expenses and filter by date range
+    # Get all active expenses (no date filtering, consistent with subscriptions/installments/taxes)
     expenses_query = select(Expense).where(
         and_(
             Expense.user_id == user_id,
@@ -248,59 +248,35 @@ async def get_cash_flow(
     expenses_result = await db.execute(expenses_query)
     expenses = expenses_result.scalars().all()
 
-    # Calculate expenses using date-based logic (like Expenses page)
+    # Calculate monthly expenses equivalent (same logic as subscriptions/installments)
     monthly_expenses = Decimal('0')
     for expense in expenses:
-        # Check if expense is within date range
-        expense_in_range = False
-
-        if expense.frequency == 'one_time':
-            # One-time expenses: check if date is within range
-            if expense.date:
-                expense_date = expense.date.replace(tzinfo=None) if expense.date.tzinfo else expense.date
-                if start_date <= expense_date <= end_date:
-                    expense_in_range = True
-        else:
-            # Recurring expenses: check if start_date/end_date overlaps with range
-            expense_start = expense.start_date.replace(tzinfo=None) if expense.start_date and expense.start_date.tzinfo else expense.start_date
-            expense_end = expense.end_date.replace(tzinfo=None) if expense.end_date and expense.end_date.tzinfo else expense.end_date
-
-            if expense_start:
-                # Expense starts before or during the range
-                if expense_end:
-                    # Has end date: check overlap
-                    if expense_start <= end_date and expense_end >= start_date:
-                        expense_in_range = True
-                else:
-                    # No end date: ongoing, check if it started before range ends
-                    if expense_start <= end_date:
-                        expense_in_range = True
-
-        if not expense_in_range:
-            continue
-
-        # Convert amount to display currency
-        if expense.currency == display_currency:
-            converted_amount = expense.amount
-        else:
-            converted_amount = await currency_service.convert_amount(
-                expense.amount, expense.currency, display_currency
-            )
-            if converted_amount is None:
+        if expense.amount:
+            # Convert amount to display currency
+            if expense.currency == display_currency:
                 converted_amount = expense.amount
+            else:
+                converted_amount = await currency_service.convert_amount(
+                    expense.amount, expense.currency, display_currency
+                )
+                if converted_amount is None:
+                    converted_amount = expense.amount
 
-        amount = Decimal(str(converted_amount))
+            amount = Decimal(str(converted_amount))
 
-        # Calculate monthly equivalent
-        if expense.frequency == 'one_time':
-            # One-time expenses: use full amount
-            monthly_equiv = amount
-        else:
-            # Recurring expenses: convert to monthly equivalent
-            multiplier = frequency_to_monthly.get(expense.frequency, Decimal('1'))
-            monthly_equiv = amount * multiplier
-
-        monthly_expenses += monthly_equiv
+            # Calculate monthly equivalent based on frequency
+            if expense.frequency == 'one_time':
+                # One-time expenses: only include if the expense date falls within the requested period
+                if expense.date:
+                    expense_date = expense.date.replace(tzinfo=None) if expense.date.tzinfo else expense.date
+                    if start_date <= expense_date <= end_date:
+                        monthly_expenses += amount
+                # Skip one-time expenses that are outside the date range or don't have a date
+            else:
+                # Recurring expenses: include ALL active (no date filtering)
+                multiplier = frequency_to_monthly.get(expense.frequency, Decimal('1'))
+                monthly_equiv = amount * multiplier
+                monthly_expenses += monthly_equiv
 
     # Get all active subscriptions
     subscriptions_query = select(Subscription).where(
@@ -371,8 +347,50 @@ async def get_cash_flow(
                 if converted:
                     monthly_installments += converted
 
+    # Get all active taxes
+    from app.modules.taxes.models import Tax
+    taxes_query = select(Tax).where(
+        and_(
+            Tax.user_id == user_id,
+            Tax.is_active == True,
+            Tax.deleted_at.is_(None)
+        )
+    )
+    taxes_result = await db.execute(taxes_query)
+    taxes = taxes_result.scalars().all()
+
+    # Tax frequency multipliers to convert to monthly
+    tax_frequency_to_monthly = {
+        "monthly": Decimal("1"),
+        "quarterly": Decimal("0.333333"),  # Divide by 3
+        "annually": Decimal("0.083333"),   # Divide by 12
+    }
+
+    # Convert taxes to monthly equivalent in display currency
+    monthly_taxes = Decimal('0')
+    for tax in taxes:
+        if tax.tax_type == "fixed" and tax.fixed_amount:
+            # Fixed amount taxes: convert to display currency and monthly equivalent
+            if tax.currency == display_currency:
+                amount_in_display = tax.fixed_amount
+            else:
+                converted = await currency_service.convert_amount(
+                    tax.fixed_amount, tax.currency, display_currency
+                )
+                amount_in_display = converted if converted else tax.fixed_amount
+
+            # Calculate monthly equivalent based on frequency
+            multiplier = tax_frequency_to_monthly.get(tax.frequency, Decimal('1'))
+            monthly_amount = amount_in_display * multiplier
+            monthly_taxes += monthly_amount
+
+        elif tax.tax_type == "percentage" and tax.percentage:
+            # Percentage-based taxes: calculate as percentage of total income
+            tax_amount = (total_income * tax.percentage) / Decimal("100")
+            monthly_taxes += tax_amount
+
     # Calculate net cash flow
-    net_cash_flow = total_income - monthly_expenses - monthly_subscriptions - monthly_installments
+    net_cash_flow = total_income - monthly_expenses - monthly_subscriptions - monthly_installments - monthly_taxes
 
     # Calculate savings rate
     savings_rate = (net_cash_flow / total_income * Decimal('100')) if total_income > 0 else Decimal('0')
@@ -382,6 +400,7 @@ async def get_cash_flow(
         monthly_expenses=monthly_expenses,
         monthly_subscriptions=monthly_subscriptions,
         monthly_installments=monthly_installments,
+        monthly_taxes=monthly_taxes,
         net_cash_flow=net_cash_flow,
         savings_rate=savings_rate,
         currency=display_currency,
@@ -410,7 +429,7 @@ async def get_financial_health_score(
 
     # 1. Emergency Fund Score (20 points)
     # Target: 3-6 months of expenses saved
-    monthly_expenses_total = cash_flow.monthly_expenses + cash_flow.monthly_subscriptions + cash_flow.monthly_installments
+    monthly_expenses_total = cash_flow.monthly_expenses + cash_flow.monthly_subscriptions + cash_flow.monthly_installments + cash_flow.monthly_taxes
     target_emergency_fund = monthly_expenses_total * Decimal('3')
 
     if target_emergency_fund > 0:
@@ -813,19 +832,16 @@ async def get_income_vs_expenses_chart(
 ) -> IncomeVsExpensesChartResponse:
     """
     Get income vs expenses chart data for the specified period.
-    Groups data by month.
+    Uses the same logic as Cash Flow widget to ensure consistency.
     All amounts are converted to user's display currency.
     """
     from calendar import month_abbr
     from dateutil.relativedelta import relativedelta
+    from datetime import timedelta
 
     # Remove timezone info to match database datetimes
     start_date = start_date.replace(tzinfo=None)
     end_date = end_date.replace(tzinfo=None)
-
-    # Get user's display currency
-    display_currency = await get_user_display_currency(db, user_id)
-    currency_service = CurrencyService(db)
 
     data_points = []
     current = start_date.replace(day=1)
@@ -835,209 +851,42 @@ async def get_income_vs_expenses_chart(
         month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
         month_end = min(month_end, end_date)
 
-        # Calculate income for this month
-        monthly_income = Decimal('0')
+        # Adjust month_start to respect the actual start_date if we're in the first month
+        if current.year == start_date.year and current.month == start_date.month:
+            month_start = start_date
 
-        # Get one-time income sources that fall in this month
-        onetime_income_query = select(IncomeSource).where(
-            and_(
-                IncomeSource.user_id == user_id,
-                IncomeSource.is_active == True,
-                IncomeSource.deleted_at.is_(None),
-                IncomeSource.frequency == 'one_time',
-                IncomeSource.date.is_not(None),
-                IncomeSource.date >= month_start,
-                IncomeSource.date <= month_end
-            )
+        # Get cash flow data for this specific month
+        cash_flow = await get_cash_flow(db, user_id, start_date=month_start, end_date=month_end)
+
+        # Calculate total expenses (sum of all expense categories)
+        # This matches exactly what Income Allocation widget shows
+        total_expenses = (
+            cash_flow.monthly_expenses +
+            cash_flow.monthly_subscriptions +
+            cash_flow.monthly_installments +
+            cash_flow.monthly_taxes
         )
-        onetime_result = await db.execute(onetime_income_query)
-        onetime_sources = onetime_result.scalars().all()
-
-        for source in onetime_sources:
-            if source.amount:
-                if source.currency == display_currency:
-                    monthly_income += source.amount
-                else:
-                    converted = await currency_service.convert_amount(
-                        source.amount, source.currency, display_currency
-                    )
-                    if converted:
-                        monthly_income += converted
-
-        # Get recurring income sources that are active in this month
-        recurring_income_query = select(IncomeSource).where(
-            and_(
-                IncomeSource.user_id == user_id,
-                IncomeSource.is_active == True,
-                IncomeSource.deleted_at.is_(None),
-                IncomeSource.frequency != 'one_time',
-                IncomeSource.start_date.is_not(None),
-                IncomeSource.start_date <= month_end,
-                or_(
-                    IncomeSource.end_date.is_(None),
-                    IncomeSource.end_date >= month_start
-                )
-            )
-        )
-        recurring_result = await db.execute(recurring_income_query)
-        recurring_sources = recurring_result.scalars().all()
-
-        for source in recurring_sources:
-            monthly_amount = source.calculate_monthly_amount()
-            if monthly_amount:
-                if source.currency == display_currency:
-                    monthly_income += monthly_amount
-                else:
-                    converted = await currency_service.convert_amount(
-                        monthly_amount, source.currency, display_currency
-                    )
-                    if converted:
-                        monthly_income += converted
-
-        # Calculate expenses for this month using date-based logic
-        expense_query = select(Expense).where(
-            and_(
-                Expense.user_id == user_id,
-                Expense.is_active == True
-            )
-        )
-        expense_result = await db.execute(expense_query)
-        expenses = expense_result.scalars().all()
-
-        # Frequency multipliers for calculating monthly equivalents
-        expense_frequency_to_monthly = {
-            'daily': Decimal('30'),
-            'weekly': Decimal('4.33333'),
-            'biweekly': Decimal('2.16667'),
-            'monthly': Decimal('1'),
-            'quarterly': Decimal('0.333333'),
-            'annually': Decimal('0.083333'),
-        }
-
-        # Calculate expenses using date-based logic
-        monthly_expenses = Decimal('0')
-        for expense in expenses:
-            # Check if expense is within this month's date range
-            expense_in_range = False
-
-            if expense.frequency == 'one_time':
-                # One-time expenses: check if date is within range
-                if expense.date:
-                    expense_date = expense.date.replace(tzinfo=None) if expense.date.tzinfo else expense.date
-                    if month_start <= expense_date <= month_end:
-                        expense_in_range = True
-            else:
-                # Recurring expenses: check if start_date/end_date overlaps with range
-                expense_start = expense.start_date.replace(tzinfo=None) if expense.start_date and expense.start_date.tzinfo else expense.start_date
-                expense_end = expense.end_date.replace(tzinfo=None) if expense.end_date and expense.end_date.tzinfo else expense.end_date
-
-                if expense_start:
-                    # Expense starts before or during the range
-                    if expense_end:
-                        # Has end date: check overlap
-                        if expense_start <= month_end and expense_end >= month_start:
-                            expense_in_range = True
-                    else:
-                        # No end date: ongoing, check if it started before range ends
-                        if expense_start <= month_end:
-                            expense_in_range = True
-
-            if not expense_in_range:
-                continue
-
-            # Convert amount to display currency
-            if expense.currency == display_currency:
-                converted_amount = expense.amount
-            else:
-                converted_amount = await currency_service.convert_amount(
-                    expense.amount, expense.currency, display_currency
-                )
-                if converted_amount is None:
-                    converted_amount = expense.amount
-
-            amount = Decimal(str(converted_amount))
-
-            # Calculate monthly equivalent
-            if expense.frequency == 'one_time':
-                # One-time expenses: use full amount
-                monthly_equiv = amount
-            else:
-                # Recurring expenses: convert to monthly equivalent
-                multiplier = expense_frequency_to_monthly.get(expense.frequency, Decimal('1'))
-                monthly_equiv = amount * multiplier
-
-            monthly_expenses += monthly_equiv
-
-        # Add subscriptions
-        subscription_query = select(Subscription).where(
-            and_(
-                Subscription.user_id == user_id,
-                Subscription.is_active == True
-            )
-        )
-        subscription_result = await db.execute(subscription_query)
-        subscriptions = subscription_result.scalars().all()
-
-        # Frequency multipliers to convert to monthly
-        frequency_to_monthly = {
-            "monthly": Decimal("1"),
-            "quarterly": Decimal("0.333333"),
-            "annually": Decimal("0.083333"),
-            "biannually": Decimal("0.166667"),
-        }
-
-        for subscription in subscriptions:
-            if subscription.amount:
-                multiplier = frequency_to_monthly.get(subscription.frequency, Decimal('1'))
-                monthly_amount = subscription.amount * multiplier
-
-                if subscription.currency == display_currency:
-                    monthly_expenses += monthly_amount
-                else:
-                    converted = await currency_service.convert_amount(
-                        monthly_amount, subscription.currency, display_currency
-                    )
-                    if converted:
-                        monthly_expenses += converted
-
-        # Add installments
-        installment_query = select(Installment).where(
-            and_(
-                Installment.user_id == user_id,
-                Installment.is_active == True
-            )
-        )
-        installment_result = await db.execute(installment_query)
-        installments = installment_result.scalars().all()
-
-        # Installment frequency multipliers to convert to monthly
-        installment_frequency_to_monthly = {
-            "monthly": Decimal("1"),
-            "biweekly": Decimal("2.16667"),
-            "weekly": Decimal("4.33333"),
-        }
-
-        for installment in installments:
-            if installment.amount_per_payment:
-                multiplier = installment_frequency_to_monthly.get(installment.frequency, Decimal('1'))
-                monthly_amount = installment.amount_per_payment * multiplier
-
-                if installment.currency == display_currency:
-                    monthly_expenses += monthly_amount
-                else:
-                    converted = await currency_service.convert_amount(
-                        monthly_amount, installment.currency, display_currency
-                    )
-                    if converted:
-                        monthly_expenses += converted
 
         # Format month label
         month_label = f"{month_abbr[current.month]} {current.year}"
 
+        # Debug logging for October 2025
+        if current.month == 10 and current.year == 2025:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"=== Income vs Expenses DEBUG for {month_label} ===")
+            logger.info(f"Monthly Income: {cash_flow.monthly_income}")
+            logger.info(f"Monthly Expenses (total): {total_expenses}")
+            logger.info(f"Breakdown:")
+            logger.info(f"  Expenses: {cash_flow.monthly_expenses}")
+            logger.info(f"  Subscriptions: {cash_flow.monthly_subscriptions}")
+            logger.info(f"  Installments: {cash_flow.monthly_installments}")
+            logger.info(f"  Taxes: {cash_flow.monthly_taxes}")
+
         data_points.append(IncomeVsExpensesDataPoint(
             month=month_label,
-            income=monthly_income,
-            expenses=monthly_expenses
+            income=cash_flow.monthly_income,
+            expenses=total_expenses
         ))
 
         current += relativedelta(months=1)
@@ -1208,29 +1057,16 @@ async def get_monthly_spending_chart(
 ) -> MonthlySpendingChartResponse:
     """
     Get monthly spending patterns for the specified period.
-    Includes expenses, subscriptions, and installments.
+    Uses the same logic as Cash Flow widget to ensure consistency.
     All amounts are converted to user's display currency.
     """
     from calendar import month_abbr
     from dateutil.relativedelta import relativedelta
+    from datetime import timedelta
 
     # Remove timezone info to match database datetimes
     start_date = start_date.replace(tzinfo=None)
     end_date = end_date.replace(tzinfo=None)
-
-    # Get user's display currency
-    display_currency = await get_user_display_currency(db, user_id)
-    currency_service = CurrencyService(db)
-
-    # Frequency multipliers for calculating monthly equivalents
-    frequency_to_monthly = {
-        'monthly': 1,
-        'quarterly': Decimal('0.333333'),  # Divide by 3
-        'annually': Decimal('0.083333'),   # Divide by 12
-        'biannually': Decimal('0.166667'), # Divide by 6
-        'biweekly': Decimal('2.16667'),    # ~26 payments per year / 12
-        'weekly': Decimal('4.33333'),      # ~52 weeks per year / 12
-    }
 
     data_points = []
     current = start_date.replace(day=1)
@@ -1240,132 +1076,28 @@ async def get_monthly_spending_chart(
         month_end = (current + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
         month_end = min(month_end, end_date)
 
-        # Get all active expenses and filter by date range (same logic as Expenses page)
-        expense_query = select(Expense).where(
-            and_(
-                Expense.user_id == user_id,
-                Expense.is_active == True
-            )
+        # Adjust month_start to respect the actual start_date if we're in the first month
+        if current.year == start_date.year and current.month == start_date.month:
+            month_start = start_date
+
+        # Get cash flow data for this specific month
+        cash_flow = await get_cash_flow(db, user_id, start_date=month_start, end_date=month_end)
+
+        # Calculate total expenses (sum of all expense categories)
+        # This matches exactly what Income Allocation widget shows
+        total_expenses = (
+            cash_flow.monthly_expenses +
+            cash_flow.monthly_subscriptions +
+            cash_flow.monthly_installments +
+            cash_flow.monthly_taxes
         )
-        expense_result = await db.execute(expense_query)
-        expenses = expense_result.scalars().all()
-
-        # Calculate expenses using date-based logic
-        monthly_amount = Decimal('0')
-        for expense in expenses:
-            # Check if expense is within this month's date range
-            expense_in_range = False
-
-            if expense.frequency == 'one_time':
-                # One-time expenses: check if date is within range
-                if expense.date:
-                    expense_date = expense.date.replace(tzinfo=None) if expense.date.tzinfo else expense.date
-                    if month_start <= expense_date <= month_end:
-                        expense_in_range = True
-            else:
-                # Recurring expenses: check if start_date/end_date overlaps with range
-                expense_start = expense.start_date.replace(tzinfo=None) if expense.start_date and expense.start_date.tzinfo else expense.start_date
-                expense_end = expense.end_date.replace(tzinfo=None) if expense.end_date and expense.end_date.tzinfo else expense.end_date
-
-                if expense_start:
-                    # Expense starts before or during the range
-                    if expense_end:
-                        # Has end date: check overlap
-                        if expense_start <= month_end and expense_end >= month_start:
-                            expense_in_range = True
-                    else:
-                        # No end date: ongoing, check if it started before range ends
-                        if expense_start <= month_end:
-                            expense_in_range = True
-
-            if not expense_in_range:
-                continue
-
-            # Convert amount to display currency
-            if expense.currency == display_currency:
-                converted_amount = expense.amount
-            else:
-                converted_amount = await currency_service.convert_amount(
-                    expense.amount, expense.currency, display_currency
-                )
-                if converted_amount is None:
-                    converted_amount = expense.amount
-
-            amount = Decimal(str(converted_amount))
-
-            # Calculate monthly equivalent
-            if expense.frequency == 'one_time':
-                # One-time expenses: use full amount
-                monthly_equiv = amount
-            else:
-                # Recurring expenses: convert to monthly equivalent
-                multiplier = frequency_to_monthly.get(expense.frequency, Decimal('1'))
-                monthly_equiv = amount * multiplier
-
-            monthly_amount += monthly_equiv
-
-        # Add subscriptions as monthly equivalents
-        subscription_query = select(Subscription).where(
-            and_(
-                Subscription.user_id == user_id,
-                Subscription.is_active == True,
-            )
-        )
-        sub_result = await db.execute(subscription_query)
-        subscriptions = sub_result.scalars().all()
-
-        for subscription in subscriptions:
-            if subscription.amount:
-                # Convert to display currency first
-                amount_in_display = subscription.amount
-                if subscription.currency != display_currency:
-                    converted = await currency_service.convert_amount(
-                        subscription.amount,
-                        subscription.currency,
-                        display_currency
-                    )
-                    if converted is not None:
-                        amount_in_display = converted
-
-                # Calculate monthly equivalent
-                multiplier = frequency_to_monthly.get(subscription.frequency, 1)
-                monthly_equivalent = amount_in_display * Decimal(str(multiplier))
-                monthly_amount += monthly_equivalent
-
-        # Add installments as monthly equivalents
-        installment_query = select(Installment).where(
-            and_(
-                Installment.user_id == user_id,
-                Installment.is_active == True,
-            )
-        )
-        inst_result = await db.execute(installment_query)
-        installments = inst_result.scalars().all()
-
-        for installment in installments:
-            if installment.amount_per_payment:
-                # Convert to display currency
-                amount_in_display = installment.amount_per_payment
-                if installment.currency != display_currency:
-                    converted = await currency_service.convert_amount(
-                        installment.amount_per_payment,
-                        installment.currency,
-                        display_currency
-                    )
-                    if converted is not None:
-                        amount_in_display = converted
-
-                # Convert to monthly equivalent based on frequency
-                frequency_multiplier = frequency_to_monthly.get(installment.frequency, 1)
-                monthly_equivalent = amount_in_display * Decimal(str(frequency_multiplier))
-                monthly_amount += monthly_equivalent
 
         # Format month label
         month_label = f"{month_abbr[current.month]} {current.year}"
 
         data_points.append(MonthlySpendingDataPoint(
             month=month_label,
-            amount=monthly_amount
+            amount=total_expenses
         ))
 
         current += relativedelta(months=1)
@@ -1583,7 +1315,16 @@ async def get_income_breakdown_chart(
                 amount=cash_flow.monthly_installments,
                 percentage=installment_pct
             ))
-        
+
+        # Taxes
+        if cash_flow.monthly_taxes > 0:
+            tax_pct = float((cash_flow.monthly_taxes / total_income) * 100)
+            data_points.append(IncomeBreakdownDataPoint(
+                category="Taxes",
+                amount=cash_flow.monthly_taxes,
+                percentage=tax_pct
+            ))
+
         # Net Savings (what's left)
         if cash_flow.net_cash_flow > 0:
             savings_pct = float((cash_flow.net_cash_flow / total_income) * 100)
