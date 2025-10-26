@@ -44,6 +44,7 @@ import {
   XCircle,
   ArrowRight,
   UserMinus,
+  FileText,
 } from 'lucide-react';
 import { IncomeSourceForm } from '@/components/income/income-source-form';
 import { ExpenseForm } from '@/components/expenses/expense-form';
@@ -65,6 +66,7 @@ import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { useGetDebtStatsQuery } from '@/lib/api/debtsApi';
+import { useGetTaxStatsQuery } from '@/lib/api/taxesApi';
 
 export default function DashboardPage() {
   const { data: currentUser } = useGetCurrentUserQuery();
@@ -114,6 +116,7 @@ export default function DashboardPage() {
     useGetIncomeBreakdownChartQuery();
 
   const { data: debtStats } = useGetDebtStatsQuery();
+  const { data: taxStats } = useGetTaxStatsQuery();
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -664,6 +667,37 @@ export default function DashboardPage() {
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 bg-amber-100 dark:bg-amber-900/20 rounded-lg">
+                <FileText className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Taxes</p>
+                <p className="text-base md:text-xl font-bold">
+                  <CurrencyDisplay
+                    amount={taxStats?.total_tax_amount || 0}
+                    currency={taxStats?.currency || cash_flow.currency}
+                    showSymbol={true}
+                    showCode={false}
+                  />
+                </p>
+              </div>
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p className="font-semibold mb-1">How it is calculated:</p>
+                <p className="text-sm">Sum of all active tax obligations (fixed amounts + percentage-based estimates)</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <p className="text-[10px] md:text-xs text-gray-500">{taxStats?.active_taxes || 0} active</p>
+        </Card>
+
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 md:gap-3">
               <div className="p-1.5 md:p-2 bg-teal-100 dark:bg-teal-900/20 rounded-lg">
                 <UserMinus className="h-4 w-4 md:h-5 md:w-5 text-teal-600 dark:text-teal-400" />
               </div>
@@ -798,21 +832,21 @@ export default function DashboardPage() {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-          {/* 1. Income vs Expenses Chart */}
-          <IncomeVsExpensesChart
+          {/* 1. Income vs Expenses Chart - Hidden temporarily */}
+          {/* <IncomeVsExpensesChart
             data={incomeVsExpensesData?.data || []}
             isLoading={isLoadingIncomeVsExpenses}
             chartType="area"
             currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          />
+          /> */}
 
-          {/* 2. Monthly Spending Chart */}
-          <MonthlySpendingChart
+          {/* 2. Monthly Spending Chart - Hidden temporarily */}
+          {/* <MonthlySpendingChart
             data={monthlySpendingData?.data || []}
             isLoading={isLoadingMonthlySpending}
             showAverage={true}
             currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          />
+          /> */}
 
           {/* 3. Subscriptions by Category Chart */}
           <SubscriptionsByCategoryChart

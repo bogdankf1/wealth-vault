@@ -39,7 +39,7 @@ const navigation = [
   { name: 'Goals', href: '/dashboard/goals', icon: Target, tier: 'growth' },
   { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: CreditCard, tier: 'starter' },
   { name: 'Installments', href: '/dashboard/installments', icon: Receipt, tier: 'starter' },
-  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText, tier: 'starter', disabled: true },
+  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText, tier: 'starter' },
   { name: 'Debts', href: '/dashboard/debts', icon: UserMinus, tier: 'starter' },
 ];
 
@@ -103,21 +103,6 @@ export default function DashboardLayout({
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
-              const isDisabled = item.disabled;
-
-              if (isDisabled) {
-                return (
-                  <div
-                    key={item.name}
-                    className="flex items-center px-3 py-2.5 md:py-2 text-sm md:text-sm font-medium rounded-lg opacity-50 cursor-not-allowed"
-                    title="Coming soon"
-                  >
-                    <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                    {item.name}
-                    <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">(Soon)</span>
-                  </div>
-                );
-              }
 
               return (
                 <Link

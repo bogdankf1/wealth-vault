@@ -74,14 +74,14 @@ export const preferencesApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: preferences,
       }),
-      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, { type: 'Subscriptions', id: 'STATS' }, { type: 'Subscriptions', id: 'LIST' }, { type: 'Installments', id: 'STATS' }, { type: 'Installments', id: 'LIST' }, { type: 'Goals', id: 'STATS' }, { type: 'Goals', id: 'LIST' }, { type: 'Saving', id: 'STATS' }, { type: 'Saving', id: 'LIST' }, { type: 'Budget', id: 'OVERVIEW' }, { type: 'Budget', id: 'LIST' }, { type: 'Portfolio', id: 'STATS' }, { type: 'Portfolio', id: 'LIST' }, 'Dashboard'],
+      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, { type: 'Subscriptions', id: 'STATS' }, { type: 'Subscriptions', id: 'LIST' }, { type: 'Installments', id: 'STATS' }, { type: 'Installments', id: 'LIST' }, { type: 'Goals', id: 'STATS' }, { type: 'Goals', id: 'LIST' }, { type: 'Saving', id: 'STATS' }, { type: 'Saving', id: 'LIST' }, { type: 'Budget', id: 'OVERVIEW' }, { type: 'Budget', id: 'LIST' }, { type: 'Portfolio', id: 'STATS' }, { type: 'Portfolio', id: 'LIST' }, { type: 'Tax', id: 'STATS' }, { type: 'Tax', id: 'LIST' }, { type: 'Debt', id: 'STATS' }, { type: 'Debt', id: 'LIST' }, 'Dashboard'],
     }),
     resetMyPreferences: builder.mutation<UserPreferences, void>({
       query: () => ({
         url: '/api/v1/preferences/me/reset',
         method: 'POST',
       }),
-      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, { type: 'Subscriptions', id: 'STATS' }, { type: 'Subscriptions', id: 'LIST' }, { type: 'Installments', id: 'STATS' }, { type: 'Installments', id: 'LIST' }, { type: 'Goals', id: 'STATS' }, { type: 'Goals', id: 'LIST' }, { type: 'Saving', id: 'STATS' }, { type: 'Saving', id: 'LIST' }, { type: 'Budget', id: 'OVERVIEW' }, { type: 'Budget', id: 'LIST' }, { type: 'Portfolio', id: 'STATS' }, { type: 'Portfolio', id: 'LIST' }, 'Dashboard'],
+      invalidatesTags: ['Preferences', { type: 'Expense', id: 'STATS' }, { type: 'Expense', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'LIST' }, { type: 'Subscriptions', id: 'STATS' }, { type: 'Subscriptions', id: 'LIST' }, { type: 'Installments', id: 'STATS' }, { type: 'Installments', id: 'LIST' }, { type: 'Goals', id: 'STATS' }, { type: 'Goals', id: 'LIST' }, { type: 'Saving', id: 'STATS' }, { type: 'Saving', id: 'LIST' }, { type: 'Budget', id: 'OVERVIEW' }, { type: 'Budget', id: 'LIST' }, { type: 'Portfolio', id: 'STATS' }, { type: 'Portfolio', id: 'LIST' }, { type: 'Tax', id: 'STATS' }, { type: 'Tax', id: 'LIST' }, { type: 'Debt', id: 'STATS' }, { type: 'Debt', id: 'LIST' }, 'Dashboard'],
     }),
   }),
 });
