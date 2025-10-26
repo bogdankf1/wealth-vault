@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.portfolio.models import PortfolioAsset
 from app.modules.savings.models import SavingsAccount
 from app.modules.installments.models import Installment
-from app.modules.income.models import IncomeSource
+from app.modules.income.models import IncomeSource, IncomeFrequency
 from app.modules.expenses.models import Expense
 from app.modules.subscriptions.models import Subscription
 from app.modules.goals.models import Goal
@@ -213,12 +213,34 @@ async def get_cash_flow(
         'annually': Decimal('0.083333'),
     }
 
-    # Get all active income sources with their currencies
+    # Get active income sources that overlap with the specified period
+    # An income source overlaps if:
+    # - For one-time: date falls within the period
+    # - For recurring: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
     income_query = select(IncomeSource).where(
         and_(
             IncomeSource.user_id == user_id,
             IncomeSource.is_active == True,
-            IncomeSource.deleted_at.is_(None)
+            IncomeSource.deleted_at.is_(None),
+            or_(
+                # For one-time: date must fall within period
+                and_(
+                    IncomeSource.frequency == IncomeFrequency.ONE_TIME,
+                    IncomeSource.date.isnot(None),
+                    IncomeSource.date >= start_date,
+                    IncomeSource.date <= end_date
+                ),
+                # For recurring: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
+                and_(
+                    IncomeSource.frequency != IncomeFrequency.ONE_TIME,
+                    IncomeSource.start_date.isnot(None),
+                    IncomeSource.start_date <= end_date,
+                    or_(
+                        IncomeSource.end_date.is_(None),
+                        IncomeSource.end_date >= start_date
+                    )
+                )
+            )
         )
     )
     income_result = await db.execute(income_query)
@@ -238,17 +260,39 @@ async def get_cash_flow(
                 if converted:
                     total_income += converted
 
-    # Get all active expenses (no date filtering, consistent with subscriptions/installments/taxes)
+    # Get active expenses that overlap with the specified period
+    # An expense overlaps if:
+    # - For one-time: date falls within the period
+    # - For recurring: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
     expenses_query = select(Expense).where(
         and_(
             Expense.user_id == user_id,
-            Expense.is_active == True
+            Expense.is_active == True,
+            or_(
+                # For one-time: date must fall within period
+                and_(
+                    Expense.frequency == 'one_time',
+                    Expense.date.isnot(None),
+                    Expense.date >= start_date,
+                    Expense.date <= end_date
+                ),
+                # For recurring: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
+                and_(
+                    Expense.frequency != 'one_time',
+                    Expense.start_date.isnot(None),
+                    Expense.start_date <= end_date,
+                    or_(
+                        Expense.end_date.is_(None),
+                        Expense.end_date >= start_date
+                    )
+                )
+            )
         )
     )
     expenses_result = await db.execute(expenses_query)
     expenses = expenses_result.scalars().all()
 
-    # Calculate monthly expenses equivalent (same logic as subscriptions/installments)
+    # Calculate monthly expenses equivalent
     monthly_expenses = Decimal('0')
     for expense in expenses:
         if expense.amount:
@@ -266,23 +310,27 @@ async def get_cash_flow(
 
             # Calculate monthly equivalent based on frequency
             if expense.frequency == 'one_time':
-                # One-time expenses: only include if the expense date falls within the requested period
-                if expense.date:
-                    expense_date = expense.date.replace(tzinfo=None) if expense.date.tzinfo else expense.date
-                    if start_date <= expense_date <= end_date:
-                        monthly_expenses += amount
-                # Skip one-time expenses that are outside the date range or don't have a date
+                # One-time expenses are already filtered by query
+                monthly_expenses += amount
             else:
-                # Recurring expenses: include ALL active (no date filtering)
+                # Recurring expenses: convert to monthly equivalent
                 multiplier = frequency_to_monthly.get(expense.frequency, Decimal('1'))
                 monthly_equiv = amount * multiplier
                 monthly_expenses += monthly_equiv
 
-    # Get all active subscriptions
+    # Get active subscriptions that overlap with the specified period
+    # A subscription overlaps if:
+    # - start_date <= period_end AND
+    # - (end_date is NULL OR end_date >= period_start)
     subscriptions_query = select(Subscription).where(
         and_(
             Subscription.user_id == user_id,
-            Subscription.is_active == True
+            Subscription.is_active == True,
+            Subscription.start_date <= end_date,
+            or_(
+                Subscription.end_date.is_(None),
+                Subscription.end_date >= start_date
+            )
         )
     )
     subscriptions_result = await db.execute(subscriptions_query)
@@ -313,11 +361,19 @@ async def get_cash_flow(
                 if converted:
                     monthly_subscriptions += converted
 
-    # Get all active installments
+    # Get active installments that overlap with the specified period
+    # An installment overlaps if:
+    # - start_date <= period_end AND
+    # - (end_date is NULL OR end_date >= period_start)
     installments_query = select(Installment).where(
         and_(
             Installment.user_id == user_id,
-            Installment.is_active == True
+            Installment.is_active == True,
+            Installment.start_date <= end_date,
+            or_(
+                Installment.end_date.is_(None),
+                Installment.end_date >= start_date
+            )
         )
     )
     installments_result = await db.execute(installments_query)
@@ -367,27 +423,29 @@ async def get_cash_flow(
     }
 
     # Convert taxes to monthly equivalent in display currency
+    # Only calculate taxes if there's income in the period
     monthly_taxes = Decimal('0')
-    for tax in taxes:
-        if tax.tax_type == "fixed" and tax.fixed_amount:
-            # Fixed amount taxes: convert to display currency and monthly equivalent
-            if tax.currency == display_currency:
-                amount_in_display = tax.fixed_amount
-            else:
-                converted = await currency_service.convert_amount(
-                    tax.fixed_amount, tax.currency, display_currency
-                )
-                amount_in_display = converted if converted else tax.fixed_amount
+    if total_income > 0:
+        for tax in taxes:
+            if tax.tax_type == "fixed" and tax.fixed_amount:
+                # Fixed amount taxes: convert to display currency and monthly equivalent
+                if tax.currency == display_currency:
+                    amount_in_display = tax.fixed_amount
+                else:
+                    converted = await currency_service.convert_amount(
+                        tax.fixed_amount, tax.currency, display_currency
+                    )
+                    amount_in_display = converted if converted else tax.fixed_amount
 
-            # Calculate monthly equivalent based on frequency
-            multiplier = tax_frequency_to_monthly.get(tax.frequency, Decimal('1'))
-            monthly_amount = amount_in_display * multiplier
-            monthly_taxes += monthly_amount
+                # Calculate monthly equivalent based on frequency
+                multiplier = tax_frequency_to_monthly.get(tax.frequency, Decimal('1'))
+                monthly_amount = amount_in_display * multiplier
+                monthly_taxes += monthly_amount
 
-        elif tax.tax_type == "percentage" and tax.percentage:
-            # Percentage-based taxes: calculate as percentage of total income
-            tax_amount = (total_income * tax.percentage) / Decimal("100")
-            monthly_taxes += tax_amount
+            elif tax.tax_type == "percentage" and tax.percentage:
+                # Percentage-based taxes: calculate as percentage of period income
+                tax_amount = (total_income * tax.percentage) / Decimal("100")
+                monthly_taxes += tax_amount
 
     # Calculate net cash flow
     net_cash_flow = total_income - monthly_expenses - monthly_subscriptions - monthly_installments - monthly_taxes
@@ -896,13 +954,19 @@ async def get_income_vs_expenses_chart(
 
 async def get_subscriptions_by_category_chart(
     db: AsyncSession,
-    user_id: UUID
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
 ) -> ExpenseByCategoryChartResponse:
     """
-    Get subscription breakdown by category (monthly equivalents).
-    Shows all active subscriptions grouped by category.
+    Get subscription breakdown by category (monthly equivalents) for the specified period.
+    Shows active subscriptions that overlap with the period, grouped by category.
     All amounts are converted to user's display currency.
     """
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
     # Get user's display currency
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
@@ -915,11 +979,19 @@ async def get_subscriptions_by_category_chart(
         'biannually': Decimal('0.166667'), # Divide by 6
     }
 
-    # Query all active subscriptions
+    # Query active subscriptions that overlap with the specified period
+    # A subscription overlaps if:
+    # - start_date <= period_end AND
+    # - (end_date is NULL OR end_date >= period_start)
     query = select(Subscription).where(
         and_(
             Subscription.user_id == user_id,
-            Subscription.is_active == True
+            Subscription.is_active == True,
+            Subscription.start_date <= end_date,
+            or_(
+                Subscription.end_date.is_(None),
+                Subscription.end_date >= start_date
+            )
         )
     )
 
@@ -974,13 +1046,19 @@ async def get_subscriptions_by_category_chart(
 
 async def get_installments_by_category_chart(
     db: AsyncSession,
-    user_id: UUID
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
 ) -> ExpenseByCategoryChartResponse:
     """
-    Get installment breakdown by category (monthly equivalents).
-    Shows all active installments grouped by category.
+    Get installment breakdown by category (monthly equivalents) for the specified period.
+    Shows active installments that overlap with the period, grouped by category.
     All amounts are converted to user's display currency.
     """
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
     # Get user's display currency
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
@@ -992,11 +1070,19 @@ async def get_installments_by_category_chart(
         'weekly': Decimal('4.33333'),      # ~52 weeks per year / 12
     }
 
-    # Query all active installments
+    # Query active installments that overlap with the specified period
+    # An installment overlaps if:
+    # - start_date <= period_end AND
+    # - (end_date is NULL OR end_date >= period_start)
     query = select(Installment).where(
         and_(
             Installment.user_id == user_id,
-            Installment.is_active == True
+            Installment.is_active == True,
+            Installment.start_date <= end_date,
+            or_(
+                Installment.end_date.is_(None),
+                Installment.end_date >= start_date
+            )
         )
     )
 
@@ -1273,15 +1359,17 @@ async def get_net_worth_trend_chart(
 
 async def get_income_breakdown_chart(
     db: AsyncSession,
-    user_id: UUID
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
 ) -> IncomeBreakdownChartResponse:
     """
-    Get income breakdown showing how monthly income is allocated.
-    Shows: Expenses, Subscriptions, Installments, and Net Savings.
+    Get income breakdown showing how monthly income is allocated for the specified period.
+    Shows: Expenses, Subscriptions, Installments, Taxes, and Net Savings.
     All amounts are converted to user's display currency.
     """
-    # Get cash flow data which already has all the calculations
-    cash_flow = await get_cash_flow(db, user_id)
+    # Get cash flow data for the specified period
+    cash_flow = await get_cash_flow(db, user_id, start_date=start_date, end_date=end_date)
     
     # Calculate percentages
     total_income = cash_flow.monthly_income

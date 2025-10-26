@@ -222,30 +222,36 @@ async def get_income_vs_expenses_chart(
 
 @router.get("/analytics/subscriptions-by-category", response_model=ExpenseByCategoryChartResponse)
 async def get_subscriptions_by_category_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get subscription breakdown by category (monthly equivalents).
+    Get subscription breakdown by category (monthly equivalents) for the specified period.
 
-    Returns all active subscriptions grouped by category with percentages.
+    Returns active subscriptions grouped by category with percentages.
     Amounts are shown as monthly equivalents regardless of billing frequency.
+    Only includes subscriptions that are active during the specified period.
     """
-    return await service.get_subscriptions_by_category_chart(db, current_user.id)
+    return await service.get_subscriptions_by_category_chart(db, current_user.id, start_date, end_date)
 
 
 @router.get("/analytics/installments-by-category", response_model=ExpenseByCategoryChartResponse)
 async def get_installments_by_category_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get installment breakdown by category (monthly equivalents).
+    Get installment breakdown by category (monthly equivalents) for the specified period.
 
-    Returns all active installments grouped by category with percentages.
+    Returns active installments grouped by category with percentages.
     Amounts are shown as monthly equivalents regardless of payment frequency.
+    Only includes installments that are active during the specified period.
     """
-    return await service.get_installments_by_category_chart(db, current_user.id)
+    return await service.get_installments_by_category_chart(db, current_user.id, start_date, end_date)
 
 
 @router.get("/analytics/monthly-spending", response_model=MonthlySpendingChartResponse)
@@ -288,17 +294,19 @@ async def get_net_worth_trend_chart(
 
 @router.get("/analytics/income-breakdown", response_model=IncomeBreakdownChartResponse)
 async def get_income_breakdown_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get income breakdown showing allocation across expenses, subscriptions, installments, and net savings.
+    Get income breakdown showing allocation across expenses, subscriptions, installments, taxes, and net savings.
 
-    Uses current month's cash flow data to show how monthly income is allocated.
+    Uses the specified period's cash flow data to show how monthly income is allocated.
 
     Returns:
-    - Breakdown by category (Expenses, Subscriptions, Installments, Net Savings)
+    - Breakdown by category (Expenses, Subscriptions, Installments, Taxes, Net Savings)
     - Percentages of total income
     - Total monthly income
     """
-    return await service.get_income_breakdown_chart(db, current_user.id)
+    return await service.get_income_breakdown_chart(db, current_user.id, start_date, end_date)
