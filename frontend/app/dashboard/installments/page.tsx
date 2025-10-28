@@ -55,11 +55,25 @@ export default function InstallmentsPage() {
     refetch: refetchInstallments,
   } = useListInstallmentsQuery({});
 
+  // Calculate date range from selectedMonth
+  const statsParams = React.useMemo(() => {
+    if (!selectedMonth) return undefined;
+
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    return {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+    };
+  }, [selectedMonth]);
+
   const {
     data: stats,
     isLoading: isLoadingStats,
     error: statsError,
-  } = useGetInstallmentStatsQuery();
+  } = useGetInstallmentStatsQuery(statsParams);
 
   const [deleteInstallment, { isLoading: isDeleting }] = useDeleteInstallmentMutation();
 
@@ -129,7 +143,9 @@ export default function InstallmentsPage() {
         {
           title: 'Total Installments',
           value: stats.total_installments,
-          description: `${stats.active_installments} active`,
+          description: selectedMonth
+            ? `${stats.active_installments} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : `${stats.active_installments} active`,
           icon: CreditCard,
         },
         {
@@ -148,7 +164,7 @@ export default function InstallmentsPage() {
           icon: TrendingDown,
         },
         {
-          title: 'Monthly Payment',
+          title: selectedMonth ? 'Period Payment' : 'Monthly Payment',
           value: (
             <CurrencyDisplay
               amount={stats.monthly_payment}

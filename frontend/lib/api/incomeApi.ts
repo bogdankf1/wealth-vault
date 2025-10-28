@@ -221,8 +221,11 @@ export const incomeApi = apiSlice.injectEndpoints({
     }),
 
     // Statistics
-    getIncomeStats: builder.query<IncomeStats, void>({
-      query: () => '/api/v1/income/stats',
+    getIncomeStats: builder.query<IncomeStats, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/income/stats',
+        params: params || undefined,
+      }),
       providesTags: [{ type: 'Income', id: 'STATS' }],
     }),
   }),

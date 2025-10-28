@@ -30,7 +30,22 @@ export default function BudgetsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { data: budgets, isLoading: budgetsLoading } = useListBudgetsQuery();
-  const { data: overview, isLoading: overviewLoading } = useGetBudgetOverviewQuery();
+
+  // Calculate date range from selectedMonth for overview stats
+  const overviewParams = useMemo(() => {
+    if (!selectedMonth) return undefined;
+
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    return {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+    };
+  }, [selectedMonth]);
+
+  const { data: overview, isLoading: overviewLoading } = useGetBudgetOverviewQuery(overviewParams);
   const [deleteBudget, { isLoading: isDeleting }] = useDeleteBudgetMutation();
 
   const isLoading = budgetsLoading || overviewLoading;
@@ -120,7 +135,7 @@ export default function BudgetsPage() {
   const statsCards: StatCard[] = overview?.stats
     ? [
         {
-          title: 'Total Budgeted',
+          title: selectedMonth ? 'Period Budgeted' : 'Total Budgeted',
           value: (
             <CurrencyDisplay
               amount={overview.stats.total_budgeted}
@@ -129,11 +144,13 @@ export default function BudgetsPage() {
               showCode={false}
             />
           ),
-          description: `${overview.stats.active_budgets} active ${overview.stats.active_budgets === 1 ? 'budget' : 'budgets'}`,
+          description: selectedMonth
+            ? `${overview.stats.active_budgets} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : `${overview.stats.active_budgets} active ${overview.stats.active_budgets === 1 ? 'budget' : 'budgets'}`,
           icon: Wallet,
         },
         {
-          title: 'Total Spent',
+          title: selectedMonth ? 'Period Spent' : 'Total Spent',
           value: (
             <CurrencyDisplay
               amount={overview.stats.total_spent}

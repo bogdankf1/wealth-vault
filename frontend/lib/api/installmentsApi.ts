@@ -162,8 +162,11 @@ export const installmentsApi = apiSlice.injectEndpoints({
     }),
 
     // Get installment statistics
-    getInstallmentStats: builder.query<InstallmentStats, void>({
-      query: () => '/api/v1/installments/stats',
+    getInstallmentStats: builder.query<InstallmentStats, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/installments/stats',
+        params: params || undefined,
+      }),
       providesTags: [{ type: 'Installments', id: 'STATS' }],
     }),
   }),

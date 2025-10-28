@@ -53,11 +53,25 @@ export default function IncomePage() {
     refetch: refetchSources,
   } = useListIncomeSourcesQuery({});
 
+  // Calculate date range from selectedMonth
+  const statsParams = React.useMemo(() => {
+    if (!selectedMonth) return undefined;
+
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    return {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+    };
+  }, [selectedMonth]);
+
   const {
     data: stats,
     isLoading: isLoadingStats,
     error: statsError,
-  } = useGetIncomeStatsQuery();
+  } = useGetIncomeStatsQuery(statsParams);
 
   const [deleteSource, { isLoading: isDeleting }] = useDeleteIncomeSourceMutation();
 
@@ -136,11 +150,13 @@ export default function IncomePage() {
         {
           title: 'Total Sources',
           value: stats.total_sources,
-          description: `${stats.active_sources} active`,
+          description: selectedMonth
+            ? `${stats.active_sources} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : `${stats.active_sources} active`,
           icon: TrendingUp,
         },
         {
-          title: 'Monthly Income',
+          title: selectedMonth ? 'Period Income' : 'Monthly Income',
           value: (
             <CurrencyDisplay
               amount={stats.total_monthly_income}
@@ -162,7 +178,7 @@ export default function IncomePage() {
               showCode={false}
             />
           ),
-          description: 'Projected yearly income',
+          description: selectedMonth ? 'Based on period income' : 'Projected yearly income',
           icon: Calendar,
         },
       ]

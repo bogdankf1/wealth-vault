@@ -142,8 +142,11 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
     }),
 
     // Get subscription statistics
-    getSubscriptionStats: builder.query<SubscriptionStats, void>({
-      query: () => '/api/v1/subscriptions/stats',
+    getSubscriptionStats: builder.query<SubscriptionStats, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/subscriptions/stats',
+        params: params || undefined,
+      }),
       providesTags: [{ type: 'Subscriptions', id: 'STATS' }],
     }),
   }),

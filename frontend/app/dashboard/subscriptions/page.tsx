@@ -54,11 +54,25 @@ export default function SubscriptionsPage() {
     refetch: refetchSubscriptions,
   } = useListSubscriptionsQuery({});
 
+  // Calculate date range from selectedMonth
+  const statsParams = React.useMemo(() => {
+    if (!selectedMonth) return undefined;
+
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    return {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+    };
+  }, [selectedMonth]);
+
   const {
     data: stats,
     isLoading: isLoadingStats,
     error: statsError,
-  } = useGetSubscriptionStatsQuery();
+  } = useGetSubscriptionStatsQuery(statsParams);
 
   const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
 
@@ -129,11 +143,13 @@ export default function SubscriptionsPage() {
         {
           title: 'Total Subscriptions',
           value: stats.total_subscriptions,
-          description: `${stats.active_subscriptions} active`,
+          description: selectedMonth
+            ? `${stats.active_subscriptions} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : `${stats.active_subscriptions} active`,
           icon: RefreshCw,
         },
         {
-          title: 'Monthly Cost',
+          title: selectedMonth ? 'Period Cost' : 'Monthly Cost',
           value: (
             <CurrencyDisplay
               amount={stats.monthly_cost}
@@ -155,7 +171,7 @@ export default function SubscriptionsPage() {
               showCode={false}
             />
           ),
-          description: 'Projected yearly cost',
+          description: selectedMonth ? 'Based on period cost' : 'Projected yearly cost',
           icon: Calendar,
         },
       ]
