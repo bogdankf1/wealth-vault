@@ -173,7 +173,7 @@ export default function ImportStatementPage() {
           description: `Imported from ${uploadedFilename}`,
           category: transaction.category,
           amount: Math.abs(transaction.amount),
-          currency: transaction.currency || 'USD',
+          currency: transaction.currency || 'UAH',
           frequency: 'one_time',
           date: new Date(transaction.date).toISOString(),
           is_active: true,
@@ -192,8 +192,8 @@ export default function ImportStatementPage() {
     setImporting(false);
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
+  const formatCurrency = (amount: number, currency: string = 'UAH') => {
+    return new Intl.NumberFormat('uk-UA', {
       style: 'currency',
       currency: currency,
     }).format(Math.abs(amount));
