@@ -196,6 +196,7 @@ export default function ImportStatementPage() {
     return new Intl.NumberFormat('uk-UA', {
       style: 'currency',
       currency: currency,
+      currencyDisplay: 'symbol',
     }).format(Math.abs(amount));
   };
 
