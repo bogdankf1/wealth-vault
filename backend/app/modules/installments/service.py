@@ -2,7 +2,7 @@
 Installments module service layer.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, or_
 from typing import Optional, Tuple
 from uuid import UUID
 from decimal import Decimal
@@ -282,15 +282,35 @@ async def delete_installment(
 
 async def get_installment_stats(
     db: AsyncSession,
-    user_id: UUID
+    user_id: UUID,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None
 ) -> InstallmentStats:
-    """Get installment statistics"""
+    """Get installment statistics, optionally filtered by date range"""
     # Get display currency
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all installments for the user
-    query = select(Installment).where(Installment.user_id == user_id)
+    # Get installments with optional date filtering
+    if start_date and end_date:
+        # Remove timezone info for comparison
+        filter_start = start_date.replace(tzinfo=None)
+        filter_end = end_date.replace(tzinfo=None)
+
+        # Installments overlap if: first_payment_date <= period_end AND (end_date is NULL OR end_date >= period_start)
+        query = select(Installment).where(
+            and_(
+                Installment.user_id == user_id,
+                Installment.first_payment_date <= filter_end,
+                or_(
+                    Installment.end_date.is_(None),
+                    Installment.end_date >= filter_start
+                )
+            )
+        )
+    else:
+        query = select(Installment).where(Installment.user_id == user_id)
+
     result = await db.execute(query)
     installments = result.scalars().all()
 

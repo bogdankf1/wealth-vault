@@ -1,6 +1,7 @@
 """
 Subscriptions module API routes
 """
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -119,11 +120,13 @@ async def list_subscriptions(
 @router.get("/stats", response_model=SubscriptionStats)
 @require_feature("subscription_tracking")
 async def get_subscription_stats(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get subscription statistics"""
-    stats = await service.get_subscription_stats(db, current_user.id)
+    """Get subscription statistics, optionally filtered by date range."""
+    stats = await service.get_subscription_stats(db, current_user.id, start_date, end_date)
     # Update currency to user's display currency
     display_currency = await get_user_display_currency(db, current_user.id)
     stats.currency = display_currency

@@ -2,7 +2,7 @@
 Subscriptions module service layer
 """
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, or_
 from typing import Optional, Tuple, List
 from uuid import UUID
 from decimal import Decimal
@@ -192,15 +192,35 @@ async def delete_subscription(
 
 async def get_subscription_stats(
     db: AsyncSession,
-    user_id: UUID
+    user_id: UUID,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None
 ) -> SubscriptionStats:
-    """Get subscription statistics"""
+    """Get subscription statistics, optionally filtered by date range"""
     # Get display currency
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all subscriptions
-    query = select(Subscription).where(Subscription.user_id == user_id)
+    # Get subscriptions with optional date filtering
+    if start_date and end_date:
+        # Remove timezone info for comparison
+        filter_start = start_date.replace(tzinfo=None)
+        filter_end = end_date.replace(tzinfo=None)
+
+        # Subscriptions overlap if: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
+        query = select(Subscription).where(
+            and_(
+                Subscription.user_id == user_id,
+                Subscription.start_date <= filter_end,
+                or_(
+                    Subscription.end_date.is_(None),
+                    Subscription.end_date >= filter_start
+                )
+            )
+        )
+    else:
+        query = select(Subscription).where(Subscription.user_id == user_id)
+
     result = await db.execute(query)
     subscriptions = result.scalars().all()
 

@@ -272,8 +272,29 @@ async def get_budget_overview(
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all active budgets
-    budgets = await get_budgets(db, user_id, is_active=True)
+    # Get active budgets, optionally filtered by date range
+    if start_date and end_date:
+        # Remove timezone info for comparison
+        filter_start = start_date.replace(tzinfo=None)
+        filter_end = end_date.replace(tzinfo=None)
+
+        # Budgets overlap if: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
+        query = select(Budget).where(
+            and_(
+                Budget.user_id == user_id,
+                Budget.is_active == True,
+                Budget.deleted_at.is_(None),
+                Budget.start_date <= filter_end,
+                or_(
+                    Budget.end_date.is_(None),
+                    Budget.end_date >= filter_start
+                )
+            )
+        )
+        result = await db.execute(query)
+        budgets = list(result.scalars().all())
+    else:
+        budgets = await get_budgets(db, user_id, is_active=True)
 
     if not budgets:
         return BudgetOverviewResponse(
@@ -301,8 +322,8 @@ async def get_budget_overview(
     alerts: list[str] = []
 
     for budget in budgets:
-        expenses = await _get_expenses_for_budget(db, budget, user_id)
-        spent = await _calculate_spent_amount_in_budget_currency(db, budget, expenses)
+        expenses = await _get_expenses_for_budget(db, budget, user_id, start_date, end_date)
+        spent = await _calculate_spent_amount_in_budget_currency(db, budget, expenses, start_date, end_date)
         remaining = budget.calculate_remaining(spent)
         percentage_used = budget.calculate_percentage_used(spent)
         is_overspent = budget.is_overspent(spent)
@@ -394,7 +415,9 @@ async def get_budget_overview(
 async def _get_expenses_for_budget(
     db: AsyncSession,
     budget: Budget,
-    user_id: UUID
+    user_id: UUID,
+    filter_start_date: Optional[datetime] = None,
+    filter_end_date: Optional[datetime] = None
 ) -> list[Expense]:
     """Get expenses that fall within a budget's category and time period."""
     conditions = [
@@ -408,34 +431,52 @@ async def _get_expenses_for_budget(
     # For recurring expenses, use 'start_date'
     date_conditions = []
 
-    if budget.end_date:
-        # Budget has end date
+    # Determine the effective date range (intersection of budget period and optional filter period)
+    effective_start = budget.start_date
+    effective_end = budget.end_date
+
+    if filter_start_date and filter_end_date:
+        # Remove timezone info for comparison
+        filter_start = filter_start_date.replace(tzinfo=None)
+        filter_end = filter_end_date.replace(tzinfo=None)
+
+        # Use the later start date
+        effective_start = max(effective_start, filter_start) if effective_start else filter_start
+
+        # Use the earlier end date
+        if effective_end:
+            effective_end = min(effective_end, filter_end)
+        else:
+            effective_end = filter_end
+
+    if effective_end:
+        # Has end date
         date_conditions.append(
             and_(
                 Expense.date.isnot(None),
-                Expense.date >= budget.start_date,
-                Expense.date <= budget.end_date
+                Expense.date >= effective_start,
+                Expense.date <= effective_end
             )
         )
         date_conditions.append(
             and_(
                 Expense.start_date.isnot(None),
-                Expense.start_date >= budget.start_date,
-                Expense.start_date <= budget.end_date
+                Expense.start_date >= effective_start,
+                Expense.start_date <= effective_end
             )
         )
     else:
-        # Budget is recurring (no end date)
+        # No end date
         date_conditions.append(
             and_(
                 Expense.date.isnot(None),
-                Expense.date >= budget.start_date
+                Expense.date >= effective_start
             )
         )
         date_conditions.append(
             and_(
                 Expense.start_date.isnot(None),
-                Expense.start_date >= budget.start_date
+                Expense.start_date >= effective_start
             )
         )
 
@@ -449,7 +490,9 @@ async def _get_expenses_for_budget(
 async def _calculate_spent_amount_in_budget_currency(
     db: AsyncSession,
     budget: Budget,
-    expenses: list[Expense]
+    expenses: list[Expense],
+    filter_start_date: Optional[datetime] = None,
+    filter_end_date: Optional[datetime] = None
 ) -> Decimal:
     """
     Calculate total amount spent, converting each expense to the budget's currency.
@@ -458,6 +501,8 @@ async def _calculate_spent_amount_in_budget_currency(
         db: Database session
         budget: Budget instance
         expenses: List of expenses to sum
+        filter_start_date: Optional start date for additional filtering
+        filter_end_date: Optional end date for additional filtering
 
     Returns:
         Total spent amount in budget's currency
@@ -465,12 +510,25 @@ async def _calculate_spent_amount_in_budget_currency(
     currency_service = CurrencyService(db)
     total = Decimal("0")
 
+    # Determine the effective date range
+    effective_start = budget.start_date
+    effective_end = budget.end_date
+
+    if filter_start_date and filter_end_date:
+        filter_start = filter_start_date.replace(tzinfo=None)
+        filter_end = filter_end_date.replace(tzinfo=None)
+        effective_start = max(effective_start, filter_start) if effective_start else filter_start
+        if effective_end:
+            effective_end = min(effective_end, filter_end)
+        else:
+            effective_end = filter_end
+
     for expense in expenses:
         # Expenses are already filtered by category in _get_expenses_for_budget
-        # Just check date is within budget period
+        # Just check date is within effective period
         expense_date = expense.date or expense.start_date
-        if expense_date and expense_date >= budget.start_date:
-            if budget.end_date is None or expense_date <= budget.end_date:
+        if expense_date and expense_date >= effective_start:
+            if effective_end is None or expense_date <= effective_end:
                 # Convert expense amount to budget currency if needed
                 expense_amount = expense.amount
 

@@ -6,14 +6,14 @@ from decimal import Decimal
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select, func, and_, extract, case
+from sqlalchemy import select, func, and_, or_, extract, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.permissions import get_current_user, require_feature, check_usage_limit
 from app.core.exceptions import TierLimitException, NotFoundException
 from app.models.user import User
-from app.modules.income.models import IncomeSource, IncomeTransaction
+from app.modules.income.models import IncomeSource, IncomeTransaction, IncomeFrequency
 from app.modules.income.schemas import (
     IncomeSourceCreate,
     IncomeSourceUpdate,
@@ -391,11 +391,17 @@ async def create_income_transaction(
 @router.get("/stats", response_model=IncomeStatsResponse)
 @require_feature("income_tracking")
 async def get_income_stats(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Get income statistics for the user.
+    Get income statistics for the user, optionally filtered by date range.
+
+    Query Parameters:
+    - start_date: Start date for filtering (ISO format, optional)
+    - end_date: End date for filtering (ISO format, optional)
 
     Requires: income_tracking feature
     """
@@ -414,11 +420,44 @@ async def get_income_stats(
     sources_stats = sources_result.one()
 
     # Get active sources for monthly/annual calculation
-    active_sources_query = select(IncomeSource).where(
-        IncomeSource.user_id == current_user.id,
-        IncomeSource.is_active == True,
-        IncomeSource.deleted_at.is_(None)
-    )
+    # Apply date filtering if date range is provided
+    if start_date and end_date:
+        # Remove timezone info for comparison
+        filter_start = start_date.replace(tzinfo=None)
+        filter_end = end_date.replace(tzinfo=None)
+
+        active_sources_query = select(IncomeSource).where(
+            and_(
+                IncomeSource.user_id == current_user.id,
+                IncomeSource.is_active == True,
+                IncomeSource.deleted_at.is_(None),
+                or_(
+                    # For one-time: date must fall within period
+                    and_(
+                        IncomeSource.frequency == IncomeFrequency.ONE_TIME,
+                        IncomeSource.date.isnot(None),
+                        IncomeSource.date >= filter_start,
+                        IncomeSource.date <= filter_end
+                    ),
+                    # For recurring: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
+                    and_(
+                        IncomeSource.frequency != IncomeFrequency.ONE_TIME,
+                        IncomeSource.start_date.isnot(None),
+                        IncomeSource.start_date <= filter_end,
+                        or_(
+                            IncomeSource.end_date.is_(None),
+                            IncomeSource.end_date >= filter_start
+                        )
+                    )
+                )
+            )
+        )
+    else:
+        active_sources_query = select(IncomeSource).where(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.is_active == True,
+            IncomeSource.deleted_at.is_(None)
+        )
 
     active_sources_result = await db.execute(active_sources_query)
     active_sources = active_sources_result.scalars().all()

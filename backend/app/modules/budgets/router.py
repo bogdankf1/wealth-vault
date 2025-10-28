@@ -103,12 +103,12 @@ async def list_budgets(
 
 @router.get("/overview", response_model=BudgetOverviewResponse)
 async def get_budget_overview(
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get budget overview with stats and category breakdown."""
+    """Get budget overview with stats and category breakdown, optionally filtered by date range."""
     return await service.get_budget_overview(
         db,
         current_user.id,
