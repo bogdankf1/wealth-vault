@@ -6,6 +6,18 @@ from sqlalchemy import select
 from app.core.database import AsyncSessionLocal
 from app.models.tier import Tier, Feature, TierFeature
 
+# Import all module models to avoid circular import issues
+from app.modules.income.models import IncomeSource  # noqa
+from app.modules.expenses.models import Expense  # noqa
+from app.modules.subscriptions.models import Subscription  # noqa
+from app.modules.installments.models import Installment  # noqa
+from app.modules.savings.models import SavingsAccount  # noqa
+from app.modules.portfolio.models import PortfolioAsset  # noqa
+from app.modules.goals.models import Goal  # noqa
+from app.modules.budgets.models import Budget  # noqa
+from app.modules.debts.models import Debt  # noqa
+from app.modules.taxes.models import Tax  # noqa
+
 
 async def seed_tiers():
     """Seed initial subscription tiers."""
@@ -86,6 +98,13 @@ async def seed_features():
                 "name": "Bank Statement Upload",
                 "description": "Upload and parse bank statements",
                 "module": "expenses"
+            },
+            # AI module
+            {
+                "key": "ai_insights",
+                "name": "AI Financial Insights",
+                "description": "AI-powered financial insights and recommendations",
+                "module": "ai"
             },
             # Savings module
             {
@@ -211,6 +230,7 @@ async def seed_tier_features():
             ("income_tracking", None),  # Unlimited
             ("expense_tracking", None),  # Unlimited
             ("ai_categorization", None),  # Unlimited
+            ("ai_insights", None),  # Wealth-only feature
             ("bank_statement_upload", None),
             ("savings_tracking", None),  # Unlimited
             ("multi_currency", None),  # Enabled
