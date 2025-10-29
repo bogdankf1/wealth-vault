@@ -153,6 +153,20 @@ async def seed_features():
                 "description": "Track loans and payment plans",
                 "module": "installments"
             },
+            # Debts module
+            {
+                "key": "debt_tracking",
+                "name": "Debt Tracking",
+                "description": "Track and manage debts",
+                "module": "debts"
+            },
+            # Taxes module
+            {
+                "key": "tax_tracking",
+                "name": "Tax Tracking",
+                "description": "Track tax obligations and payments",
+                "module": "taxes"
+            },
         ]
 
         features = [Feature(**data) for data in features_data]
@@ -239,6 +253,8 @@ async def seed_tier_features():
             ("financial_goals", None),  # Unlimited
             ("subscription_tracking", None),  # Unlimited
             ("installment_tracking", None),  # Unlimited
+            ("debt_tracking", None),  # Wealth-only feature
+            ("tax_tracking", None),  # Wealth-only feature
         ]
 
         for feature_key, limit in wealth_features:

@@ -7,7 +7,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.database import get_db
-from app.core.permissions import get_current_user
+from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.debts import service
 from app.modules.debts.schemas import (
@@ -22,6 +22,7 @@ router = APIRouter(prefix="/debts", tags=["debts"])
 
 
 @router.post("", response_model=DebtResponse, status_code=201)
+@require_feature("debt_tracking")
 async def create_debt(
     debt_data: DebtCreate,
     current_user: User = Depends(get_current_user),
@@ -37,6 +38,7 @@ async def create_debt(
 
 
 @router.get("", response_model=DebtListResponse)
+@require_feature("debt_tracking")
 async def list_debts(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
@@ -67,6 +69,7 @@ async def list_debts(
 
 
 @router.get("/stats", response_model=DebtStats)
+@require_feature("debt_tracking")
 async def get_debt_stats(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -76,6 +79,7 @@ async def get_debt_stats(
 
 
 @router.get("/{debt_id}", response_model=DebtResponse)
+@require_feature("debt_tracking")
 async def get_debt(
     debt_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -93,6 +97,7 @@ async def get_debt(
 
 
 @router.put("/{debt_id}", response_model=DebtResponse)
+@require_feature("debt_tracking")
 async def update_debt(
     debt_id: UUID,
     debt_data: DebtUpdate,
@@ -111,6 +116,7 @@ async def update_debt(
 
 
 @router.delete("/{debt_id}", status_code=204)
+@require_feature("debt_tracking")
 async def delete_debt(
     debt_id: UUID,
     current_user: User = Depends(get_current_user),

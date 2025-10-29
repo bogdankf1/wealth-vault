@@ -7,7 +7,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.database import get_db
-from app.core.permissions import get_current_user
+from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.taxes import service
 from app.modules.taxes.schemas import (
@@ -22,6 +22,7 @@ router = APIRouter(prefix="/taxes", tags=["taxes"])
 
 
 @router.post("", response_model=TaxResponse, status_code=201)
+@require_feature("tax_tracking")
 async def create_tax(
     tax_data: TaxCreate,
     current_user: User = Depends(get_current_user),
@@ -37,6 +38,7 @@ async def create_tax(
 
 
 @router.get("", response_model=TaxListResponse)
+@require_feature("tax_tracking")
 async def list_taxes(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
@@ -67,6 +69,7 @@ async def list_taxes(
 
 
 @router.get("/stats", response_model=TaxStats)
+@require_feature("tax_tracking")
 async def get_tax_stats(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -76,6 +79,7 @@ async def get_tax_stats(
 
 
 @router.get("/{tax_id}", response_model=TaxResponse)
+@require_feature("tax_tracking")
 async def get_tax(
     tax_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -93,6 +97,7 @@ async def get_tax(
 
 
 @router.put("/{tax_id}", response_model=TaxResponse)
+@require_feature("tax_tracking")
 async def update_tax(
     tax_id: UUID,
     tax_data: TaxUpdate,
@@ -111,6 +116,7 @@ async def update_tax(
 
 
 @router.delete("/{tax_id}", status_code=204)
+@require_feature("tax_tracking")
 async def delete_tax(
     tax_id: UUID,
     current_user: User = Depends(get_current_user),
