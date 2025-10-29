@@ -39,14 +39,33 @@ const navigation = [
   { name: 'Goals', href: '/dashboard/goals', icon: Target, tier: 'growth' },
   { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: CreditCard, tier: 'starter' },
   { name: 'Installments', href: '/dashboard/installments', icon: Receipt, tier: 'starter' },
-  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText, tier: 'starter' },
-  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus, tier: 'starter' },
+  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus, tier: 'wealth' },
+  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText, tier: 'wealth' },
 ];
 
 const bottomNavigation = [
   { name: 'Pricing', href: '/dashboard/pricing', icon: Sparkles, tier: 'starter' },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings, tier: 'starter' },
 ];
+
+// Tier hierarchy: starter < growth < wealth
+const tierHierarchy: Record<string, number> = {
+  starter: 1,
+  growth: 2,
+  wealth: 3,
+};
+
+/**
+ * Check if user's tier has access to required tier
+ * @param userTier - The user's current tier
+ * @param requiredTier - The tier required for access
+ * @returns true if user has access, false otherwise
+ */
+function hasAccess(userTier: string | undefined, requiredTier: string): boolean {
+  const userLevel = tierHierarchy[userTier || 'starter'] || 1;
+  const requiredLevel = tierHierarchy[requiredTier] || 1;
+  return userLevel >= requiredLevel;
+}
 
 export default function DashboardLayout({
   children,
@@ -57,6 +76,17 @@ export default function DashboardLayout({
   const { data: session } = useSession();
   const { data: currentUser } = useGetCurrentUserQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const userTier = currentUser?.tier?.name || 'starter';
+
+  // Filter navigation items based on user's tier
+  const accessibleNavigation = navigation.filter((item) =>
+    hasAccess(userTier, item.tier)
+  );
+
+  const accessibleBottomNavigation = bottomNavigation.filter((item) =>
+    hasAccess(userTier, item.tier)
+  );
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' });
@@ -100,7 +130,7 @@ export default function DashboardLayout({
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-2 md:px-3 py-3 md:py-4 overflow-y-auto">
-            {navigation.map((item) => {
+            {accessibleNavigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
 
@@ -128,7 +158,7 @@ export default function DashboardLayout({
             </div>
 
             {/* Bottom Navigation */}
-            {bottomNavigation.map((item) => {
+            {accessibleBottomNavigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
 
