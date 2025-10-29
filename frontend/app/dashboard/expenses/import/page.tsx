@@ -201,7 +201,7 @@ export default function ImportStatementPage() {
 
     // Use ₴ symbol for UAH instead of "грн"
     if (currency === 'UAH') {
-      return `₴${formattedNumber}`;
+      return `₴ ${formattedNumber}`;
     }
 
     // For other currencies, use default formatting

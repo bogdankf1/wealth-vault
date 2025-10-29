@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
-import { useCreateCheckoutSessionMutation } from '@/lib/api/billingApi';
-import { useGetTiersQuery } from '@/lib/api/adminApi';
+import { useCreateCheckoutSessionMutation, useGetTiersQuery } from '@/lib/api/billingApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 

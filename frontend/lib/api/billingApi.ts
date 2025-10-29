@@ -85,8 +85,25 @@ export interface PaymentHistoryListResponse {
   total: number;
 }
 
+export interface Tier {
+  id: string;
+  name: string;
+  display_name: string;
+  description: string | null;
+  price_monthly: number;
+  price_annual: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export const billingApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    getTiers: builder.query<Tier[], void>({
+      query: () => '/api/v1/billing/tiers',
+      providesTags: ['Tiers'],
+    }),
+
     createCheckoutSession: builder.mutation<
       CreateCheckoutSessionResponse,
       CreateCheckoutSessionRequest
@@ -152,6 +169,7 @@ export const billingApi = apiSlice.injectEndpoints({
 });
 
 export const {
+  useGetTiersQuery,
   useCreateCheckoutSessionMutation,
   useCreatePortalSessionMutation,
   useGetSubscriptionStatusQuery,
