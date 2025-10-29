@@ -193,11 +193,22 @@ export default function ImportStatementPage() {
   };
 
   const formatCurrency = (amount: number, currency: string = 'UAH') => {
-    return new Intl.NumberFormat('uk-UA', {
+    const absAmount = Math.abs(amount);
+    const formattedNumber = new Intl.NumberFormat('uk-UA', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(absAmount);
+
+    // Use ₴ symbol for UAH instead of "грн"
+    if (currency === 'UAH') {
+      return `₴${formattedNumber}`;
+    }
+
+    // For other currencies, use default formatting
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
-      currencyDisplay: 'symbol',
-    }).format(Math.abs(amount));
+    }).format(absAmount);
   };
 
   return (
