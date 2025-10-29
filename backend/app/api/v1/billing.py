@@ -28,9 +28,28 @@ from app.schemas.billing import (
     PaymentHistoryResponse,
     SubscriptionStatusResponse,
 )
+from app.schemas.admin import TierDetail
 from app.services.stripe_service import StripeService
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+@router.get("/tiers", response_model=list[TierDetail])
+async def list_tiers(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    List all active tiers for pricing page.
+    Accessible to all authenticated users.
+    """
+    result = await db.execute(
+        select(Tier)
+        .where(Tier.is_active == True)
+        .order_by(Tier.price_monthly)
+    )
+    tiers = result.scalars().all()
+    return [TierDetail.model_validate(tier) for tier in tiers]
 
 
 @router.post("/create-checkout", response_model=CreateCheckoutSessionResponse)
