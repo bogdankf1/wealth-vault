@@ -23,7 +23,8 @@ import {
   Settings,
   Shield,
   FileText,
-  UserMinus
+  UserMinus,
+  LayoutDashboard
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,7 @@ import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 const navigation = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, tier: 'starter' },
   { name: 'Income', href: '/dashboard/income', icon: TrendingUp, tier: 'starter' },
   { name: 'Expenses', href: '/dashboard/expenses', icon: DollarSign, tier: 'starter' },
   { name: 'Budgets', href: '/dashboard/budgets', icon: Wallet, tier: 'starter' },
