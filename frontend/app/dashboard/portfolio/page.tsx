@@ -152,7 +152,7 @@ export default function PortfolioPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <ModuleHeader
         title="Portfolio"

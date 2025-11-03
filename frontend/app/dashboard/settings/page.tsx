@@ -18,7 +18,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('subscription');
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
@@ -28,31 +28,31 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 lg:w-[950px]">
-          <TabsTrigger value="account" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Account
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:w-[950px] gap-2 h-auto p-1">
+          <TabsTrigger value="account" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
+            <User className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Account</span>
           </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Subscription
+          <TabsTrigger value="subscription" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
+            <CreditCard className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Subscription</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            Appearance
+          <TabsTrigger value="appearance" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
+            <Palette className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Appearance</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Notifications
+          <TabsTrigger value="notifications" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
+            <Bell className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
-          <TabsTrigger value="privacy" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Privacy
+          <TabsTrigger value="privacy" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
+            <Shield className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Privacy</span>
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Security
+          <TabsTrigger value="security" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
+            <Lock className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
         </TabsList>
 

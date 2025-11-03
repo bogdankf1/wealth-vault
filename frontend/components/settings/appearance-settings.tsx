@@ -45,7 +45,6 @@ export function AppearanceSettings() {
   const [accentColor, setAccentColor] = useState('blue');
   const [fontSize, setFontSize] = useState('medium');
   const [currency, setCurrency] = useState('USD');
-  const [displayCurrency, setDisplayCurrency] = useState('USD');
 
   // Sync local state with fetched preferences
   useEffect(() => {
@@ -53,7 +52,6 @@ export function AppearanceSettings() {
       setAccentColor(preferences.accent_color);
       setFontSize(preferences.font_size);
       setCurrency(preferences.currency || 'USD');
-      setDisplayCurrency(preferences.display_currency || preferences.currency || 'USD');
       // Sync theme with next-themes
       if (preferences.theme !== theme) {
         setTheme(preferences.theme);
@@ -117,32 +115,18 @@ export function AppearanceSettings() {
   const handleCurrencyChange = async (newCurrency: string) => {
     setCurrency(newCurrency);
     try {
-      await updatePreferences({ currency: newCurrency }).unwrap();
+      await updatePreferences({
+        currency: newCurrency,
+        display_currency: newCurrency
+      }).unwrap();
       toast({
         title: 'Currency Updated',
-        description: `Preferred currency changed to ${newCurrency}`,
+        description: `Currency changed to ${newCurrency}`,
       });
     } catch {
       toast({
         title: 'Error',
         description: 'Failed to save currency preference',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleDisplayCurrencyChange = async (newDisplayCurrency: string) => {
-    setDisplayCurrency(newDisplayCurrency);
-    try {
-      await updatePreferences({ display_currency: newDisplayCurrency }).unwrap();
-      toast({
-        title: 'Display Currency Updated',
-        description: `Display currency changed to ${newDisplayCurrency}`,
-      });
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to save display currency preference',
         variant: 'destructive',
       });
     }
@@ -305,50 +289,26 @@ export function AppearanceSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Currency Preferences
+            Currency
           </CardTitle>
           <CardDescription>
-            Choose your preferred currency for data entry and display
+            Choose your preferred currency for all transactions and displays
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Preferred Currency */}
+        <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="preferred-currency">
-              Preferred Currency
+            <Label htmlFor="currency">
+              Currency
             </Label>
             <p className="text-sm text-muted-foreground mb-2">
-              Default currency for new transactions and data entry
+              This currency will be used for data entry and displaying all amounts
             </p>
             <CurrencySelect
               value={currency}
               onValueChange={handleCurrencyChange}
-              placeholder="Select preferred currency"
+              placeholder="Select currency"
               className="w-full md:w-[300px]"
             />
-          </div>
-
-          {/* Display Currency */}
-          <div className="space-y-2">
-            <Label htmlFor="display-currency">
-              Display Currency
-            </Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              Currency to display amounts in (conversions will be shown automatically)
-            </p>
-            <CurrencySelect
-              value={displayCurrency}
-              onValueChange={handleDisplayCurrencyChange}
-              placeholder="Select display currency"
-              className="w-full md:w-[300px]"
-            />
-          </div>
-
-          {/* Info Box */}
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              <strong>Tip:</strong> If your preferred currency and display currency are different, amounts will be automatically converted and shown with a tooltip indicating the original currency.
-            </p>
           </div>
         </CardContent>
       </Card>

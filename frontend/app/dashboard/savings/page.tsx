@@ -104,7 +104,7 @@ export default function SavingsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto space-y-6 p-6">
+      <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
         <ModuleHeader
           title="Savings & Accounts"
           description="Track your savings accounts, investments, and net worth"
@@ -118,7 +118,7 @@ export default function SavingsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto space-y-6 p-6">
+      <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
         <ModuleHeader
           title="Savings & Accounts"
           description="Track your savings accounts, investments, and net worth"
@@ -132,7 +132,7 @@ export default function SavingsPage() {
   const hasFilteredResults = filteredAccounts.length > 0;
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       <ModuleHeader
         title="Savings & Accounts"
         description="Track your savings accounts, investments, and net worth"
