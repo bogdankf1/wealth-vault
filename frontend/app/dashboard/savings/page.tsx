@@ -28,6 +28,7 @@ import {
   useDeleteAccountMutation,
   type SavingsAccount,
 } from '@/lib/api/savingsApi';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
@@ -45,6 +46,8 @@ export default function SavingsPage() {
   const [deletingAccount, setDeletingAccount] = useState<SavingsAccount | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -77,12 +80,22 @@ export default function SavingsPage() {
   // Filter accounts
   const accounts = accountsData?.items || [];
   const accountTypes = Array.from(new Set(accounts.map(a => a.account_type)));
-  const filteredAccounts = filterBySearchAndCategory(
+  const searchFilteredAccounts = filterBySearchAndCategory(
     accounts,
     searchQuery,
     selectedType,
     (account) => account.name,
     (account) => account.account_type
+  );
+
+  // Apply sorting (using display_current_balance for currency-aware sorting)
+  const filteredAccounts = sortItems(
+    searchFilteredAccounts,
+    sortField,
+    sortDirection,
+    (account) => account.name,
+    (account) => account.display_current_balance || account.current_balance,
+    (account) => account.created_at
   ) || [];
 
   // Stats
@@ -216,7 +229,14 @@ export default function SavingsPage() {
               categoryLabels={ACCOUNT_TYPE_LABELS}
             />
           </div>
-          <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
+          <div className="flex items-center gap-3 flex-wrap">
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
+            />
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
             <Button
               variant={viewMode === 'card' ? 'secondary' : 'ghost'}
               size="sm"
@@ -233,6 +253,7 @@ export default function SavingsPage() {
             >
               <List className="h-4 w-4" />
             </Button>
+          </div>
           </div>
         </div>
       )}

@@ -32,6 +32,7 @@ import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useTierCheck, getFeatureDisplayName } from '@/lib/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
@@ -54,6 +55,8 @@ export default function IncomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -148,12 +151,22 @@ export default function IncomePage() {
     (source) => source.end_date
   );
 
-  const filteredSources = filterBySearchAndCategory(
+  const searchFilteredSources = filterBySearchAndCategory(
     monthFilteredSources,
     searchQuery,
     selectedCategory,
     (source) => source.name,
     (source) => source.category
+  );
+
+  // Apply sorting (using display_amount for currency-aware sorting)
+  const filteredSources = sortItems(
+    searchFilteredSources,
+    sortField,
+    sortDirection,
+    (source) => source.name,
+    (source) => source.display_monthly_equivalent || source.display_amount || source.amount,
+    (source) => source.start_date || source.date
   );
 
   // Prepare stats cards data
@@ -284,10 +297,16 @@ export default function IncomePage() {
                 categoryPlaceholder="All Categories"
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <MonthFilter
                 selectedMonth={selectedMonth}
                 onMonthChange={setSelectedMonth}
+              />
+              <SortFilter
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSortFieldChange={setSortField}
+                onSortDirectionChange={setSortDirection}
               />
               <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
                 <Button

@@ -22,6 +22,7 @@ import { MonthFilter } from '@/components/ui/month-filter';
 import { SearchFilter } from '@/components/ui/search-filter';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const PERIOD_LABELS: Record<string, string> = {
@@ -38,6 +39,8 @@ export default function BudgetsPage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -109,8 +112,18 @@ export default function BudgetsPage() {
       filtered = filtered.filter((budget) => budget.category === selectedCategory);
     }
 
-    return filtered;
-  }, [budgets, selectedMonth, searchQuery, selectedCategory]);
+    // Apply sorting (using display_amount for currency-aware sorting)
+    const sorted = sortItems(
+      filtered,
+      sortField,
+      sortDirection,
+      (budget) => budget.name,
+      (budget) => budget.display_amount || budget.amount,
+      (budget) => budget.start_date
+    );
+
+    return sorted || [];
+  }, [budgets, selectedMonth, searchQuery, selectedCategory, sortField, sortDirection]);
 
   const handleAddBudget = () => {
     setEditingBudgetId(null);
@@ -392,10 +405,16 @@ export default function BudgetsPage() {
               categoryPlaceholder="All Categories"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+            />
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
             />
             <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
               <Button

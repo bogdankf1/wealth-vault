@@ -29,6 +29,7 @@ import {
   useDeleteDebtMutation,
   type Debt,
 } from '@/lib/api/debtsApi';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 export default function DebtsPage() {
@@ -37,6 +38,8 @@ export default function DebtsPage() {
   const [deletingDebt, setDeletingDebt] = useState<Debt | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -77,7 +80,7 @@ export default function DebtsPage() {
   const statusCategories = ['Active', 'Paid', 'Overdue'];
 
   // Filter debts
-  const filteredDebts = debts.filter((debt) => {
+  const searchFilteredDebts = debts.filter((debt) => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -95,6 +98,16 @@ export default function DebtsPage() {
 
     return true;
   });
+
+  // Apply sorting (using display_amount for currency-aware sorting)
+  const filteredDebts = sortItems(
+    searchFilteredDebts,
+    sortField,
+    sortDirection,
+    (debt) => debt.debtor_name,
+    (debt) => debt.display_amount || debt.amount,
+    (debt) => debt.due_date
+  ) || [];
 
   // Stats cards
   const statsCards = stats
@@ -210,23 +223,31 @@ export default function DebtsPage() {
               categoryPlaceholder="All Statuses"
             />
           </div>
-          <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
-            <Button
-              variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('card')}
-              className="h-8 w-8 p-0"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="h-8 w-8 p-0"
-            >
-              <List className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
+            />
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       )}

@@ -40,6 +40,7 @@ import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { Progress } from '@/components/ui/progress';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const FREQUENCY_LABELS: Record<string, string> = {
@@ -56,6 +57,8 @@ export default function InstallmentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -141,12 +144,22 @@ export default function InstallmentsPage() {
   );
 
   // Apply search and category filters
-  const filteredInstallments = filterBySearchAndCategory(
+  const searchFilteredInstallments = filterBySearchAndCategory(
     monthFilteredInstallments,
     searchQuery,
     selectedCategory,
     (installment) => installment.name,
     (installment) => installment.category
+  );
+
+  // Apply sorting (using display_total_amount for currency-aware sorting)
+  const filteredInstallments = sortItems(
+    searchFilteredInstallments,
+    sortField,
+    sortDirection,
+    (installment) => installment.name,
+    (installment) => installment.display_total_amount || installment.total_amount,
+    (installment) => installment.start_date
   );
 
   // Prepare stats cards data
@@ -300,10 +313,16 @@ export default function InstallmentsPage() {
               categoryPlaceholder="All Categories"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+            />
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
             />
             <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
               <Button

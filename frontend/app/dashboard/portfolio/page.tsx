@@ -31,6 +31,7 @@ import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 export default function PortfolioPage() {
@@ -40,6 +41,8 @@ export default function PortfolioPage() {
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -107,12 +110,22 @@ export default function PortfolioPage() {
   }, [portfolioData?.items]);
 
   // Apply search and category filters
-  const filteredAssets = filterBySearchAndCategory(
+  const searchFilteredAssets = filterBySearchAndCategory(
     portfolioData?.items,
     searchQuery,
     selectedCategory,
     (asset) => `${asset.asset_name} ${asset.symbol || ''}`,
     (asset) => asset.asset_type
+  );
+
+  // Apply sorting (using display_current_value for currency-aware sorting)
+  const filteredAssets = sortItems(
+    searchFilteredAssets,
+    sortField,
+    sortDirection,
+    (asset) => asset.asset_name,
+    (asset) => asset.display_current_value || asset.current_value || 0,
+    (asset) => asset.purchase_date
   );
 
   // Prepare stats cards data
@@ -305,23 +318,31 @@ export default function PortfolioPage() {
               categoryPlaceholder="All Asset Types"
             />
           </div>
-          <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
-            <Button
-              variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('card')}
-              className="h-8 w-8 p-0"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="h-8 w-8 p-0"
-            >
-              <List className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
+            />
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       )}

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, DollarSign, Percent, Edit, Trash2, CheckCircle2, XCircle, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { FileText, DollarSign, Percent, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards } from '@/components/ui/stats-cards';
-import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { SearchFilter } from '@/components/ui/search-filter';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -28,6 +28,7 @@ import {
   useDeleteTaxMutation,
   type Tax,
 } from '@/lib/api/taxesApi';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 export default function TaxesPage() {
@@ -36,6 +37,8 @@ export default function TaxesPage() {
   const [deletingTax, setDeletingTax] = useState<Tax | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -76,7 +79,7 @@ export default function TaxesPage() {
   const typeCategories = ['Fixed', 'Percentage'];
 
   // Filter taxes
-  const filteredTaxes = taxes.filter((tax) => {
+  const searchFilteredTaxes = taxes.filter((tax) => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -92,6 +95,16 @@ export default function TaxesPage() {
 
     return true;
   });
+
+  // Apply sorting (using calculated_amount for currency-aware sorting)
+  const filteredTaxes = sortItems(
+    searchFilteredTaxes,
+    sortField,
+    sortDirection,
+    (tax) => tax.name,
+    (tax) => tax.calculated_amount || tax.fixed_amount || 0,
+    (tax) => tax.created_at
+  ) || [];
 
   // Stats cards
   const statsCards = stats
@@ -213,23 +226,31 @@ export default function TaxesPage() {
               categoryPlaceholder="All Types"
             />
           </div>
-          <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
-            <Button
-              variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('card')}
-              className="h-8 w-8 p-0"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="h-8 w-8 p-0"
-            >
-              <List className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
+            />
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       )}

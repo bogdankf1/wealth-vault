@@ -32,6 +32,7 @@ import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
@@ -59,6 +60,8 @@ export default function ExpensesPage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const {
     data: expensesData,
@@ -140,12 +143,22 @@ export default function ExpensesPage() {
     (expense) => expense.end_date
   );
 
-  const filteredExpenses = filterBySearchAndCategory(
+  const searchFilteredExpenses = filterBySearchAndCategory(
     monthFilteredExpenses,
     searchQuery,
     selectedCategory,
     (expense) => expense.name,
     (expense) => expense.category
+  );
+
+  // Apply sorting (using display_amount for currency-aware sorting)
+  const filteredExpenses = sortItems(
+    searchFilteredExpenses,
+    sortField,
+    sortDirection,
+    (expense) => expense.name,
+    (expense) => expense.display_monthly_equivalent || expense.display_amount || expense.amount,
+    (expense) => expense.start_date || expense.date
   );
 
   // Prepare stats cards data
@@ -289,6 +302,12 @@ export default function ExpensesPage() {
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+            />
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
             />
             <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
               <Button

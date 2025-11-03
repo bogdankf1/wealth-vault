@@ -38,6 +38,7 @@ import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
+import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const FREQUENCY_LABELS: Record<string, string> = {
@@ -55,6 +56,8 @@ export default function SubscriptionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -141,12 +144,22 @@ export default function SubscriptionsPage() {
   );
 
   // Apply search and category filters
-  const filteredSubscriptions = filterBySearchAndCategory(
+  const searchFilteredSubscriptions = filterBySearchAndCategory(
     monthFilteredSubscriptions,
     searchQuery,
     selectedCategory,
     (subscription) => subscription.name,
     (subscription) => subscription.category
+  );
+
+  // Apply sorting (using display_amount for currency-aware sorting)
+  const filteredSubscriptions = sortItems(
+    searchFilteredSubscriptions,
+    sortField,
+    sortDirection,
+    (subscription) => subscription.name,
+    (subscription) => subscription.display_amount || subscription.amount,
+    (subscription) => subscription.start_date
   );
 
   // Prepare stats cards data
@@ -288,10 +301,16 @@ export default function SubscriptionsPage() {
               categoryPlaceholder="All Categories"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+            />
+            <SortFilter
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSortFieldChange={setSortField}
+              onSortDirectionChange={setSortDirection}
             />
             <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
               <Button
