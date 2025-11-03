@@ -20,6 +20,7 @@ import { BudgetProgressChart } from '@/components/budgets/budget-progress-chart'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { MonthFilter } from '@/components/ui/month-filter';
 import { SearchFilter } from '@/components/ui/search-filter';
+import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 
 const PERIOD_LABELS: Record<string, string> = {
@@ -192,16 +193,12 @@ export default function BudgetsPage() {
   return (
     <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Budget Management</h1>
-          <p className="text-muted-foreground">Track and manage your spending budgets</p>
-        </div>
-        <Button onClick={handleAddBudget}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Budget
-        </Button>
-      </div>
+      <ModuleHeader
+        title="Budget Management"
+        description="Track and manage your spending budgets"
+        actionLabel="Add Budget"
+        onAction={handleAddBudget}
+      />
 
       {/* Statistics Cards */}
       {isLoading ? (
@@ -352,7 +349,7 @@ export default function BudgetsPage() {
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
             />
-            <div className="flex items-center gap-1 border rounded-md p-1">
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
                 size="sm"

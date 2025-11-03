@@ -257,7 +257,7 @@ export default function PortfolioPage() {
               categoryPlaceholder="All Asset Types"
             />
           </div>
-          <div className="flex items-center gap-1 border rounded-md p-1">
+          <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
             <Button
               variant={viewMode === 'card' ? 'secondary' : 'ghost'}
               size="sm"

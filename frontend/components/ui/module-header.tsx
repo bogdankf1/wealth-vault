@@ -36,7 +36,7 @@ export function ModuleHeader({
           </p>
         )}
       </div>
-      <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row gap-2 md:gap-3 flex-shrink-0">
         {children}
         {onAction && (
           <Button onClick={onAction} size="default" className="w-full sm:w-auto">

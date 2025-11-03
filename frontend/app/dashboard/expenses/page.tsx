@@ -28,6 +28,7 @@ import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { ExpenseForm } from '@/components/expenses/expense-form';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
+import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
@@ -175,21 +176,19 @@ export default function ExpensesPage() {
   return (
     <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Expense Tracking</h1>
-          <p className="text-muted-foreground">Track and manage your expenses</p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/dashboard/expenses/import">
-            <Button variant="outline">
-              <Upload className="mr-2 h-4 w-4" />
-              Import Statement
-            </Button>
-          </Link>
-          <Button onClick={handleAddExpense}>Add Expense</Button>
-        </div>
-      </div>
+      <ModuleHeader
+        title="Expense Tracking"
+        description="Track and manage your expenses"
+        actionLabel="Add Expense"
+        onAction={handleAddExpense}
+      >
+        <Link href="/dashboard/expenses/import">
+          <Button variant="outline" className="w-full sm:w-auto">
+            <Upload className="mr-2 h-4 w-4" />
+            Import Statement
+          </Button>
+        </Link>
+      </ModuleHeader>
 
       {/* Statistics Cards */}
       {isLoadingStats ? (
@@ -228,7 +227,7 @@ export default function ExpensesPage() {
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
             />
-            <div className="flex items-center gap-1 border rounded-md p-1">
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
                 size="sm"
