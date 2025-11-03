@@ -59,7 +59,6 @@ const installmentSchema = z.object({
   interest_rate: z.number().min(0).max(100).optional(),
   frequency: z.enum(['weekly', 'biweekly', 'monthly'] as const),
   number_of_payments: z.number().min(1, 'Must have at least one payment').optional(),
-  payments_made: z.number().min(0),
   is_active: z.boolean(),
   start_date: z.string().min(1, 'Start date is required'),
   first_payment_date: z.string().min(1, 'First payment date is required'),
@@ -127,7 +126,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       currency: 'USD',
       frequency: 'monthly',
       is_active: true,
-      payments_made: 0,
       start_date: new Date().toISOString().split('T')[0],
       first_payment_date: new Date().toISOString().split('T')[0],
     },
@@ -187,7 +185,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         interest_rate: existingInstallment.interest_rate || 0,
         frequency: existingInstallment.frequency as InstallmentFrequency,
         number_of_payments: existingInstallment.number_of_payments,
-        payments_made: existingInstallment.payments_made,
         is_active: existingInstallment.is_active,
         // Extract date directly from string to avoid timezone conversion
         start_date: existingInstallment.start_date.split('T')[0],
@@ -221,7 +218,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         interest_rate: 0,
         frequency: 'monthly',
         number_of_payments: undefined,
-        payments_made: 0,
         is_active: true,
         start_date: new Date().toISOString().split('T')[0],
         first_payment_date: new Date().toISOString().split('T')[0],
@@ -247,7 +243,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         interest_rate?: number;
         frequency: InstallmentFrequency;
         number_of_payments: number;
-        payments_made: number;
         is_active: boolean;
         start_date: string;
         first_payment_date: string;
@@ -262,7 +257,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         interest_rate: data.interest_rate,
         frequency: data.frequency,
         number_of_payments: finalNumberOfPayments,
-        payments_made: data.payments_made,
         is_active: data.is_active,
         // Keep date-only format to avoid timezone issues
         start_date: `${data.start_date}T00:00:00`,
@@ -291,7 +285,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       currency: 'USD',
       frequency: 'monthly',
       is_active: true,
-      payments_made: 0,
       start_date: new Date().toISOString().split('T')[0],
       first_payment_date: new Date().toISOString().split('T')[0],
     });
@@ -484,20 +477,23 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="payments_made">Payments Made</Label>
-              <Input
-                id="payments_made"
-                type="number"
-                placeholder="0"
-                {...register('payments_made', { valueAsNumber: true })}
-              />
-              {errors.payments_made && (
-                <p className="text-sm text-destructive">
-                  {errors.payments_made.message}
-                </p>
-              )}
-            </div>
+            {isEditing && existingInstallment && (
+              <div className="space-y-2">
+                <Label htmlFor="payments_made">Payments Made</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="payments_made"
+                    type="text"
+                    value={existingInstallment.payments_made}
+                    disabled
+                    className="bg-muted cursor-not-allowed"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Calculated automatically based on current date
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
