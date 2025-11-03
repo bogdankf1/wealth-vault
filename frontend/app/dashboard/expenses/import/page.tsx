@@ -4,8 +4,8 @@
  */
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, X, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +36,8 @@ import {
   type ParsedTransaction,
 } from '@/lib/api/aiApi';
 import { useCreateExpenseMutation } from '@/lib/api/expensesApi';
+import { useListSubscriptionsQuery } from '@/lib/api/subscriptionsApi';
+import { useListInstallmentsQuery } from '@/lib/api/installmentsApi';
 import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
 
 export default function ImportStatementPage() {
@@ -43,6 +45,10 @@ export default function ImportStatementPage() {
   const [parseStatement, { isLoading: isParsing }] = useParseStatementMutation();
   const [batchCategorize, { isLoading: isCategorizing }] = useBatchCategorizeTransactionsMutation();
   const [createExpense] = useCreateExpenseMutation();
+
+  // Fetch user's subscriptions and installments for matching
+  const { data: subscriptionsData } = useListSubscriptionsQuery({ page: 1, page_size: 100 });
+  const { data: installmentsData } = useListInstallmentsQuery({ page: 1, page_size: 100 });
 
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
   const [uploadedFilename, setUploadedFilename] = useState<string>('');
@@ -150,6 +156,60 @@ export default function ImportStatementPage() {
       )
     );
   };
+
+  // Remove individual transaction
+  const handleRemoveTransaction = (index: number) => {
+    setCategorizedTransactions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Remove all income transactions
+  const handleRemoveIncomes = () => {
+    setCategorizedTransactions((prev) => prev.filter((t) => t.amount < 0));
+  };
+
+  // Remove transactions matching user's subscriptions
+  const handleRemoveSubscriptions = () => {
+    const subscriptionNames = subscriptionsData?.items.map((s) => s.name.toLowerCase()) || [];
+    setCategorizedTransactions((prev) =>
+      prev.filter((t) => {
+        const description = t.description.toLowerCase();
+        return !subscriptionNames.some((name) => description.includes(name));
+      })
+    );
+  };
+
+  // Remove transactions matching user's installments
+  const handleRemoveInstallments = () => {
+    const installmentNames = installmentsData?.items.map((i) => i.name.toLowerCase()) || [];
+    setCategorizedTransactions((prev) =>
+      prev.filter((t) => {
+        const description = t.description.toLowerCase();
+        return !installmentNames.some((name) => description.includes(name));
+      })
+    );
+  };
+
+  // Calculate counts for button states
+  const incomeCount = useMemo(
+    () => categorizedTransactions.filter((t) => t.amount > 0).length,
+    [categorizedTransactions]
+  );
+
+  const subscriptionMatchCount = useMemo(() => {
+    const subscriptionNames = subscriptionsData?.items.map((s) => s.name.toLowerCase()) || [];
+    return categorizedTransactions.filter((t) => {
+      const description = t.description.toLowerCase();
+      return subscriptionNames.some((name) => description.includes(name));
+    }).length;
+  }, [categorizedTransactions, subscriptionsData?.items]);
+
+  const installmentMatchCount = useMemo(() => {
+    const installmentNames = installmentsData?.items.map((i) => i.name.toLowerCase()) || [];
+    return categorizedTransactions.filter((t) => {
+      const description = t.description.toLowerCase();
+      return installmentNames.some((name) => description.includes(name));
+    }).length;
+  }, [categorizedTransactions, installmentsData?.items]);
 
   const handleImport = async () => {
     if (categorizedTransactions.length === 0) return;
@@ -333,8 +393,39 @@ export default function ImportStatementPage() {
               </div>
             ) : (
               <>
+                {/* Bulk Action Buttons */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemoveIncomes}
+                    disabled={incomeCount === 0}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Remove Incomes ({incomeCount})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemoveSubscriptions}
+                    disabled={subscriptionMatchCount === 0}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Remove Subscriptions ({subscriptionMatchCount})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemoveInstallments}
+                    disabled={installmentMatchCount === 0}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Remove Installments ({installmentMatchCount})
+                  </Button>
+                </div>
+
                 <Tabs defaultValue="all">
-                  <TabsList>
+                  <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all">
                       All ({categorizedTransactions.length})
                     </TabsTrigger>
@@ -343,6 +434,12 @@ export default function ImportStatementPage() {
                     </TabsTrigger>
                     <TabsTrigger value="income">
                       Income ({categorizedTransactions.filter((t) => t.amount > 0).length})
+                    </TabsTrigger>
+                    <TabsTrigger value="subscriptions">
+                      Subscriptions ({subscriptionMatchCount})
+                    </TabsTrigger>
+                    <TabsTrigger value="installments">
+                      Installments ({installmentMatchCount})
                     </TabsTrigger>
                   </TabsList>
 
@@ -355,6 +452,7 @@ export default function ImportStatementPage() {
                             <TableHead>Description</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -386,6 +484,16 @@ export default function ImportStatementPage() {
                               >
                                 {transaction.amount < 0 ? '-' : '+'}{formatCurrency(transaction.amount, transaction.currency)}
                               </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleRemoveTransaction(index)}
+                                  className="h-8 w-8"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -402,6 +510,7 @@ export default function ImportStatementPage() {
                             <TableHead>Description</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -434,6 +543,16 @@ export default function ImportStatementPage() {
                                   <TableCell className="text-right text-red-600">
                                     -{formatCurrency(transaction.amount, transaction.currency)}
                                   </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleRemoveTransaction(originalIndex)}
+                                      className="h-8 w-8"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </TableCell>
                                 </TableRow>
                               );
                             })}
@@ -451,6 +570,7 @@ export default function ImportStatementPage() {
                             <TableHead>Description</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -468,6 +588,152 @@ export default function ImportStatementPage() {
                                   </TableCell>
                                   <TableCell className="text-right text-green-600">
                                     +{formatCurrency(transaction.amount, transaction.currency)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleRemoveTransaction(originalIndex)}
+                                      className="h-8 w-8"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="subscriptions" className="mt-4">
+                    <div className="border rounded-lg">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {categorizedTransactions
+                            .filter((t) => {
+                              const subscriptionNames = subscriptionsData?.items.map((s) => s.name.toLowerCase()) || [];
+                              const description = t.description.toLowerCase();
+                              return subscriptionNames.some((name) => description.includes(name));
+                            })
+                            .map((transaction) => {
+                              // Find the original index in the full array
+                              const originalIndex = categorizedTransactions.indexOf(transaction);
+                              return (
+                                <TableRow key={originalIndex}>
+                                  <TableCell>{transaction.date}</TableCell>
+                                  <TableCell>{transaction.description}</TableCell>
+                                  <TableCell>
+                                    <Select
+                                      value={transaction.category}
+                                      onValueChange={(value) => handleCategoryChange(originalIndex, value)}
+                                    >
+                                      <SelectTrigger className="w-[180px]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {CATEGORY_OPTIONS.map((option) => (
+                                          <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </TableCell>
+                                  <TableCell
+                                    className={`text-right ${
+                                      transaction.amount < 0 ? 'text-red-600' : 'text-green-600'
+                                    }`}
+                                  >
+                                    {transaction.amount < 0 ? '-' : '+'}{formatCurrency(transaction.amount, transaction.currency)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleRemoveTransaction(originalIndex)}
+                                      className="h-8 w-8"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="installments" className="mt-4">
+                    <div className="border rounded-lg">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {categorizedTransactions
+                            .filter((t) => {
+                              const installmentNames = installmentsData?.items.map((i) => i.name.toLowerCase()) || [];
+                              const description = t.description.toLowerCase();
+                              return installmentNames.some((name) => description.includes(name));
+                            })
+                            .map((transaction) => {
+                              // Find the original index in the full array
+                              const originalIndex = categorizedTransactions.indexOf(transaction);
+                              return (
+                                <TableRow key={originalIndex}>
+                                  <TableCell>{transaction.date}</TableCell>
+                                  <TableCell>{transaction.description}</TableCell>
+                                  <TableCell>
+                                    <Select
+                                      value={transaction.category}
+                                      onValueChange={(value) => handleCategoryChange(originalIndex, value)}
+                                    >
+                                      <SelectTrigger className="w-[180px]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {CATEGORY_OPTIONS.map((option) => (
+                                          <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </TableCell>
+                                  <TableCell
+                                    className={`text-right ${
+                                      transaction.amount < 0 ? 'text-red-600' : 'text-green-600'
+                                    }`}
+                                  >
+                                    {transaction.amount < 0 ? '-' : '+'}{formatCurrency(transaction.amount, transaction.currency)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleRemoveTransaction(originalIndex)}
+                                      className="h-8 w-8"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
                                   </TableCell>
                                 </TableRow>
                               );
