@@ -221,48 +221,51 @@ export default function IncomePage() {
         <StatsCards stats={statsCards} />
       ) : null}
 
-      {/* Income Sources List */}
-      <div>
-        <div className="mb-3 md:mb-4 flex flex-col gap-3 md:gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg md:text-xl font-semibold">Income Sources</h2>
-            <div className="flex items-center gap-1 border rounded-md p-1">
-              <Button
-                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('card')}
-                className="h-8 w-8 p-0"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-8 w-8 p-0"
-              >
-                <List className="h-4 w-4" />
-              </Button>
+      {/* Search, Filters, and View Toggle */}
+      {(sourcesData?.items && sourcesData.items.length > 0) && (
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+            <div className="flex-1">
+              <SearchFilter
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                categories={uniqueCategories}
+                searchPlaceholder="Search income sources..."
+                categoryPlaceholder="All Categories"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <MonthFilter
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
+              />
+              <div className="flex items-center gap-1 border rounded-md p-1">
+                <Button
+                  variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('card')}
+                  className="h-8 w-8 p-0"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="h-8 w-8 p-0"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
-          <MonthFilter
-            selectedMonth={selectedMonth}
-            onMonthChange={setSelectedMonth}
-          />
         </div>
+      )}
 
-        {/* Search and Category Filter */}
-        <div className="mb-4">
-          <SearchFilter
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            categories={uniqueCategories}
-            searchPlaceholder="Search income sources..."
-            categoryPlaceholder="All Categories"
-          />
-        </div>
+      {/* Income Sources List */}
+      <div>
 
         {isLoadingSources ? (
           <LoadingCards count={3} />

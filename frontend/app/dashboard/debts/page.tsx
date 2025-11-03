@@ -148,10 +148,20 @@ export default function DebtsPage() {
         <StatsCards stats={statsCards} />
       ) : null}
 
-      {/* Debts Heading and View Toggle */}
+      {/* Search, Filters, and View Toggle */}
       {hasDebts && (
-        <div className="mb-3 md:mb-4 flex items-center gap-3">
-          <h2 className="text-lg md:text-xl font-semibold">Debts</h2>
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+          <div className="flex-1">
+            <SearchFilter
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCategory={selectedStatus}
+              onCategoryChange={(status) => setSelectedStatus(status || '')}
+              categories={statusCategories}
+              searchPlaceholder="Search debts..."
+              categoryPlaceholder="All Statuses"
+            />
+          </div>
           <div className="flex items-center gap-1 border rounded-md p-1">
             <Button
               variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -170,21 +180,6 @@ export default function DebtsPage() {
               <List className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-      )}
-
-      {/* Search and Filters */}
-      {hasDebts && (
-        <div>
-          <SearchFilter
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategory={selectedStatus}
-            onCategoryChange={(status) => setSelectedStatus(status || '')}
-            categories={statusCategories}
-            searchPlaceholder="Search debts..."
-            categoryPlaceholder="All Statuses"
-          />
         </div>
       )}
 

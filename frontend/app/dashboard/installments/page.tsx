@@ -238,11 +238,25 @@ export default function InstallmentsPage() {
         <StatsCards stats={statsCards} />
       ) : null}
 
-      {/* Installments List */}
-      <div>
-        <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
+      {/* Search, Filters, and View Toggle */}
+      {(installmentsData?.items && installmentsData.items.length > 0) && (
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+          <div className="flex-1">
+            <SearchFilter
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              categories={uniqueCategories}
+              searchPlaceholder="Search installments..."
+              categoryPlaceholder="All Categories"
+            />
+          </div>
           <div className="flex items-center gap-3">
-            <h2 className="text-lg md:text-xl font-semibold">Installments</h2>
+            <MonthFilter
+              selectedMonth={selectedMonth}
+              onMonthChange={setSelectedMonth}
+            />
             <div className="flex items-center gap-1 border rounded-md p-1">
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -262,25 +276,11 @@ export default function InstallmentsPage() {
               </Button>
             </div>
           </div>
-          <MonthFilter
-            selectedMonth={selectedMonth}
-            onMonthChange={setSelectedMonth}
-          />
         </div>
+      )}
 
-        {/* Search and Category Filter */}
-        <div className="mb-3 md:mb-4">
-          <SearchFilter
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            categories={uniqueCategories}
-            searchPlaceholder="Search installments..."
-            categoryPlaceholder="All Categories"
-          />
-        </div>
-
+      {/* Installments List */}
+      <div>
         {isLoadingInstallments ? (
           <LoadingCards count={3} />
         ) : installmentsError ? (

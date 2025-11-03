@@ -186,44 +186,43 @@ export default function GoalsPage() {
         <StatsCards stats={statsCards} />
       ) : null}
 
-      {/* Goals List */}
-      <div>
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold">Goals</h2>
-            <div className="flex items-center gap-1 border rounded-md p-1">
-              <Button
-                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('card')}
-                className="h-8 w-8 p-0"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-8 w-8 p-0"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
+      {/* Search, Filters, and View Toggle */}
+      {(goalsData?.items && goalsData.items.length > 0) && (
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+          <div className="flex-1">
+            <SearchFilter
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              categories={uniqueCategories}
+              searchPlaceholder="Search goals..."
+              categoryPlaceholder="All Categories"
+            />
+          </div>
+          <div className="flex items-center gap-1 border rounded-md p-1">
+            <Button
+              variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('card')}
+              className="h-8 w-8 p-0"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="h-8 w-8 p-0"
+            >
+              <List className="h-4 w-4" />
+            </Button>
           </div>
         </div>
+      )}
 
-        {/* Search and Category Filter */}
-        <div className="mb-4">
-          <SearchFilter
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            categories={uniqueCategories}
-            searchPlaceholder="Search goals..."
-            categoryPlaceholder="All Categories"
-          />
-        </div>
+      {/* Goals List */}
+      <div>
 
         {isLoadingGoals ? (
           <LoadingCards count={3} />
