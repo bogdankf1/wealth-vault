@@ -33,6 +33,7 @@ import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { CurrencyDisplay } from '@/components/currency';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   one_time: 'One-time',
@@ -49,8 +50,9 @@ export default function ExpensesPage() {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   // Default to current month in YYYY-MM format
   const currentMonth = new Date().toISOString().slice(0, 7);

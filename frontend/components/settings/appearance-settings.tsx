@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Monitor, Palette, Type, CheckCircle2, DollarSign } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Type, CheckCircle2, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,6 +45,8 @@ export function AppearanceSettings() {
   const [accentColor, setAccentColor] = useState('blue');
   const [fontSize, setFontSize] = useState('medium');
   const [currency, setCurrency] = useState('USD');
+  const [defaultContentView, setDefaultContentView] = useState<'card' | 'list'>('card');
+  const [defaultStatsView, setDefaultStatsView] = useState<'cards' | 'compact'>('cards');
 
   // Sync local state with fetched preferences
   useEffect(() => {
@@ -52,6 +54,8 @@ export function AppearanceSettings() {
       setAccentColor(preferences.accent_color);
       setFontSize(preferences.font_size);
       setCurrency(preferences.currency || 'USD');
+      setDefaultContentView(preferences.default_content_view);
+      setDefaultStatsView(preferences.default_stats_view);
       // Sync theme with next-themes
       if (preferences.theme !== theme) {
         setTheme(preferences.theme);
@@ -127,6 +131,40 @@ export function AppearanceSettings() {
       toast({
         title: 'Error',
         description: 'Failed to save currency preference',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDefaultContentViewChange = async (view: 'card' | 'list') => {
+    setDefaultContentView(view);
+    try {
+      await updatePreferences({ default_content_view: view }).unwrap();
+      toast({
+        title: 'Default Content View Updated',
+        description: `Default content view changed to ${view}`,
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to save default content view preference',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDefaultStatsViewChange = async (view: 'cards' | 'compact') => {
+    setDefaultStatsView(view);
+    try {
+      await updatePreferences({ default_stats_view: view }).unwrap();
+      toast({
+        title: 'Default Statistics View Updated',
+        description: `Default statistics view changed to ${view}`,
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to save default statistics view preference',
         variant: 'destructive',
       });
     }
@@ -309,6 +347,152 @@ export function AppearanceSettings() {
               placeholder="Select currency"
               className="w-full md:w-[300px]"
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Default View Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LayoutGrid className="h-5 w-5" />
+            Default View Preferences
+          </CardTitle>
+          <CardDescription>
+            Set your preferred default views for module pages. You can always override these on individual pages.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Content View Preference */}
+          <div className="space-y-4">
+            <div>
+              <Label className="text-base font-semibold">Content View</Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Choose the default view for displaying content cards (income, expenses, etc.)
+              </p>
+            </div>
+            <RadioGroup value={defaultContentView} onValueChange={handleDefaultContentViewChange}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label
+                  htmlFor="content-card"
+                  className="relative cursor-pointer"
+                >
+                  <div className={`
+                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    ${defaultContentView === 'card'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }
+                  `}>
+                    <RadioGroupItem
+                      value="card"
+                      id="content-card"
+                      className="sr-only"
+                    />
+                    <LayoutGrid className={`h-8 w-8 ${defaultContentView === 'card' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div className="text-center">
+                      <p className="font-medium">Card View</p>
+                      <p className="text-xs text-muted-foreground">Grid layout with detailed cards</p>
+                    </div>
+                    {defaultContentView === 'card' && (
+                      <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                </label>
+                <label
+                  htmlFor="content-list"
+                  className="relative cursor-pointer"
+                >
+                  <div className={`
+                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    ${defaultContentView === 'list'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }
+                  `}>
+                    <RadioGroupItem
+                      value="list"
+                      id="content-list"
+                      className="sr-only"
+                    />
+                    <List className={`h-8 w-8 ${defaultContentView === 'list' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div className="text-center">
+                      <p className="font-medium">List View</p>
+                      <p className="text-xs text-muted-foreground">Compact table layout</p>
+                    </div>
+                    {defaultContentView === 'list' && (
+                      <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                </label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Statistics View Preference */}
+          <div className="space-y-4">
+            <div>
+              <Label className="text-base font-semibold">Statistics View</Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Choose the default view for displaying statistics cards at the top of module pages
+              </p>
+            </div>
+            <RadioGroup value={defaultStatsView} onValueChange={handleDefaultStatsViewChange}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label
+                  htmlFor="stats-cards"
+                  className="relative cursor-pointer"
+                >
+                  <div className={`
+                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    ${defaultStatsView === 'cards'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }
+                  `}>
+                    <RadioGroupItem
+                      value="cards"
+                      id="stats-cards"
+                      className="sr-only"
+                    />
+                    <Grid3x3 className={`h-8 w-8 ${defaultStatsView === 'cards' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div className="text-center">
+                      <p className="font-medium">Cards View</p>
+                      <p className="text-xs text-muted-foreground">Traditional card grid layout</p>
+                    </div>
+                    {defaultStatsView === 'cards' && (
+                      <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                </label>
+                <label
+                  htmlFor="stats-compact"
+                  className="relative cursor-pointer"
+                >
+                  <div className={`
+                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    ${defaultStatsView === 'compact'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }
+                  `}>
+                    <RadioGroupItem
+                      value="compact"
+                      id="stats-compact"
+                      className="sr-only"
+                    />
+                    <Rows3 className={`h-8 w-8 ${defaultStatsView === 'compact' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div className="text-center">
+                      <p className="font-medium">Compact View</p>
+                      <p className="text-xs text-muted-foreground">Space-efficient list layout</p>
+                    </div>
+                    {defaultStatsView === 'compact' && (
+                      <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                </label>
+              </div>
+            </RadioGroup>
           </div>
         </CardContent>
       </Card>

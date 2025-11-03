@@ -32,16 +32,18 @@ import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { Progress } from '@/components/ui/progress';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 export default function GoalsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const {
     data: goalsData,

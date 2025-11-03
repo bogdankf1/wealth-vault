@@ -34,6 +34,7 @@ import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { useTierCheck, getFeatureDisplayName } from '@/lib/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   one_time: 'One-time',
@@ -49,12 +50,13 @@ export default function IncomePage() {
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingSourceId, setDeletingSourceId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const {
     data: sourcesData,

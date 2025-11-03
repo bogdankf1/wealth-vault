@@ -32,6 +32,8 @@ export interface UserPreferences {
   theme: 'light' | 'dark' | 'system';
   accent_color: 'blue' | 'purple' | 'green' | 'orange' | 'red' | 'pink' | 'indigo' | 'teal';
   font_size: 'small' | 'medium' | 'large';
+  default_content_view: 'card' | 'list';
+  default_stats_view: 'cards' | 'compact';
   language: string;
   timezone: string;
   currency: string;
@@ -50,6 +52,8 @@ export interface UserPreferencesUpdate {
   theme?: 'light' | 'dark' | 'system';
   accent_color?: 'blue' | 'purple' | 'green' | 'orange' | 'red' | 'pink' | 'indigo' | 'teal';
   font_size?: 'small' | 'medium' | 'large';
+  default_content_view?: 'card' | 'list';
+  default_stats_view?: 'cards' | 'compact';
   language?: string;
   timezone?: string;
   currency?: string;

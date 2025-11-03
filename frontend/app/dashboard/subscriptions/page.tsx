@@ -38,6 +38,7 @@ import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   monthly: 'Monthly',
@@ -51,11 +52,12 @@ export default function SubscriptionsPage() {
   const [editingSubscriptionId, setEditingSubscriptionId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingSubscriptionId, setDeletingSubscriptionId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const {
     data: subscriptionsData,

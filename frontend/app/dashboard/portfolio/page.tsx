@@ -31,16 +31,18 @@ import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 export default function PortfolioPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const {
     data: portfolioData,

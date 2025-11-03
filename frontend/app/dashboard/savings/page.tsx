@@ -28,6 +28,7 @@ import {
   useDeleteAccountMutation,
   type SavingsAccount,
 } from '@/lib/api/savingsApi';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   crypto: 'Cryptocurrency',
@@ -42,10 +43,11 @@ export default function SavingsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
   const [deletingAccount, setDeletingAccount] = useState<SavingsAccount | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const { data: accountsData, isLoading, error, refetch } = useListAccountsQuery();
   const { data: stats } = useGetSavingsStatsQuery();

@@ -40,6 +40,7 @@ import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { Progress } from '@/components/ui/progress';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   weekly: 'Weekly',
@@ -52,11 +53,12 @@ export default function InstallmentsPage() {
   const [editingInstallmentId, setEditingInstallmentId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingInstallmentId, setDeletingInstallmentId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const {
     data: installmentsData,

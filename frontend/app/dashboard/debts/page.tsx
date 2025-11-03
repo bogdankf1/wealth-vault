@@ -29,15 +29,17 @@ import {
   useDeleteDebtMutation,
   type Debt,
 } from '@/lib/api/debtsApi';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 export default function DebtsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDebtId, setEditingDebtId] = useState<string | null>(null);
   const [deletingDebt, setDeletingDebt] = useState<Debt | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const { data: debtsData, isLoading, error, refetch } = useListDebtsQuery();
   const { data: stats } = useGetDebtStatsQuery();

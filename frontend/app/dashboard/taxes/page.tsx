@@ -28,6 +28,7 @@ import {
   useDeleteTaxMutation,
   type Tax,
 } from '@/lib/api/taxesApi';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 export default function TaxesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -35,8 +36,9 @@ export default function TaxesPage() {
   const [deletingTax, setDeletingTax] = useState<Tax | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery();
   const { data: stats } = useGetTaxStatsQuery();

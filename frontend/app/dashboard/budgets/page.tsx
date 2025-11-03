@@ -22,6 +22,7 @@ import { MonthFilter } from '@/components/ui/month-filter';
 import { SearchFilter } from '@/components/ui/search-filter';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 
 const PERIOD_LABELS: Record<string, string> = {
   monthly: 'Monthly',
@@ -34,11 +35,12 @@ export default function BudgetsPage() {
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingBudgetId, setDeletingBudgetId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+
+  // Use default view preferences from user settings
+  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
   const { data: budgets, isLoading: budgetsLoading } = useListBudgetsQuery();
 
