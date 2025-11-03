@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, DollarSign, Percent, Edit, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { FileText, DollarSign, Percent, Edit, Trash2, CheckCircle2, XCircle, LayoutGrid, List } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -15,6 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   useListTaxesQuery,
   useGetTaxStatsQuery,
   useDeleteTaxMutation,
@@ -27,6 +35,7 @@ export default function TaxesPage() {
   const [deletingTax, setDeletingTax] = useState<Tax | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery();
   const { data: stats } = useGetTaxStatsQuery();
@@ -144,16 +153,36 @@ export default function TaxesPage() {
 
       {/* Search and Filters */}
       {hasTaxes && (
-        <div>
-          <SearchFilter
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategory={selectedType}
-            onCategoryChange={(type) => setSelectedType(type || '')}
-            categories={typeCategories}
-            searchPlaceholder="Search taxes..."
-            categoryPlaceholder="All Types"
-          />
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="flex-1">
+            <SearchFilter
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCategory={selectedType}
+              onCategoryChange={(type) => setSelectedType(type || '')}
+              categories={typeCategories}
+              searchPlaceholder="Search taxes..."
+              categoryPlaceholder="All Types"
+            />
+          </div>
+          <div className="flex items-center gap-1 border rounded-md p-1">
+            <Button
+              variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('card')}
+              className="h-8 w-8 p-0"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="h-8 w-8 p-0"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
 
@@ -184,7 +213,7 @@ export default function TaxesPage() {
             Clear Filters
           </Button>
         </div>
-      ) : (
+      ) : viewMode === 'card' ? (
         <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredTaxes.map((tax) => (
             <Card key={tax.id} className="relative">
@@ -303,6 +332,130 @@ export default function TaxesPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      ) : (
+        <div className="rounded-md border overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="hidden md:table-cell">Description</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right">Value</TableHead>
+                <TableHead className="hidden lg:table-cell">Frequency</TableHead>
+                <TableHead className="hidden xl:table-cell">Notes</TableHead>
+                <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
+                <TableHead className="hidden sm:table-cell">Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTaxes.map((tax) => (
+                <TableRow key={tax.id}>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{tax.name}</span>
+                      <span className="text-xs text-muted-foreground md:hidden line-clamp-1">
+                        {tax.description}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <span className="text-sm line-clamp-2">{tax.description || '-'}</span>
+                  </TableCell>
+                  <TableCell>
+                    {tax.tax_type === 'fixed' ? (
+                      <Badge variant="outline" className="text-xs">
+                        <DollarSign className="h-3 w-3 mr-1" />
+                        Fixed
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs">
+                        <Percent className="h-3 w-3 mr-1" />
+                        Percentage
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {tax.tax_type === 'fixed' && tax.fixed_amount ? (
+                      <div className="flex flex-col items-end">
+                        <span className="font-semibold">
+                          <CurrencyDisplay
+                            amount={tax.display_fixed_amount ?? tax.fixed_amount}
+                            currency={tax.display_currency ?? tax.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </span>
+                      </div>
+                    ) : tax.tax_type === 'percentage' && tax.percentage ? (
+                      <div className="flex flex-col items-end">
+                        <span className="font-semibold">{tax.percentage}%</span>
+                        {tax.calculated_amount !== undefined && (
+                          <span className="text-xs text-muted-foreground">
+                            ~<CurrencyDisplay
+                              amount={tax.calculated_amount}
+                              currency={tax.display_currency ?? 'USD'}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    <Badge variant="secondary" className="text-xs capitalize">
+                      {tax.frequency}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden xl:table-cell">
+                    <span className="text-sm line-clamp-2">{tax.notes || '-'}</span>
+                  </TableCell>
+                  <TableCell className="hidden 2xl:table-cell text-right">
+                    {tax.display_currency && tax.display_currency !== tax.currency && tax.tax_type === 'fixed' ? (
+                      <span className="text-sm text-muted-foreground">
+                        {tax.fixed_amount} {tax.currency}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {tax.is_active ? (
+                      <Badge variant="default" className="bg-green-600 text-xs">
+                        Active
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        Inactive
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(tax.id)}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteClick(tax)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 

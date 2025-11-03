@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, BarChart3, LayoutGrid, List } from 'lucide-react';
 import {
   useListPortfolioAssetsQuery,
   useGetPortfolioStatsQuery,
@@ -14,6 +14,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -29,6 +37,7 @@ export default function PortfolioPage() {
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -237,7 +246,27 @@ export default function PortfolioPage() {
       {/* Assets List */}
       <div>
         <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
-          <h2 className="text-xl font-semibold">Assets</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold">Assets</h2>
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Search and Asset Type Filter */}
@@ -276,7 +305,7 @@ export default function PortfolioPage() {
               setSelectedCategory(null);
             }}
           />
-        ) : (
+        ) : viewMode === 'card' ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredAssets.map((asset) => {
               const displayCurrency = asset.display_currency || asset.currency;
@@ -455,6 +484,131 @@ export default function PortfolioPage() {
                 </Card>
               );
             })}
+          </div>
+        ) : (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Asset</TableHead>
+                    <TableHead className="hidden lg:table-cell">Type</TableHead>
+                    <TableHead className="text-right">Current Value</TableHead>
+                    <TableHead className="hidden md:table-cell text-right">Return</TableHead>
+                    <TableHead className="hidden sm:table-cell text-right">Quantity</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">Current Price</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">Original Value</TableHead>
+                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAssets.map((asset) => {
+                    const displayCurrency = asset.display_currency || asset.currency;
+                    const displayCurrentValue = asset.display_current_value ?? asset.current_value ?? 0;
+                    const displayTotalReturn = asset.display_total_return ?? asset.total_return ?? 0;
+                    const displayCurrentPrice = asset.display_current_price ?? asset.current_price;
+                    const returnPercentage = asset.return_percentage || 0;
+                    const isPositive = displayTotalReturn >= 0;
+
+                    return (
+                      <TableRow key={asset.id}>
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px]">
+                            <p className="truncate">{asset.asset_name}</p>
+                            {asset.symbol && (
+                              <p className="text-xs text-muted-foreground font-mono truncate">
+                                {asset.symbol}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {asset.asset_type ? (
+                            <Badge variant="outline" className="text-xs">{asset.asset_type}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          <CurrencyDisplay
+                            amount={displayCurrentValue}
+                            currency={displayCurrency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-right">
+                          <div className="flex flex-col items-end">
+                            <span className={`font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                              <CurrencyDisplay
+                                amount={displayTotalReturn}
+                                currency={displayCurrency}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </span>
+                            <span className={`text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatPercentage(returnPercentage)}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-right">
+                          <span className="text-sm">
+                            {parseFloat(asset.quantity.toString()).toFixed(2)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell text-right">
+                          <span className="text-sm">
+                            <CurrencyDisplay
+                              amount={displayCurrentPrice}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden 2xl:table-cell text-right">
+                          {asset.display_currency && asset.display_currency !== asset.currency ? (
+                            <span className="text-sm text-muted-foreground">
+                              {asset.current_value || 0} {asset.currency}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant={asset.is_active ? 'secondary' : 'outline'} className="text-xs">
+                            {asset.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditAsset(asset.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteAsset(asset.id)}
+                              disabled={isDeleting}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

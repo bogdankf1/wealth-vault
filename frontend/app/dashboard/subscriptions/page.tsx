@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, TrendingDown, RefreshCw, Edit, Trash2 } from 'lucide-react';
+import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, LayoutGrid, List } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListSubscriptionsQuery,
@@ -21,6 +21,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -43,6 +51,7 @@ export default function SubscriptionsPage() {
   const [editingSubscriptionId, setEditingSubscriptionId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingSubscriptionId, setDeletingSubscriptionId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
@@ -220,7 +229,27 @@ export default function SubscriptionsPage() {
       {/* Subscriptions List */}
       <div>
         <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
-          <h2 className="text-lg md:text-xl font-semibold">Subscriptions</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg md:text-xl font-semibold">Subscriptions</h2>
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -273,7 +302,7 @@ export default function SubscriptionsPage() {
               }}
             />
           )
-        ) : (
+        ) : viewMode === 'card' ? (
           <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSubscriptions.map((subscription) => {
               // Calculate next renewal date
@@ -374,6 +403,129 @@ export default function SubscriptionsPage() {
                 </Card>
               );
             })}
+          </div>
+        ) : (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead className="hidden lg:table-cell">Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
+                    <TableHead className="hidden xl:table-cell">Next Renewal</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSubscriptions.map((subscription) => {
+                    const { nextRenewal, isEnded, daysUntilRenewal } = calculateNextRenewalDate(
+                      subscription.start_date,
+                      subscription.frequency,
+                      subscription.end_date
+                    );
+                    const urgency = getRenewalUrgency(daysUntilRenewal);
+                    const renewalMessage = getRenewalMessage(daysUntilRenewal, isEnded);
+
+                    return (
+                      <TableRow key={subscription.id}>
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px]">
+                            <p className="truncate">{subscription.name}</p>
+                            <p className="text-xs text-muted-foreground md:hidden truncate">
+                              {subscription.description}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                            {subscription.description || '-'}
+                          </p>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {subscription.category ? (
+                            <Badge variant="outline" className="text-xs">{subscription.category}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          <CurrencyDisplay
+                            amount={subscription.display_amount ?? subscription.amount}
+                            currency={subscription.display_currency ?? subscription.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <span className="text-sm text-muted-foreground">
+                            {FREQUENCY_LABELS[subscription.frequency] || subscription.frequency}
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          {nextRenewal ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm">
+                                {formatRenewalDate(nextRenewal)}
+                              </span>
+                              <Badge
+                                variant={getRenewalBadgeVariant(urgency)}
+                                className="text-xs w-fit"
+                              >
+                                {renewalMessage}
+                              </Badge>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              {isEnded ? 'Ended' : '-'}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden 2xl:table-cell text-right">
+                          {subscription.display_currency && subscription.display_currency !== subscription.currency ? (
+                            <span className="text-sm text-muted-foreground">
+                              {subscription.amount} {subscription.currency}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {subscription.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditSubscription(subscription.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteSubscription(subscription.id)}
+                              disabled={isDeleting}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

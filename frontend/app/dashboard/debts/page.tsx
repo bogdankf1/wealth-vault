@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UserMinus, TrendingUp, AlertCircle, Edit, Trash2, CheckCircle2, Clock } from 'lucide-react';
+import { UserMinus, TrendingUp, AlertCircle, Edit, Trash2, CheckCircle2, Clock, LayoutGrid, List } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -16,6 +16,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   useListDebtsQuery,
   useGetDebtStatsQuery,
   useDeleteDebtMutation,
@@ -26,6 +34,7 @@ export default function DebtsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDebtId, setEditingDebtId] = useState<string | null>(null);
   const [deletingDebt, setDeletingDebt] = useState<Debt | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
 
@@ -139,6 +148,31 @@ export default function DebtsPage() {
         <StatsCards stats={statsCards} />
       ) : null}
 
+      {/* Debts Heading and View Toggle */}
+      {hasDebts && (
+        <div className="mb-3 md:mb-4 flex items-center gap-3">
+          <h2 className="text-lg md:text-xl font-semibold">Debts</h2>
+          <div className="flex items-center gap-1 border rounded-md p-1">
+            <Button
+              variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('card')}
+              className="h-8 w-8 p-0"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="h-8 w-8 p-0"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Search and Filters */}
       {hasDebts && (
         <div>
@@ -181,7 +215,7 @@ export default function DebtsPage() {
             Clear Filters
           </Button>
         </div>
-      ) : (
+      ) : viewMode === 'card' ? (
         <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredDebts.map((debt) => (
             <Card key={debt.id} className="relative">
@@ -312,6 +346,130 @@ export default function DebtsPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px]">Debtor</TableHead>
+                  <TableHead className="hidden md:table-cell">Description</TableHead>
+                  <TableHead className="text-right">Paid</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="hidden lg:table-cell text-right">Progress</TableHead>
+                  <TableHead className="hidden xl:table-cell">Dates</TableHead>
+                  <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
+                  <TableHead className="hidden sm:table-cell">Status</TableHead>
+                  <TableHead className="text-right w-[140px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredDebts.map((debt) => (
+                  <TableRow key={debt.id}>
+                    <TableCell className="font-medium">
+                      <div className="max-w-[200px]">
+                        <p className="truncate">{debt.debtor_name}</p>
+                        <p className="text-xs text-muted-foreground md:hidden truncate">
+                          {debt.description}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                        {debt.description || '-'}
+                      </p>
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      <CurrencyDisplay
+                        amount={debt.display_amount_paid ?? debt.amount_paid}
+                        currency={debt.display_currency ?? debt.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm text-muted-foreground">
+                        <CurrencyDisplay
+                          amount={debt.display_amount ?? debt.amount}
+                          currency={debt.display_currency ?? debt.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell text-right">
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-sm font-semibold">{Math.round(debt.progress_percentage || 0)}%</span>
+                        <Progress value={debt.progress_percentage || 0} className="h-1 w-16" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                        {debt.paid_date && (
+                          <span className="flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Paid: {new Date(debt.paid_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        {debt.due_date && !debt.is_paid && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Due: {new Date(debt.due_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        {!debt.paid_date && !debt.due_date && <span>-</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden 2xl:table-cell text-right">
+                      {debt.display_currency && debt.display_currency !== debt.currency ? (
+                        <span className="text-sm text-muted-foreground">
+                          {debt.amount} {debt.currency}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {debt.is_paid ? (
+                        <Badge variant="default" className="bg-green-600 text-xs">
+                          Paid
+                        </Badge>
+                      ) : debt.is_overdue ? (
+                        <Badge variant="destructive" className="text-xs">
+                          Overdue
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">
+                          Active
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(debt.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(debt)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 

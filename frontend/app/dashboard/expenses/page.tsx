@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload, LayoutGrid, List } from 'lucide-react';
 import Link from 'next/link';
 import {
   useListExpensesQuery,
@@ -15,6 +15,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -40,6 +48,7 @@ export default function ExpensesPage() {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   // Default to current month in YYYY-MM format
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -203,7 +212,27 @@ export default function ExpensesPage() {
       {/* Expenses List */}
       <div>
         <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg md:text-xl font-semibold">Expenses</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg md:text-xl font-semibold">Expenses</h2>
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -253,7 +282,7 @@ export default function ExpensesPage() {
               onAction={handleAddExpense}
             />
           )
-        ) : (
+        ) : viewMode === 'card' ? (
           <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredExpenses.map((expense) => (
               <Card key={expense.id} className="relative">
@@ -340,6 +369,114 @@ export default function ExpensesPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        ) : (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead className="hidden lg:table-cell">Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">Monthly Equiv.</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredExpenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell className="font-medium">
+                        <div className="max-w-[200px]">
+                          <p className="truncate">{expense.name}</p>
+                          <p className="text-xs text-muted-foreground md:hidden truncate">
+                            {expense.description}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                          {expense.description || '-'}
+                        </p>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {expense.category ? (
+                          <Badge variant="outline" className="text-xs">{expense.category}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        <CurrencyDisplay
+                          amount={expense.display_amount ?? expense.amount}
+                          currency={expense.display_currency ?? expense.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <span className="text-sm text-muted-foreground">
+                          {FREQUENCY_LABELS[expense.frequency] || expense.frequency}
+                        </span>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell text-right">
+                        {(expense.display_monthly_equivalent ?? expense.monthly_equivalent) ? (
+                          <span className="text-sm">
+                            <CurrencyDisplay
+                              amount={expense.display_monthly_equivalent ?? expense.monthly_equivalent ?? 0}
+                              currency={expense.display_currency ?? expense.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden 2xl:table-cell text-right">
+                        {expense.display_currency && expense.display_currency !== expense.currency ? (
+                          <span className="text-sm text-muted-foreground">
+                            {expense.amount} {expense.currency}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs">
+                          {expense.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditExpense(expense.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteExpense(expense.id)}
+                            disabled={isDeleting}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

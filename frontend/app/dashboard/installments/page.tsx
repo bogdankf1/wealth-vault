@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreditCard, TrendingDown, DollarSign, Edit, Trash2 } from 'lucide-react';
+import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, LayoutGrid, List } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListInstallmentsQuery,
@@ -22,6 +22,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -44,6 +52,7 @@ export default function InstallmentsPage() {
   const [editingInstallmentId, setEditingInstallmentId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingInstallmentId, setDeletingInstallmentId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
@@ -232,7 +241,27 @@ export default function InstallmentsPage() {
       {/* Installments List */}
       <div>
         <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
-          <h2 className="text-lg md:text-xl font-semibold">Installments</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg md:text-xl font-semibold">Installments</h2>
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -285,7 +314,7 @@ export default function InstallmentsPage() {
               }}
             />
           )
-        ) : (
+        ) : viewMode === 'card' ? (
           <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredInstallments.map((installment) => {
               // Calculate next payment date
@@ -439,6 +468,147 @@ export default function InstallmentsPage() {
                 </Card>
               );
             })}
+          </div>
+        ) : (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead className="text-right">Remaining</TableHead>
+                    <TableHead className="hidden sm:table-cell text-right">Payment</TableHead>
+                    <TableHead className="hidden lg:table-cell text-right">Progress</TableHead>
+                    <TableHead className="hidden xl:table-cell">Next Payment</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
+                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredInstallments.map((installment) => {
+                    const { nextPayment, isPaidOff, daysUntilPayment } = calculateNextPaymentDate(
+                      installment.first_payment_date,
+                      installment.frequency,
+                      installment.payments_made,
+                      installment.number_of_payments,
+                      installment.end_date
+                    );
+                    const urgency = getPaymentUrgency(daysUntilPayment);
+                    const paymentMessage = getPaymentMessage(daysUntilPayment, isPaidOff);
+                    const percentPaid = calculatePercentPaid(
+                      installment.payments_made,
+                      installment.number_of_payments
+                    );
+
+                    return (
+                      <TableRow key={installment.id}>
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px]">
+                            <p className="truncate">{installment.name}</p>
+                            <p className="text-xs text-muted-foreground md:hidden truncate">
+                              {installment.description}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {installment.category ? (
+                            <Badge variant="outline" className="text-xs">{installment.category}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          <CurrencyDisplay
+                            amount={installment.display_remaining_balance ?? installment.remaining_balance ?? installment.display_total_amount ?? installment.total_amount}
+                            currency={installment.display_currency ?? installment.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-right">
+                          <div className="flex flex-col items-end">
+                            <span className="text-sm">
+                              <CurrencyDisplay
+                                amount={installment.display_amount_per_payment ?? installment.amount_per_payment}
+                                currency={installment.display_currency ?? installment.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-right">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-sm">{installment.payments_made}/{installment.number_of_payments}</span>
+                            <Progress value={percentPaid} className="h-1 w-16" />
+                            <span className="text-xs text-muted-foreground">{percentPaid}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          {nextPayment ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm">
+                                {formatPaymentDate(nextPayment)}
+                              </span>
+                              <Badge
+                                variant={getPaymentBadgeVariant(urgency)}
+                                className="text-xs w-fit"
+                              >
+                                {paymentMessage}
+                              </Badge>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              {isPaidOff ? 'Paid Off' : '-'}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden 2xl:table-cell text-right">
+                          {installment.display_currency && installment.display_currency !== installment.currency ? (
+                            <span className="text-sm text-muted-foreground">
+                              {installment.total_amount} {installment.currency}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {installment.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditInstallment(installment.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteInstallment(installment.id)}
+                              disabled={isDeleting}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

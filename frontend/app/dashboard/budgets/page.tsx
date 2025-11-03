@@ -1,11 +1,19 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Wallet, Target, DollarSign } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Wallet, Target, DollarSign, LayoutGrid, List } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useListBudgetsQuery, useGetBudgetOverviewQuery, useDeleteBudgetMutation } from '@/lib/api/budgetsApi';
 import { BudgetForm } from '@/components/budgets/budget-form';
 import { BudgetProgressChart } from '@/components/budgets/budget-progress-chart';
@@ -25,6 +33,7 @@ export default function BudgetsPage() {
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingBudgetId, setDeletingBudgetId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -327,7 +336,27 @@ export default function BudgetsPage() {
       {/* Budget List */}
       <div>
         <div className="mb-3 md:mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg md:text-xl font-semibold">Budgets</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg md:text-xl font-semibold">Budgets</h2>
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
@@ -368,7 +397,7 @@ export default function BudgetsPage() {
               Clear Filters
             </Button>
           </div>
-        ) : (
+        ) : viewMode === 'card' ? (
           <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredBudgets.map((budget) => (
               <Card key={budget.id} className="relative">
@@ -449,6 +478,106 @@ export default function BudgetsPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        ) : (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead className="hidden lg:table-cell">Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Period</TableHead>
+                    <TableHead className="hidden xl:table-cell">Date Range</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredBudgets.map((budget) => (
+                    <TableRow key={budget.id}>
+                      <TableCell className="font-medium">
+                        <div className="max-w-[200px]">
+                          <p className="truncate">{budget.name}</p>
+                          <p className="text-xs text-muted-foreground md:hidden truncate">
+                            {budget.description}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                          {budget.description || '-'}
+                        </p>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {budget.category ? (
+                          <Badge variant="outline" className="text-xs">{budget.category}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        <CurrencyDisplay
+                          amount={budget.display_amount ?? budget.amount}
+                          currency={budget.display_currency ?? budget.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <span className="text-sm text-muted-foreground">
+                          {PERIOD_LABELS[budget.period] || budget.period}
+                        </span>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell">
+                        <span className="text-sm text-muted-foreground">
+                          {budget.start_date.split('T')[0]}
+                          {budget.end_date ? ` to ${budget.end_date.split('T')[0]}` : ' (ongoing)'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="hidden 2xl:table-cell text-right">
+                        {budget.display_currency && budget.display_currency !== budget.currency ? (
+                          <span className="text-sm text-muted-foreground">
+                            {budget.amount} {budget.currency}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <Badge variant={budget.is_active ? 'default' : 'secondary'} className="text-xs">
+                          {budget.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditBudget(budget.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteBudget(budget.id)}
+                            disabled={isDeleting}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

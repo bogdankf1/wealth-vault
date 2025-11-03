@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Target, TrendingUp, DollarSign, Edit, Trash2, CheckCircle2 } from 'lucide-react';
+import { Target, TrendingUp, DollarSign, Edit, Trash2, CheckCircle2, LayoutGrid, List } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListGoalsQuery,
@@ -15,6 +15,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -30,6 +38,7 @@ export default function GoalsPage() {
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -180,7 +189,27 @@ export default function GoalsPage() {
       {/* Goals List */}
       <div>
         <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-h-[38px]">
-          <h2 className="text-xl font-semibold">Goals</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold">Goals</h2>
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('card')}
+                className="h-8 w-8 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Search and Category Filter */}
@@ -219,7 +248,7 @@ export default function GoalsPage() {
               setSelectedCategory(null);
             }}
           />
-        ) : (
+        ) : viewMode === 'card' ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredGoals.map((goal) => {
               const progress = goal.progress_percentage || 0;
@@ -370,6 +399,146 @@ export default function GoalsPage() {
                 </Card>
               );
             })}
+          </div>
+        ) : (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead className="text-right">Saved</TableHead>
+                    <TableHead className="text-right">Target</TableHead>
+                    <TableHead className="hidden sm:table-cell text-right">Progress</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">Monthly Contrib.</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">Original Target</TableHead>
+                    <TableHead className="hidden lg:table-cell">Target Date</TableHead>
+                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredGoals.map((goal) => {
+                    const progress = goal.progress_percentage || 0;
+                    const displayTarget = goal.display_target_amount ?? goal.target_amount;
+                    const displayCurrent = goal.display_current_amount ?? goal.current_amount;
+                    const displayCurrency = goal.display_currency ?? goal.currency;
+
+                    return (
+                      <TableRow key={goal.id}>
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px]">
+                            <p className="truncate">{goal.name}</p>
+                            <p className="text-xs text-muted-foreground md:hidden truncate">
+                              {goal.description}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {goal.category ? (
+                            <Badge variant="outline" className="text-xs">{goal.category}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          <CurrencyDisplay
+                            amount={displayCurrent}
+                            currency={displayCurrency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className="text-sm text-muted-foreground">
+                            <CurrencyDisplay
+                              amount={displayTarget}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-right">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-sm font-semibold">{Math.round(progress)}%</span>
+                            <Progress value={progress} className="h-1 w-16" />
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell text-right">
+                          {goal.monthly_contribution && goal.monthly_contribution > 0 ? (
+                            <span className="text-sm">
+                              <CurrencyDisplay
+                                amount={goal.display_monthly_contribution ?? goal.monthly_contribution}
+                                currency={displayCurrency}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden 2xl:table-cell text-right">
+                          {goal.display_currency && goal.display_currency !== goal.currency ? (
+                            <span className="text-sm text-muted-foreground">
+                              {goal.target_amount} {goal.currency}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {goal.target_date ? (
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(goal.target_date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'} className="text-xs">
+                            {goal.is_completed ? (
+                              <span className="flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Done
+                              </span>
+                            ) : goal.is_active ? 'Active' : 'Paused'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditGoal(goal.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteGoal(goal.id)}
+                              disabled={isDeleting}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>
