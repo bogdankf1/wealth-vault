@@ -97,6 +97,8 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
   // Local state to track the string value of total_amount while user is typing
   const [totalAmountInput, setTotalAmountInput] = React.useState<string>('');
+  // Local state to track the string value of amount_per_payment while user is typing
+  const [paymentAmountInput, setPaymentAmountInput] = React.useState<string>('');
 
   const {
     data: existingInstallment,
@@ -167,14 +169,20 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
   // Load existing installment data or reset for new installment
   useEffect(() => {
     if (isEditing && existingInstallment) {
+      const totalAmountNum = typeof existingInstallment.total_amount === 'string'
+        ? parseFloat(existingInstallment.total_amount)
+        : existingInstallment.total_amount;
+
+      const paymentAmountNum = typeof existingInstallment.amount_per_payment === 'string'
+        ? parseFloat(existingInstallment.amount_per_payment)
+        : existingInstallment.amount_per_payment;
+
       const formData = {
         name: existingInstallment.name,
         description: existingInstallment.description || '',
         category: existingInstallment.category || '',
-        total_amount: typeof existingInstallment.total_amount === 'string'
-          ? parseFloat(existingInstallment.total_amount)
-          : existingInstallment.total_amount,
-        amount_per_payment: existingInstallment.amount_per_payment,
+        total_amount: totalAmountNum,
+        amount_per_payment: paymentAmountNum,
         currency: existingInstallment.currency,
         interest_rate: existingInstallment.interest_rate || 0,
         frequency: existingInstallment.frequency as InstallmentFrequency,
@@ -191,11 +199,9 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
       reset(formData);
 
-      // Set the total amount input string
-      const totalAmountNum = typeof existingInstallment.total_amount === 'string'
-        ? parseFloat(existingInstallment.total_amount)
-        : existingInstallment.total_amount;
+      // Set the input string states
       setTotalAmountInput(String(totalAmountNum));
+      setPaymentAmountInput(String(paymentAmountNum));
 
       setTimeout(() => {
         if (existingInstallment.category) {
@@ -222,6 +228,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         end_date: '',
       });
       setTotalAmountInput('');
+      setPaymentAmountInput('');
     }
   }, [isEditing, existingInstallment, isOpen, reset, setValue]);
 
@@ -279,6 +286,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
   const handleClose = () => {
     onClose();
     setTotalAmountInput('');
+    setPaymentAmountInput('');
     reset({
       currency: 'USD',
       frequency: 'monthly',
@@ -391,11 +399,22 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                     type="text"
                     inputMode="decimal"
                     placeholder="0.00"
-                    value={watch('amount_per_payment')?.toString() || ''}
+                    value={paymentAmountInput}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                        setValue('amount_per_payment', parseFloat(value) || 0);
+                        // Update the local string state to allow typing decimal points
+                        setPaymentAmountInput(value);
+
+                        // Update the form state with the numeric value
+                        if (value === '') {
+                          setValue('amount_per_payment', 0, { shouldValidate: true });
+                        } else {
+                          const numValue = parseFloat(value);
+                          if (!isNaN(numValue)) {
+                            setValue('amount_per_payment', numValue, { shouldValidate: true });
+                          }
+                        }
                       }
                     }}
                   />
