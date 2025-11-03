@@ -114,19 +114,29 @@ def calculate_end_date(
     number_of_payments: int,
     payments_made: int = 0
 ) -> datetime:
-    """Calculate the final payment date based on frequency and remaining payments."""
-    remaining_payments = number_of_payments - payments_made
+    """
+    Calculate the final payment date based on frequency and total number of payments.
 
+    The payoff date is fixed based on the first payment date and total number of payments,
+    regardless of how many payments have been made (payments_made is for tracking only).
+
+    Example: If first payment is April 22, 2025 and there are 10 monthly payments,
+    the last payment (payoff date) will be January 22, 2026 (first payment + 9 months).
+    """
     # Ensure first_payment_date is naive
     if first_payment_date.tzinfo is not None:
         first_payment_date = first_payment_date.replace(tzinfo=None)
 
+    # Calculate the date of the LAST payment
+    # We subtract 1 because the first payment is on first_payment_date (payment 1 of N)
+    intervals_to_last_payment = number_of_payments - 1
+
     if frequency == "weekly":
-        delta = relativedelta(weeks=remaining_payments)
+        delta = relativedelta(weeks=intervals_to_last_payment)
     elif frequency == "biweekly":
-        delta = relativedelta(weeks=remaining_payments * 2)
+        delta = relativedelta(weeks=intervals_to_last_payment * 2)
     else:  # monthly
-        delta = relativedelta(months=remaining_payments)
+        delta = relativedelta(months=intervals_to_last_payment)
 
     result = first_payment_date + delta
 
