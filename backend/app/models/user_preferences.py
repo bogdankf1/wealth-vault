@@ -18,6 +18,8 @@ class UserPreferences(BaseModel):
     theme = Column(String(20), default="system", nullable=False)  # "light", "dark", "system"
     accent_color = Column(String(20), default="blue", nullable=False)
     font_size = Column(String(20), default="medium", nullable=False)  # "small", "medium", "large"
+    default_content_view = Column(String(20), default="card", nullable=False)  # "card", "list"
+    default_stats_view = Column(String(20), default="cards", nullable=False)  # "cards", "compact"
 
     # Locale preferences
     language = Column(String(10), default="en", nullable=False)
