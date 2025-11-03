@@ -22,7 +22,7 @@ class InstallmentCreate(BaseModel):
     interest_rate: Optional[Decimal] = Field(None, ge=0, le=100)  # 0-100%
     frequency: InstallmentFrequency
     number_of_payments: int = Field(..., ge=1)
-    payments_made: int = Field(default=0, ge=0)
+    payments_made: Optional[int] = Field(None, ge=0)  # Auto-calculated, ignored if provided
     start_date: datetime
     first_payment_date: datetime
     end_date: Optional[datetime] = None

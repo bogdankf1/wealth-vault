@@ -108,6 +108,56 @@ def calculate_remaining_balance(
         return max(Decimal('0'), remaining)
 
 
+def calculate_payments_made(
+    first_payment_date: datetime,
+    frequency: str,
+    number_of_payments: int
+) -> int:
+    """
+    Calculate how many payments have been made based on the current date.
+
+    Logic:
+    - Counts how many payment dates have passed (including today if it's a payment date)
+    - A payment is considered "made" if the payment date has passed or is today
+    - Never exceeds the total number of payments
+
+    Example: If first payment is April 22, 2025, frequency is monthly, total payments is 10,
+    and today is November 23, 2025:
+    - Payment dates: Apr 22, May 22, Jun 22, Jul 22, Aug 22, Sep 22, Oct 22, Nov 22, Dec 22, Jan 22
+    - Since Nov 22 has passed (today is Nov 23), payments made = 8
+    """
+    # Get current date (naive)
+    current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
+
+    # Ensure first_payment_date is naive and at midnight
+    if first_payment_date.tzinfo is not None:
+        first_payment_date = first_payment_date.replace(tzinfo=None)
+    first_payment_date = first_payment_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # If first payment hasn't happened yet, no payments made
+    if current_date < first_payment_date:
+        return 0
+
+    # Calculate how many payment intervals have passed
+    payments_made = 0
+    payment_date = first_payment_date
+
+    for i in range(number_of_payments):
+        if payment_date <= current_date:
+            payments_made += 1
+            # Calculate next payment date
+            if frequency == "weekly":
+                payment_date += relativedelta(weeks=1)
+            elif frequency == "biweekly":
+                payment_date += relativedelta(weeks=2)
+            else:  # monthly
+                payment_date += relativedelta(months=1)
+        else:
+            break
+
+    return min(payments_made, number_of_payments)
+
+
 def calculate_end_date(
     first_payment_date: datetime,
     frequency: str,
@@ -153,11 +203,18 @@ async def create_installment(
     installment_data: InstallmentCreate
 ) -> Installment:
     """Create a new installment"""
+    # Automatically calculate payments made based on current date
+    payments_made = calculate_payments_made(
+        installment_data.first_payment_date,
+        installment_data.frequency,
+        installment_data.number_of_payments
+    )
+
     # Calculate remaining balance
     remaining_balance = calculate_remaining_balance(
         installment_data.total_amount,
         installment_data.amount_per_payment,
-        installment_data.payments_made,
+        payments_made,
         installment_data.interest_rate
     )
 
@@ -168,14 +225,17 @@ async def create_installment(
             installment_data.first_payment_date,
             installment_data.frequency,
             installment_data.number_of_payments,
-            installment_data.payments_made
+            payments_made
         )
 
+    # Create installment with calculated payments_made
+    installment_dict = installment_data.model_dump(exclude={'end_date', 'payments_made'})
     installment = Installment(
         user_id=user_id,
+        payments_made=payments_made,
         remaining_balance=remaining_balance,
         end_date=end_date,
-        **installment_data.model_dump(exclude={'end_date'})
+        **installment_dict
     )
     db.add(installment)
     await db.commit()
@@ -245,28 +305,33 @@ async def update_installment(
     if not installment:
         return None
 
-    # Update fields
-    update_dict = installment_data.model_dump(exclude_unset=True)
+    # Update fields (exclude payments_made since it's auto-calculated)
+    update_dict = installment_data.model_dump(exclude_unset=True, exclude={'payments_made'})
     for key, value in update_dict.items():
         setattr(installment, key, value)
 
-    # Recalculate remaining balance if relevant fields changed
-    if any(k in update_dict for k in ['total_amount', 'amount_per_payment', 'payments_made', 'interest_rate']):
-        installment.remaining_balance = calculate_remaining_balance(
-            installment.total_amount,
-            installment.amount_per_payment,
-            installment.payments_made,
-            installment.interest_rate
-        )
+    # Recalculate payments made based on current date (always recalculate on update)
+    installment.payments_made = calculate_payments_made(
+        installment.first_payment_date,
+        installment.frequency,
+        installment.number_of_payments
+    )
 
-    # Recalculate end date if relevant fields changed
-    if any(k in update_dict for k in ['first_payment_date', 'frequency', 'number_of_payments', 'payments_made']):
-        installment.end_date = calculate_end_date(
-            installment.first_payment_date,
-            installment.frequency,
-            installment.number_of_payments,
-            installment.payments_made
-        )
+    # Recalculate remaining balance
+    installment.remaining_balance = calculate_remaining_balance(
+        installment.total_amount,
+        installment.amount_per_payment,
+        installment.payments_made,
+        installment.interest_rate
+    )
+
+    # Recalculate end date
+    installment.end_date = calculate_end_date(
+        installment.first_payment_date,
+        installment.frequency,
+        installment.number_of_payments,
+        installment.payments_made
+    )
 
     installment.updated_at = datetime.utcnow()
 
