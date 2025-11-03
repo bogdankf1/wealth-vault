@@ -74,7 +74,7 @@ export function SortFilter({
 
       {/* Sort Field Selector */}
       <Select value={sortField} onValueChange={(value) => onSortFieldChange(value as SortField)}>
-        <SelectTrigger className="w-[130px]">
+        <SelectTrigger className="h-9 w-[130px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -91,7 +91,7 @@ export function SortFilter({
         variant="outline"
         size="sm"
         onClick={toggleDirection}
-        className="gap-2"
+        className="h-9 gap-2"
         title={`Sort ${getDirectionLabel()}`}
       >
         {getSortIcon()}

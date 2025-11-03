@@ -25,6 +25,7 @@ export function MonthFilter({
         size="sm"
         onClick={() => onMonthChange(null)}
         disabled={!selectedMonth}
+        className="h-9"
       >
         Clear
       </Button>
@@ -38,7 +39,7 @@ export function MonthFilter({
         onChange={(e) => onMonthChange(e.target.value || null)}
         min="2020-01"
         max="2030-12"
-        className="rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="h-9 rounded-md border border-input bg-background px-3 text-sm cursor-pointer ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         style={{ colorScheme: 'light' }}
       />
     </div>

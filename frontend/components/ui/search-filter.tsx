@@ -45,7 +45,7 @@ export function SearchFilter({
           placeholder={searchPlaceholder}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9"
+          className="h-9 pl-9"
         />
       </div>
 
@@ -54,7 +54,7 @@ export function SearchFilter({
         value={selectedCategory || 'all'}
         onValueChange={(value) => onCategoryChange(value === 'all' ? null : value)}
       >
-        <SelectTrigger className="w-full sm:w-[180px]">
+        <SelectTrigger className="h-9 w-full sm:w-[180px]">
           <SelectValue placeholder={categoryPlaceholder} />
         </SelectTrigger>
         <SelectContent>

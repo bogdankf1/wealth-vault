@@ -236,12 +236,12 @@ export default function IncomePage() {
       ) : stats ? (
         <div className="space-y-3">
           <div className="flex items-center justify-end">
-            <div className="flex items-center gap-1 border rounded-md p-1 w-fit">
+            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
               <Button
                 variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setStatsViewMode('cards')}
-                className="h-8 w-8 p-0"
+                className="h-[32px] w-[32px] p-0"
               >
                 <Grid3x3 className="h-4 w-4" />
               </Button>
@@ -249,7 +249,7 @@ export default function IncomePage() {
                 variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setStatsViewMode('compact')}
-                className="h-8 w-8 p-0"
+                className="h-[32px] w-[32px] p-0"
               >
                 <Rows3 className="h-4 w-4" />
               </Button>
@@ -308,12 +308,12 @@ export default function IncomePage() {
                 onSortFieldChange={setSortField}
                 onSortDirectionChange={setSortDirection}
               />
-              <div className="flex items-center gap-1 border rounded-md p-1 w-fit self-end">
+              <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
                 <Button
                   variant={viewMode === 'card' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('card')}
-                  className="h-8 w-8 p-0"
+                  className="h-[32px] w-[32px] p-0"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
@@ -321,7 +321,7 @@ export default function IncomePage() {
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="h-8 w-8 p-0"
+                  className="h-[32px] w-[32px] p-0"
                 >
                   <List className="h-4 w-4" />
                 </Button>
