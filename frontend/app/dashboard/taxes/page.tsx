@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, DollarSign, Percent, Edit, Trash2, CheckCircle2, XCircle, LayoutGrid, List } from 'lucide-react';
+import { FileText, DollarSign, Percent, Edit, Trash2, CheckCircle2, XCircle, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -36,6 +36,7 @@ export default function TaxesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
 
   const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery();
   const { data: stats } = useGetTaxStatsQuery();
@@ -148,7 +149,52 @@ export default function TaxesPage() {
       {isLoading ? (
         <LoadingCards count={3} />
       ) : stats ? (
-        <StatsCards stats={statsCards} />
+        <div className="space-y-3">
+          <div className="flex items-center justify-end">
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit">
+              <Button
+                variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setStatsViewMode('cards')}
+                className="h-8 w-8 p-0"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setStatsViewMode('compact')}
+                className="h-8 w-8 p-0"
+              >
+                <Rows3 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {statsViewMode === 'cards' ? (
+            <StatsCards stats={statsCards} />
+          ) : (
+            <div className="border rounded-lg overflow-hidden bg-card">
+              <div className="divide-y">
+                {statsCards.map((stat, index) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm font-medium truncate">{stat.title}</span>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-lg font-bold">{stat.value}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       ) : null}
 
       {/* Search and Filters */}

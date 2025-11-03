@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload, LayoutGrid, List } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import Link from 'next/link';
 import {
   useListExpensesQuery,
@@ -50,6 +50,7 @@ export default function ExpensesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
 
   // Default to current month in YYYY-MM format
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -190,22 +191,82 @@ export default function ExpensesPage() {
         </Link>
       </ModuleHeader>
 
-      {/* Statistics Cards */}
-      {isLoadingStats ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="space-y-2">
-                <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-              </CardHeader>
-            </Card>
-          ))}
+      {/* Statistics Section with Toggle */}
+      {isLoadingStats || statsError || stats ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-end">
+            <div className="flex items-center gap-1 border rounded-md p-1 w-fit">
+              <Button
+                variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setStatsViewMode('cards')}
+                className="h-7 w-7 p-0"
+                title="Cards View"
+              >
+                <Grid3x3 className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setStatsViewMode('compact')}
+                className="h-7 w-7 p-0"
+                title="Compact View"
+              >
+                <Rows3 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          {isLoadingStats ? (
+            statsViewMode === 'cards' ? (
+              <div className="grid gap-4 md:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i}>
+                    <CardHeader className="space-y-2">
+                      <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                      <div className="h-8 w-32 animate-pulse rounded bg-muted" />
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="border rounded-lg p-3 bg-card">
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between py-1.5 border-b last:border-b-0">
+                      <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          ) : statsError ? (
+            <ApiErrorState error={statsError} />
+          ) : stats && statsViewMode === 'cards' ? (
+            <StatsCards stats={statsCards} />
+          ) : stats && statsViewMode === 'compact' ? (
+            <div className="border rounded-lg overflow-hidden bg-card">
+              <div className="divide-y">
+                {statsCards.map((stat, index) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm font-medium truncate">{stat.title}</span>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-lg font-bold">{stat.value}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
-      ) : statsError ? (
-        <ApiErrorState error={statsError} />
-      ) : stats ? (
-        <StatsCards stats={statsCards} />
       ) : null}
 
       {/* Search, Filters, and View Toggle */}
