@@ -29,6 +29,7 @@ import {
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
+import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 const navigation = [
@@ -79,6 +80,9 @@ export default function DashboardLayout({
   const { data: currentUser } = useGetCurrentUserQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Preload currencies to ensure they're available when editing entries
+  useGetCurrenciesQuery({ active_only: true });
+
   const userTier = currentUser?.tier?.name || 'starter';
 
   // Filter navigation items based on user's tier
@@ -96,10 +100,10 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Mobile sidebar backdrop */}
+      {/* Mobile/Tablet sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+          className="fixed inset-0 z-40 xl:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
