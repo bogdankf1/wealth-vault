@@ -83,7 +83,7 @@ export function QuickLayoutSwitcher() {
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/settings" className="cursor-pointer">
+          <Link href="/dashboard/settings/dashboard-layouts" className="cursor-pointer">
             <span className="text-sm">Manage layouts...</span>
           </Link>
         </DropdownMenuItem>
