@@ -421,6 +421,24 @@ export default function ExpensesPage() {
                       )}
                     </div>
 
+                    <div className="rounded-lg bg-muted/50 p-2 md:p-3 min-h-[48px]">
+                      <p className="text-[10px] md:text-xs text-muted-foreground">
+                        {expense.frequency === 'one_time' ? 'Date' : 'Start Date'}
+                      </p>
+                      <p className="text-xs md:text-sm font-semibold">
+                        {(() => {
+                          const dateValue = expense.date || expense.start_date;
+                          return dateValue
+                            ? new Date(dateValue).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })
+                            : '-';
+                        })()}
+                      </p>
+                    </div>
+
                     <div className="min-h-[24px]">
                       {expense.category && (
                         <Badge variant="outline" className="text-xs flex-shrink-0">{expense.category}</Badge>
@@ -462,6 +480,7 @@ export default function ExpensesPage() {
                     <TableHead className="hidden lg:table-cell">Category</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead className="hidden sm:table-cell">Frequency</TableHead>
+                    <TableHead className="hidden lg:table-cell">Date</TableHead>
                     <TableHead className="hidden xl:table-cell text-right">Monthly Equiv.</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
                     <TableHead className="hidden sm:table-cell">Status</TableHead>
@@ -502,6 +521,20 @@ export default function ExpensesPage() {
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">
                           {FREQUENCY_LABELS[expense.frequency] || expense.frequency}
+                        </span>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <span className="text-sm text-muted-foreground">
+                          {(() => {
+                            const dateValue = expense.date || expense.start_date;
+                            return dateValue
+                              ? new Date(dateValue).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })
+                              : '-';
+                          })()}
                         </span>
                       </TableCell>
                       <TableCell className="hidden xl:table-cell text-right">
