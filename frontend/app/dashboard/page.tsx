@@ -67,10 +67,28 @@ import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { useGetDebtStatsQuery } from '@/lib/api/debtsApi';
 import { useGetTaxStatsQuery } from '@/lib/api/taxesApi';
+import { useGetActiveLayoutQuery } from '@/lib/api/dashboardLayoutsApi';
+import { QuickLayoutSwitcher } from '@/components/dashboard/quick-layout-switcher';
 
 export default function DashboardPage() {
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: preferences } = useGetMyPreferencesQuery();
+  const { data: activeLayout } = useGetActiveLayoutQuery();
+
+  // Helper function to check if a widget is visible
+  const isWidgetVisible = (widgetId: string) => {
+    if (!activeLayout) return true; // Show all widgets if no layout configured
+    const widget = activeLayout.configuration.widgets.find((w) => w.id === widgetId);
+    return widget?.visible ?? true; // Default to visible if not found
+  };
+
+  // Check if any chart widgets are visible
+  const hasVisibleCharts = () => {
+    return isWidgetVisible('subscriptions-by-category') ||
+           isWidgetVisible('installments-by-category') ||
+           isWidgetVisible('income-allocation') ||
+           isWidgetVisible('net-worth-trend');
+  };
 
   // Dialog states for Quick Actions
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
@@ -222,25 +240,30 @@ export default function DashboardPage() {
               Your complete financial overview
             </p>
           </div>
-          {/* Month Filter */}
-          <MonthFilter
-            selectedMonth={selectedMonth}
-            onMonthChange={(month) => setSelectedMonth(month || currentMonth)}
-            label="Period:"
-          />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {/* Quick Layout Switcher */}
+            <QuickLayoutSwitcher />
+            {/* Month Filter */}
+            <MonthFilter
+              selectedMonth={selectedMonth}
+              onMonthChange={(month) => setSelectedMonth(month || currentMonth)}
+              label="Period:"
+            />
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <div>
-              <h2 className="text-base md:text-lg font-semibold">Quick Actions</h2>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                Add new financial entries quickly
-              </p>
+        {isWidgetVisible('quick-actions') && (
+          <Card className="p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div>
+                <h2 className="text-base md:text-lg font-semibold">Quick Actions</h2>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                  Add new financial entries quickly
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
             <Button
               onClick={() => setIsIncomeFormOpen(true)}
               className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
@@ -326,15 +349,16 @@ export default function DashboardPage() {
             </Button>
           </div>
         </Card>
+        )}
 
         {/* AI Insights Widget - Only for Wealth tier */}
-        {currentUser?.tier?.name === 'wealth' && <AIInsightsWidget />}
+        {isWidgetVisible('ai-insights') && currentUser?.tier?.name === 'wealth' && <AIInsightsWidget />}
 
         {/* Budget Overview Widget */}
-        <BudgetOverviewWidget />
+        {isWidgetVisible('budget-overview') && <BudgetOverviewWidget />}
 
         {/* Financial Alerts & Notifications */}
-        {data.alerts && data.alerts.length > 0 && (
+        {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (
           <Card className="p-4 md:p-6">
             <div className="mb-3 md:mb-4">
               <h2 className="text-base md:text-lg font-semibold">Insights & Alerts</h2>
@@ -378,8 +402,10 @@ export default function DashboardPage() {
         )}
 
       {/* Top Stats Grid - Net Worth & Cash Flow */}
+      {(isWidgetVisible('net-worth') || isWidgetVisible('goals-progress')) && (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
         {/* Net Worth Card */}
+        {isWidgetVisible('net-worth') && (
         <Card className="p-4 md:p-6 col-span-1 md:col-span-2 xl:col-span-2">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <div className="flex items-center gap-2">
@@ -478,8 +504,10 @@ export default function DashboardPage() {
             </div>
           </div>
         </Card>
+        )}
 
         {/* Financial Health Score */}
+        {isWidgetVisible('goals-progress') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <div className="flex items-center gap-2">
@@ -535,10 +563,14 @@ export default function DashboardPage() {
             </div>
           </div>
         </Card>
+        )}
       </div>
+      )}
 
       {/* Cash Flow Stats */}
+      {(isWidgetVisible('income-vs-expenses') || isWidgetVisible('upcoming-bills') || isWidgetVisible('taxes') || isWidgetVisible('debts-owed') || isWidgetVisible('monthly-spending')) && (
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
+        {isWidgetVisible('income-vs-expenses') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -571,7 +603,9 @@ export default function DashboardPage() {
           </div>
           <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
         </Card>
+        )}
 
+        {isWidgetVisible('income-vs-expenses') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -607,7 +641,9 @@ export default function DashboardPage() {
           </div>
           <p className="text-[10px] md:text-xs text-gray-500">{getPeriodLabel()}</p>
         </Card>
+        )}
 
+        {isWidgetVisible('upcoming-bills') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -640,7 +676,9 @@ export default function DashboardPage() {
           </div>
           <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
         </Card>
+        )}
 
+        {isWidgetVisible('upcoming-bills') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -673,7 +711,9 @@ export default function DashboardPage() {
           </div>
           <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
         </Card>
+        )}
 
+        {isWidgetVisible('taxes') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -704,7 +744,9 @@ export default function DashboardPage() {
           </div>
           <p className="text-[10px] md:text-xs text-gray-500">{taxStats?.active_taxes || 0} active</p>
         </Card>
+        )}
 
+        {isWidgetVisible('debts-owed') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -735,7 +777,9 @@ export default function DashboardPage() {
           </div>
           <p className="text-[10px] md:text-xs text-gray-500">{debtStats?.active_debts || 0} active</p>
         </Card>
+        )}
 
+        {isWidgetVisible('monthly-spending') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 md:gap-3">
@@ -773,9 +817,12 @@ export default function DashboardPage() {
             Savings Rate: {formatPercentage(cash_flow.savings_rate)}
           </p>
         </Card>
+        )}
       </div>
+      )}
 
       {/* Recent Activity */}
+      {isWidgetVisible('recent-transactions') && (
       <Card className="p-4 md:p-6">
         <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Recent Activity</h2>
         {recent_activity.length === 0 ? (
@@ -830,17 +877,21 @@ export default function DashboardPage() {
           </div>
         )}
       </Card>
+      )}
 
       {/* Analytics Section */}
       <div className="space-y-4 md:space-y-6">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">Financial Analytics</h2>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-            Visualize your financial trends and patterns
-          </p>
-        </div>
+        {hasVisibleCharts() && (
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">Financial Analytics</h2>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              Visualize your financial trends and patterns
+            </p>
+          </div>
+        )}
 
         {/* Charts Grid */}
+        {hasVisibleCharts() && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           {/* 1. Income vs Expenses Chart - Hidden temporarily */}
           {/* <IncomeVsExpensesChart
@@ -859,40 +910,49 @@ export default function DashboardPage() {
           /> */}
 
           {/* 3. Subscriptions by Category Chart */}
-          <SubscriptionsByCategoryChart
-            data={subscriptionsByCategoryData?.data || []}
-            isLoading={isLoadingSubscriptionsByCategory}
-            chartType="donut"
-            currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          />
+          {isWidgetVisible('subscriptions-by-category') && (
+            <SubscriptionsByCategoryChart
+              data={subscriptionsByCategoryData?.data || []}
+              isLoading={isLoadingSubscriptionsByCategory}
+              chartType="donut"
+              currency={preferences?.display_currency || preferences?.currency || 'USD'}
+            />
+          )}
 
           {/* 4. Installments by Category Chart */}
-          <InstallmentsByCategoryChart
-            data={installmentsByCategoryData?.data || []}
-            isLoading={isLoadingInstallmentsByCategory}
-            chartType="donut"
-            currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          />
+          {isWidgetVisible('installments-by-category') && (
+            <InstallmentsByCategoryChart
+              data={installmentsByCategoryData?.data || []}
+              isLoading={isLoadingInstallmentsByCategory}
+              chartType="donut"
+              currency={preferences?.display_currency || preferences?.currency || 'USD'}
+            />
+          )}
 
           {/* 5. Income Allocation Chart */}
-          <IncomeBreakdownChart
-            data={incomeBreakdownData?.data || []}
-            totalIncome={incomeBreakdownData?.total_income || 0}
-            isLoading={isLoadingIncomeBreakdown}
-            currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          />
+          {isWidgetVisible('income-allocation') && (
+            <IncomeBreakdownChart
+              data={incomeBreakdownData?.data || []}
+              totalIncome={incomeBreakdownData?.total_income || 0}
+              isLoading={isLoadingIncomeBreakdown}
+              currency={preferences?.display_currency || preferences?.currency || 'USD'}
+            />
+          )}
 
           {/* 6. Net Worth Trend Chart */}
-          <NetWorthTrendChart
-            data={netWorthTrendData?.data || []}
-            currency={preferences?.display_currency || preferences?.currency || 'USD'}
-            isLoading={isLoadingNetWorthTrend}
-            chartType="area"
-          />
+          {isWidgetVisible('net-worth-trend') && (
+            <NetWorthTrendChart
+              data={netWorthTrendData?.data || []}
+              currency={preferences?.display_currency || preferences?.currency || 'USD'}
+              isLoading={isLoadingNetWorthTrend}
+              chartType="area"
+            />
+          )}
         </div>
+        )}
 
         {/* Exchange Rates Widget */}
-        <ExchangeRatesWidget />
+        {isWidgetVisible('exchange-rates') && <ExchangeRatesWidget />}
       </div>
 
       {/* Quick Action Dialogs */}

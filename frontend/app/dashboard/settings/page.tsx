@@ -5,7 +5,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, CreditCard, Palette, Bell, Shield, Lock } from 'lucide-react';
+import { User, CreditCard, Palette, Bell, Shield, Lock, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AccountSettings } from '@/components/settings/account-settings';
 import { SubscriptionSettings } from '@/components/settings/subscription-settings';
@@ -13,6 +13,7 @@ import { AppearanceSettings } from '@/components/settings/appearance-settings';
 import { NotificationSettings } from '@/components/settings/notification-settings';
 import { PrivacySettings } from '@/components/settings/privacy-settings';
 import { SecuritySettings } from '@/components/settings/security-settings';
+import { DashboardLayoutsSettings } from '@/components/settings/dashboard-layouts-settings';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('subscription');
@@ -29,7 +30,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:w-[950px] gap-2 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 lg:w-full gap-2 h-auto p-1">
           <TabsTrigger value="account" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
             <User className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="hidden sm:inline">Account</span>
@@ -41,6 +42,10 @@ export default function SettingsPage() {
           <TabsTrigger value="appearance" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
             <Palette className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="hidden sm:inline">Appearance</span>
+          </TabsTrigger>
+          <TabsTrigger value="dashboard-layouts" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
+            <LayoutGrid className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Dashboard</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 text-xs sm:text-sm">
             <Bell className="h-4 w-4 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -66,6 +71,10 @@ export default function SettingsPage() {
 
         <TabsContent value="appearance" className="space-y-4">
           <AppearanceSettings />
+        </TabsContent>
+
+        <TabsContent value="dashboard-layouts" className="space-y-4">
+          <DashboardLayoutsSettings />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4">
