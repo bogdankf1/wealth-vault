@@ -125,12 +125,17 @@ export function DashboardLayoutsSettings() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Dashboard Layouts</CardTitle>
-          <CardDescription>Loading layouts...</CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-32 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-32 w-full animate-pulse rounded bg-muted" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -139,8 +144,11 @@ export function DashboardLayoutsSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Dashboard Layouts</CardTitle>
+            <div className="space-y-1.5">
+              <CardTitle className="flex items-center gap-2">
+                <LayoutGrid className="h-5 w-5" />
+                Dashboard Layouts
+              </CardTitle>
               <CardDescription>
                 Customize your dashboard by creating and managing different layouts
               </CardDescription>
@@ -159,9 +167,9 @@ export function DashboardLayoutsSettings() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {layoutsData?.items && layoutsData.items.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {layoutsData.items.map((layout) => (
                 <div
                   key={layout.id}

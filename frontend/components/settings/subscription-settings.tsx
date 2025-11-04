@@ -54,15 +54,15 @@ export function SubscriptionSettings() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-1">
+      <div className="space-y-6">
         {[1, 2].map((i) => (
           <Card key={i}>
-            <CardHeader className="space-y-2">
-              <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-              <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+            <CardHeader>
+              <div className="h-6 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
             <CardContent>
-              <div className="h-24 w-full animate-pulse rounded bg-muted" />
+              <div className="h-32 w-full animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
         ))}
@@ -82,13 +82,16 @@ export function SubscriptionSettings() {
   const currentTierName = currentUser?.tier?.display_name || subscriptionStatus?.tier_display_name || 'Starter';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Current Subscription */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Subscription Details</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Subscription Details
+              </CardTitle>
               <CardDescription>
                 Manage your plan and billing information
               </CardDescription>
@@ -171,7 +174,10 @@ export function SubscriptionSettings() {
       {paymentHistory && paymentHistory.payments.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Payment History</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Payment History
+            </CardTitle>
             <CardDescription>Your recent payment transactions</CardDescription>
           </CardHeader>
           <CardContent>

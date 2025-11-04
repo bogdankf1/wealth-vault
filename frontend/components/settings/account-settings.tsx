@@ -12,14 +12,14 @@ export function AccountSettings() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4">
+      <div className="space-y-6">
         <Card>
-          <CardHeader className="space-y-2">
-            <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+          <CardHeader>
+            <div className="h-6 w-32 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
           </CardHeader>
           <CardContent>
-            <div className="h-24 w-full animate-pulse rounded bg-muted" />
+            <div className="h-32 w-full animate-pulse rounded bg-muted" />
           </CardContent>
         </Card>
       </div>
@@ -27,10 +27,13 @@ export function AccountSettings() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Account Information</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Account Information
+          </CardTitle>
           <CardDescription>Your account details and information</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
