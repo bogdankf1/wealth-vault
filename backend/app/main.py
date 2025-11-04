@@ -27,6 +27,7 @@ from app.modules.ai.router import router as ai_router
 from app.modules.budgets.router import router as budgets_router
 from app.modules.debts.router import router as debts_router
 from app.modules.taxes.router import router as taxes_router
+from app.modules.dashboard_layouts.api import router as dashboard_layouts_router
 from app.api.v1.billing import router as billing_router
 from app.api.v1.preferences import router as preferences_router
 from app.api.v1.admin.users import router as admin_users_router
@@ -63,6 +64,7 @@ async def lifespan(app: FastAPI):
         from app.modules.budgets.models import Budget  # noqa: F401
         from app.modules.debts.models import Debt  # noqa: F401
         from app.modules.taxes.models import Tax  # noqa: F401
+        from app.modules.dashboard_layouts.models import DashboardLayout  # noqa: F401
         from app.modules.ai.models import AIInsight  # noqa: F401
         from app.models.user_preferences import UserPreferences  # noqa: F401
         from app.modules.currency.models import Currency, ExchangeRate  # noqa: F401
@@ -154,6 +156,7 @@ app.include_router(ai_router, prefix="/api/v1")
 app.include_router(budgets_router)
 app.include_router(debts_router, prefix="/api/v1")
 app.include_router(taxes_router, prefix="/api/v1")
+app.include_router(dashboard_layouts_router, prefix="/api/v1")
 app.include_router(billing_router, prefix="/api/v1")
 app.include_router(preferences_router, prefix="/api/v1/preferences", tags=["preferences"])
 app.include_router(currency_router, prefix="/api/v1")

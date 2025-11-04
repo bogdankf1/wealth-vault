@@ -50,6 +50,7 @@ class User(BaseModel):
     portfolio_assets = relationship("PortfolioAsset", back_populates="user", cascade="all, delete-orphan")
     debts = relationship("Debt", back_populates="user", cascade="all, delete-orphan")
     taxes = relationship("Tax", back_populates="user", cascade="all, delete-orphan")
+    dashboard_layouts = relationship("DashboardLayout", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email={self.email}, role={self.role})>"
