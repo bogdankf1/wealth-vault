@@ -116,7 +116,10 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
             or click to browse
           </p>
           <p className="text-xs text-muted-foreground">
-            Supported format: CSV only
+            Supported: CSV files from Monobank (Ukraine only)
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Both Ukrainian and English formats accepted
           </p>
         </div>
       )}
