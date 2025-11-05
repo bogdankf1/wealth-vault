@@ -62,24 +62,37 @@ class StatementParser:
             # Normalize column names
             df.columns = df.columns.str.lower().str.strip()
 
-            # Detect columns
+            # Detect columns (supports English and Ukrainian headers)
             date_col = StatementParser._find_column(
-                df.columns, ["date", "transaction date", "posted", "trans date", "posting date", "date and time"]
+                df.columns, [
+                    "date", "transaction date", "posted", "trans date", "posting date", "date and time",
+                    "дата", "дата i час", "дата операції"  # Ukrainian
+                ]
             )
             desc_col = StatementParser._find_column(
-                df.columns, ["description", "memo", "details", "merchant", "payee", "name"]
+                df.columns, [
+                    "description", "memo", "details", "merchant", "payee", "name",
+                    "деталі", "опис", "призначення"  # Ukrainian
+                ]
             )
             amount_col = StatementParser._find_column(
                 df.columns, [
                     "amount", "transaction amount", "debit", "credit",
-                    "card currency amount", "operation amount"
+                    "card currency amount", "operation amount",
+                    "сума", "сума в валюті"  # Ukrainian
                 ]
             )
             balance_col = StatementParser._find_column(
-                df.columns, ["balance", "running balance", "available balance"]
+                df.columns, [
+                    "balance", "running balance", "available balance",
+                    "залишок", "баланс"  # Ukrainian
+                ]
             )
             currency_col = StatementParser._find_column(
-                df.columns, ["operation currency", "currency", "transaction currency", "ccy"]
+                df.columns, [
+                    "operation currency", "currency", "transaction currency", "ccy",
+                    "валюта"  # Ukrainian
+                ]
             )
 
             if not all([date_col, desc_col, amount_col]):
@@ -138,21 +151,37 @@ class StatementParser:
             # Normalize column names
             df.columns = df.columns.str.lower().str.strip()
 
-            # Use same detection logic as CSV
+            # Use same detection logic as CSV (supports English and Ukrainian)
             date_col = StatementParser._find_column(
-                df.columns, ["date", "transaction date", "posted", "trans date"]
+                df.columns, [
+                    "date", "transaction date", "posted", "trans date", "posting date", "date and time",
+                    "дата", "дата i час", "дата операції"  # Ukrainian
+                ]
             )
             desc_col = StatementParser._find_column(
-                df.columns, ["description", "memo", "details", "merchant", "payee"]
+                df.columns, [
+                    "description", "memo", "details", "merchant", "payee", "name",
+                    "деталі", "опис", "призначення"  # Ukrainian
+                ]
             )
             amount_col = StatementParser._find_column(
-                df.columns, ["amount", "transaction amount", "debit", "credit"]
+                df.columns, [
+                    "amount", "transaction amount", "debit", "credit",
+                    "card currency amount", "operation amount",
+                    "сума", "сума в валюті"  # Ukrainian
+                ]
             )
             balance_col = StatementParser._find_column(
-                df.columns, ["balance", "running balance"]
+                df.columns, [
+                    "balance", "running balance", "available balance",
+                    "залишок", "баланс"  # Ukrainian
+                ]
             )
             currency_col = StatementParser._find_column(
-                df.columns, ["operation currency", "currency", "transaction currency", "ccy"]
+                df.columns, [
+                    "operation currency", "currency", "transaction currency", "ccy",
+                    "валюта"  # Ukrainian
+                ]
             )
 
             if not all([date_col, desc_col, amount_col]):
