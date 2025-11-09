@@ -213,6 +213,7 @@ async def save_categorization_correction(
 @router.get("/insights")
 @require_feature("ai_insights")
 async def get_financial_insights(
+    force_refresh: bool = False,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -222,31 +223,35 @@ async def get_financial_insights(
     Returns cached insights if available (within 24 hours),
     otherwise generates new insights
 
+    **Query Parameters:**
+    - force_refresh: If true, bypass cache and generate fresh insights
+
     **Requires:** Wealth tier
     """
     try:
-        # Check for cached insights first
-        cached_insights = await insights_service.get_cached_insights(
-            db=db, user_id=current_user.id, hours=24
-        )
+        # Check for cached insights first (unless force refresh is requested)
+        if not force_refresh:
+            cached_insights = await insights_service.get_cached_insights(
+                db=db, user_id=current_user.id, hours=24
+            )
 
-        if cached_insights and len(cached_insights) >= 3:
-            # Return cached insights grouped by type
-            insights_by_type: dict = {
-                "spending": [],
-                "savings": [],
-                "anomalies": [],
-            }
+            if cached_insights and len(cached_insights) >= 3:
+                # Return cached insights grouped by type
+                insights_by_type: dict = {
+                    "spending": [],
+                    "savings": [],
+                    "anomalies": [],
+                }
 
-            for insight in cached_insights:
-                if insight.insight_type == "spending_pattern":
-                    insights_by_type["spending"].append(insight.content)
-                elif insight.insight_type == "savings_opportunity":
-                    insights_by_type["savings"].append(insight.content)
-                elif insight.insight_type == "spending_anomaly":
-                    insights_by_type["anomalies"].append(insight.content)
+                for insight in cached_insights:
+                    if insight.insight_type == "spending_pattern":
+                        insights_by_type["spending"].append(insight.content)
+                    elif insight.insight_type == "savings_opportunity":
+                        insights_by_type["savings"].append(insight.content)
+                    elif insight.insight_type == "spending_anomaly":
+                        insights_by_type["anomalies"].append(insight.content)
 
-            return insights_by_type
+                return insights_by_type
 
         # Generate new insights
         insights = await insights_service.generate_all_insights(
