@@ -137,6 +137,9 @@ export function InstallmentsByCategoryChart({
         x={x}
         y={y}
         fill="white"
+        stroke="black"
+        strokeWidth="3"
+        paintOrder="stroke"
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
         className="text-xs font-semibold"

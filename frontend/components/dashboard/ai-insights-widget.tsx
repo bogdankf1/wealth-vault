@@ -4,6 +4,7 @@
  */
 'use client';
 
+import { useState } from 'react';
 import { Sparkles, TrendingUp, PiggyBank, AlertTriangle, RefreshCw, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,14 @@ import {
 import { useGetFinancialInsightsQuery } from '@/lib/api/aiApi';
 
 export function AIInsightsWidget() {
-  const { data: insights, isLoading, error, refetch } = useGetFinancialInsightsQuery();
+  const [forceRefresh, setForceRefresh] = useState(false);
+  const { data: insights, isLoading, error, refetch } = useGetFinancialInsightsQuery({ forceRefresh });
+
+  const handleRefresh = async () => {
+    setForceRefresh(true);
+    await refetch();
+    setForceRefresh(false);
+  };
 
   if (isLoading) {
     return (
@@ -102,10 +110,11 @@ export function AIInsightsWidget() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => refetch()}
+                onClick={handleRefresh}
+                disabled={isLoading}
                 title="Refresh insights"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
             </div>
           </div>
@@ -178,7 +187,7 @@ export function AIInsightsWidget() {
 
             <div className="pt-2 border-t">
               <p className="text-xs text-muted-foreground text-center">
-                Insights are updated every 24 hours
+                Insights are cached for 24 hours. Click refresh to generate new insights.
               </p>
             </div>
           </div>

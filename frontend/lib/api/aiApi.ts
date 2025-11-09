@@ -131,8 +131,11 @@ export const aiApi = createApi({
     }),
 
     // Get financial insights
-    getFinancialInsights: builder.query<FinancialInsights, void>({
-      query: () => '/insights',
+    getFinancialInsights: builder.query<FinancialInsights, { forceRefresh?: boolean }>({
+      query: ({ forceRefresh = false } = {}) => ({
+        url: '/insights',
+        params: forceRefresh ? { force_refresh: true } : {},
+      }),
       providesTags: ['AIInsights'],
     }),
   }),
