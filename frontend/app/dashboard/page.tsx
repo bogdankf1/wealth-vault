@@ -74,14 +74,35 @@ import { useGetDebtStatsQuery } from '@/lib/api/debtsApi';
 import { useGetTaxStatsQuery } from '@/lib/api/taxesApi';
 import { useGetActiveLayoutQuery } from '@/lib/api/dashboardLayoutsApi';
 import { QuickLayoutSwitcher } from '@/components/dashboard/quick-layout-switcher';
+import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
+import { WIDGET_FEATURES } from '@/lib/constants/feature-map';
 
 export default function DashboardPage() {
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: preferences } = useGetMyPreferencesQuery();
   const { data: activeLayout } = useGetActiveLayoutQuery();
+  const { data: userFeatures } = useGetUserFeaturesQuery();
+
+  // Helper function to check if user has access to a widget feature
+  const hasWidgetFeatureAccess = (widgetId: string): boolean => {
+    const requiredFeature = WIDGET_FEATURES[widgetId];
+
+    // If no feature is required, allow access
+    if (!requiredFeature) return true;
+
+    // If user features not loaded yet, default to denying access for safety
+    if (!userFeatures) return false;
+
+    // Check if user has the required feature enabled
+    return requiredFeature in userFeatures.features;
+  };
 
   // Helper function to check if a widget is visible
   const isWidgetVisible = (widgetId: string) => {
+    // First check if user has access to the feature
+    if (!hasWidgetFeatureAccess(widgetId)) return false;
+
+    // Then check if widget is enabled in layout
     if (!activeLayout) return true; // Show all widgets if no layout configured
     const widget = activeLayout.configuration.widgets.find((w) => w.id === widgetId);
     return widget?.visible ?? true; // Default to visible if not found

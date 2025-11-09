@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Target, TrendingUp, AlertCircle, CheckCircle2, Trophy } from 'lucide-react';
 import Link from 'next/link';
-import { useGetGoalStatsQuery, useListGoalsQuery } from '@/lib/api/goalsApi';
+import { useGetGoalStatsQuery, useListGoalsQuery, type Goal } from '@/lib/api/goalsApi';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 
 export function GoalsOverviewWidget() {
@@ -61,11 +61,41 @@ export function GoalsOverviewWidget() {
     return `${currencySymbol}${formatted}`;
   };
 
-  // Calculate savings rate and parse numeric values
-  const totalTarget = parseFloat(stats.total_target_amount);
-  const totalSaved = parseFloat(stats.total_saved);
-  const averageProgress = parseFloat(stats.average_progress.toString());
+  // Calculate savings rate (ensure numeric values)
+  const totalTarget = typeof stats.total_target_amount === 'number' ? stats.total_target_amount : parseFloat(String(stats.total_target_amount));
+  const totalSaved = typeof stats.total_saved === 'number' ? stats.total_saved : parseFloat(String(stats.total_saved));
+  const averageProgress = typeof stats.average_progress === 'number' ? stats.average_progress : parseFloat(String(stats.average_progress));
   const savingsRate = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
+
+  // Compute category statistics from goals data
+  type CategoryStat = {
+    category: string;
+    total_target: number;
+    total_saved: number;
+    count: number;
+  };
+
+  const categoryStats = goalsData?.items.reduce<Record<string, CategoryStat>>((acc, goal: Goal) => {
+    if (goal.category) {
+      if (!acc[goal.category]) {
+        acc[goal.category] = {
+          category: goal.category,
+          total_target: 0,
+          total_saved: 0,
+          count: 0,
+        };
+      }
+      acc[goal.category].total_target += parseFloat(String(goal.target_amount));
+      acc[goal.category].total_saved += parseFloat(String(goal.current_amount));
+      acc[goal.category].count += 1;
+    }
+    return acc;
+  }, {});
+
+  // Convert to array and sort by total target (descending)
+  const topCategories = categoryStats
+    ? Object.values(categoryStats).sort((a: CategoryStat, b: CategoryStat) => b.total_target - a.total_target).slice(0, 3)
+    : [];
 
   return (
     <Card className="p-4 md:p-6">
@@ -191,13 +221,14 @@ export function GoalsOverviewWidget() {
       )}
 
       {/* Top Categories */}
-      {stats.by_category && stats.by_category.length > 0 && (
+      {topCategories.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-muted-foreground">Top Categories</h4>
-          {stats.by_category.slice(0, 3).map((category) => {
-            const categoryTarget = parseFloat(category.total_target);
-            const categorySaved = parseFloat(category.total_saved);
+          {topCategories.map((category) => {
+            const categoryTarget = category.total_target;
+            const categorySaved = category.total_saved;
             const categoryProgress = categoryTarget > 0 ? (categorySaved / categoryTarget) * 100 : 0;
+            const categoryRemaining = categoryTarget - categorySaved;
 
             return (
               <div key={category.category} className="space-y-2">
@@ -220,7 +251,7 @@ export function GoalsOverviewWidget() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {formatCurrency(category.total_remaining)} remaining of {formatCurrency(categoryTarget)}
+                  {formatCurrency(categoryRemaining)} remaining of {formatCurrency(categoryTarget)}
                 </p>
               </div>
             );

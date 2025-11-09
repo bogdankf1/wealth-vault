@@ -31,45 +31,28 @@ import { cn } from '@/lib/utils';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
 import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
+import { NAVIGATION_FEATURES } from '@/lib/constants/feature-map';
+import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, tier: 'starter' },
-  { name: 'Income', href: '/dashboard/income', icon: TrendingUp, tier: 'starter' },
-  { name: 'Expenses', href: '/dashboard/expenses', icon: DollarSign, tier: 'starter' },
-  { name: 'Budgets', href: '/dashboard/budgets', icon: Wallet, tier: 'starter' },
-  { name: 'Savings', href: '/dashboard/savings', icon: PiggyBank, tier: 'starter' },
-  { name: 'Portfolio', href: '/dashboard/portfolio', icon: LineChart, tier: 'growth' },
-  { name: 'Goals', href: '/dashboard/goals', icon: Target, tier: 'growth' },
-  { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: CreditCard, tier: 'starter' },
-  { name: 'Installments', href: '/dashboard/installments', icon: Receipt, tier: 'starter' },
-  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus, tier: 'wealth' },
-  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText, tier: 'wealth' },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Income', href: '/dashboard/income', icon: TrendingUp },
+  { name: 'Expenses', href: '/dashboard/expenses', icon: DollarSign },
+  { name: 'Budgets', href: '/dashboard/budgets', icon: Wallet },
+  { name: 'Savings', href: '/dashboard/savings', icon: PiggyBank },
+  { name: 'Portfolio', href: '/dashboard/portfolio', icon: LineChart },
+  { name: 'Goals', href: '/dashboard/goals', icon: Target },
+  { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: CreditCard },
+  { name: 'Installments', href: '/dashboard/installments', icon: Receipt },
+  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus },
+  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText },
 ];
 
 const bottomNavigation = [
-  { name: 'Pricing', href: '/dashboard/pricing', icon: Sparkles, tier: 'starter' },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings, tier: 'starter' },
+  { name: 'Pricing', href: '/dashboard/pricing', icon: Sparkles },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
-
-// Tier hierarchy: starter < growth < wealth
-const tierHierarchy: Record<string, number> = {
-  starter: 1,
-  growth: 2,
-  wealth: 3,
-};
-
-/**
- * Check if user's tier has access to required tier
- * @param userTier - The user's current tier
- * @param requiredTier - The tier required for access
- * @returns true if user has access, false otherwise
- */
-function hasAccess(userTier: string | undefined, requiredTier: string): boolean {
-  const userLevel = tierHierarchy[userTier || 'starter'] || 1;
-  const requiredLevel = tierHierarchy[requiredTier] || 1;
-  return userLevel >= requiredLevel;
-}
 
 export default function DashboardLayout({
   children,
@@ -79,20 +62,37 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { data: session } = useSession();
   const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: userFeatures } = useGetUserFeaturesQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Preload currencies to ensure they're available when editing entries
   useGetCurrenciesQuery({ active_only: true });
 
-  const userTier = currentUser?.tier?.name || 'starter';
+  /**
+   * Check if user has access to a feature
+   * @param href - The navigation href
+   * @returns true if user has access, false otherwise
+   */
+  const hasFeatureAccess = (href: string): boolean => {
+    const requiredFeature = NAVIGATION_FEATURES[href];
 
-  // Filter navigation items based on user's tier
+    // If no feature is required, allow access
+    if (!requiredFeature) return true;
+
+    // If user features not loaded yet, default to allowing access
+    if (!userFeatures) return true;
+
+    // Check if user has the required feature enabled
+    return requiredFeature in userFeatures.features;
+  };
+
+  // Filter navigation items based on user's enabled features
   const accessibleNavigation = navigation.filter((item) =>
-    hasAccess(userTier, item.tier)
+    hasFeatureAccess(item.href)
   );
 
   const accessibleBottomNavigation = bottomNavigation.filter((item) =>
-    hasAccess(userTier, item.tier)
+    hasFeatureAccess(item.href)
   );
 
   const handleLogout = async () => {

@@ -27,6 +27,17 @@ export interface GoogleAuthRequest {
   token: string;
 }
 
+export interface FeatureInfo {
+  enabled: boolean;
+  limit: number | null;
+  name: string;
+  module: string;
+}
+
+export interface UserFeaturesResponse {
+  features: Record<string, FeatureInfo>;
+}
+
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     googleAuth: builder.mutation<TokenResponse, GoogleAuthRequest>({
@@ -41,7 +52,11 @@ export const authApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/auth/me',
       providesTags: ['User'],
     }),
+    getUserFeatures: builder.query<UserFeaturesResponse, void>({
+      query: () => '/api/v1/auth/me/features',
+      providesTags: ['User'],
+    }),
   }),
 });
 
-export const { useGoogleAuthMutation, useGetCurrentUserQuery } = authApi;
+export const { useGoogleAuthMutation, useGetCurrentUserQuery, useGetUserFeaturesQuery } = authApi;
