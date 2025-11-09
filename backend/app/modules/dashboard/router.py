@@ -254,6 +254,40 @@ async def get_installments_by_category_chart(
     return await service.get_installments_by_category_chart(db, current_user.id, start_date, end_date)
 
 
+@router.get("/analytics/expenses-by-category", response_model=ExpenseByCategoryChartResponse)
+async def get_expenses_by_category_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get expense breakdown by category (monthly equivalents) for the specified period.
+
+    Returns expenses grouped by category with percentages.
+    Excludes subscriptions, installments, and taxes (shows only regular expenses).
+    Amounts are shown as monthly equivalents based on expense frequency.
+    """
+    return await service.get_expenses_by_category_chart(db, current_user.id, start_date, end_date)
+
+
+@router.get("/analytics/budgets-by-category", response_model=ExpenseByCategoryChartResponse)
+async def get_budgets_by_category_chart(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get budget breakdown by category for the specified period.
+
+    Returns active budgets grouped by category with percentages.
+    Shows allocated budget amounts converted to monthly equivalents.
+    Only includes budgets that overlap with the specified period.
+    """
+    return await service.get_budgets_by_category_chart(db, current_user.id, start_date, end_date)
+
+
 @router.get("/analytics/monthly-spending", response_model=MonthlySpendingChartResponse)
 async def get_monthly_spending_chart(
     start_date: datetime = Query(..., description="Start date for the period"),

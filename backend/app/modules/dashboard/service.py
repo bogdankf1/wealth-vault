@@ -15,6 +15,7 @@ from app.modules.installments.models import Installment
 from app.modules.income.models import IncomeSource, IncomeFrequency
 from app.modules.expenses.models import Expense
 from app.modules.subscriptions.models import Subscription
+from app.modules.budgets.models import Budget
 from app.modules.goals.models import Goal
 from app.modules.dashboard.schemas import (
     NetWorthResponse,
@@ -1112,6 +1113,210 @@ async def get_installments_by_category_chart(
 
             # Calculate monthly equivalent
             multiplier = frequency_to_monthly.get(installment.frequency, Decimal('1'))
+            monthly_amount = amount_in_display * multiplier
+
+            if category not in category_totals:
+                category_totals[category] = Decimal('0')
+            category_totals[category] += monthly_amount
+
+    # Calculate total and percentages
+    total = sum(category_totals.values())
+
+    if total == 0:
+        return ExpenseByCategoryChartResponse(data=[], total=Decimal('0'))
+
+    data_points = [
+        ExpenseByCategoryDataPoint(
+            category=category,
+            amount=amount,
+            percentage=float((amount / total) * 100)
+        )
+        for category, amount in category_totals.items()
+    ]
+
+    # Sort by amount descending
+    data_points.sort(key=lambda x: x.amount, reverse=True)
+
+    return ExpenseByCategoryChartResponse(data=data_points, total=total)
+
+
+async def get_expenses_by_category_chart(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
+) -> ExpenseByCategoryChartResponse:
+    """
+    Get expense breakdown by category (monthly equivalents) for the specified period.
+    Shows expenses grouped by category. Excludes subscriptions, installments, and taxes.
+    All amounts are converted to user's display currency.
+    """
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # Frequency multipliers for calculating monthly equivalents
+    frequency_to_monthly = {
+        'one_time': Decimal('1'),  # Will be divided by months in period
+        'daily': Decimal('30'),
+        'weekly': Decimal('4.33333'),      # ~52 weeks per year / 12
+        'biweekly': Decimal('2.16667'),    # ~26 payments per year / 12
+        'monthly': Decimal('1'),
+        'quarterly': Decimal('0.33333'),   # 4 per year / 12
+        'annually': Decimal('0.08333'),    # 1 per year / 12
+    }
+
+    # Query expenses that fall within or overlap the specified period
+    # For one-time expenses: date must be within range
+    # For recurring expenses: must overlap with range (start_date <= period_end AND (end_date IS NULL OR end_date >= period_start))
+    query = select(Expense).where(
+        and_(
+            Expense.user_id == user_id,
+            Expense.is_active == True,
+            or_(
+                # One-time expenses: date field is set and within range
+                and_(
+                    Expense.frequency == 'one_time',
+                    Expense.date.isnot(None),
+                    Expense.date >= start_date,
+                    Expense.date <= end_date
+                ),
+                # Recurring expenses: overlap with the period
+                and_(
+                    Expense.frequency != 'one_time',
+                    Expense.start_date.isnot(None),
+                    Expense.start_date <= end_date,
+                    or_(
+                        Expense.end_date.is_(None),
+                        Expense.end_date >= start_date
+                    )
+                )
+            )
+        )
+    )
+
+    result = await db.execute(query)
+    expenses = result.scalars().all()
+
+    # Group by category and convert to display currency
+    category_totals = {}
+    for expense in expenses:
+        # Use category or "Uncategorized"
+        category = expense.category or "Uncategorized"
+
+        if expense.amount:
+            # Convert to display currency first
+            if expense.currency == display_currency:
+                amount_in_display = expense.amount
+            else:
+                amount_in_display = await currency_service.convert_amount(
+                    expense.amount, expense.currency, display_currency
+                )
+                if not amount_in_display:
+                    amount_in_display = Decimal('0')
+
+            # Calculate monthly equivalent based on frequency
+            if expense.frequency == 'one_time':
+                # One-time expenses are counted as-is for the month they occurred in
+                monthly_amount = amount_in_display
+            else:
+                # Recurring expenses: convert to monthly equivalent
+                multiplier = frequency_to_monthly.get(expense.frequency, Decimal('1'))
+                monthly_amount = amount_in_display * multiplier
+
+            if category not in category_totals:
+                category_totals[category] = Decimal('0')
+            category_totals[category] += monthly_amount
+
+    # Calculate total and percentages
+    total = sum(category_totals.values())
+
+    if total == 0:
+        return ExpenseByCategoryChartResponse(data=[], total=Decimal('0'))
+
+    data_points = [
+        ExpenseByCategoryDataPoint(
+            category=category,
+            amount=amount,
+            percentage=float((amount / total) * 100)
+        )
+        for category, amount in category_totals.items()
+    ]
+
+    # Sort by amount descending
+    data_points.sort(key=lambda x: x.amount, reverse=True)
+
+    return ExpenseByCategoryChartResponse(data=data_points, total=total)
+
+
+async def get_budgets_by_category_chart(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
+) -> ExpenseByCategoryChartResponse:
+    """
+    Get budget breakdown by category for the specified period.
+    Shows active budgets grouped by category with their allocated amounts.
+    All amounts are converted to user's display currency.
+    """
+    # Remove timezone info to match database datetimes
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
+
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # Period multipliers to convert budget amounts to monthly equivalents
+    period_to_monthly = {
+        'monthly': Decimal('1'),
+        'quarterly': Decimal('0.33333'),   # 3 months
+        'yearly': Decimal('0.08333'),      # 12 months
+    }
+
+    # Query active budgets that overlap with the specified period
+    # A budget overlaps if:
+    # - start_date <= period_end AND
+    # - (end_date is NULL OR end_date >= period_start)
+    query = select(Budget).where(
+        and_(
+            Budget.user_id == user_id,
+            Budget.is_active == True,
+            Budget.start_date <= end_date,
+            or_(
+                Budget.end_date.is_(None),
+                Budget.end_date >= start_date
+            )
+        )
+    )
+
+    result = await db.execute(query)
+    budgets = result.scalars().all()
+
+    # Group by category and convert to display currency
+    category_totals = {}
+    for budget in budgets:
+        # Use category from budget
+        category = budget.category or "Uncategorized"
+
+        if budget.amount:
+            # Convert to display currency first
+            if budget.currency == display_currency:
+                amount_in_display = budget.amount
+            else:
+                amount_in_display = await currency_service.convert_amount(
+                    budget.amount, budget.currency, display_currency
+                )
+                if not amount_in_display:
+                    amount_in_display = Decimal('0')
+
+            # Convert to monthly equivalent based on budget period
+            multiplier = period_to_monthly.get(budget.period, Decimal('1'))
             monthly_amount = amount_in_display * multiplier
 
             if category not in category_totals:
