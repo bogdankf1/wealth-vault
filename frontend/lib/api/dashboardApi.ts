@@ -314,6 +314,38 @@ export const dashboardApi = apiSlice.injectEndpoints({
       providesTags: ['Dashboard', 'Analytics'],
     }),
 
+    getExpensesByCategoryChart: builder.query<ExpenseByCategoryChartResponse, AnalyticsParams | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/expenses-by-category',
+        params: params || undefined,
+      }),
+      transformResponse: (response: ExpenseByCategoryApiResponse) => ({
+        data: response.data.map((item) => ({
+          category: item.category,
+          amount: parseFloat(item.amount),
+          percentage: parseFloat(item.percentage),
+        })),
+        total: parseFloat(response.total),
+      }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
+
+    getBudgetsByCategoryChart: builder.query<ExpenseByCategoryChartResponse, AnalyticsParams | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/analytics/budgets-by-category',
+        params: params || undefined,
+      }),
+      transformResponse: (response: ExpenseByCategoryApiResponse) => ({
+        data: response.data.map((item) => ({
+          category: item.category,
+          amount: parseFloat(item.amount),
+          percentage: parseFloat(item.percentage),
+        })),
+        total: parseFloat(response.total),
+      }),
+      providesTags: ['Dashboard', 'Analytics'],
+    }),
+
     getMonthlySpendingChart: builder.query<MonthlySpendingChartResponse, AnalyticsParams>({
       query: (params) => ({
         url: '/api/v1/dashboard/analytics/monthly-spending',
@@ -375,6 +407,8 @@ export const {
   useGetIncomeVsExpensesChartQuery,
   useGetSubscriptionsByCategoryChartQuery,
   useGetInstallmentsByCategoryChartQuery,
+  useGetExpensesByCategoryChartQuery,
+  useGetBudgetsByCategoryChartQuery,
   useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
   useGetIncomeBreakdownChartQuery,

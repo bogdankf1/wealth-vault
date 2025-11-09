@@ -43,6 +43,8 @@ const AVAILABLE_WIDGETS: { id: string; label: string; description: string }[] = 
   { id: 'portfolio-summary', label: 'Portfolio Summary', description: 'Investment portfolio' },
   { id: 'subscriptions-by-category', label: 'Subscriptions by Category', description: 'Subscription breakdown' },
   { id: 'installments-by-category', label: 'Installments by Category', description: 'Installment breakdown' },
+  { id: 'expenses-by-category', label: 'Expenses by Category', description: 'Expense breakdown' },
+  { id: 'budgets-by-category', label: 'Budgets by Category', description: 'Budget breakdown' },
   { id: 'income-allocation', label: 'Income Allocation', description: 'Income distribution' },
   { id: 'net-worth-trend', label: 'Net Worth Trend', description: 'Historical net worth' },
   { id: 'taxes', label: 'Taxes', description: 'Tax summary' },

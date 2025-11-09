@@ -10,6 +10,8 @@ import {
   useGetIncomeVsExpensesChartQuery,
   useGetSubscriptionsByCategoryChartQuery,
   useGetInstallmentsByCategoryChartQuery,
+  useGetExpensesByCategoryChartQuery,
+  useGetBudgetsByCategoryChartQuery,
   useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
   useGetIncomeBreakdownChartQuery,
@@ -58,6 +60,8 @@ import { MonthFilter } from '@/components/ui/month-filter';
 import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
 import { SubscriptionsByCategoryChart } from '@/components/dashboard/subscriptions-by-category-chart';
 import { InstallmentsByCategoryChart } from '@/components/dashboard/installments-by-category-chart';
+import { ExpensesByCategoryChart } from '@/components/dashboard/expenses-by-category-chart';
+import { BudgetsByCategoryChart } from '@/components/dashboard/budgets-by-category-chart';
 import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
 import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
 import { IncomeBreakdownChart } from '@/components/dashboard/income-breakdown-chart';
@@ -86,6 +90,8 @@ export default function DashboardPage() {
   const hasVisibleCharts = () => {
     return isWidgetVisible('subscriptions-by-category') ||
            isWidgetVisible('installments-by-category') ||
+           isWidgetVisible('expenses-by-category') ||
+           isWidgetVisible('budgets-by-category') ||
            isWidgetVisible('income-allocation') ||
            isWidgetVisible('net-worth-trend');
   };
@@ -126,6 +132,12 @@ export default function DashboardPage() {
 
   const { data: installmentsByCategoryData, isLoading: isLoadingInstallmentsByCategory } =
     useGetInstallmentsByCategoryChartQuery(dateParams);
+
+  const { data: expensesByCategoryData, isLoading: isLoadingExpensesByCategory } =
+    useGetExpensesByCategoryChartQuery(dateParams);
+
+  const { data: budgetsByCategoryData, isLoading: isLoadingBudgetsByCategory } =
+    useGetBudgetsByCategoryChartQuery(dateParams);
 
   const { data: monthlySpendingData, isLoading: isLoadingMonthlySpending } =
     useGetMonthlySpendingChartQuery(dateParams);
@@ -929,7 +941,27 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 5. Income Allocation Chart */}
+          {/* 5. Expenses by Category Chart */}
+          {isWidgetVisible('expenses-by-category') && (
+            <ExpensesByCategoryChart
+              data={expensesByCategoryData?.data || []}
+              isLoading={isLoadingExpensesByCategory}
+              chartType="donut"
+              currency={preferences?.display_currency || preferences?.currency || 'USD'}
+            />
+          )}
+
+          {/* 6. Budgets by Category Chart */}
+          {isWidgetVisible('budgets-by-category') && (
+            <BudgetsByCategoryChart
+              data={budgetsByCategoryData?.data || []}
+              isLoading={isLoadingBudgetsByCategory}
+              chartType="donut"
+              currency={preferences?.display_currency || preferences?.currency || 'USD'}
+            />
+          )}
+
+          {/* 7. Income Allocation Chart */}
           {isWidgetVisible('income-allocation') && (
             <IncomeBreakdownChart
               data={incomeBreakdownData?.data || []}
@@ -939,7 +971,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 6. Net Worth Trend Chart */}
+          {/* 8. Net Worth Trend Chart */}
           {isWidgetVisible('net-worth-trend') && (
             <NetWorthTrendChart
               data={netWorthTrendData?.data || []}
