@@ -56,6 +56,7 @@ import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
 import { InstallmentForm } from '@/components/installments/installment-form';
 import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
 import { BudgetOverviewWidget } from '@/components/dashboard/budget-overview-widget';
+import { GoalsOverviewWidget } from '@/components/dashboard/goals-overview-widget';
 import { MonthFilter } from '@/components/ui/month-filter';
 import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
 import { SubscriptionsByCategoryChart } from '@/components/dashboard/subscriptions-by-category-chart';
@@ -368,6 +369,9 @@ export default function DashboardPage() {
 
         {/* Budget Overview Widget */}
         {isWidgetVisible('budget-overview') && <BudgetOverviewWidget />}
+
+        {/* Goals Overview Widget */}
+        {isWidgetVisible('goals-progress') && <GoalsOverviewWidget />}
 
         {/* Financial Alerts & Notifications */}
         {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (
