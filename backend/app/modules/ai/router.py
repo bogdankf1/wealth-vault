@@ -31,20 +31,21 @@ async def upload_file(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Upload a bank statement file (CSV, Excel, or PDF)
+    Upload a bank statement file (CSV or XLS/XLSX)
 
-    The file will be stored temporarily and can be parsed later
+    Supports Monobank (Ukraine) statements in both Ukrainian and English formats.
+    The file will be stored temporarily and can be parsed later.
 
     **Requires:** Growth tier or higher
     """
-    # Validate file type (CSV only for now)
-    allowed_extensions = [".csv"]
+    # Validate file type (CSV and Excel formats)
+    allowed_extensions = [".csv", ".xls", ".xlsx"]
     file_ext = Path(file.filename).suffix.lower()
 
     if file_ext not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File type not supported. Only CSV files are allowed.",
+            detail=f"File type not supported. Only CSV and XLS/XLSX files are allowed.",
         )
 
     # Read file content

@@ -143,32 +143,83 @@ class StatementParser:
 
     @staticmethod
     def parse_excel(file_path: str) -> List[Transaction]:
-        """Parse Excel bank statement (similar logic to CSV)"""
-        try:
-            # Read the first sheet
-            df = pd.read_excel(file_path, engine="openpyxl")
+        """
+        Parse Excel bank statement (supports both .xlsx and .xls formats)
 
-            # Normalize column names
-            df.columns = df.columns.str.lower().str.strip()
+        For Monobank .xls files, automatically detects and skips header rows (first 20 rows)
+        and parses transaction data starting from row 21.
+
+        Note: Some .xls files are actually .xlsx files with wrong extension.
+        This function tries multiple engines to handle this.
+        """
+        try:
+            # Try different engines in order
+            # Note: Monobank provides .xlsx files with .xls extension, so we try openpyxl first
+            engines_to_try = []
+            if file_path.lower().endswith('.xlsx'):
+                engines_to_try = ['openpyxl']
+            elif file_path.lower().endswith('.xls'):
+                # Try openpyxl first (for misnamed .xlsx files), then xlrd
+                engines_to_try = ['openpyxl', 'xlrd']
+            else:
+                engines_to_try = ['openpyxl', 'xlrd']
+
+            df = None
+            last_error = None
+
+            for engine in engines_to_try:
+                try:
+                    # First, try to read normally (for standard Excel files)
+                    df = pd.read_excel(file_path, engine=engine)
+
+                    # Normalize column names
+                    df.columns = df.columns.str.lower().str.strip()
+
+                    # Check if this looks like a Monobank file (has customer info header)
+                    # Monobank files have "client:" or "клієнт:" in first column NAME (not value)
+                    first_col_name = str(df.columns[0]).lower() if len(df.columns) > 0 else ""
+                    is_monobank = 'client:' in first_col_name or 'клієнт:' in first_col_name
+
+                    if is_monobank:
+                        # This is a Monobank XLS file - skip header rows and re-read
+                        # Transaction data starts at row 20 (0-indexed), with headers at row 20 and data from row 21
+                        df = pd.read_excel(file_path, engine=engine, skiprows=20)
+                        # Manually set first row as column names
+                        df.columns = df.iloc[0]
+                        # Drop the header row from data
+                        df = df[1:].reset_index(drop=True)
+                        # Normalize column names
+                        df.columns = df.columns.str.lower().str.strip()
+
+                    # If we got here, we successfully read the file
+                    break
+                except Exception as e:
+                    last_error = e
+                    # Try next engine
+                    continue
+
+            if df is None:
+                # All engines failed
+                raise last_error if last_error else ValueError("Could not read Excel file with any engine")
 
             # Use same detection logic as CSV (supports English and Ukrainian)
             date_col = StatementParser._find_column(
                 df.columns, [
                     "date", "transaction date", "posted", "trans date", "posting date", "date and time",
-                    "дата", "дата i час", "дата операції"  # Ukrainian
+                    "дата", "дата i час", "дата операції", "дата i час операції"  # Ukrainian
                 ]
             )
             desc_col = StatementParser._find_column(
                 df.columns, [
                     "description", "memo", "details", "merchant", "payee", "name",
-                    "деталі", "опис", "призначення"  # Ukrainian
+                    "деталі", "опис", "призначення", "деталі операції"  # Ukrainian
                 ]
             )
             amount_col = StatementParser._find_column(
                 df.columns, [
                     "amount", "transaction amount", "debit", "credit",
                     "card currency amount", "operation amount",
-                    "сума", "сума в валюті"  # Ukrainian
+                    "сума", "сума в валюті", "сума в валюті картки"  # Ukrainian
                 ]
             )
             balance_col = StatementParser._find_column(
@@ -185,11 +236,15 @@ class StatementParser:
             )
 
             if not all([date_col, desc_col, amount_col]):
-                raise ValueError("Could not detect required columns in Excel file")
+                raise ValueError(f"Could not detect required columns in Excel file. Found columns: {list(df.columns)}")
 
             transactions = []
             for _, row in df.iterrows():
                 try:
+                    # Skip rows where date column is empty or nan
+                    if pd.isna(row[date_col]) or str(row[date_col]).strip() == '':
+                        continue
+
                     date = StatementParser._parse_date(str(row[date_col]))
                     description = str(row[desc_col]).strip()
                     amount = StatementParser._parse_amount(str(row[amount_col]))
