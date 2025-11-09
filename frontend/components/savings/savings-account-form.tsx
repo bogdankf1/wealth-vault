@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { toast } from 'sonner';
 import {
   useCreateAccountMutation,
   useUpdateAccountMutation,
@@ -154,14 +155,17 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
       if (isEditing && accountId) {
         await updateAccount({ id: accountId, data: submitData }).unwrap();
+        toast.success('Savings account updated successfully');
       } else {
         await createAccount(submitData).unwrap();
+        toast.success('Savings account created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save account:', error);
+      toast.error(isEditing ? 'Failed to update savings account' : 'Failed to create savings account');
     }
   };
 

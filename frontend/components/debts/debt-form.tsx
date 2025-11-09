@@ -24,6 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { toast } from 'sonner';
 import {
   useCreateDebtMutation,
   useUpdateDebtMutation,
@@ -185,14 +186,17 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
       if (isEditing && debtId) {
         await updateDebt({ id: debtId, data: submitData }).unwrap();
+        toast.success('Debt updated successfully');
       } else {
         await createDebt(submitData).unwrap();
+        toast.success('Debt created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save debt:', error);
+      toast.error(isEditing ? 'Failed to update debt' : 'Failed to create debt');
     }
   };
 

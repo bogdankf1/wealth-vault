@@ -132,8 +132,10 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
       if (budget) {
         await updateBudget({ id: budget.id, data: payload }).unwrap();
         toast.success('Budget updated successfully');
+        toast.success('Budget updated successfully');
       } else {
         await createBudget(payload).unwrap();
+        toast.success('Budget created successfully');
         toast.success('Budget created successfully');
       }
 

@@ -42,6 +42,7 @@ import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { Progress } from '@/components/ui/progress';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   weekly: 'Weekly',
@@ -112,10 +113,12 @@ export default function InstallmentsPage() {
 
     try {
       await deleteInstallment(deletingInstallmentId).unwrap();
+      toast.success('Installment deleted successfully');
       setDeleteDialogOpen(false);
       setDeletingInstallmentId(null);
     } catch (error) {
       console.error('Failed to delete installment:', error);
+      toast.error('Failed to delete installment');
     }
   };
 

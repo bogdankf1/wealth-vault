@@ -36,6 +36,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { toast } from 'sonner';
 
 // Form validation schema
 const goalSchema = z.object({
@@ -222,14 +223,17 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
       if (isEditing && goalId) {
         await updateGoal({ id: goalId, data: submitData }).unwrap();
+        toast.success('Goal updated successfully');
       } else {
         await createGoal(submitData).unwrap();
+        toast.success('Goal created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save goal:', error);
+      toast.error(isEditing ? 'Failed to update goal' : 'Failed to create goal');
     }
   };
 

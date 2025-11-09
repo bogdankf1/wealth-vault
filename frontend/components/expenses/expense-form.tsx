@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { toast } from 'sonner';
 import {
   useCreateExpenseMutation,
   useUpdateExpenseMutation,
@@ -214,14 +215,17 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
       if (isEditing && expenseId) {
         await updateExpense({ id: expenseId, data: submitData }).unwrap();
+        toast.success('Expense updated successfully');
       } else {
         await createExpense(submitData).unwrap();
+        toast.success('Expense created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save expense:', error);
+      toast.error(isEditing ? 'Failed to update expense' : 'Failed to create expense');
     }
   };
 

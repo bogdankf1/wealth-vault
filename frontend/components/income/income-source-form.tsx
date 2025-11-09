@@ -37,6 +37,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { toast } from 'sonner';
 
 // Form validation schema
 const incomeSourceSchema = z.object({
@@ -235,14 +236,17 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
       if (isEditing && sourceId) {
         await updateSource({ id: sourceId, data: submitData }).unwrap();
+        toast.success('Income source updated successfully');
       } else {
         await createSource(submitData).unwrap();
+        toast.success('Income source created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save income source:', error);
+      toast.error(isEditing ? 'Failed to update income source' : 'Failed to create income source');
     }
   };
 

@@ -139,3 +139,50 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Toast notification mobile optimizations */
+@layer components {
+  /* Mobile: Top-center positioning with safe spacing */
+  @media (max-width: 640px) {
+    [data-sonner-toaster] {
+      left: 0 !important;
+      right: 0 !important;
+      top: 32px !important;
+      bottom: auto !important;
+      width: 100% !important;
+      padding: 0 8px !important;
+    }
+
+    [data-sonner-toast] {
+      width: 100% !important;
+      max-width: calc(100vw - 16px) !important;
+      margin: 0 auto 8px auto !important;
+    }
+  }
+
+  /* Tablet: Top-center positioning with generous spacing */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    [data-sonner-toaster] {
+      left: 50% !important;
+      right: auto !important;
+      top: 48px !important;
+      bottom: auto !important;
+      transform: translateX(-50%) !important;
+    }
+
+    [data-sonner-toast] {
+      max-width: 420px !important;
+      margin-bottom: 12px !important;
+    }
+  }
+
+  /* Desktop: Bottom-right positioning */
+  @media (min-width: 1025px) {
+    [data-sonner-toaster] {
+      right: 24px !important;
+      bottom: 24px !important;
+      left: auto !important;
+      top: auto !important;
+    }
+  }
+}

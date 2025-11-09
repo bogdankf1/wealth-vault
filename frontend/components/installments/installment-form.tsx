@@ -37,6 +37,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { toast } from 'sonner';
 
 // Form validation schema
 const installmentSchema = z.object({
@@ -266,14 +267,17 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
       if (isEditing && installmentId) {
         await updateInstallment({ id: installmentId, data: submitData }).unwrap();
+        toast.success('Installment updated successfully');
       } else {
         await createInstallment(submitData).unwrap();
+        toast.success('Installment created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save installment:', error);
+      toast.error(isEditing ? 'Failed to update installment' : 'Failed to create installment');
     }
   };
 

@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import {
   useListExpensesQuery,
   useGetExpenseStatsQuery,
@@ -112,10 +113,12 @@ export default function ExpensesPage() {
 
     try {
       await deleteExpense(deletingExpenseId).unwrap();
+      toast.success('Expense deleted successfully');
       setDeleteDialogOpen(false);
       setDeletingExpenseId(null);
     } catch (error) {
       console.error('Failed to delete expense:', error);
+      toast.error('Failed to delete expense');
     }
   };
 

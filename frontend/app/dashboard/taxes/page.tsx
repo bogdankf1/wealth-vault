@@ -30,6 +30,7 @@ import {
 } from '@/lib/api/taxesApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 export default function TaxesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -66,9 +67,11 @@ export default function TaxesPage() {
 
     try {
       await deleteTax(deletingTax.id).unwrap();
+      toast.success('Tax deleted successfully');
       setDeletingTax(null);
     } catch (error) {
       console.error('Failed to delete tax:', error);
+      toast.error('Failed to delete tax');
     }
   };
 

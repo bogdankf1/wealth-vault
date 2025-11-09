@@ -31,6 +31,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { toast } from 'sonner';
 import {
   useCreateTaxMutation,
   useUpdateTaxMutation,
@@ -194,8 +195,10 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
       if (isEditing && taxId) {
         await updateTax({ id: taxId, data: submitData }).unwrap();
+        toast.success('Tax updated successfully');
       } else {
         await createTax(submitData).unwrap();
+        toast.success('Tax created successfully');
       }
 
       onClose();
@@ -203,6 +206,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
       setAmountInput('');
     } catch (error) {
       console.error('Failed to save tax:', error);
+      toast.error(isEditing ? 'Failed to update tax' : 'Failed to create tax');
     }
   };
 

@@ -40,6 +40,7 @@ import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   monthly: 'Monthly',
@@ -111,10 +112,12 @@ export default function SubscriptionsPage() {
 
     try {
       await deleteSubscription(deletingSubscriptionId).unwrap();
+      toast.success('Subscription deleted successfully');
       setDeleteDialogOpen(false);
       setDeletingSubscriptionId(null);
     } catch (error) {
       console.error('Failed to delete subscription:', error);
+      toast.error('Failed to delete subscription');
     }
   };
 

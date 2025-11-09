@@ -31,6 +31,7 @@ import {
 } from '@/lib/api/debtsApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 export default function DebtsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -67,9 +68,11 @@ export default function DebtsPage() {
 
     try {
       await deleteDebt(deletingDebt.id).unwrap();
+      toast.success('Debt deleted successfully');
       setDeletingDebt(null);
     } catch (error) {
       console.error('Failed to delete debt:', error);
+      toast.error('Failed to delete debt');
     }
   };
 

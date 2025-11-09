@@ -37,6 +37,7 @@ import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { toast } from 'sonner';
 
 // Form validation schema
 const portfolioAssetSchema = z.object({
@@ -196,14 +197,17 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
       if (isEditing && assetId) {
         await updateAsset({ id: assetId, data: submitData }).unwrap();
+        toast.success('Portfolio asset updated successfully');
       } else {
         await createAsset(submitData).unwrap();
+        toast.success('Portfolio asset created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save portfolio asset:', error);
+      toast.error(isEditing ? 'Failed to update portfolio asset' : 'Failed to create portfolio asset');
     }
   };
 

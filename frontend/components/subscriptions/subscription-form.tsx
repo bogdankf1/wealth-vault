@@ -37,6 +37,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { toast } from 'sonner';
 
 // Form validation schema
 const subscriptionSchema = z.object({
@@ -203,14 +204,17 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
 
       if (isEditing && subscriptionId) {
         await updateSubscription({ id: subscriptionId, data: submitData }).unwrap();
+        toast.success('Subscription updated successfully');
       } else {
         await createSubscription(submitData).unwrap();
+        toast.success('Subscription created successfully');
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save subscription:', error);
+      toast.error(isEditing ? 'Failed to update subscription' : 'Failed to create subscription');
     }
   };
 

@@ -24,6 +24,7 @@ import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 const PERIOD_LABELS: Record<string, string> = {
   monthly: 'Monthly',
@@ -145,10 +146,12 @@ export default function BudgetsPage() {
 
     try {
       await deleteBudget(deletingBudgetId).unwrap();
+      toast.success('Budget deleted successfully');
       setDeleteDialogOpen(false);
       setDeletingBudgetId(null);
     } catch (error) {
       console.error('Failed to delete budget:', error);
+      toast.error('Failed to delete budget');
     }
   };
 

@@ -30,6 +30,7 @@ import {
 } from '@/lib/api/savingsApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   crypto: 'Cryptocurrency',
@@ -70,9 +71,11 @@ export default function SavingsPage() {
     if (deletingAccount) {
       try {
         await deleteAccount(deletingAccount.id).unwrap();
+      toast.success('Savings account deleted successfully');
         setDeletingAccount(null);
       } catch (error) {
         console.error('Failed to delete account:', error);
+      toast.error('Failed to delete savings account');
       }
     }
   };

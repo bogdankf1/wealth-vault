@@ -34,6 +34,7 @@ import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-
 import { Progress } from '@/components/ui/progress';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 export default function GoalsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -83,10 +84,12 @@ export default function GoalsPage() {
 
     try {
       await deleteGoal(deletingGoalId).unwrap();
+      toast.success('Goal deleted successfully');
       setDeleteDialogOpen(false);
       setDeletingGoalId(null);
     } catch (error) {
       console.error('Failed to delete goal:', error);
+      toast.error('Failed to delete goal');
     }
   };
 

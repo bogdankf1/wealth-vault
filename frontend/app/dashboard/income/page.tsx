@@ -36,6 +36,7 @@ import { SortFilter, sortItems, type SortField, type SortDirection } from '@/com
 import { useTierCheck, getFeatureDisplayName } from '@/lib/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { toast } from 'sonner';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   one_time: 'One-time',
@@ -119,10 +120,12 @@ export default function IncomePage() {
 
     try {
       await deleteSource(deletingSourceId).unwrap();
+      toast.success('Income source deleted successfully');
       setDeleteDialogOpen(false);
       setDeletingSourceId(null);
     } catch (error) {
       console.error('Failed to delete income source:', error);
+      toast.error('Failed to delete income source');
     }
   };
 
