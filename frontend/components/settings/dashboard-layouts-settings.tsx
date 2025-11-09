@@ -51,6 +51,9 @@ const AVAILABLE_WIDGETS: { id: string; label: string; description: string }[] = 
   { id: 'net-worth-trend', label: 'Net Worth Trend', description: 'Historical net worth' },
   { id: 'taxes', label: 'Taxes', description: 'Tax summary' },
   { id: 'debts-owed', label: 'Debts Owed', description: 'Debt tracking' },
+  { id: 'planned-subscriptions', label: 'Planned Subscriptions', description: 'Subscription payments for selected month' },
+  { id: 'planned-expenses', label: 'Planned Expenses', description: 'Recurring expense payments for selected month' },
+  { id: 'planned-installments', label: 'Planned Installments', description: 'Installment payments for selected month' },
 ];
 
 export function DashboardLayoutsSettings() {
@@ -304,16 +307,27 @@ function LayoutEditorDialog({
   const [updateLayout] = useUpdateLayoutMutation();
 
   const [name, setName] = useState(layout?.name || '');
-  const [widgets, setWidgets] = useState<WidgetConfig[]>(
-    layout?.configuration.widgets ||
-    AVAILABLE_WIDGETS.map((w, i) => ({ id: w.id, visible: true, order: i + 1 }))
-  );
+  const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
+    if (layout) {
+      // Merge existing layout widgets with any new widgets from AVAILABLE_WIDGETS
+      return AVAILABLE_WIDGETS.map((availableWidget, i) => {
+        const existingWidget = layout.configuration.widgets.find((w) => w.id === availableWidget.id);
+        return existingWidget || { id: availableWidget.id, visible: true, order: i + 1 };
+      });
+    }
+    return AVAILABLE_WIDGETS.map((w, i) => ({ id: w.id, visible: true, order: i + 1 }));
+  });
 
   // Sync form state when layout prop or dialog state changes
   useEffect(() => {
     if (layout) {
       setName(layout.name);
-      setWidgets(layout.configuration.widgets);
+      // Merge existing layout widgets with any new widgets from AVAILABLE_WIDGETS
+      const mergedWidgets = AVAILABLE_WIDGETS.map((availableWidget, i) => {
+        const existingWidget = layout.configuration.widgets.find((w) => w.id === availableWidget.id);
+        return existingWidget || { id: availableWidget.id, visible: true, order: i + 1 };
+      });
+      setWidgets(mergedWidgets);
     } else {
       setName('');
       setWidgets(AVAILABLE_WIDGETS.map((w, i) => ({ id: w.id, visible: true, order: i + 1 })));

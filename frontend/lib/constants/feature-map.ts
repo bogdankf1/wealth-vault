@@ -38,4 +38,7 @@ export const WIDGET_FEATURES: Record<string, string | null> = {
   'net-worth-trend': null, // Always available
   'taxes': 'tax_tracking',
   'debts-owed': 'debt_tracking',
+  'planned-subscriptions': 'subscription_tracking',
+  'planned-expenses': 'expense_tracking',
+  'planned-installments': 'installment_tracking',
 };

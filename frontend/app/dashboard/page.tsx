@@ -57,6 +57,9 @@ import { InstallmentForm } from '@/components/installments/installment-form';
 import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
 import { BudgetOverviewWidget } from '@/components/dashboard/budget-overview-widget';
 import { GoalsOverviewWidget } from '@/components/dashboard/goals-overview-widget';
+import { PlannedSubscriptionsWidget } from '@/components/dashboard/planned-subscriptions-widget';
+import { PlannedExpensesWidget } from '@/components/dashboard/planned-expenses-widget';
+import { PlannedInstallmentsWidget } from '@/components/dashboard/planned-installments-widget';
 import { MonthFilter } from '@/components/ui/month-filter';
 import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
 import { SubscriptionsByCategoryChart } from '@/components/dashboard/subscriptions-by-category-chart';
@@ -393,6 +396,21 @@ export default function DashboardPage() {
 
         {/* Goals Overview Widget */}
         {isWidgetVisible('goals-progress') && <GoalsOverviewWidget />}
+
+        {/* Planned Payments Widgets */}
+        {(isWidgetVisible('planned-subscriptions') || isWidgetVisible('planned-expenses') || isWidgetVisible('planned-installments')) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+            {isWidgetVisible('planned-subscriptions') && (
+              <PlannedSubscriptionsWidget selectedMonth={selectedMonth} />
+            )}
+            {isWidgetVisible('planned-expenses') && (
+              <PlannedExpensesWidget selectedMonth={selectedMonth} />
+            )}
+            {isWidgetVisible('planned-installments') && (
+              <PlannedInstallmentsWidget selectedMonth={selectedMonth} />
+            )}
+          </div>
+        )}
 
         {/* Financial Alerts & Notifications */}
         {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (

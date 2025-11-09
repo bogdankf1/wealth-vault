@@ -34,10 +34,12 @@ export function CurrencyDisplay({
   const { data: currencyData } = useGetCurrencyQuery(displayCurrency || currency);
   const [convertedAmount, setConvertedAmount] = React.useState<string | null>(null);
   const [convertCurrency] = useConvertCurrencyMutation();
+  const [isConverting, setIsConverting] = React.useState(false);
 
   // Convert if display currency is different
   React.useEffect(() => {
     if (displayCurrency && displayCurrency !== currency) {
+      setIsConverting(true);
       convertCurrency({
         amount: typeof amount === "string" ? parseFloat(amount) : amount,
         from_currency: currency,
@@ -46,10 +48,17 @@ export function CurrencyDisplay({
         .unwrap()
         .then((result) => {
           setConvertedAmount(result.converted_amount);
+          setIsConverting(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Currency conversion failed:', error);
           setConvertedAmount(null);
+          setIsConverting(false);
         });
+    } else {
+      // Reset converted amount if currencies are the same or no displayCurrency
+      setConvertedAmount(null);
+      setIsConverting(false);
     }
   }, [amount, currency, displayCurrency, convertCurrency]);
 
