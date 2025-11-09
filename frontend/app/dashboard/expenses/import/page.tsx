@@ -323,7 +323,7 @@ export default function ImportStatementPage() {
           <CardHeader>
             <CardTitle>Step 1: Upload Your Statement</CardTitle>
             <CardDescription>
-              Upload a CSV file from Monobank (Ukraine). Both Ukrainian and English formats are supported.
+              Upload a CSV or XLS file from Monobank (Ukraine). Both Ukrainian and English formats are supported.
             </CardDescription>
           </CardHeader>
           <CardContent>
