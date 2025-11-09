@@ -409,6 +409,9 @@ async def get_installment_stats(
     }
 
     for installment in installments:
+        # Check if installment is paid off
+        is_paid_off = installment.payments_made >= installment.number_of_payments
+
         # Total debt (remaining balance) - convert to display currency
         if installment.remaining_balance:
             remaining_in_display = installment.remaining_balance
@@ -423,7 +426,8 @@ async def get_installment_stats(
             total_debt += remaining_in_display
 
         # Monthly payment (normalize based on frequency) - convert to display currency
-        if installment.is_active:
+        # Only include if active AND not paid off
+        if installment.is_active and not is_paid_off:
             multiplier = frequency_to_monthly.get(installment.frequency, Decimal('1'))
             monthly_equivalent = installment.amount_per_payment * multiplier
 

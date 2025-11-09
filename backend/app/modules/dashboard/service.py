@@ -389,7 +389,11 @@ async def get_cash_flow(
     # Convert installments to monthly equivalent in display currency
     monthly_installments = Decimal('0')
     for installment in installments:
-        if installment.amount_per_payment:
+        # Check if installment is paid off
+        is_paid_off = installment.payments_made >= installment.number_of_payments
+
+        # Only include if not paid off
+        if installment.amount_per_payment and not is_paid_off:
             # Calculate monthly equivalent
             multiplier = installment_frequency_to_monthly.get(installment.frequency, Decimal('1'))
             monthly_amount = installment.amount_per_payment * multiplier
