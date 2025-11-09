@@ -277,66 +277,251 @@ class StatementParser:
     @staticmethod
     def parse_pdf(file_path: str) -> List[Transaction]:
         """
-        Parse PDF bank statement using pdfplumber
+        Parse PDF bank statement using pdfplumber with table extraction.
 
-        This is a best-effort approach that looks for transaction-like patterns
+        Supports:
+        - Monobank statements (Ukrainian and English)
+        - Generic bank statements (fallback to regex parsing)
         """
         try:
             transactions = []
 
             with pdfplumber.open(file_path) as pdf:
+                # Try table extraction first (for Monobank and structured PDFs)
                 for page in pdf.pages:
-                    text = page.extract_text()
+                    tables = page.extract_tables()
 
-                    # Look for transaction lines using regex
-                    # Common pattern: Date | Description | Amount | Balance
-                    lines = text.split('\n')
-
-                    for line in lines:
-                        # Try to extract transaction data using patterns
-                        # Date patterns: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
-                        date_match = re.search(
-                            r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})',
-                            line
-                        )
-
-                        # Amount patterns: $1,234.56 or -1234.56
-                        amount_match = re.search(
-                            r'[\$]?([\-\+]?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
-                            line
-                        )
-
-                        if date_match and amount_match:
-                            try:
-                                date_str = date_match.group(1)
-                                date = StatementParser._parse_date(date_str)
-
-                                # Extract description (text between date and amount)
-                                date_pos = date_match.end()
-                                amount_pos = amount_match.start()
-                                description = line[date_pos:amount_pos].strip()
-
-                                # Clean description
-                                description = re.sub(r'\s+', ' ', description)
-
-                                amount_str = amount_match.group(1)
-                                amount = StatementParser._parse_amount(amount_str)
-
-                                if description and amount != 0:
-                                    transactions.append(
-                                        Transaction(
-                                            date=date,
-                                            description=description,
-                                            amount=amount,
-                                        )
-                                    )
-                            except (ValueError, TypeError):
+                    if tables:
+                        # Process extracted tables
+                        for table in tables:
+                            if not table or len(table) < 2:
                                 continue
+
+                            # First row is usually headers
+                            headers = [str(cell).lower() if cell else '' for cell in table[0]]
+
+                            # Detect Monobank format by checking for characteristic headers
+                            is_monobank = any('mcc' in h or 'мсс' in h for h in headers)
+
+                            if is_monobank:
+                                transactions.extend(StatementParser._parse_monobank_table(table))
+                            else:
+                                transactions.extend(StatementParser._parse_generic_table(table))
+
+                # Fallback to regex-based parsing if no tables found
+                if not transactions:
+                    for page in pdf.pages:
+                        text = page.extract_text()
+                        if not text:
+                            continue
+
+                        lines = text.split('\n')
+                        for line in lines:
+                            # Date patterns
+                            date_match = re.search(
+                                r'(\d{1,2}[/.]\d{1,2}[/.]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})',
+                                line
+                            )
+
+                            # Amount patterns
+                            amount_match = re.search(
+                                r'[\$€£₴]?\s?([\-\+]?\d{1,3}(?:[,\s]\d{3})*(?:\.\d{2})?)',
+                                line
+                            )
+
+                            if date_match and amount_match:
+                                try:
+                                    date_str = date_match.group(1)
+                                    date = StatementParser._parse_date(date_str)
+
+                                    # Extract description
+                                    date_pos = date_match.end()
+                                    amount_pos = amount_match.start()
+                                    description = line[date_pos:amount_pos].strip()
+                                    description = re.sub(r'\s+', ' ', description)
+
+                                    amount_str = amount_match.group(1)
+                                    amount = StatementParser._parse_amount(amount_str)
+
+                                    if description and amount != 0:
+                                        transactions.append(
+                                            Transaction(
+                                                date=date,
+                                                description=description,
+                                                amount=amount,
+                                            )
+                                        )
+                                except (ValueError, TypeError):
+                                    continue
 
             return transactions
 
         except Exception as e:
             raise ValueError(f"Failed to parse PDF: {str(e)}")
+
+    @staticmethod
+    def _parse_monobank_table(table: List[List[str]]) -> List[Transaction]:
+        """
+        Parse Monobank PDF table format.
+
+        Supports both Ukrainian and English column headers.
+        Expected columns:
+        - Date and time / Дата i час операції
+        - Description / Деталі операції
+        - MCC / МСС
+        - Card currency amount / Сума в валюті картки
+        - Operation amount / Сума в валюті операції
+        - Operation currency / Валюта
+        - Exchange rate / Курс
+        - Commission / Сума комісій
+        - Cashback / Сума кешбеку/миль
+        - Balance / Залишок після операції
+        """
+        transactions = []
+
+        if not table or len(table) < 2:
+            return transactions
+
+        # Get headers - normalize by removing newlines and extra spaces
+        headers = [
+            re.sub(r'\s+', ' ', str(cell)).lower().strip() if cell else ''
+            for cell in table[0]
+        ]
+
+        # Find column indices (support both Ukrainian and English)
+        date_col = None
+        desc_col = None
+        amount_col = None
+
+        for i, header in enumerate(headers):
+            # Date column: "date and time" or "дата i час операції"
+            if any(kw in header for kw in ['date and time', 'дата i час']):
+                date_col = i
+            # Description column: "description" or "деталі операції"
+            elif any(kw in header for kw in ['description', 'деталі']):
+                desc_col = i
+            # Amount column: "card currency amount" or "сума в валюті картки"
+            elif any(kw in header for kw in ['card currency amount', 'сума в валюті картки']):
+                amount_col = i
+
+        # Parse data rows
+        for row_idx, row in enumerate(table[1:], start=1):
+            try:
+                if not row or len(row) < max(filter(None, [date_col, desc_col, amount_col]), default=0) + 1:
+                    continue
+
+                # Extract date
+                if date_col is None or not row[date_col]:
+                    continue
+
+                date_str = str(row[date_col]).strip()
+                # Monobank date format: "08.11.2025\n23:33:29" or "08.11.2025 23:33:29"
+                date_str = date_str.replace('\n', ' ').split()[0]  # Take only date part
+                date = StatementParser._parse_date(date_str)
+
+                # Extract description
+                if desc_col is None:
+                    continue
+
+                description = str(row[desc_col]).strip() if row[desc_col] else ''
+                if not description:
+                    continue
+
+                # Clean description - remove newlines and extra spaces
+                description = re.sub(r'\s+', ' ', description)
+
+                # Extract amount
+                if amount_col is None or not row[amount_col]:
+                    continue
+
+                amount_str = str(row[amount_col]).strip()
+                # Remove currency symbols and spaces
+                amount_str = re.sub(r'[^\d.,\-\+]', '', amount_str)
+                amount = StatementParser._parse_amount(amount_str)
+
+                if amount == 0:
+                    continue
+
+                transactions.append(
+                    Transaction(
+                        date=date,
+                        description=description,
+                        amount=amount,
+                    )
+                )
+
+            except (ValueError, TypeError, IndexError) as e:
+                # Skip rows that can't be parsed
+                continue
+
+        return transactions
+
+    @staticmethod
+    def _parse_generic_table(table: List[List[str]]) -> List[Transaction]:
+        """
+        Parse generic PDF table format.
+
+        Attempts to identify date, description, and amount columns
+        from common patterns.
+        """
+        transactions = []
+
+        if not table or len(table) < 2:
+            return transactions
+
+        headers = [str(cell).lower().strip() if cell else '' for cell in table[0]]
+
+        # Find columns using common keywords
+        date_col = StatementParser._find_column(
+            headers,
+            ['date', 'дата', 'transaction date', 'post date']
+        )
+        desc_col = StatementParser._find_column(
+            headers,
+            ['description', 'деталі', 'details', 'merchant', 'опис']
+        )
+        amount_col = StatementParser._find_column(
+            headers,
+            ['amount', 'сума', 'debit', 'credit', 'transaction amount']
+        )
+
+        if not all([date_col, desc_col, amount_col]):
+            return transactions
+
+        date_idx = headers.index(date_col)
+        desc_idx = headers.index(desc_col)
+        amount_idx = headers.index(amount_col)
+
+        # Parse rows
+        for row in table[1:]:
+            try:
+                if not row or len(row) <= max(date_idx, desc_idx, amount_idx):
+                    continue
+
+                date_str = str(row[date_idx]).strip()
+                description = str(row[desc_idx]).strip()
+                amount_str = str(row[amount_idx]).strip()
+
+                if not all([date_str, description, amount_str]):
+                    continue
+
+                date = StatementParser._parse_date(date_str)
+                description = re.sub(r'\s+', ' ', description)
+                amount = StatementParser._parse_amount(amount_str)
+
+                if amount != 0:
+                    transactions.append(
+                        Transaction(
+                            date=date,
+                            description=description,
+                            amount=amount,
+                        )
+                    )
+
+            except (ValueError, TypeError, IndexError):
+                continue
+
+        return transactions
 
     @staticmethod
     def _find_column(columns: List[str], keywords: List[str]) -> Optional[str]:
