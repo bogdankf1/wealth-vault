@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LayoutGrid, Plus, Trash2, Edit, GripVertical, CheckCircle } from 'lucide-react';
+import { LayoutGrid, Plus, Trash2, Edit, GripVertical, CheckCircle, Crown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { useGetCurrentUserQuery } from '@/lib/api/authApi';
+import Link from 'next/link';
 import {
   useListLayoutsQuery,
   useCreateLayoutMutation,
@@ -53,6 +55,7 @@ const AVAILABLE_WIDGETS: { id: string; label: string; description: string }[] = 
 
 export function DashboardLayoutsSettings() {
   const { toast } = useToast();
+  const { data: currentUser } = useGetCurrentUserQuery();
   const { data: layoutsData, isLoading } = useListLayoutsQuery();
   const [activateLayout] = useActivateLayoutMutation();
   const [deleteLayout] = useDeleteLayoutMutation();
@@ -60,6 +63,9 @@ export function DashboardLayoutsSettings() {
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingLayout, setEditingLayout] = useState<DashboardLayout | null>(null);
+
+  // Check if user has Wealth tier
+  const isWealthTier = currentUser?.tier?.name === 'wealth';
 
   const handleActivate = async (layoutId: string) => {
     try {
@@ -153,6 +159,12 @@ export function DashboardLayoutsSettings() {
               </CardTitle>
               <CardDescription>
                 Customize your dashboard by creating and managing different layouts
+                {!isWealthTier && (
+                  <span className="block mt-1 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <Crown className="h-3 w-3" />
+                    Custom layouts require Wealth tier
+                  </span>
+                )}
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -162,10 +174,19 @@ export function DashboardLayoutsSettings() {
                   Initialize Presets
                 </Button>
               )}
-              <Button onClick={handleCreate} size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Layout
-              </Button>
+              {isWealthTier ? (
+                <Button onClick={handleCreate} size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Layout
+                </Button>
+              ) : (
+                <Link href="/dashboard/pricing">
+                  <Button variant="outline" size="sm">
+                    <Crown className="mr-2 h-4 w-4" />
+                    Upgrade to Create
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -232,8 +253,25 @@ export function DashboardLayoutsSettings() {
                 <Button onClick={handleInitializePresets} variant="outline">
                   Initialize Presets
                 </Button>
-                <Button onClick={handleCreate}>Create Layout</Button>
+                {isWealthTier ? (
+                  <Button onClick={handleCreate}>Create Layout</Button>
+                ) : (
+                  <Link href="/dashboard/pricing">
+                    <Button variant="outline">
+                      <Crown className="mr-2 h-4 w-4" />
+                      Upgrade to Wealth
+                    </Button>
+                  </Link>
+                )}
               </div>
+              {!isWealthTier && (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Custom layouts are available for Wealth tier subscribers.{' '}
+                  <Link href="/dashboard/pricing" className="text-primary hover:underline">
+                    View pricing
+                  </Link>
+                </p>
+              )}
             </div>
           )}
         </CardContent>
