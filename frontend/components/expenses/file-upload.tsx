@@ -39,6 +39,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
       'text/csv': ['.csv'],
       'application/vnd.ms-excel': ['.xls'],
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/pdf': ['.pdf'],
     },
     maxFiles: 1,
     multiple: false,
@@ -118,7 +119,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
             or click to browse
           </p>
           <p className="text-xs text-muted-foreground">
-            Supported: CSV and XLS files from Monobank (Ukraine only)
+            Supported: CSV, XLS, and PDF files from Monobank (Ukraine only)
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Both Ukrainian and English formats accepted
