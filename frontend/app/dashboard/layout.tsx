@@ -30,6 +30,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
+import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 const navigation = [
@@ -118,10 +119,8 @@ export default function DashboardLayout({
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6 border-b dark:border-gray-700">
-            <Link href="/dashboard" className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold">W</span>
-              </div>
+            <Link href="/dashboard" className="flex items-center space-x-3">
+              <WealthVaultLogo size={32} className="flex-shrink-0" />
               <span className="text-xl font-bold text-gray-900 dark:text-white">
                 Wealth Vault
               </span>
@@ -256,9 +255,7 @@ export default function DashboardLayout({
             <Menu className="h-6 w-6" />
           </button>
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">W</span>
-            </div>
+            <WealthVaultLogo size={28} className="flex-shrink-0" />
             <span className="text-lg font-bold text-gray-900 dark:text-white">
               Wealth Vault
             </span>
