@@ -167,6 +167,20 @@ async def seed_features():
                 "description": "Track tax obligations and payments",
                 "module": "taxes"
             },
+            # Budgets module
+            {
+                "key": "budget_tracking",
+                "name": "Budget Tracking",
+                "description": "Create and monitor budgets by category",
+                "module": "budgets"
+            },
+            # Dashboard customization
+            {
+                "key": "custom_layouts",
+                "name": "Custom Dashboard Layouts",
+                "description": "Create and customize dashboard layouts",
+                "module": "dashboard"
+            },
         ]
 
         features = [Feature(**data) for data in features_data]
@@ -203,6 +217,7 @@ async def seed_tier_features():
             ("savings_tracking", 3),  # Max 3 accounts
             ("subscription_tracking", 5),  # Max 5 subscriptions
             ("installment_tracking", 2),  # Max 2 installments
+            ("budget_tracking", None),  # Unlimited budgets
         ]
 
         for feature_key, limit in starter_features:
@@ -227,6 +242,7 @@ async def seed_tier_features():
             ("financial_goals", None),  # Unlimited
             ("subscription_tracking", 20),  # Max 20 subscriptions
             ("installment_tracking", 10),  # Max 10 installments
+            ("budget_tracking", None),  # Unlimited budgets
         ]
 
         for feature_key, limit in growth_features:
@@ -255,6 +271,8 @@ async def seed_tier_features():
             ("installment_tracking", None),  # Unlimited
             ("debt_tracking", None),  # Wealth-only feature
             ("tax_tracking", None),  # Wealth-only feature
+            ("budget_tracking", None),  # Unlimited budgets
+            ("custom_layouts", None),  # Wealth-only feature
         ]
 
         for feature_key, limit in wealth_features:

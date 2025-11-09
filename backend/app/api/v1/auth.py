@@ -156,3 +156,48 @@ async def get_current_user_info(
         User information
     """
     return UserResponse.model_validate(current_user)
+
+
+@router.get("/me/features")
+async def get_current_user_features(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> dict:
+    """
+    Get current user's enabled features based on their tier.
+
+    Args:
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        Dictionary of feature keys and their enabled status
+    """
+    if not current_user.tier:
+        return {"features": {}}
+
+    # Re-query user with proper eager loading for nested relationships
+    from sqlalchemy.orm import selectinload
+    from app.models.tier import Tier, TierFeature, Feature
+
+    result = await db.execute(
+        select(User)
+        .options(
+            selectinload(User.tier).selectinload(Tier.tier_features).selectinload(TierFeature.feature)
+        )
+        .where(User.id == current_user.id)
+    )
+    user = result.scalar_one()
+
+    # Build a dictionary of enabled features
+    enabled_features = {}
+    for tier_feature in user.tier.tier_features:
+        if tier_feature.feature and tier_feature.enabled:
+            enabled_features[tier_feature.feature.key] = {
+                "enabled": True,
+                "limit": tier_feature.limit_value,
+                "name": tier_feature.feature.name,
+                "module": tier_feature.feature.module
+            }
+
+    return {"features": enabled_features}
