@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,10 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useListBudgetsQuery, useGetBudgetOverviewQuery, useDeleteBudgetMutation } from '@/lib/api/budgetsApi';
+import { useListBudgetsQuery, useGetBudgetOverviewQuery, useDeleteBudgetMutation, useBatchDeleteBudgetsMutation } from '@/lib/api/budgetsApi';
 import { BudgetForm } from '@/components/budgets/budget-form';
 import { BudgetProgressChart } from '@/components/budgets/budget-progress-chart';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { MonthFilter } from '@/components/ui/month-filter';
 import { SearchFilter } from '@/components/ui/search-filter';
 import { ModuleHeader } from '@/components/ui/module-header';
@@ -42,6 +44,8 @@ export default function BudgetsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedBudgetIds, setSelectedBudgetIds] = useState<Set<string>>(new Set());
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -64,6 +68,7 @@ export default function BudgetsPage() {
 
   const { data: overview, isLoading: overviewLoading } = useGetBudgetOverviewQuery(overviewParams);
   const [deleteBudget, { isLoading: isDeleting }] = useDeleteBudgetMutation();
+  const [batchDeleteBudgets, { isLoading: isBatchDeleting }] = useBatchDeleteBudgetsMutation();
 
   const isLoading = budgetsLoading || overviewLoading;
 
@@ -160,6 +165,51 @@ export default function BudgetsPage() {
     setEditingBudgetId(null);
   };
 
+  const handleToggleSelect = (budgetId: string) => {
+    setSelectedBudgetIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(budgetId)) {
+        newSet.delete(budgetId);
+      } else {
+        newSet.add(budgetId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedBudgetIds.size === filteredBudgets.length && filteredBudgets.length > 0) {
+      setSelectedBudgetIds(new Set());
+    } else {
+      setSelectedBudgetIds(new Set(filteredBudgets.map((budget) => budget.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedBudgetIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteBudgets({
+        ids: Array.from(selectedBudgetIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} budget(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} budget(s)`);
+      }
+
+      setBatchDeleteDialogOpen(false);
+      setSelectedBudgetIds(new Set());
+    } catch {
+      toast.error('Failed to delete budgets');
+    }
+  };
+
   // Prepare stats cards data from overview
   const statsCards: StatCard[] = overview?.stats
     ? [
@@ -217,6 +267,8 @@ export default function BudgetsPage() {
         description="Track and manage your spending budgets"
         actionLabel="Add Budget"
         onAction={handleAddBudget}
+        deleteLabel={selectedBudgetIds.size > 0 ? `Delete Selected (${selectedBudgetIds.size})` : undefined}
+        onDelete={selectedBudgetIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -471,11 +523,19 @@ export default function BudgetsPage() {
               <Card key={budget.id} className="relative">
                 <CardHeader className="pb-3 md:pb-6">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-base md:text-lg truncate">{budget.name}</CardTitle>
-                      <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                        {budget.description || ' '}
-                      </CardDescription>
+                    <div className="flex items-start gap-3 flex-1">
+                      <Checkbox
+                        checked={selectedBudgetIds.has(budget.id)}
+                        onCheckedChange={() => handleToggleSelect(budget.id)}
+                        aria-label={`Select ${budget.name}`}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base md:text-lg truncate">{budget.name}</CardTitle>
+                        <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
+                          {budget.description || ' '}
+                        </CardDescription>
+                      </div>
                     </div>
                     <Badge variant={budget.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                       {budget.is_active ? 'Active' : 'Inactive'}
@@ -553,6 +613,13 @@ export default function BudgetsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedBudgetIds.size === filteredBudgets.length && filteredBudgets.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
                     <TableHead className="hidden md:table-cell">Description</TableHead>
                     <TableHead className="hidden lg:table-cell">Category</TableHead>
@@ -567,6 +634,13 @@ export default function BudgetsPage() {
                 <TableBody>
                   {filteredBudgets.map((budget) => (
                     <TableRow key={budget.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedBudgetIds.has(budget.id)}
+                          onCheckedChange={() => handleToggleSelect(budget.id)}
+                          aria-label={`Select ${budget.name}`}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         <div className="max-w-[200px]">
                           <p className="truncate">{budget.name}</p>
@@ -667,6 +741,16 @@ export default function BudgetsPage() {
         title="Delete Budget"
         itemName="budget"
         isDeleting={isDeleting}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedBudgetIds.size}
+        itemName="budget"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

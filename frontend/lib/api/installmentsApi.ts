@@ -95,6 +95,16 @@ export interface ListInstallmentsParams {
   is_active?: boolean;
 }
 
+
+export interface InstallmentBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface InstallmentBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const installmentsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List installments with pagination and filters
@@ -169,6 +179,26 @@ export const installmentsApi = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: 'Installments', id: 'STATS' }],
     }),
+
+    // Batch delete installments
+    batchDeleteInstallments: builder.mutation<InstallmentBatchDeleteResponse, InstallmentBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/installments/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Installments' as const, id: 'LIST' },
+          { type: 'Installments' as const, id: 'STATS' },
+          'Dashboard' as const,
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Installments' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -180,4 +210,5 @@ export const {
   useUpdateInstallmentMutation,
   useDeleteInstallmentMutation,
   useGetInstallmentStatsQuery,
+  useBatchDeleteInstallmentsMutation,
 } = installmentsApi;

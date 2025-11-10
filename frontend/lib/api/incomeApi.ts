@@ -131,6 +131,15 @@ export interface ListIncomeTransactionsParams {
   end_date?: string;
 }
 
+export interface IncomeSourceBatchDeleteRequest {
+  source_ids: string[];
+}
+
+export interface IncomeSourceBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 // ============================================================================
 // API Endpoints
 // ============================================================================
@@ -228,6 +237,16 @@ export const incomeApi = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: 'Income', id: 'STATS' }],
     }),
+
+    // Batch Delete
+    batchDeleteIncomeSources: builder.mutation<IncomeSourceBatchDeleteResponse, IncomeSourceBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/income/sources/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: [{ type: 'Income', id: 'LIST' }, { type: 'Income', id: 'STATS' }, 'Dashboard'],
+    }),
   }),
 });
 
@@ -237,6 +256,7 @@ export const {
   useCreateIncomeSourceMutation,
   useUpdateIncomeSourceMutation,
   useDeleteIncomeSourceMutation,
+  useBatchDeleteIncomeSourcesMutation,
   useListIncomeTransactionsQuery,
   useCreateIncomeTransactionMutation,
   useGetIncomeStatsQuery,

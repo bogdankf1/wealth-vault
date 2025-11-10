@@ -105,6 +105,16 @@ export interface ListBudgetsParams {
   limit?: number;
 }
 
+
+export interface BudgetBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface BudgetBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const budgetsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Create budget
@@ -173,6 +183,25 @@ export const budgetsApi = apiSlice.injectEndpoints({
         { type: 'Budget', id: 'OVERVIEW' },
       ],
     }),
+
+    // Batch delete budgets
+    batchDeleteBudgets: builder.mutation<BudgetBatchDeleteResponse, BudgetBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/budgets/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Budget' as const, id: 'LIST' },
+          { type: 'Budget' as const, id: 'OVERVIEW' },
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Budget' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -184,4 +213,5 @@ export const {
   useGetBudgetQuery,
   useUpdateBudgetMutation,
   useDeleteBudgetMutation,
+  useBatchDeleteBudgetsMutation,
 } = budgetsApi;

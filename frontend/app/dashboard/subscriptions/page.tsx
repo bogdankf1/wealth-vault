@@ -11,6 +11,7 @@ import {
   useListSubscriptionsQuery,
   useGetSubscriptionStatsQuery,
   useDeleteSubscriptionMutation,
+  useBatchDeleteSubscriptionsMutation,
 } from '@/lib/api/subscriptionsApi';
 import {
   calculateNextRenewalDate,
@@ -36,6 +37,8 @@ import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
@@ -59,6 +62,8 @@ export default function SubscriptionsPage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedSubscriptionIds, setSelectedSubscriptionIds] = useState<Set<string>>(new Set());
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -91,6 +96,7 @@ export default function SubscriptionsPage() {
   } = useGetSubscriptionStatsQuery(statsParams);
 
   const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
+  const [batchDeleteSubscriptions, { isLoading: isBatchDeleting }] = useBatchDeleteSubscriptionsMutation();
 
   const handleAddSubscription = () => {
     setEditingSubscriptionId(null);
@@ -124,6 +130,53 @@ export default function SubscriptionsPage() {
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingSubscriptionId(null);
+  };
+
+  const handleToggleSelect = (subscriptionId: string) => {
+    setSelectedSubscriptionIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(subscriptionId)) {
+        newSet.delete(subscriptionId);
+      } else {
+        newSet.add(subscriptionId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedSubscriptionIds.size === filteredSubscriptions.length) {
+      setSelectedSubscriptionIds(new Set());
+    } else {
+      setSelectedSubscriptionIds(new Set(filteredSubscriptions.map((s) => s.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedSubscriptionIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedSubscriptionIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteSubscriptions({
+        ids: Array.from(selectedSubscriptionIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} subscription(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} subscription(s)`);
+      }
+
+      setBatchDeleteDialogOpen(false);
+      setSelectedSubscriptionIds(new Set());
+    } catch (error) {
+      console.error('Failed to batch delete subscriptions:', error);
+      toast.error('Failed to delete subscriptions');
+    }
   };
 
 
@@ -163,7 +216,7 @@ export default function SubscriptionsPage() {
     (subscription) => subscription.name,
     (subscription) => subscription.display_amount || subscription.amount,
     (subscription) => subscription.start_date
-  );
+  ) || [];
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
@@ -225,6 +278,8 @@ export default function SubscriptionsPage() {
         description="Track and manage your recurring subscriptions"
         actionLabel="Add Subscription"
         onAction={handleAddSubscription}
+        deleteLabel={selectedSubscriptionIds.size > 0 ? `Delete Selected (${selectedSubscriptionIds.size})` : undefined}
+        onDelete={selectedSubscriptionIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -388,11 +443,19 @@ export default function SubscriptionsPage() {
                 <Card key={subscription.id} className="relative">
                   <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-base md:text-lg truncate">{subscription.name}</CardTitle>
-                        <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                          {subscription.description || <>&nbsp;</>}
-                        </CardDescription>
+                      <div className="flex items-start gap-3 flex-1">
+                        <Checkbox
+                          checked={selectedSubscriptionIds.has(subscription.id)}
+                          onCheckedChange={() => handleToggleSelect(subscription.id)}
+                          aria-label={`Select ${subscription.name}`}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base md:text-lg truncate">{subscription.name}</CardTitle>
+                          <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
+                            {subscription.description || <>&nbsp;</>}
+                          </CardDescription>
+                        </div>
                       </div>
                       <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                         {subscription.is_active ? 'Active' : 'Inactive'}
@@ -480,6 +543,13 @@ export default function SubscriptionsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedSubscriptionIds.size === filteredSubscriptions.length && filteredSubscriptions.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
                     <TableHead className="hidden md:table-cell">Description</TableHead>
                     <TableHead className="hidden lg:table-cell">Category</TableHead>
@@ -503,6 +573,13 @@ export default function SubscriptionsPage() {
 
                     return (
                       <TableRow key={subscription.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedSubscriptionIds.has(subscription.id)}
+                            onCheckedChange={() => handleToggleSelect(subscription.id)}
+                            aria-label={`Select ${subscription.name}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
                             <p className="truncate">{subscription.name}</p>
@@ -617,6 +694,16 @@ export default function SubscriptionsPage() {
         title="Delete Subscription"
         itemName="subscription"
         isDeleting={isDeleting}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedSubscriptionIds.size}
+        itemName="subscription"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

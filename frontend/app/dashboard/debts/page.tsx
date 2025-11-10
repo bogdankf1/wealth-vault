@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { UserMinus, TrendingUp, AlertCircle, Edit, Trash2, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { UserMinus, AlertCircle, Edit, Trash2, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards } from '@/components/ui/stats-cards';
-import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { SearchFilter } from '@/components/ui/search-filter';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DebtForm } from '@/components/debts/debt-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ import {
   useListDebtsQuery,
   useGetDebtStatsQuery,
   useDeleteDebtMutation,
+  useBatchDeleteDebtsMutation,
   type Debt,
 } from '@/lib/api/debtsApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
@@ -37,6 +40,8 @@ export default function DebtsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDebtId, setEditingDebtId] = useState<string | null>(null);
   const [deletingDebt, setDeletingDebt] = useState<Debt | null>(null);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [selectedDebtIds, setSelectedDebtIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('name');
@@ -48,6 +53,7 @@ export default function DebtsPage() {
   const { data: debtsData, isLoading, error, refetch } = useListDebtsQuery();
   const { data: stats } = useGetDebtStatsQuery();
   const [deleteDebt] = useDeleteDebtMutation();
+  const [batchDeleteDebts, { isLoading: isBatchDeleting }] = useBatchDeleteDebtsMutation();
 
   const handleEdit = (debtId: string) => {
     setEditingDebtId(debtId);
@@ -73,6 +79,50 @@ export default function DebtsPage() {
     } catch (error) {
       console.error('Failed to delete debt:', error);
       toast.error('Failed to delete debt');
+    }
+  };
+
+  const handleToggleSelect = (debtId: string) => {
+    const newSelected = new Set(selectedDebtIds);
+    if (newSelected.has(debtId)) {
+      newSelected.delete(debtId);
+    } else {
+      newSelected.add(debtId);
+    }
+    setSelectedDebtIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedDebtIds.size === filteredDebts.length) {
+      setSelectedDebtIds(new Set());
+    } else {
+      setSelectedDebtIds(new Set(filteredDebts.map(debt => debt.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedDebtIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedDebtIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteDebts({
+        ids: Array.from(selectedDebtIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} debt(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} debt(s)`);
+      }
+      setBatchDeleteDialogOpen(false);
+      setSelectedDebtIds(new Set());
+    } catch (error) {
+      console.error('Batch delete failed:', error);
+      toast.error('Failed to delete debts');
     }
   };
 
@@ -158,6 +208,8 @@ export default function DebtsPage() {
         description="Track money owed to you"
         actionLabel="Add Debt"
         onAction={() => setIsFormOpen(true)}
+        deleteLabel={selectedDebtIds.size > 0 ? `Delete ${selectedDebtIds.size} Debt${selectedDebtIds.size > 1 ? 's' : ''}` : undefined}
+        onDelete={selectedDebtIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -283,18 +335,39 @@ export default function DebtsPage() {
           </Button>
         </div>
       ) : viewMode === 'card' ? (
-        <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="space-y-3">
+          {filteredDebts.length > 0 && (
+            <div className="flex items-center gap-2 px-1">
+              <Checkbox
+                checked={selectedDebtIds.size === filteredDebts.length}
+                onCheckedChange={handleSelectAll}
+                aria-label="Select all debts"
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedDebtIds.size === filteredDebts.length ? 'Deselect all' : 'Select all'}
+              </span>
+            </div>
+          )}
+          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredDebts.map((debt) => (
             <Card key={debt.id} className="relative">
               <CardHeader className="pb-3 md:pb-4">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                  <div className="flex items-start gap-3 flex-1">
+                    <Checkbox
+                      checked={selectedDebtIds.has(debt.id)}
+                      onCheckedChange={() => handleToggleSelect(debt.id)}
+                      aria-label={`Select ${debt.debtor_name}`}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
                     <CardTitle className="text-base md:text-lg truncate">
                       {debt.debtor_name}
                     </CardTitle>
                     <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                       {debt.description || ' '}
                     </CardDescription>
+                    </div>
                   </div>
                   {debt.is_paid ? (
                     <Badge variant="default" className="bg-green-600 text-xs flex-shrink-0">
@@ -413,6 +486,7 @@ export default function DebtsPage() {
               </CardContent>
             </Card>
           ))}
+          </div>
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
@@ -420,6 +494,13 @@ export default function DebtsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={selectedDebtIds.size === filteredDebts.length}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all debts"
+                    />
+                  </TableHead>
                   <TableHead className="w-[200px]">Debtor</TableHead>
                   <TableHead className="hidden md:table-cell">Description</TableHead>
                   <TableHead className="text-right">Paid</TableHead>
@@ -434,6 +515,13 @@ export default function DebtsPage() {
               <TableBody>
                 {filteredDebts.map((debt) => (
                   <TableRow key={debt.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedDebtIds.has(debt.id)}
+                        onCheckedChange={() => handleToggleSelect(debt.id)}
+                        aria-label={`Select ${debt.debtor_name}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       <div className="max-w-[200px]">
                         <p className="truncate">{debt.debtor_name}</p>
@@ -557,6 +645,16 @@ export default function DebtsPage() {
         title="Delete Debt"
         description={`Are you sure you want to delete the debt from "${deletingDebt?.debtor_name}"? This action cannot be undone.`}
         itemName="debt"
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedDebtIds.size}
+        itemName="debt"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

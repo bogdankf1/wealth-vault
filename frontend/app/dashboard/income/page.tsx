@@ -11,6 +11,7 @@ import {
   useListIncomeSourcesQuery,
   useGetIncomeStatsQuery,
   useDeleteIncomeSourceMutation,
+  useBatchDeleteIncomeSourcesMutation,
 } from '@/lib/api/incomeApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +32,8 @@ import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useTierCheck, getFeatureDisplayName } from '@/lib/hooks/use-tier-check';
@@ -58,6 +61,8 @@ export default function IncomePage() {
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedSourceIds, setSelectedSourceIds] = useState<Set<string>>(new Set());
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -90,6 +95,7 @@ export default function IncomePage() {
   } = useGetIncomeStatsQuery(statsParams);
 
   const [deleteSource, { isLoading: isDeleting }] = useDeleteIncomeSourceMutation();
+  const [batchDeleteIncomeSources, { isLoading: isBatchDeleting }] = useBatchDeleteIncomeSourcesMutation();
 
   // Tier check for income sources
   const currentCount = sourcesData?.items?.length || 0;
@@ -134,6 +140,53 @@ export default function IncomePage() {
     setEditingSourceId(null);
   };
 
+  const handleToggleSelect = (sourceId: string) => {
+    setSelectedSourceIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(sourceId)) {
+        newSet.delete(sourceId);
+      } else {
+        newSet.add(sourceId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedSourceIds.size === filteredSources.length) {
+      setSelectedSourceIds(new Set());
+    } else {
+      setSelectedSourceIds(new Set(filteredSources.map((s) => s.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedSourceIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedSourceIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteIncomeSources({
+        source_ids: Array.from(selectedSourceIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} income source(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} income source(s)`);
+      }
+
+      setBatchDeleteDialogOpen(false);
+      setSelectedSourceIds(new Set());
+    } catch (error) {
+      console.error('Failed to batch delete income sources:', error);
+      toast.error('Failed to delete income sources');
+    }
+  };
+
 
   // Get unique categories from income sources
   const uniqueCategories = React.useMemo(() => {
@@ -170,7 +223,7 @@ export default function IncomePage() {
     (source) => source.name,
     (source) => source.display_monthly_equivalent || source.display_amount || source.amount,
     (source) => source.start_date || source.date
-  );
+  ) || [];
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
@@ -220,6 +273,8 @@ export default function IncomePage() {
         description="Track and manage your income sources"
         actionLabel="Add Income Source"
         onAction={handleAddSource}
+        deleteLabel={selectedSourceIds.size > 0 ? `Delete Selected (${selectedSourceIds.size})` : undefined}
+        onDelete={selectedSourceIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -372,12 +427,20 @@ export default function IncomePage() {
             {filteredSources.map((source) => (
               <Card key={source.id} className="relative">
                 <CardHeader className="pb-3 md:pb-6">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base md:text-lg truncate">{source.name}</CardTitle>
-                      <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                        {source.description || <>&nbsp;</>}
-                      </CardDescription>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <Checkbox
+                        checked={selectedSourceIds.has(source.id)}
+                        onCheckedChange={() => handleToggleSelect(source.id)}
+                        aria-label={`Select ${source.name}`}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base md:text-lg truncate">{source.name}</CardTitle>
+                        <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
+                          {source.description || <>&nbsp;</>}
+                        </CardDescription>
+                      </div>
                     </div>
                     <Badge variant={source.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                       {source.is_active ? 'Active' : 'Inactive'}
@@ -463,6 +526,13 @@ export default function IncomePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedSourceIds.size === filteredSources.length && filteredSources.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
                     <TableHead className="hidden md:table-cell">Description</TableHead>
                     <TableHead className="hidden lg:table-cell">Category</TableHead>
@@ -477,6 +547,13 @@ export default function IncomePage() {
                 <TableBody>
                   {filteredSources.map((source) => (
                     <TableRow key={source.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedSourceIds.has(source.id)}
+                          onCheckedChange={() => handleToggleSelect(source.id)}
+                          aria-label={`Select ${source.name}`}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         <div className="max-w-[200px]">
                           <p className="truncate">{source.name}</p>
@@ -595,6 +672,16 @@ export default function IncomePage() {
         currentTier={tierCheck.currentTier}
         requiredTier={tierCheck.requiredTier || 'growth'}
         currentLimit={tierCheck.limit}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedSourceIds.size}
+        itemName="income source"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

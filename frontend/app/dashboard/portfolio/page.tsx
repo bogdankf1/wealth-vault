@@ -10,6 +10,7 @@ import {
   useListPortfolioAssetsQuery,
   useGetPortfolioStatsQuery,
   useDeletePortfolioAssetMutation,
+  useBatchDeleteAssetsMutation,
 } from '@/lib/api/portfolioApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,8 @@ import { PortfolioForm } from '@/components/portfolio/portfolio-form';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
@@ -40,6 +43,8 @@ export default function PortfolioPage() {
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
@@ -62,6 +67,7 @@ export default function PortfolioPage() {
   } = useGetPortfolioStatsQuery();
 
   const [deleteAsset, { isLoading: isDeleting }] = useDeletePortfolioAssetMutation();
+  const [batchDeleteAssets, { isLoading: isBatchDeleting }] = useBatchDeleteAssetsMutation();
 
   const handleAddAsset = () => {
     setEditingAssetId(null);
@@ -97,6 +103,50 @@ export default function PortfolioPage() {
     setEditingAssetId(null);
   };
 
+  const handleToggleSelect = (assetId: string) => {
+    const newSelected = new Set(selectedAssetIds);
+    if (newSelected.has(assetId)) {
+      newSelected.delete(assetId);
+    } else {
+      newSelected.add(assetId);
+    }
+    setSelectedAssetIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedAssetIds.size === filteredAssets.length) {
+      setSelectedAssetIds(new Set());
+    } else {
+      setSelectedAssetIds(new Set(filteredAssets.map(asset => asset.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedAssetIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedAssetIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteAssets({
+        ids: Array.from(selectedAssetIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} asset(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} asset(s)`);
+      }
+      setBatchDeleteDialogOpen(false);
+      setSelectedAssetIds(new Set());
+    } catch (error) {
+      console.error('Batch delete failed:', error);
+      toast.error('Failed to delete assets');
+    }
+  };
+
   const formatPercentage = (value: number | string) => {
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
     const sign = numValue >= 0 ? '+' : '';
@@ -129,7 +179,7 @@ export default function PortfolioPage() {
     (asset) => asset.asset_name,
     (asset) => asset.display_current_value || asset.current_value || 0,
     (asset) => asset.purchase_date
-  );
+  ) || [];
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
@@ -187,6 +237,8 @@ export default function PortfolioPage() {
         description="Track and manage your investment portfolio"
         actionLabel="Add Asset"
         onAction={handleAddAsset}
+        deleteLabel={selectedAssetIds.size > 0 ? `Delete ${selectedAssetIds.size} Asset${selectedAssetIds.size > 1 ? 's' : ''}` : undefined}
+        onDelete={selectedAssetIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -377,7 +429,20 @@ export default function PortfolioPage() {
             }}
           />
         ) : viewMode === 'card' ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-3">
+            {filteredAssets.length > 0 && (
+              <div className="flex items-center gap-2 px-1">
+                <Checkbox
+                  checked={selectedAssetIds.size === filteredAssets.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all assets"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {selectedAssetIds.size === filteredAssets.length ? 'Deselect all' : 'Select all'}
+                </span>
+              </div>
+            )}
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredAssets.map((asset) => {
               const displayCurrency = asset.display_currency || asset.currency;
               const displayCurrentValue = asset.display_current_value ?? asset.current_value ?? 0;
@@ -392,7 +457,14 @@ export default function PortfolioPage() {
                 <Card key={asset.id} className="relative">
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
+                      <div className="flex items-start gap-3 flex-1">
+                        <Checkbox
+                          checked={selectedAssetIds.has(asset.id)}
+                          onCheckedChange={() => handleToggleSelect(asset.id)}
+                          aria-label={`Select ${asset.asset_name}`}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
                         <CardTitle className="text-lg">{asset.asset_name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px]">
                           {asset.symbol ? (
@@ -401,8 +473,9 @@ export default function PortfolioPage() {
                             <>&nbsp;</>
                           )}
                         </CardDescription>
+                        </div>
                       </div>
-                      <Badge variant={asset.is_active ? 'secondary' : 'outline'}>
+                      <Badge variant={asset.is_active ? 'secondary' : 'outline'} className="flex-shrink-0">
                         {asset.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
@@ -555,6 +628,7 @@ export default function PortfolioPage() {
                 </Card>
               );
             })}
+            </div>
           </div>
         ) : (
           <div className="border rounded-lg overflow-hidden">
@@ -562,6 +636,13 @@ export default function PortfolioPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedAssetIds.size === filteredAssets.length}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all assets"
+                      />
+                    </TableHead>
                     <TableHead className="w-[200px]">Asset</TableHead>
                     <TableHead className="hidden lg:table-cell">Type</TableHead>
                     <TableHead className="text-right">Current Value</TableHead>
@@ -584,6 +665,13 @@ export default function PortfolioPage() {
 
                     return (
                       <TableRow key={asset.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedAssetIds.has(asset.id)}
+                            onCheckedChange={() => handleToggleSelect(asset.id)}
+                            aria-label={`Select ${asset.asset_name}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
                             <p className="truncate">{asset.asset_name}</p>
@@ -701,6 +789,16 @@ export default function PortfolioPage() {
         title="Delete Asset"
         itemName="asset"
         isDeleting={isDeleting}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedAssetIds.size}
+        itemName="asset"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

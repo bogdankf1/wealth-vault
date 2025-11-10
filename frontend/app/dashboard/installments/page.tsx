@@ -11,6 +11,7 @@ import {
   useListInstallmentsQuery,
   useGetInstallmentStatsQuery,
   useDeleteInstallmentMutation,
+  useBatchDeleteInstallmentsMutation,
 } from '@/lib/api/installmentsApi';
 import {
   calculateNextPaymentDate,
@@ -37,6 +38,8 @@ import { InstallmentForm } from '@/components/installments/installment-form';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { Progress } from '@/components/ui/progress';
@@ -55,6 +58,8 @@ export default function InstallmentsPage() {
   const [editingInstallmentId, setEditingInstallmentId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingInstallmentId, setDeletingInstallmentId] = useState<string | null>(null);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [selectedInstallmentIds, setSelectedInstallmentIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
@@ -92,6 +97,7 @@ export default function InstallmentsPage() {
   } = useGetInstallmentStatsQuery(statsParams);
 
   const [deleteInstallment, { isLoading: isDeleting }] = useDeleteInstallmentMutation();
+  const [batchDeleteInstallments, { isLoading: isBatchDeleting }] = useBatchDeleteInstallmentsMutation();
 
   const handleAddInstallment = () => {
     setEditingInstallmentId(null);
@@ -125,6 +131,50 @@ export default function InstallmentsPage() {
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingInstallmentId(null);
+  };
+
+  const handleToggleSelect = (installmentId: string) => {
+    const newSelected = new Set(selectedInstallmentIds);
+    if (newSelected.has(installmentId)) {
+      newSelected.delete(installmentId);
+    } else {
+      newSelected.add(installmentId);
+    }
+    setSelectedInstallmentIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedInstallmentIds.size === filteredInstallments.length) {
+      setSelectedInstallmentIds(new Set());
+    } else {
+      setSelectedInstallmentIds(new Set(filteredInstallments.map(installment => installment.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedInstallmentIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedInstallmentIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteInstallments({
+        ids: Array.from(selectedInstallmentIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} installment(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} installment(s)`);
+      }
+      setBatchDeleteDialogOpen(false);
+      setSelectedInstallmentIds(new Set());
+    } catch (error) {
+      console.error('Batch delete failed:', error);
+      toast.error('Failed to delete installments');
+    }
   };
 
   // Get unique categories from installments
@@ -163,7 +213,7 @@ export default function InstallmentsPage() {
     (installment) => installment.name,
     (installment) => installment.display_total_amount || installment.total_amount,
     (installment) => installment.start_date
-  );
+  ) || [];
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
@@ -237,6 +287,8 @@ export default function InstallmentsPage() {
         description="Track and manage your loans and payment plans"
         actionLabel="Add Installment"
         onAction={handleAddInstallment}
+        deleteLabel={selectedInstallmentIds.size > 0 ? `Delete ${selectedInstallmentIds.size} Installment${selectedInstallmentIds.size > 1 ? 's' : ''}` : undefined}
+        onDelete={selectedInstallmentIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -385,7 +437,20 @@ export default function InstallmentsPage() {
             />
           )
         ) : viewMode === 'card' ? (
-          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-3">
+            {filteredInstallments.length > 0 && (
+              <div className="flex items-center gap-2 px-1">
+                <Checkbox
+                  checked={selectedInstallmentIds.size === filteredInstallments.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all installments"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {selectedInstallmentIds.size === filteredInstallments.length ? 'Deselect all' : 'Select all'}
+                </span>
+              </div>
+            )}
+            <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredInstallments.map((installment) => {
               // Calculate next payment date
               const { nextPayment, isPaidOff, daysUntilPayment } = calculateNextPaymentDate(
@@ -406,11 +471,19 @@ export default function InstallmentsPage() {
                 <Card key={installment.id} className="relative">
                   <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-3 flex-1">
+                        <Checkbox
+                          checked={selectedInstallmentIds.has(installment.id)}
+                          onCheckedChange={() => handleToggleSelect(installment.id)}
+                          aria-label={`Select ${installment.name}`}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 min-w-0">
                         <CardTitle className="text-base md:text-lg truncate">{installment.name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                           {installment.description || <>&nbsp;</>}
                         </CardDescription>
+                        </div>
                       </div>
                       <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                         {installment.is_active ? 'Active' : 'Inactive'}
@@ -538,6 +611,7 @@ export default function InstallmentsPage() {
                 </Card>
               );
             })}
+            </div>
           </div>
         ) : (
           <div className="border rounded-lg overflow-hidden">
@@ -545,6 +619,13 @@ export default function InstallmentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedInstallmentIds.size === filteredInstallments.length}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all installments"
+                      />
+                    </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
                     <TableHead className="hidden md:table-cell">Category</TableHead>
                     <TableHead className="text-right">Remaining</TableHead>
@@ -574,6 +655,13 @@ export default function InstallmentsPage() {
 
                     return (
                       <TableRow key={installment.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedInstallmentIds.has(installment.id)}
+                            onCheckedChange={() => handleToggleSelect(installment.id)}
+                            aria-label={`Select ${installment.name}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
                             <p className="truncate">{installment.name}</p>
@@ -700,6 +788,16 @@ export default function InstallmentsPage() {
         title="Delete Installment"
         itemName="installment"
         isDeleting={isDeleting}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedInstallmentIds.size}
+        itemName="installment"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

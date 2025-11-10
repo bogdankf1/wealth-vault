@@ -95,6 +95,16 @@ export interface ListPortfolioAssetsParams {
   is_active?: boolean;
 }
 
+
+export interface AssetBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface AssetBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const portfolioApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List portfolio assets with pagination and filters
@@ -166,6 +176,26 @@ export const portfolioApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/portfolio/stats',
       providesTags: [{ type: 'Portfolio', id: 'STATS' }],
     }),
+
+    // Batch delete portfolio assets
+    batchDeleteAssets: builder.mutation<AssetBatchDeleteResponse, AssetBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/portfolio/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Portfolio' as const, id: 'LIST' },
+          { type: 'Portfolio' as const, id: 'STATS' },
+          'Dashboard' as const,
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Portfolio' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -177,4 +207,5 @@ export const {
   useUpdatePortfolioAssetMutation,
   useDeletePortfolioAssetMutation,
   useGetPortfolioStatsQuery,
+  useBatchDeleteAssetsMutation,
 } = portfolioApi;

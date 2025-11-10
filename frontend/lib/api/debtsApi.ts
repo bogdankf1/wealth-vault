@@ -75,6 +75,16 @@ export interface ListDebtsParams {
   is_paid?: boolean;
 }
 
+
+export interface DebtBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface DebtBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const debtsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List debts with pagination and filters
@@ -143,6 +153,25 @@ export const debtsApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/debts/stats',
       providesTags: [{ type: 'Debt', id: 'STATS' }],
     }),
+
+    // Batch delete debts
+    batchDeleteDebts: builder.mutation<DebtBatchDeleteResponse, DebtBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/debts/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Debt' as const, id: 'LIST' },
+          { type: 'Debt' as const, id: 'STATS' },
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Debt' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -154,4 +183,5 @@ export const {
   useUpdateDebtMutation,
   useDeleteDebtMutation,
   useGetDebtStatsQuery,
+  useBatchDeleteDebtsMutation,
 } = debtsApi;

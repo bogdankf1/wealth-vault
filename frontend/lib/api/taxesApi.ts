@@ -73,6 +73,16 @@ export interface ListTaxesParams {
   is_active?: boolean;
 }
 
+
+export interface TaxRecordBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface TaxRecordBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const taxesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List taxes with pagination and filters
@@ -141,6 +151,25 @@ export const taxesApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/taxes/stats',
       providesTags: [{ type: 'Tax', id: 'STATS' }],
     }),
+
+    // Batch delete tax records
+    batchDeleteTaxRecords: builder.mutation<TaxRecordBatchDeleteResponse, TaxRecordBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/taxes/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Tax' as const, id: 'LIST' },
+          { type: 'Tax' as const, id: 'STATS' },
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Tax' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -152,4 +181,5 @@ export const {
   useUpdateTaxMutation,
   useDeleteTaxMutation,
   useGetTaxStatsQuery,
+  useBatchDeleteTaxRecordsMutation,
 } = taxesApi;

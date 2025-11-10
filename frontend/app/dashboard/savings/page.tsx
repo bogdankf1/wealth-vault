@@ -10,6 +10,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SavingsAccountForm } from '@/components/savings/savings-account-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +28,7 @@ import {
   useListAccountsQuery,
   useGetSavingsStatsQuery,
   useDeleteAccountMutation,
+  useBatchDeleteSavingsAccountsMutation,
   type SavingsAccount,
 } from '@/lib/api/savingsApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
@@ -49,6 +52,8 @@ export default function SavingsPage() {
   const [selectedType, setSelectedType] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set());
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -56,6 +61,7 @@ export default function SavingsPage() {
   const { data: accountsData, isLoading, error, refetch } = useListAccountsQuery();
   const { data: stats } = useGetSavingsStatsQuery();
   const [deleteAccount] = useDeleteAccountMutation();
+  const [batchDeleteAccounts, { isLoading: isBatchDeleting }] = useBatchDeleteSavingsAccountsMutation();
 
   const handleEdit = (accountId: string) => {
     setEditingAccountId(accountId);
@@ -77,6 +83,51 @@ export default function SavingsPage() {
         console.error('Failed to delete account:', error);
       toast.error('Failed to delete savings account');
       }
+    }
+  };
+
+  const handleToggleSelect = (accountId: string) => {
+    setSelectedAccountIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(accountId)) {
+        newSet.delete(accountId);
+      } else {
+        newSet.add(accountId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedAccountIds.size === filteredAccounts.length && filteredAccounts.length > 0) {
+      setSelectedAccountIds(new Set());
+    } else {
+      setSelectedAccountIds(new Set(filteredAccounts.map((account) => account.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedAccountIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteAccounts({
+        ids: Array.from(selectedAccountIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} account(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} account(s)`);
+      }
+
+      setBatchDeleteDialogOpen(false);
+      setSelectedAccountIds(new Set());
+    } catch {
+      toast.error('Failed to delete accounts');
     }
   };
 
@@ -166,6 +217,8 @@ export default function SavingsPage() {
         description="Track your savings accounts, investments, and net worth"
         actionLabel="Add Account"
         onAction={() => setIsFormOpen(true)}
+        deleteLabel={selectedAccountIds.size > 0 ? `Delete Selected (${selectedAccountIds.size})` : undefined}
+        onDelete={selectedAccountIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {stats && (
@@ -284,13 +337,21 @@ export default function SavingsPage() {
             <Card key={account.id} className="relative">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{account.name}</CardTitle>
-                    <CardDescription className="mt-1 min-h-[20px]">
-                      {account.institution || <>&nbsp;</>}
-                    </CardDescription>
+                  <div className="flex items-start gap-3 flex-1">
+                    <Checkbox
+                      checked={selectedAccountIds.has(account.id)}
+                      onCheckedChange={() => handleToggleSelect(account.id)}
+                      aria-label={`Select ${account.name}`}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg">{account.name}</CardTitle>
+                      <CardDescription className="mt-1 min-h-[20px]">
+                        {account.institution || <>&nbsp;</>}
+                      </CardDescription>
+                    </div>
                   </div>
-                  <Badge variant={account.is_active ? 'default' : 'secondary'}>
+                  <Badge variant={account.is_active ? 'default' : 'secondary'} className="flex-shrink-0">
                     {account.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
@@ -362,6 +423,13 @@ export default function SavingsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={selectedAccountIds.size === filteredAccounts.length && filteredAccounts.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
                   <TableHead className="w-[200px]">Name</TableHead>
                   <TableHead className="hidden md:table-cell">Institution</TableHead>
                   <TableHead className="hidden lg:table-cell">Account Type</TableHead>
@@ -375,6 +443,13 @@ export default function SavingsPage() {
               <TableBody>
                 {filteredAccounts.map((account) => (
                   <TableRow key={account.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedAccountIds.has(account.id)}
+                        onCheckedChange={() => handleToggleSelect(account.id)}
+                        aria-label={`Select ${account.name}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       <div className="max-w-[200px]">
                         <p className="truncate">{account.name}</p>
@@ -466,6 +541,16 @@ export default function SavingsPage() {
         title="Delete Account"
         description={deletingAccount ? `Are you sure you want to delete "${deletingAccount.name}"? This action cannot be undone.` : ''}
         itemName="account"
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedAccountIds.size}
+        itemName="account"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

@@ -75,6 +75,16 @@ export interface ListSubscriptionsParams {
   is_active?: boolean;
 }
 
+
+export interface SubscriptionBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface SubscriptionBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const subscriptionsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List subscriptions with pagination and filters
@@ -149,6 +159,26 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: 'Subscriptions', id: 'STATS' }],
     }),
+
+    // Batch delete subscriptions
+    batchDeleteSubscriptions: builder.mutation<SubscriptionBatchDeleteResponse, SubscriptionBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/subscriptions/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Subscriptions' as const, id: 'LIST' },
+          { type: 'Subscriptions' as const, id: 'STATS' },
+          'Dashboard' as const,
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Subscriptions' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -160,4 +190,5 @@ export const {
   useUpdateSubscriptionMutation,
   useDeleteSubscriptionMutation,
   useGetSubscriptionStatsQuery,
+  useBatchDeleteSubscriptionsMutation,
 } = subscriptionsApi;

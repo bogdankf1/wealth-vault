@@ -12,6 +12,7 @@ import {
   useListExpensesQuery,
   useGetExpenseStatsQuery,
   useDeleteExpenseMutation,
+  useBatchDeleteExpensesMutation,
 } from '@/lib/api/expensesApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +33,8 @@ import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
@@ -63,6 +66,8 @@ export default function ExpensesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(new Set());
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   const {
     data: expensesData,
@@ -92,6 +97,7 @@ export default function ExpensesPage() {
   } = useGetExpenseStatsQuery(statsParams);
 
   const [deleteExpense, { isLoading: isDeleting }] = useDeleteExpenseMutation();
+  const [batchDeleteExpenses, { isLoading: isBatchDeleting }] = useBatchDeleteExpensesMutation();
 
   const handleAddExpense = () => {
     setEditingExpenseId(null);
@@ -125,6 +131,53 @@ export default function ExpensesPage() {
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingExpenseId(null);
+  };
+
+  const handleToggleSelect = (expenseId: string) => {
+    setSelectedExpenseIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(expenseId)) {
+        newSet.delete(expenseId);
+      } else {
+        newSet.add(expenseId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedExpenseIds.size === filteredExpenses.length) {
+      setSelectedExpenseIds(new Set());
+    } else {
+      setSelectedExpenseIds(new Set(filteredExpenses.map((e) => e.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedExpenseIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedExpenseIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteExpenses({
+        expense_ids: Array.from(selectedExpenseIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} expense(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} expense(s)`);
+      }
+
+      setBatchDeleteDialogOpen(false);
+      setSelectedExpenseIds(new Set());
+    } catch (error) {
+      console.error('Failed to batch delete expenses:', error);
+      toast.error('Failed to delete expenses');
+    }
   };
 
   // Get unique categories from expenses
@@ -162,7 +215,7 @@ export default function ExpensesPage() {
     (expense) => expense.name,
     (expense) => expense.display_monthly_equivalent || expense.display_amount || expense.amount,
     (expense) => expense.start_date || expense.date
-  );
+  ) || [];
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
@@ -200,6 +253,8 @@ export default function ExpensesPage() {
         description="Track and manage your expenses"
         actionLabel="Add Expense"
         onAction={handleAddExpense}
+        deleteLabel={selectedExpenseIds.size > 0 ? `Delete Selected (${selectedExpenseIds.size})` : undefined}
+        onDelete={selectedExpenseIds.size > 0 ? handleBatchDelete : undefined}
       >
         <Link href="/dashboard/expenses/import">
           <Button variant="outline" className="w-full sm:w-auto">
@@ -372,11 +427,19 @@ export default function ExpensesPage() {
               <Card key={expense.id} className="relative">
                 <CardHeader className="pb-3 md:pb-6">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-base md:text-lg truncate">{expense.name}</CardTitle>
-                      <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                        {expense.description || <>&nbsp;</>}
-                      </CardDescription>
+                    <div className="flex items-start gap-3 flex-1">
+                      <Checkbox
+                        checked={selectedExpenseIds.has(expense.id)}
+                        onCheckedChange={() => handleToggleSelect(expense.id)}
+                        aria-label={`Select ${expense.name}`}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base md:text-lg truncate">{expense.name}</CardTitle>
+                        <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
+                          {expense.description || <>&nbsp;</>}
+                        </CardDescription>
+                      </div>
                     </div>
                     <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                       {expense.is_active ? 'Active' : 'Inactive'}
@@ -478,6 +541,13 @@ export default function ExpensesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedExpenseIds.size === filteredExpenses.length && filteredExpenses.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
                     <TableHead className="hidden md:table-cell">Description</TableHead>
                     <TableHead className="hidden lg:table-cell">Category</TableHead>
@@ -493,6 +563,13 @@ export default function ExpensesPage() {
                 <TableBody>
                   {filteredExpenses.map((expense) => (
                     <TableRow key={expense.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedExpenseIds.has(expense.id)}
+                          onCheckedChange={() => handleToggleSelect(expense.id)}
+                          aria-label={`Select ${expense.name}`}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         <div className="max-w-[200px]">
                           <p className="truncate">{expense.name}</p>
@@ -615,6 +692,16 @@ export default function ExpensesPage() {
         title="Delete Expense"
         itemName="expense"
         isDeleting={isDeleting}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedExpenseIds.size}
+        itemName="expense"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

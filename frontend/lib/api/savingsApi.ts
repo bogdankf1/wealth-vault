@@ -87,6 +87,16 @@ export interface ListAccountsParams {
   is_active?: boolean;
 }
 
+
+export interface SavingsAccountBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface SavingsAccountBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const savingsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List accounts with pagination and filters
@@ -166,6 +176,26 @@ export const savingsApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/savings/stats',
       providesTags: [{ type: 'Saving', id: 'STATS' }],
     }),
+
+    // Batch delete savings accounts
+    batchDeleteSavingsAccounts: builder.mutation<SavingsAccountBatchDeleteResponse, SavingsAccountBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/savings/accounts/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Saving' as const, id: 'LIST' },
+          { type: 'Saving' as const, id: 'STATS' },
+          'Dashboard' as const,
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Saving' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -178,4 +208,5 @@ export const {
   useDeleteAccountMutation,
   useGetBalanceHistoryQuery,
   useGetSavingsStatsQuery,
+  useBatchDeleteSavingsAccountsMutation,
 } = savingsApi;

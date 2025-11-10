@@ -11,6 +11,7 @@ import {
   useListGoalsQuery,
   useGetGoalStatsQuery,
   useDeleteGoalMutation,
+  useBatchDeleteGoalsMutation,
 } from '@/lib/api/goalsApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,8 @@ import { GoalForm } from '@/components/goals/goal-form';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { Progress } from '@/components/ui/progress';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
@@ -41,6 +44,8 @@ export default function GoalsPage() {
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [selectedGoalIds, setSelectedGoalIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
@@ -63,6 +68,7 @@ export default function GoalsPage() {
   } = useGetGoalStatsQuery();
 
   const [deleteGoal, { isLoading: isDeleting }] = useDeleteGoalMutation();
+  const [batchDeleteGoals, { isLoading: isBatchDeleting }] = useBatchDeleteGoalsMutation();
 
   const handleAddGoal = () => {
     setEditingGoalId(null);
@@ -98,6 +104,50 @@ export default function GoalsPage() {
     setEditingGoalId(null);
   };
 
+  const handleToggleSelect = (goalId: string) => {
+    const newSelected = new Set(selectedGoalIds);
+    if (newSelected.has(goalId)) {
+      newSelected.delete(goalId);
+    } else {
+      newSelected.add(goalId);
+    }
+    setSelectedGoalIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedGoalIds.size === filteredGoals.length) {
+      setSelectedGoalIds(new Set());
+    } else {
+      setSelectedGoalIds(new Set(filteredGoals.map(goal => goal.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedGoalIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedGoalIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteGoals({
+        ids: Array.from(selectedGoalIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} goal(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} goal(s)`);
+      }
+      setBatchDeleteDialogOpen(false);
+      setSelectedGoalIds(new Set());
+    } catch (error) {
+      console.error('Batch delete failed:', error);
+      toast.error('Failed to delete goals');
+    }
+  };
+
   // Get unique categories from goals
   const uniqueCategories = React.useMemo(() => {
     if (!goalsData?.items) return [];
@@ -124,7 +174,7 @@ export default function GoalsPage() {
     (goal) => goal.name,
     (goal) => goal.display_target_amount || goal.target_amount,
     (goal) => goal.target_date
-  );
+  ) || [];
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
@@ -185,6 +235,8 @@ export default function GoalsPage() {
         description="Track and manage your financial goals"
         actionLabel="Add Goal"
         onAction={handleAddGoal}
+        deleteLabel={selectedGoalIds.size > 0 ? `Delete ${selectedGoalIds.size} Goal${selectedGoalIds.size > 1 ? 's' : ''}` : undefined}
+        onDelete={selectedGoalIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -320,7 +372,20 @@ export default function GoalsPage() {
             }}
           />
         ) : viewMode === 'card' ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-3">
+            {filteredGoals.length > 0 && (
+              <div className="flex items-center gap-2 px-1">
+                <Checkbox
+                  checked={selectedGoalIds.size === filteredGoals.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all goals"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {selectedGoalIds.size === filteredGoals.length ? 'Deselect all' : 'Select all'}
+                </span>
+              </div>
+            )}
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredGoals.map((goal) => {
               const progress = goal.progress_percentage || 0;
               const displayTarget = goal.display_target_amount ?? goal.target_amount;
@@ -332,13 +397,21 @@ export default function GoalsPage() {
                 <Card key={goal.id} className="relative">
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
+                      <div className="flex items-start gap-3 flex-1">
+                        <Checkbox
+                          checked={selectedGoalIds.has(goal.id)}
+                          onCheckedChange={() => handleToggleSelect(goal.id)}
+                          aria-label={`Select ${goal.name}`}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
                         <CardTitle className="text-lg">{goal.name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px]">
                           {goal.description || <>&nbsp;</>}
                         </CardDescription>
+                        </div>
                       </div>
-                      <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'}>
+                      <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'} className="flex-shrink-0">
                         {goal.is_completed ? (
                           <span className="flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" />
@@ -470,6 +543,7 @@ export default function GoalsPage() {
                 </Card>
               );
             })}
+            </div>
           </div>
         ) : (
           <div className="border rounded-lg overflow-hidden">
@@ -477,6 +551,13 @@ export default function GoalsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedGoalIds.size === filteredGoals.length}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all goals"
+                      />
+                    </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
                     <TableHead className="hidden md:table-cell">Category</TableHead>
                     <TableHead className="text-right">Saved</TableHead>
@@ -498,6 +579,13 @@ export default function GoalsPage() {
 
                     return (
                       <TableRow key={goal.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedGoalIds.has(goal.id)}
+                            onCheckedChange={() => handleToggleSelect(goal.id)}
+                            aria-label={`Select ${goal.name}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
                             <p className="truncate">{goal.name}</p>
@@ -631,6 +719,16 @@ export default function GoalsPage() {
         title="Delete Goal"
         itemName="goal"
         isDeleting={isDeleting}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedGoalIds.size}
+        itemName="goal"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );

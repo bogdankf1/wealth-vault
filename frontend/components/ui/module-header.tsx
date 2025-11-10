@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, LucideIcon } from 'lucide-react';
+import { Plus, Trash2, LucideIcon } from 'lucide-react';
 
 interface ModuleHeaderProps {
   title: string;
@@ -13,6 +13,8 @@ interface ModuleHeaderProps {
   actionLabel?: string;
   actionIcon?: LucideIcon;
   onAction?: () => void;
+  deleteLabel?: string;
+  onDelete?: () => void;
   children?: React.ReactNode;
 }
 
@@ -22,6 +24,8 @@ export function ModuleHeader({
   actionLabel = 'Add New',
   actionIcon: ActionIcon = Plus,
   onAction,
+  deleteLabel,
+  onDelete,
   children,
 }: ModuleHeaderProps) {
   return (
@@ -38,6 +42,17 @@ export function ModuleHeader({
       </div>
       <div className="flex flex-col sm:flex-row gap-2 md:gap-3 flex-shrink-0">
         {children}
+        {deleteLabel && onDelete && (
+          <Button
+            onClick={onDelete}
+            variant="destructive"
+            size="default"
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span className="truncate">{deleteLabel}</span>
+          </Button>
+        )}
         {onAction && (
           <Button onClick={onAction} size="default" className="w-full sm:w-auto">
             <ActionIcon className="mr-2 h-4 w-4" />

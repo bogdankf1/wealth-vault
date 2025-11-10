@@ -85,6 +85,16 @@ export interface ListGoalsParams {
   is_completed?: boolean;
 }
 
+
+export interface GoalBatchDeleteRequest {
+  ids: string[];
+}
+
+export interface GoalBatchDeleteResponse {
+  deleted_count: number;
+  failed_ids: string[];
+}
+
 export const goalsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List goals with pagination and filters
@@ -156,6 +166,26 @@ export const goalsApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/goals/stats',
       providesTags: [{ type: 'Goals', id: 'STATS' }],
     }),
+
+    // Batch delete goals
+    batchDeleteGoals: builder.mutation<GoalBatchDeleteResponse, GoalBatchDeleteRequest>({
+      query: (data) => ({
+        url: '/api/v1/goals/batch-delete',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => {
+        const tags = [
+          { type: 'Goals' as const, id: 'LIST' },
+          { type: 'Goals' as const, id: 'STATS' },
+          'Dashboard' as const,
+        ];
+        if (result && result.deleted_count > 0) {
+          result.failed_ids.forEach(id => tags.push({ type: 'Goals' as const, id }));
+        }
+        return tags;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -167,4 +197,5 @@ export const {
   useUpdateGoalMutation,
   useDeleteGoalMutation,
   useGetGoalStatsQuery,
+  useBatchDeleteGoalsMutation,
 } = goalsApi;

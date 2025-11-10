@@ -10,6 +10,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
+import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TaxForm } from '@/components/taxes/tax-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +28,7 @@ import {
   useListTaxesQuery,
   useGetTaxStatsQuery,
   useDeleteTaxMutation,
+  useBatchDeleteTaxRecordsMutation,
   type Tax,
 } from '@/lib/api/taxesApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
@@ -36,6 +39,8 @@ export default function TaxesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTaxId, setEditingTaxId] = useState<string | null>(null);
   const [deletingTax, setDeletingTax] = useState<Tax | null>(null);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [selectedTaxIds, setSelectedTaxIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('name');
@@ -47,6 +52,7 @@ export default function TaxesPage() {
   const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery();
   const { data: stats } = useGetTaxStatsQuery();
   const [deleteTax] = useDeleteTaxMutation();
+  const [batchDeleteTaxRecords, { isLoading: isBatchDeleting }] = useBatchDeleteTaxRecordsMutation();
 
   const handleEdit = (taxId: string) => {
     setEditingTaxId(taxId);
@@ -72,6 +78,50 @@ export default function TaxesPage() {
     } catch (error) {
       console.error('Failed to delete tax:', error);
       toast.error('Failed to delete tax');
+    }
+  };
+
+  const handleToggleSelect = (taxId: string) => {
+    const newSelected = new Set(selectedTaxIds);
+    if (newSelected.has(taxId)) {
+      newSelected.delete(taxId);
+    } else {
+      newSelected.add(taxId);
+    }
+    setSelectedTaxIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedTaxIds.size === filteredTaxes.length) {
+      setSelectedTaxIds(new Set());
+    } else {
+      setSelectedTaxIds(new Set(filteredTaxes.map(tax => tax.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedTaxIds.size === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedTaxIds.size === 0) return;
+
+    try {
+      const result = await batchDeleteTaxRecords({
+        ids: Array.from(selectedTaxIds),
+      }).unwrap();
+
+      if (result.failed_ids.length > 0) {
+        toast.error(`Failed to delete ${result.failed_ids.length} tax record(s)`);
+      } else {
+        toast.success(`Successfully deleted ${result.deleted_count} tax record(s)`);
+      }
+      setBatchDeleteDialogOpen(false);
+      setSelectedTaxIds(new Set());
+    } catch (error) {
+      console.error('Batch delete failed:', error);
+      toast.error('Failed to delete tax records');
     }
   };
 
@@ -161,6 +211,8 @@ export default function TaxesPage() {
         description="Manage your tax obligations and estimates"
         actionLabel="Add Tax"
         onAction={() => setIsFormOpen(true)}
+        deleteLabel={selectedTaxIds.size > 0 ? `Delete ${selectedTaxIds.size} Tax${selectedTaxIds.size > 1 ? 'es' : ''}` : undefined}
+        onDelete={selectedTaxIds.size > 0 ? handleBatchDelete : undefined}
       />
 
       {/* Statistics Cards */}
@@ -286,18 +338,39 @@ export default function TaxesPage() {
           </Button>
         </div>
       ) : viewMode === 'card' ? (
-        <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="space-y-3">
+          {filteredTaxes.length > 0 && (
+            <div className="flex items-center gap-2 px-1">
+              <Checkbox
+                checked={selectedTaxIds.size === filteredTaxes.length}
+                onCheckedChange={handleSelectAll}
+                aria-label="Select all taxes"
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedTaxIds.size === filteredTaxes.length ? 'Deselect all' : 'Select all'}
+              </span>
+            </div>
+          )}
+          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredTaxes.map((tax) => (
             <Card key={tax.id} className="relative">
               <CardHeader className="pb-3 md:pb-4">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                  <div className="flex items-start gap-3 flex-1">
+                    <Checkbox
+                      checked={selectedTaxIds.has(tax.id)}
+                      onCheckedChange={() => handleToggleSelect(tax.id)}
+                      aria-label={`Select ${tax.name}`}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
                     <CardTitle className="text-base md:text-lg truncate">
                       {tax.name}
                     </CardTitle>
                     <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                       {tax.description || ' '}
                     </CardDescription>
+                    </div>
                   </div>
                   {tax.is_active ? (
                     <Badge variant="default" className="bg-green-600 text-xs flex-shrink-0">
@@ -404,12 +477,20 @@ export default function TaxesPage() {
               </CardContent>
             </Card>
           ))}
+          </div>
         </div>
       ) : (
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedTaxIds.size === filteredTaxes.length}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all taxes"
+                  />
+                </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead className="hidden md:table-cell">Description</TableHead>
                 <TableHead>Type</TableHead>
@@ -424,6 +505,13 @@ export default function TaxesPage() {
             <TableBody>
               {filteredTaxes.map((tax) => (
                 <TableRow key={tax.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedTaxIds.has(tax.id)}
+                      onCheckedChange={() => handleToggleSelect(tax.id)}
+                      aria-label={`Select ${tax.name}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">{tax.name}</span>
@@ -548,6 +636,16 @@ export default function TaxesPage() {
         title="Delete Tax"
         description={`Are you sure you want to delete "${deletingTax?.name}"? This action cannot be undone.`}
         itemName="tax"
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <BatchDeleteConfirmDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        onConfirm={confirmBatchDelete}
+        count={selectedTaxIds.size}
+        itemName="tax"
+        isDeleting={isBatchDeleting}
       />
     </div>
   );
