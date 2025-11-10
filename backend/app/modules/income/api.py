@@ -23,6 +23,8 @@ from app.modules.income.schemas import (
     IncomeTransactionResponse,
     IncomeTransactionListResponse,
     IncomeStatsResponse,
+    IncomeSourceBatchDelete,
+    IncomeSourceBatchDeleteResponse,
 )
 from app.modules.income.service import convert_income_to_display_currency, get_user_display_currency
 
@@ -289,6 +291,50 @@ async def delete_income_source(
     await db.commit()
 
     return None
+
+
+@router.post("/sources/batch-delete", response_model=IncomeSourceBatchDeleteResponse)
+@require_feature("income_tracking")
+async def batch_delete_income_sources(
+    batch_data: IncomeSourceBatchDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete multiple income sources in a single request (soft delete).
+
+    Returns the count of successfully deleted sources and any IDs that failed to delete.
+
+    Requires: income_tracking feature
+    """
+    deleted_count = 0
+    failed_ids = []
+
+    for source_id in batch_data.source_ids:
+        try:
+            query = select(IncomeSource).where(
+                IncomeSource.id == source_id,
+                IncomeSource.user_id == current_user.id,
+                IncomeSource.deleted_at.is_(None)
+            )
+
+            result = await db.execute(query)
+            source = result.scalar_one_or_none()
+
+            if source:
+                source.soft_delete()
+                deleted_count += 1
+            else:
+                failed_ids.append(source_id)
+        except Exception:
+            failed_ids.append(source_id)
+
+    await db.commit()
+
+    return IncomeSourceBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )
 
 
 # ============================================================================

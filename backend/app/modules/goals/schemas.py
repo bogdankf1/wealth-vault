@@ -2,6 +2,7 @@
 Goals module Pydantic schemas.
 """
 from pydantic import BaseModel, Field, field_validator, model_validator
+from uuid import UUID
 from typing import Optional
 from datetime import datetime
 from decimal import Decimal
@@ -115,3 +116,14 @@ class GoalStats(BaseModel):
     by_category: dict[str, Decimal]  # Target amounts by category
     goals_on_track: int  # Goals projected to meet target date
     goals_behind: int  # Goals not on track
+
+
+# Batch delete schemas
+class GoalBatchDelete(BaseModel):
+    """Schema for batch deleting goals."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class GoalBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

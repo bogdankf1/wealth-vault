@@ -106,3 +106,14 @@ class DebtStats(BaseModel):
     total_amount_paid: Decimal  # In display currency
     overdue_debts: int
     currency: str = "USD"
+
+
+# Batch delete schemas
+class DebtBatchDelete(BaseModel):
+    """Schema for batch deleting debts."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class DebtBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

@@ -140,3 +140,14 @@ class AccountGrowth(BaseModel):
     growth_percent: Decimal
     growth_amount: Decimal
     period_days: int
+
+
+# Batch delete schemas
+class SavingsAccountBatchDelete(BaseModel):
+    """Schema for batch deleting savings."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class SavingsAccountBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

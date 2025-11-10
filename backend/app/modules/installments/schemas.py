@@ -2,6 +2,7 @@
 Installments module Pydantic schemas.
 """
 from pydantic import BaseModel, Field, field_validator, model_validator
+from uuid import UUID
 from typing import Optional, Literal
 from datetime import datetime
 from decimal import Decimal
@@ -127,3 +128,14 @@ class InstallmentStats(BaseModel):
     by_frequency: dict[str, int]  # Count by frequency
     average_interest_rate: Optional[Decimal]  # Average interest rate across loans with interest
     debt_free_date: Optional[str]  # Projected date when all loans paid off
+
+
+# Batch delete schemas
+class InstallmentBatchDelete(BaseModel):
+    """Schema for batch deleting installments."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class InstallmentBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

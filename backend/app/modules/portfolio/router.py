@@ -15,8 +15,9 @@ from app.modules.portfolio.schemas import (
     PortfolioAssetUpdate,
     PortfolioAssetResponse,
     PortfolioAssetListResponse,
-    PortfolioStats
-)
+    PortfolioStats,
+    AssetBatchDelete,
+    AssetBatchDeleteResponse)
 from app.modules.portfolio.service import convert_asset_to_display_currency
 
 router = APIRouter(prefix="/api/v1/portfolio", tags=["portfolio"])
@@ -154,3 +155,33 @@ async def delete_asset(
             detail="Portfolio asset not found"
         )
     return None
+
+
+@router.post("/batch-delete", response_model=AssetBatchDeleteResponse)
+async def batch_delete_portfolio(
+    batch_data: AssetBatchDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete multiple portfolio in a single request.
+
+    Returns the count of successfully deleted items and any IDs that failed to delete.
+    """
+    deleted_count = 0
+    failed_ids = []
+
+    for item_id in batch_data.ids:
+        try:
+            success = await service.delete_asset(db, current_user.id, item_id)
+            if success:
+                deleted_count += 1
+            else:
+                failed_ids.append(item_id)
+        except Exception:
+            failed_ids.append(item_id)
+
+    return AssetBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )

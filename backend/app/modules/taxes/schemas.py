@@ -115,3 +115,14 @@ class TaxStats(BaseModel):
     total_fixed_taxes: Decimal
     total_percentage_taxes: Decimal
     currency: str = "USD"
+
+
+# Batch delete schemas
+class TaxRecordBatchDelete(BaseModel):
+    """Schema for batch deleting taxes."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class TaxRecordBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

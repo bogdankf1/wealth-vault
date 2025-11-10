@@ -17,7 +17,9 @@ from app.modules.expenses.schemas import (
     ExpenseUpdate,
     Expense,
     ExpenseListResponse,
-    ExpenseStats
+    ExpenseStats,
+    ExpenseBatchDelete,
+    ExpenseBatchDeleteResponse
 )
 
 router = APIRouter(prefix="/api/v1/expenses", tags=["expenses"])
@@ -192,3 +194,34 @@ async def delete_expense(
             detail="Expense not found"
         )
     return None
+
+
+@router.post("/batch-delete", response_model=ExpenseBatchDeleteResponse)
+@require_feature("expense_tracking")
+async def batch_delete_expenses(
+    batch_data: ExpenseBatchDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete multiple expenses in a single request.
+
+    Returns the count of successfully deleted expenses and any IDs that failed to delete.
+    """
+    deleted_count = 0
+    failed_ids = []
+
+    for expense_id in batch_data.expense_ids:
+        try:
+            success = await service.delete_expense(db, current_user.id, expense_id)
+            if success:
+                deleted_count += 1
+            else:
+                failed_ids.append(expense_id)
+        except Exception:
+            failed_ids.append(expense_id)
+
+    return ExpenseBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )

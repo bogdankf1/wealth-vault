@@ -17,7 +17,8 @@ from app.modules.budgets.schemas import (
     BudgetResponse,
     BudgetWithProgress,
     BudgetOverviewResponse,
-)
+    BudgetBatchDelete,
+    BudgetBatchDeleteResponse)
 from app.modules.budgets import service
 from app.modules.budgets.service import convert_budget_to_display_currency
 
@@ -184,3 +185,33 @@ async def delete_budget(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Budget not found"
         )
+
+
+@router.post("/batch-delete", response_model=BudgetBatchDeleteResponse)
+async def batch_delete_budgets(
+    batch_data: BudgetBatchDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete multiple budgets in a single request.
+
+    Returns the count of successfully deleted items and any IDs that failed to delete.
+    """
+    deleted_count = 0
+    failed_ids = []
+
+    for item_id in batch_data.ids:
+        try:
+            success = await service.delete_budget(db, item_id, current_user.id)
+            if success:
+                deleted_count += 1
+            else:
+                failed_ids.append(item_id)
+        except Exception:
+            failed_ids.append(item_id)
+
+    return BudgetBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )

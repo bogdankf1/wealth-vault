@@ -126,3 +126,14 @@ class BudgetOverviewResponse(BaseModel):
     stats: BudgetStats
     by_category: list[BudgetSummaryByCategory]
     alerts: list[str]  # Alert messages for overspent/near-limit budgets
+
+
+# Batch delete schemas
+class BudgetBatchDelete(BaseModel):
+    """Schema for batch deleting budgets."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class BudgetBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

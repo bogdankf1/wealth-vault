@@ -15,8 +15,9 @@ from app.modules.taxes.schemas import (
     TaxUpdate,
     TaxResponse,
     TaxListResponse,
-    TaxStats
-)
+    TaxStats,
+    TaxRecordBatchDelete,
+    TaxRecordBatchDeleteResponse)
 
 router = APIRouter(prefix="/taxes", tags=["taxes"])
 
@@ -127,3 +128,33 @@ async def delete_tax(
     if not success:
         raise HTTPException(status_code=404, detail="Tax not found")
     return None
+
+
+@router.post("/batch-delete", response_model=TaxRecordBatchDeleteResponse)
+async def batch_delete_taxes(
+    batch_data: TaxRecordBatchDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete multiple taxes in a single request.
+
+    Returns the count of successfully deleted items and any IDs that failed to delete.
+    """
+    deleted_count = 0
+    failed_ids = []
+
+    for item_id in batch_data.ids:
+        try:
+            success = await service.delete_tax(db, item_id, current_user.id)
+            if success:
+                deleted_count += 1
+            else:
+                failed_ids.append(item_id)
+        except Exception:
+            failed_ids.append(item_id)
+
+    return TaxRecordBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )

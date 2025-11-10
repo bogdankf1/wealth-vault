@@ -16,8 +16,9 @@ from app.modules.installments.schemas import (
     InstallmentUpdate,
     InstallmentResponse,
     InstallmentListResponse,
-    InstallmentStats
-)
+    InstallmentStats,
+    InstallmentBatchDelete,
+    InstallmentBatchDeleteResponse)
 from app.modules.installments.service import (
     convert_installment_to_display_currency,
     get_user_display_currency
@@ -220,3 +221,33 @@ async def delete_installment(
             detail="Installment not found"
         )
     return None
+
+
+@router.post("/batch-delete", response_model=InstallmentBatchDeleteResponse)
+async def batch_delete_installments(
+    batch_data: InstallmentBatchDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete multiple installments in a single request.
+
+    Returns the count of successfully deleted items and any IDs that failed to delete.
+    """
+    deleted_count = 0
+    failed_ids = []
+
+    for item_id in batch_data.ids:
+        try:
+            success = await service.delete_installment(db, current_user.id, item_id)
+            if success:
+                deleted_count += 1
+            else:
+                failed_ids.append(item_id)
+        except Exception:
+            failed_ids.append(item_id)
+
+    return InstallmentBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )

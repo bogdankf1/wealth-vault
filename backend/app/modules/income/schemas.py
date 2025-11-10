@@ -227,3 +227,18 @@ class IncomeTransactionListResponse(BaseModel):
     total: int
     page: int = 1
     page_size: int = 50
+
+
+# ============================================================================
+# Batch Delete Schemas
+# ============================================================================
+
+class IncomeSourceBatchDelete(BaseModel):
+    """Schema for batch deleting income sources."""
+    source_ids: list[UUID] = Field(..., min_length=1, description="List of income source IDs to delete")
+
+
+class IncomeSourceBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

@@ -2,6 +2,7 @@
 Subscriptions module Pydantic schemas
 """
 from pydantic import BaseModel, Field, field_validator
+from uuid import UUID
 from typing import Optional, Literal
 from datetime import datetime
 from decimal import Decimal
@@ -88,3 +89,14 @@ class SubscriptionStats(BaseModel):
     currency: str = "USD"
     by_category: dict[str, Decimal]  # Cost by category
     by_frequency: dict[str, int]  # Count by frequency
+
+
+# Batch delete schemas
+class SubscriptionBatchDelete(BaseModel):
+    """Schema for batch deleting subscriptions."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class SubscriptionBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []

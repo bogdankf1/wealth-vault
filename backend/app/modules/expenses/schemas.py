@@ -124,3 +124,14 @@ class ExpenseStats(BaseModel):
     total_annual_expense: Decimal
     expenses_by_category: dict[str, Decimal]
     currency: str = "USD"
+
+
+# Schema for batch delete
+class ExpenseBatchDelete(BaseModel):
+    expense_ids: List[UUID] = Field(..., min_length=1, description="List of expense IDs to delete")
+
+
+# Schema for batch delete response
+class ExpenseBatchDeleteResponse(BaseModel):
+    deleted_count: int
+    failed_ids: List[UUID] = []

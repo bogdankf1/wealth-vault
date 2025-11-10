@@ -20,8 +20,9 @@ from app.modules.savings.schemas import (
     BalanceHistoryCreate,
     BalanceHistoryResponse,
     BalanceHistoryListResponse,
-    SavingsStats
-)
+    SavingsStats,
+    SavingsAccountBatchDelete,
+    SavingsAccountBatchDeleteResponse)
 from app.modules.savings.service import convert_account_to_display_currency
 
 router = APIRouter(prefix="/api/v1/savings", tags=["savings"])
@@ -217,3 +218,33 @@ async def get_savings_stats(
     """Get savings statistics"""
     stats = await service.get_savings_stats(db, current_user.id)
     return stats
+
+
+@router.post("/accounts/batch-delete", response_model=SavingsAccountBatchDeleteResponse)
+async def batch_delete_savings(
+    batch_data: SavingsAccountBatchDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete multiple savings accounts in a single request.
+
+    Returns the count of successfully deleted items and any IDs that failed to delete.
+    """
+    deleted_count = 0
+    failed_ids = []
+
+    for item_id in batch_data.ids:
+        try:
+            success = await service.delete_account(db, current_user.id, item_id)
+            if success:
+                deleted_count += 1
+            else:
+                failed_ids.append(item_id)
+        except Exception:
+            failed_ids.append(item_id)
+
+    return SavingsAccountBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )

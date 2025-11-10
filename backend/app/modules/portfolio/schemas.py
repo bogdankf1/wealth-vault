@@ -109,3 +109,14 @@ class PortfolioStats(BaseModel):
     by_asset_type: dict[str, Decimal]  # Current value by asset type
     winners: int  # Number of assets with positive returns
     losers: int  # Number of assets with negative returns
+
+
+# Batch delete schemas
+class AssetBatchDelete(BaseModel):
+    """Schema for batch deleting portfolio."""
+    ids: list[UUID] = Field(..., min_length=1, description="List of IDs to delete")
+
+class AssetBatchDeleteResponse(BaseModel):
+    """Schema for batch delete response."""
+    deleted_count: int
+    failed_ids: list[UUID] = []
