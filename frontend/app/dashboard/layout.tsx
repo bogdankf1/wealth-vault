@@ -24,7 +24,8 @@ import {
   Shield,
   FileText,
   UserMinus,
-  LayoutDashboard
+  LayoutDashboard,
+  Download
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ const navigation = [
 ];
 
 const bottomNavigation = [
+  { name: 'Export', href: '/dashboard/export', icon: Download },
   { name: 'Pricing', href: '/dashboard/pricing', icon: Sparkles },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

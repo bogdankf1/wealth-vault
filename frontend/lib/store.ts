@@ -14,7 +14,14 @@ export const store = configureStore({
     [currenciesApi.reducerPath]: currenciesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore these action types for non-serializable check
+        ignoredActions: ['api/executeMutation/fulfilled'],
+        // Ignore these paths in the state for non-serializable check
+        ignoredPaths: ['api.mutations'],
+      },
+    }).concat(
       apiSlice.middleware,
       aiApi.middleware,
       currenciesApi.middleware

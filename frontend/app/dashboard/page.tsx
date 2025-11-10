@@ -173,8 +173,10 @@ export default function DashboardPage() {
   const { data: incomeBreakdownData, isLoading: isLoadingIncomeBreakdown } =
     useGetIncomeBreakdownChartQuery(dateParams);
 
-  const { data: debtStats } = useGetDebtStatsQuery();
-  const { data: taxStats } = useGetTaxStatsQuery();
+  // Only fetch debt and tax stats for Wealth tier users
+  const isWealthTier = currentUser?.tier?.name === 'wealth';
+  const { data: debtStats } = useGetDebtStatsQuery(undefined, { skip: !isWealthTier });
+  const { data: taxStats } = useGetTaxStatsQuery(undefined, { skip: !isWealthTier });
 
   if (isLoading) {
     return <DashboardSkeleton />;
