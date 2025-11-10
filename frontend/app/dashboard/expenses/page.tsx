@@ -356,7 +356,7 @@ export default function ExpensesPage() {
               categoryPlaceholder="All Categories"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}

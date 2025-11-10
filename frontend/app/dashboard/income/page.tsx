@@ -342,8 +342,7 @@ export default function IncomePage() {
 
       {/* Search, Filters, and View Toggle */}
       {(sourcesData?.items && sourcesData.items.length > 0) && (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
             <div className="flex-1">
               <SearchFilter
                 searchQuery={searchQuery}
@@ -385,7 +384,6 @@ export default function IncomePage() {
                 </Button>
               </div>
             </div>
-          </div>
         </div>
       )}
 
