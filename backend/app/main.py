@@ -28,6 +28,7 @@ from app.modules.budgets.router import router as budgets_router
 from app.modules.debts.router import router as debts_router
 from app.modules.taxes.router import router as taxes_router
 from app.modules.dashboard_layouts.api import router as dashboard_layouts_router
+from app.modules.exports.router import router as exports_router
 from app.api.v1.billing import router as billing_router
 from app.api.v1.preferences import router as preferences_router
 from app.api.v1.admin.users import router as admin_users_router
@@ -157,6 +158,7 @@ app.include_router(budgets_router)
 app.include_router(debts_router, prefix="/api/v1")
 app.include_router(taxes_router, prefix="/api/v1")
 app.include_router(dashboard_layouts_router, prefix="/api/v1")
+app.include_router(exports_router, prefix="/api/v1")
 app.include_router(billing_router, prefix="/api/v1")
 app.include_router(preferences_router, prefix="/api/v1/preferences", tags=["preferences"])
 app.include_router(currency_router, prefix="/api/v1")

@@ -17,6 +17,7 @@ from app.modules.goals.models import Goal  # noqa
 from app.modules.budgets.models import Budget  # noqa
 from app.modules.debts.models import Debt  # noqa
 from app.modules.taxes.models import Tax  # noqa
+from app.modules.dashboard_layouts.models import DashboardLayout  # noqa
 
 
 async def seed_tiers():
@@ -105,6 +106,13 @@ async def seed_features():
                 "name": "AI Financial Insights",
                 "description": "AI-powered financial insights and recommendations",
                 "module": "ai"
+            },
+            # Exports module
+            {
+                "key": "data_export",
+                "name": "Data Export",
+                "description": "Export financial data to CSV format",
+                "module": "exports"
             },
             # Savings module
             {
@@ -273,6 +281,7 @@ async def seed_tier_features():
             ("tax_tracking", None),  # Wealth-only feature
             ("budget_tracking", None),  # Unlimited budgets
             ("custom_layouts", None),  # Wealth-only feature
+            ("data_export", None),  # Wealth-only feature
         ]
 
         for feature_key, limit in wealth_features:

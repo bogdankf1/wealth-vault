@@ -218,3 +218,36 @@ async def check_usage_limit(
     # Check if current count is below limit
     has_capacity = current_count < tier_feature.limit_value
     return has_capacity, tier_feature.limit_value
+
+
+def require_tier(required_tier_name: str) -> Callable:
+    """
+    Decorator to require specific tier access.
+
+    Args:
+        required_tier_name: Required tier name (e.g., "wealth", "growth")
+
+    Returns:
+        Decorated function
+    """
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(
+            *args,
+            current_user: User = Depends(get_current_user),
+            **kwargs
+        ):
+            # Admins have access to everything
+            if current_user.is_admin():
+                return await func(*args, current_user=current_user, **kwargs)
+
+            # Check if user has the required tier
+            if not current_user.tier or current_user.tier.name.lower() != required_tier_name.lower():
+                tier_name = current_user.tier.name if current_user.tier else "none"
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"This feature requires {required_tier_name.title()} tier subscription"
+                )
+            return await func(*args, current_user=current_user, **kwargs)
+        return wrapper
+    return decorator
