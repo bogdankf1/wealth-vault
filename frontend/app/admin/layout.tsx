@@ -17,6 +17,7 @@ import {
   X,
   Shield,
   DollarSign,
+  MessageSquare,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Tiers', href: '/admin/tiers', icon: Crown },
   { name: 'Currencies', href: '/admin/currencies', icon: DollarSign },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: 'Support Center', href: '/admin/support', icon: MessageSquare },
 ];
 
 export default function AdminLayout({
