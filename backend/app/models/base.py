@@ -2,11 +2,16 @@
 Base model with common fields.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from sqlalchemy import Column, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
+
+
+def utcnow():
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 
 
 class BaseModel(Base):
@@ -21,18 +26,18 @@ class BaseModel(Base):
         unique=True,
         nullable=False
     )
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
         nullable=False
     )
-    deleted_at = Column(DateTime, nullable=True)  # Soft delete
+    deleted_at = Column(DateTime(timezone=True), nullable=True)  # Soft delete
 
     def soft_delete(self) -> None:
         """Mark record as deleted without actually removing it."""
-        self.deleted_at = datetime.utcnow()
+        self.deleted_at = utcnow()
 
     def is_deleted(self) -> bool:
         """Check if record is soft deleted."""

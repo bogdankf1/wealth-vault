@@ -105,6 +105,24 @@ def admin_only(func: Callable) -> Callable:
     return wrapper
 
 
+async def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Dependency to require admin access.
+
+    Args:
+        current_user: Current authenticated user
+
+    Returns:
+        Current user if admin
+
+    Raises:
+        ForbiddenException: If user is not an admin
+    """
+    if not current_user.is_admin():
+        raise ForbiddenException(message="Admin access required")
+    return current_user
+
+
 async def check_feature_access(
     user: User,
     feature_key: str,
