@@ -114,6 +114,13 @@ async def seed_features():
                 "description": "Export financial data to CSV format",
                 "module": "exports"
             },
+            # Backups module
+            {
+                "key": "backup_tracking",
+                "name": "Data Backups",
+                "description": "Create and restore backups of your financial data",
+                "module": "backups"
+            },
             # Savings module
             {
                 "key": "savings_tracking",
@@ -282,6 +289,7 @@ async def seed_tier_features():
             ("budget_tracking", None),  # Unlimited budgets
             ("custom_layouts", None),  # Wealth-only feature
             ("data_export", None),  # Wealth-only feature
+            ("backup_tracking", None),  # Wealth-only feature
         ]
 
         for feature_key, limit in wealth_features:
