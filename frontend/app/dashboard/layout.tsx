@@ -25,7 +25,8 @@ import {
   FileText,
   UserMinus,
   LayoutDashboard,
-  Download
+  Download,
+  Database
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,7 @@ const navigation = [
 
 const bottomNavigation = [
   { name: 'Export', href: '/dashboard/export', icon: Download },
+  { name: 'Backups', href: '/dashboard/backups', icon: Database },
   { name: 'Pricing', href: '/dashboard/pricing', icon: Sparkles },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

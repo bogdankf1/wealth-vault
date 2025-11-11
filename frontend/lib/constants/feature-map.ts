@@ -15,6 +15,7 @@ export const NAVIGATION_FEATURES: Record<string, string | null> = {
   '/dashboard/debts': 'debt_tracking',
   '/dashboard/taxes': 'tax_tracking',
   '/dashboard/export': 'data_export', // Export is Wealth-tier only
+  '/dashboard/backups': 'backup_tracking', // Backups is Wealth-tier only
   '/dashboard/pricing': null, // Pricing is always available
   '/dashboard/settings': null, // Settings is always available
 };

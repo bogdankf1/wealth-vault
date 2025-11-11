@@ -19,6 +19,6 @@ const baseQuery = fetchBaseQuery({
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['User', 'Income', 'Expense', 'Saving', 'Portfolio', 'Goals', 'Subscriptions', 'Installments', 'Budget', 'Dashboard', 'Analytics', 'Subscription', 'Users', 'Tiers', 'TierFeatures', 'Features', 'Configurations', 'EmailTemplates', 'Preferences', 'Debt', 'Tax', 'DashboardLayouts', 'ActiveDashboardLayout'],
+  tagTypes: ['User', 'Income', 'Expense', 'Saving', 'Portfolio', 'Goals', 'Subscriptions', 'Installments', 'Budget', 'Dashboard', 'Analytics', 'Subscription', 'Users', 'Tiers', 'TierFeatures', 'Features', 'Configurations', 'EmailTemplates', 'Preferences', 'Debt', 'Tax', 'DashboardLayouts', 'ActiveDashboardLayout', 'Backup'],
   endpoints: () => ({}),
 });
