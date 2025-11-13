@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListSubscriptionsQuery,
@@ -43,6 +43,7 @@ import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
 const FREQUENCY_LABELS: Record<string, string> = {
@@ -59,7 +60,10 @@ export default function SubscriptionsPage() {
   const [deletingSubscriptionId, setDeletingSubscriptionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  // Default to current month in YYYY-MM format
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedSubscriptionIds, setSelectedSubscriptionIds] = useState<Set<string>>(new Set());
@@ -376,6 +380,7 @@ export default function SubscriptionsPage() {
                 size="sm"
                 onClick={() => setViewMode('card')}
                 className="h-[32px] w-[32px] p-0"
+                title="Card View"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -384,9 +389,21 @@ export default function SubscriptionsPage() {
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="h-[32px] w-[32px] p-0"
+                title="List View"
               >
                 <List className="h-4 w-4" />
               </Button>
+              {selectedMonth && (
+                <Button
+                  variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('calendar')}
+                  className="h-[32px] w-[32px] p-0"
+                  title="Calendar View"
+                >
+                  <CalendarDays className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -405,6 +422,27 @@ export default function SubscriptionsPage() {
             description="Start tracking your subscriptions by adding your first one."
             actionLabel="Add Subscription"
             onAction={handleAddSubscription}
+          />
+        ) : viewMode === 'calendar' && selectedMonth ? (
+          <CalendarView
+            items={filteredSubscriptions.map((subscription) => ({
+              id: subscription.id,
+              name: subscription.name,
+              amount: subscription.amount,
+              currency: subscription.currency,
+              display_amount: subscription.display_amount,
+              display_currency: subscription.display_currency,
+              category: subscription.category,
+              date: null,
+              start_date: subscription.start_date,
+              frequency: subscription.frequency,
+              is_active: subscription.is_active,
+            }))}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            onItemClick={handleEditSubscription}
+            selectedItemIds={selectedSubscriptionIds}
+            onToggleSelect={handleToggleSelect}
           />
         ) : !filteredSubscriptions || filteredSubscriptions.length === 0 ? (
           selectedMonth ? (

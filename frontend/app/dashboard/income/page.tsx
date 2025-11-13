@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TrendingUp, Calendar, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { TrendingUp, Calendar, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListIncomeSourcesQuery,
@@ -39,6 +39,7 @@ import { SortFilter, sortItems, type SortField, type SortDirection } from '@/com
 import { useTierCheck, getFeatureDisplayName } from '@/lib/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
 const FREQUENCY_LABELS: Record<string, string> = {
@@ -55,7 +56,10 @@ export default function IncomePage() {
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingSourceId, setDeletingSourceId] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  // Default to current month in YYYY-MM format
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -371,6 +375,7 @@ export default function IncomePage() {
                   size="sm"
                   onClick={() => setViewMode('card')}
                   className="h-[32px] w-[32px] p-0"
+                  title="Card View"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
@@ -379,9 +384,21 @@ export default function IncomePage() {
                   size="sm"
                   onClick={() => setViewMode('list')}
                   className="h-[32px] w-[32px] p-0"
+                  title="List View"
                 >
                   <List className="h-4 w-4" />
                 </Button>
+                {selectedMonth && (
+                  <Button
+                    variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('calendar')}
+                    className="h-[32px] w-[32px] p-0"
+                    title="Calendar View"
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
         </div>
@@ -401,6 +418,27 @@ export default function IncomePage() {
             description="Start tracking your income by adding your first income source."
             actionLabel="Add Income Source"
             onAction={handleAddSource}
+          />
+        ) : viewMode === 'calendar' && selectedMonth ? (
+          <CalendarView
+            items={filteredSources.map((source) => ({
+              id: source.id,
+              name: source.name,
+              amount: source.amount,
+              currency: source.currency,
+              display_amount: source.display_amount,
+              display_currency: source.display_currency,
+              category: source.category,
+              date: source.date,
+              start_date: source.start_date,
+              frequency: source.frequency,
+              is_active: source.is_active,
+            }))}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            onItemClick={handleEditSource}
+            selectedItemIds={selectedSourceIds}
+            onToggleSelect={handleToggleSelect}
           />
         ) : !filteredSources || filteredSources.length === 0 ? (
           selectedMonth ? (

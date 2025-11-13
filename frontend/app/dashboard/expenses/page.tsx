@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import {
@@ -39,6 +39,7 @@ import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { CalendarView } from '@/components/ui/calendar-view';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   one_time: 'One-time',
@@ -373,6 +374,7 @@ export default function ExpensesPage() {
                 size="sm"
                 onClick={() => setViewMode('card')}
                 className="h-[32px] w-[32px] p-0"
+                title="Card View"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -381,9 +383,21 @@ export default function ExpensesPage() {
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="h-[32px] w-[32px] p-0"
+                title="List View"
               >
                 <List className="h-4 w-4" />
               </Button>
+              {selectedMonth && (
+                <Button
+                  variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('calendar')}
+                  className="h-[32px] w-[32px] p-0"
+                  title="Calendar View"
+                >
+                  <CalendarDays className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -402,6 +416,27 @@ export default function ExpensesPage() {
             description="Start tracking your expenses by adding your first expense."
             actionLabel="Add Expense"
             onAction={handleAddExpense}
+          />
+        ) : viewMode === 'calendar' && selectedMonth ? (
+          <CalendarView
+            items={filteredExpenses.map((expense) => ({
+              id: expense.id,
+              name: expense.name,
+              amount: expense.amount,
+              currency: expense.currency,
+              display_amount: expense.display_amount,
+              display_currency: expense.display_currency,
+              category: expense.category,
+              date: expense.date,
+              start_date: expense.start_date,
+              frequency: expense.frequency,
+              is_active: expense.is_active,
+            }))}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            onItemClick={handleEditExpense}
+            selectedItemIds={selectedExpenseIds}
+            onToggleSelect={handleToggleSelect}
           />
         ) : !filteredExpenses || filteredExpenses.length === 0 ? (
           selectedMonth ? (

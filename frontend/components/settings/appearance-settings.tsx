@@ -54,7 +54,8 @@ export function AppearanceSettings() {
       setAccentColor(preferences.accent_color);
       setFontSize(preferences.font_size);
       setCurrency(preferences.currency || 'USD');
-      setDefaultContentView(preferences.default_content_view);
+      // Calendar is not a default preference, default to card if set
+      setDefaultContentView(preferences.default_content_view === 'calendar' ? 'card' : preferences.default_content_view);
       setDefaultStatsView(preferences.default_stats_view);
       // Sync theme with next-themes
       if (preferences.theme !== theme) {

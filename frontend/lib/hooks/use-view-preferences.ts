@@ -8,7 +8,7 @@ import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 export function useViewPreferences() {
   const { data: preferences } = useGetMyPreferencesQuery();
 
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'list' | 'calendar'>('card');
   const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
   const [isInitialized, setIsInitialized] = useState(false);
 
