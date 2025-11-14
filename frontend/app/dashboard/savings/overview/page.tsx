@@ -350,7 +350,20 @@ export default function SavingsPage() {
           description="Try adjusting your search or filters"
         />
       ) : viewMode === 'card' ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <>
+          {filteredAccounts.length > 0 && (
+            <div className="flex items-center gap-2 px-1 mb-4">
+              <Checkbox
+                checked={selectedAccountIds.size === filteredAccounts.length}
+                onCheckedChange={handleSelectAll}
+                aria-label="Select all accounts"
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedAccountIds.size === filteredAccounts.length ? 'Deselect all' : 'Select all'}
+              </span>
+            </div>
+          )}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredAccounts.map((account) => (
             <Card key={account.id} className="relative">
               <CardHeader>
@@ -434,7 +447,8 @@ export default function SavingsPage() {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        </>
       ) : (
         <div className="border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">

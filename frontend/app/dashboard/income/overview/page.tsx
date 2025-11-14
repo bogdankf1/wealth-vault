@@ -479,7 +479,20 @@ export default function IncomePage() {
             />
           )
         ) : viewMode === 'card' ? (
-          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <>
+            {filteredSources.length > 0 && (
+              <div className="flex items-center gap-2 px-1 mb-4">
+                <Checkbox
+                  checked={selectedSourceIds.size === filteredSources.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all sources"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {selectedSourceIds.size === filteredSources.length ? 'Deselect all' : 'Select all'}
+                </span>
+              </div>
+            )}
+            <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSources.map((source) => (
               <Card key={source.id} className="relative">
                 <CardHeader className="pb-3 md:pb-6">
@@ -575,7 +588,8 @@ export default function IncomePage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          </>
         ) : (
           <div className="border rounded-lg overflow-hidden">
             <div className="overflow-x-auto">

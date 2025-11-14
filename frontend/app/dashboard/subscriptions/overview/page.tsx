@@ -486,7 +486,20 @@ export default function SubscriptionsPage() {
             />
           )
         ) : viewMode === 'card' ? (
-          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <>
+            {filteredSubscriptions.length > 0 && (
+              <div className="flex items-center gap-2 px-1 mb-4">
+                <Checkbox
+                  checked={selectedSubscriptionIds.size === filteredSubscriptions.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all subscriptions"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {selectedSubscriptionIds.size === filteredSubscriptions.length ? 'Deselect all' : 'Select all'}
+                </span>
+              </div>
+            )}
+            <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSubscriptions.map((subscription) => {
               // Calculate next renewal date
               const { nextRenewal, isEnded, daysUntilRenewal } = calculateNextRenewalDate(
@@ -594,7 +607,8 @@ export default function SubscriptionsPage() {
                 </Card>
               );
             })}
-          </div>
+            </div>
+          </>
         ) : (
           <div className="border rounded-lg overflow-hidden">
             <div className="overflow-x-auto">

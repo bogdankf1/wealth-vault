@@ -536,7 +536,20 @@ export default function BudgetsPage() {
             </Button>
           </div>
         ) : viewMode === 'card' ? (
-          <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <>
+            {filteredBudgets.length > 0 && (
+              <div className="flex items-center gap-2 px-1 mb-4">
+                <Checkbox
+                  checked={selectedBudgetIds.size === filteredBudgets.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all budgets"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {selectedBudgetIds.size === filteredBudgets.length ? 'Deselect all' : 'Select all'}
+                </span>
+              </div>
+            )}
+            <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredBudgets.map((budget) => (
               <Card key={budget.id} className="relative">
                 <CardHeader className="pb-3 md:pb-6">
@@ -624,7 +637,8 @@ export default function BudgetsPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          </>
         ) : (
           <div className="border rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
