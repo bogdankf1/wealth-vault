@@ -29,7 +29,7 @@ import { CurrencyDisplay } from '@/components/currency';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { EmptyState } from '@/components/ui/empty-state';
-import { EXPENSE_COLOR } from '@/lib/utils/chart-colors';
+import { getChartColor } from '@/lib/utils/chart-colors';
 import { Button } from '@/components/ui/button';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
@@ -274,7 +274,7 @@ export default function SubscriptionsHistoryPage() {
                     />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="total" fill={EXPENSE_COLOR} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="total" fill={getChartColor(1)} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
