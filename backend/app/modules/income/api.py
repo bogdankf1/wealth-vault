@@ -23,10 +23,11 @@ from app.modules.income.schemas import (
     IncomeTransactionResponse,
     IncomeTransactionListResponse,
     IncomeStatsResponse,
+    IncomeHistoryResponse,
     IncomeSourceBatchDelete,
     IncomeSourceBatchDeleteResponse,
 )
-from app.modules.income.service import convert_income_to_display_currency, get_user_display_currency
+from app.modules.income.service import convert_income_to_display_currency, get_user_display_currency, get_income_history
 
 router = APIRouter(prefix="/income", tags=["Income Tracking"])
 
@@ -598,3 +599,23 @@ async def get_income_stats(
         transactions_last_month_amount=last_month_stats.amount,
         currency=display_currency
     )
+
+
+@router.get("/history", response_model=IncomeHistoryResponse)
+@require_feature("income_tracking")
+async def get_income_history_endpoint(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get income history grouped by month.
+
+    Returns monthly totals and counts of income sources, along with overall average.
+    If start_date and end_date are provided, filters history to that range.
+
+    Requires: income_tracking feature
+    """
+    history = await get_income_history(db, current_user.id, start_date, end_date)
+    return history

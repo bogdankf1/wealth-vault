@@ -91,6 +91,23 @@ class SubscriptionStats(BaseModel):
     by_frequency: dict[str, int]  # Count by frequency
 
 
+# History schemas
+class MonthlySubscriptionHistory(BaseModel):
+    """Schema for monthly subscription history."""
+    month: str = Field(..., description="Month in YYYY-MM format")
+    total: Decimal = Field(..., description="Total subscription cost for the month")
+    count: int = Field(..., description="Number of subscriptions in the month")
+    currency: str = Field(..., description="Currency code")
+
+
+class SubscriptionHistoryResponse(BaseModel):
+    """Schema for subscription history response."""
+    history: list[MonthlySubscriptionHistory]
+    total_months: int
+    overall_average: Decimal
+    currency: str = "USD"
+
+
 # Batch delete schemas
 class SubscriptionBatchDelete(BaseModel):
     """Schema for batch deleting subscriptions."""

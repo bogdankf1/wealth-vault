@@ -210,6 +210,26 @@ class IncomeStatsResponse(BaseModel):
 
 
 # ============================================================================
+# History Schemas
+# ============================================================================
+
+class MonthlyIncomeHistory(BaseModel):
+    """Schema for monthly income history."""
+    month: str = Field(..., description="Month in YYYY-MM format")
+    total: Decimal = Field(..., description="Total income for the month")
+    count: int = Field(..., description="Number of income sources in the month")
+    currency: str = Field(..., description="Currency code")
+
+
+class IncomeHistoryResponse(BaseModel):
+    """Schema for income history response."""
+    history: list[MonthlyIncomeHistory]
+    total_months: int
+    overall_average: Decimal
+    currency: str = "USD"
+
+
+# ============================================================================
 # List Response Schemas
 # ============================================================================
 

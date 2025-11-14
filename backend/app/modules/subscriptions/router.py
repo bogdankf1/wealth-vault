@@ -17,11 +17,13 @@ from app.modules.subscriptions.schemas import (
     SubscriptionResponse,
     SubscriptionListResponse,
     SubscriptionStats,
+    SubscriptionHistoryResponse,
     SubscriptionBatchDelete,
     SubscriptionBatchDeleteResponse)
 from app.modules.subscriptions.service import (
     convert_subscription_to_display_currency,
-    get_user_display_currency
+    get_user_display_currency,
+    get_subscription_history
 )
 
 router = APIRouter(prefix="/api/v1/subscriptions", tags=["subscriptions"])
@@ -132,6 +134,26 @@ async def get_subscription_stats(
     display_currency = await get_user_display_currency(db, current_user.id)
     stats.currency = display_currency
     return stats
+
+
+@router.get("/history", response_model=SubscriptionHistoryResponse)
+@require_feature("subscription_tracking")
+async def get_subscription_history_endpoint(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get subscription cost history grouped by month.
+
+    Returns monthly totals and counts of subscriptions, along with overall average.
+    If start_date and end_date are provided, filters history to that range.
+
+    Requires: subscription_tracking feature
+    """
+    history = await get_subscription_history(db, current_user.id, start_date, end_date)
+    return history
 
 
 @router.get("/{subscription_id}", response_model=SubscriptionResponse)

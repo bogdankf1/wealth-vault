@@ -135,3 +135,19 @@ class ExpenseBatchDelete(BaseModel):
 class ExpenseBatchDeleteResponse(BaseModel):
     deleted_count: int
     failed_ids: List[UUID] = []
+
+
+# Schema for monthly expense history
+class MonthlyExpenseHistory(BaseModel):
+    month: str = Field(..., description="Month in YYYY-MM format")
+    total: Decimal = Field(..., description="Total expenses for the month")
+    count: int = Field(..., description="Number of expenses in the month")
+    currency: str = Field(..., description="Currency code")
+
+
+# Schema for expense history response
+class ExpenseHistoryResponse(BaseModel):
+    history: List[MonthlyExpenseHistory]
+    total_months: int
+    overall_average: Decimal
+    currency: str = "USD"

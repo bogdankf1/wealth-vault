@@ -17,11 +17,13 @@ from app.modules.installments.schemas import (
     InstallmentResponse,
     InstallmentListResponse,
     InstallmentStats,
+    InstallmentHistoryResponse,
     InstallmentBatchDelete,
     InstallmentBatchDeleteResponse)
 from app.modules.installments.service import (
     convert_installment_to_display_currency,
-    get_user_display_currency
+    get_user_display_currency,
+    get_installment_history
 )
 
 router = APIRouter(prefix="/api/v1/installments", tags=["installments"])
@@ -134,6 +136,26 @@ async def get_installment_stats(
     display_currency = await get_user_display_currency(db, current_user.id)
     stats.currency = display_currency
     return stats
+
+
+@router.get("/history", response_model=InstallmentHistoryResponse)
+@require_feature("installment_tracking")
+async def get_installment_history_endpoint(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get installment payment history grouped by month.
+
+    Returns monthly totals and counts of installments, along with overall average.
+    If start_date and end_date are provided, filters history to that range.
+
+    Requires: installment_tracking feature
+    """
+    history = await get_installment_history(db, current_user.id, start_date, end_date)
+    return history
 
 
 @router.get("/{installment_id}", response_model=InstallmentResponse)

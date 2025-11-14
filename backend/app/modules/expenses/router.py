@@ -19,7 +19,8 @@ from app.modules.expenses.schemas import (
     ExpenseListResponse,
     ExpenseStats,
     ExpenseBatchDelete,
-    ExpenseBatchDeleteResponse
+    ExpenseBatchDeleteResponse,
+    ExpenseHistoryResponse
 )
 
 router = APIRouter(prefix="/api/v1/expenses", tags=["expenses"])
@@ -142,6 +143,24 @@ async def get_expense_stats(
     """
     stats = await service.get_expense_stats(db, current_user.id, start_date, end_date)
     return stats
+
+
+@router.get("/history", response_model=ExpenseHistoryResponse)
+@require_feature("expense_tracking")
+async def get_expense_history(
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering (ISO format)"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get expense history grouped by month.
+
+    Returns monthly totals and counts of expenses, along with overall average.
+    If start_date and end_date are provided, filters history to that range.
+    """
+    history = await service.get_expense_history(db, current_user.id, start_date, end_date)
+    return history
 
 
 @router.get("/{expense_id}", response_model=Expense)

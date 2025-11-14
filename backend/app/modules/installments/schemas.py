@@ -130,6 +130,23 @@ class InstallmentStats(BaseModel):
     debt_free_date: Optional[str]  # Projected date when all loans paid off
 
 
+# History schemas
+class MonthlyInstallmentHistory(BaseModel):
+    """Schema for monthly installment history."""
+    month: str = Field(..., description="Month in YYYY-MM format")
+    total: Decimal = Field(..., description="Total installment payment for the month")
+    count: int = Field(..., description="Number of installments in the month")
+    currency: str = Field(..., description="Currency code")
+
+
+class InstallmentHistoryResponse(BaseModel):
+    """Schema for installment history response."""
+    history: list[MonthlyInstallmentHistory]
+    total_months: int
+    overall_average: Decimal
+    currency: str = "USD"
+
+
 # Batch delete schemas
 class InstallmentBatchDelete(BaseModel):
     """Schema for batch deleting installments."""

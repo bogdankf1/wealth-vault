@@ -498,3 +498,135 @@ async def get_installment_stats(
         average_interest_rate=average_interest_rate,
         debt_free_date=debt_free_date
     )
+
+
+async def get_installment_history(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None
+) -> dict:
+    """Get installment payment history grouped by month."""
+    from collections import defaultdict
+    from dateutil.relativedelta import relativedelta
+    from app.modules.installments.models import Installment
+    from app.modules.installments.schemas import MonthlyInstallmentHistory, InstallmentHistoryResponse
+    
+    # Get user's display currency
+    display_currency = await get_user_display_currency(db, user_id)
+    
+    # Frequency multipliers for monthly cost
+    frequency_to_monthly = {
+        'weekly': Decimal('4.33333'),
+        'biweekly': Decimal('2.16667'),
+        'monthly': Decimal('1'),
+    }
+    
+    # Remove timezone info
+    if start_date:
+        start_date = start_date.replace(tzinfo=None)
+    if end_date:
+        end_date = end_date.replace(tzinfo=None)
+    
+    # Get all active installments
+    result = await db.execute(
+        select(Installment).where(
+            Installment.user_id == user_id,
+            Installment.is_active == True
+        )
+    )
+    installments = result.scalars().all()
+    
+    currency_service = CurrencyService(db)
+    monthly_data = defaultdict(lambda: {"total": Decimal(0), "count": 0})
+    
+    for installment in installments:
+        # Check if installment is within date range (if dates provided)
+        if start_date and end_date:
+            installment_in_range = False
+
+            # Installments are all recurring, check if first_payment_date/end_date overlaps with range
+            installment_start = installment.first_payment_date.replace(tzinfo=None) if installment.first_payment_date and installment.first_payment_date.tzinfo else installment.first_payment_date
+            installment_end = installment.end_date.replace(tzinfo=None) if installment.end_date and installment.end_date.tzinfo else installment.end_date
+
+            if installment_start:
+                # Installment starts before or during the range
+                if installment_end:
+                    # Has end date: check overlap
+                    if installment_start <= end_date and installment_end >= start_date:
+                        installment_in_range = True
+                else:
+                    # No end date: ongoing, check if it started before range ends
+                    if installment_start <= end_date:
+                        installment_in_range = True
+
+            if not installment_in_range:
+                continue
+
+        # Convert to display currency
+        if installment.currency == display_currency:
+            converted_amount = installment.amount_per_payment
+        else:
+            converted_amount = await currency_service.convert_amount(
+                installment.amount_per_payment, installment.currency, display_currency
+            )
+            if converted_amount is None:
+                converted_amount = installment.amount_per_payment
+
+        amount = Decimal(str(converted_amount))
+
+        # Calculate monthly equivalent
+        multiplier = frequency_to_monthly.get(installment.frequency, Decimal('1'))
+        monthly_equiv = amount * multiplier
+
+        if not installment.first_payment_date:
+            continue
+        
+        installment_start = installment.first_payment_date.replace(tzinfo=None) if installment.first_payment_date.tzinfo else installment.first_payment_date
+        installment_end = installment.end_date.replace(tzinfo=None) if installment.end_date and installment.end_date.tzinfo else installment.end_date
+        
+        # Determine date range
+        range_start = max(installment_start, start_date) if start_date else installment_start
+        range_end = min(installment_end, end_date) if installment_end and end_date else (installment_end or end_date)
+        
+        # If no end date, project to current date or end of filter range
+        if not range_end:
+            if end_date:
+                range_end = end_date
+            else:
+                range_end = datetime.now()
+        
+        # Generate months
+        current_month = range_start.replace(day=1)
+        end_month = range_end.replace(day=1)
+        
+        while current_month <= end_month:
+            month_key = current_month.strftime('%Y-%m')
+            monthly_data[month_key]["total"] += monthly_equiv
+            monthly_data[month_key]["count"] += 1
+            current_month += relativedelta(months=1)
+    
+    # Convert to list and sort
+    history = [
+        MonthlyInstallmentHistory(
+            month=month,
+            total=data["total"],
+            count=data["count"],
+            currency=display_currency
+        )
+        for month, data in sorted(monthly_data.items())
+    ]
+    
+    # Calculate overall average
+    total_months = len(history)
+    overall_average = Decimal(0)
+    if total_months > 0:
+        total_sum = sum(item.total for item in history)
+        overall_average = total_sum / Decimal(total_months)
+    
+    return InstallmentHistoryResponse(
+        history=history,
+        total_months=total_months,
+        overall_average=overall_average,
+        currency=display_currency
+    )
