@@ -5,8 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Upload, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
-import Link from 'next/link';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useListExpensesQuery,
@@ -225,12 +224,6 @@ export default function ExpensesPage() {
   React.useEffect(() => {
     setActions(
       <>
-        <Link href="/dashboard/expenses/import">
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Upload className="mr-2 h-4 w-4" />
-            Import Statement
-          </Button>
-        </Link>
         {selectedExpenseIds.size > 0 && (
           <Button
             onClick={handleBatchDelete}

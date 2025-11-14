@@ -5,9 +5,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, X, Trash2 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Download, CheckCircle, AlertCircle, Loader2, X, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -41,7 +39,6 @@ import { useListInstallmentsQuery } from '@/lib/api/installmentsApi';
 import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
 
 export default function ImportStatementPage() {
-  const router = useRouter();
   const [parseStatement, { isLoading: isParsing }] = useParseStatementMutation();
   const [batchCategorize, { isLoading: isCategorizing }] = useBatchCategorizeTransactionsMutation();
   const [createExpense] = useCreateExpenseMutation();
@@ -272,24 +269,7 @@ export default function ImportStatementPage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/expenses">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Import Bank Statement</h1>
-            <p className="text-muted-foreground">
-              Upload your bank statement and let AI categorize your transactions
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-4 md:space-y-6">
       {/* Progress Steps */}
       <div className="flex items-center gap-2">
         <Badge variant={currentStep === 'upload' ? 'default' : 'secondary'}>
@@ -803,11 +783,7 @@ export default function ImportStatementPage() {
             )}
 
             <div className="flex gap-2">
-              <Button onClick={() => router.push('/dashboard/expenses')}>
-                View Expenses
-              </Button>
               <Button
-                variant="outline"
                 onClick={() => {
                   setCurrentStep('upload');
                   setUploadedFileId(null);
