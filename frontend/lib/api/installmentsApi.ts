@@ -96,6 +96,20 @@ export interface ListInstallmentsParams {
 }
 
 
+export interface MonthlyInstallmentHistory {
+  month: string; // YYYY-MM format
+  total: number;
+  count: number;
+  currency: string;
+}
+
+export interface InstallmentHistoryResponse {
+  history: MonthlyInstallmentHistory[];
+  total_months: number;
+  overall_average: number;
+  currency: string;
+}
+
 export interface InstallmentBatchDeleteRequest {
   ids: string[];
 }
@@ -138,6 +152,7 @@ export const installmentsApi = apiSlice.injectEndpoints({
       invalidatesTags: [
         { type: 'Installments', id: 'LIST' },
         { type: 'Installments', id: 'STATS' },
+        { type: 'Installments', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -153,6 +168,7 @@ export const installmentsApi = apiSlice.injectEndpoints({
         { type: 'Installments', id },
         { type: 'Installments', id: 'LIST' },
         { type: 'Installments', id: 'STATS' },
+        { type: 'Installments', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -167,6 +183,7 @@ export const installmentsApi = apiSlice.injectEndpoints({
         { type: 'Installments', id },
         { type: 'Installments', id: 'LIST' },
         { type: 'Installments', id: 'STATS' },
+        { type: 'Installments', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -180,6 +197,15 @@ export const installmentsApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Installments', id: 'STATS' }],
     }),
 
+    // Installment History
+    getInstallmentHistory: builder.query<InstallmentHistoryResponse, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/installments/history',
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Installments', id: 'HISTORY' }],
+    }),
+
     // Batch delete installments
     batchDeleteInstallments: builder.mutation<InstallmentBatchDeleteResponse, InstallmentBatchDeleteRequest>({
       query: (data) => ({
@@ -191,6 +217,7 @@ export const installmentsApi = apiSlice.injectEndpoints({
         const tags = [
           { type: 'Installments' as const, id: 'LIST' },
           { type: 'Installments' as const, id: 'STATS' },
+          { type: 'Installments' as const, id: 'HISTORY' },
           'Dashboard' as const,
         ];
         if (result && result.deleted_count > 0) {
@@ -210,5 +237,6 @@ export const {
   useUpdateInstallmentMutation,
   useDeleteInstallmentMutation,
   useGetInstallmentStatsQuery,
+  useGetInstallmentHistoryQuery,
   useBatchDeleteInstallmentsMutation,
 } = installmentsApi;

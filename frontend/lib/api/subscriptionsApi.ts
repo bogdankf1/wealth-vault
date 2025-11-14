@@ -76,6 +76,20 @@ export interface ListSubscriptionsParams {
 }
 
 
+export interface MonthlySubscriptionHistory {
+  month: string; // YYYY-MM format
+  total: number;
+  count: number;
+  currency: string;
+}
+
+export interface SubscriptionHistoryResponse {
+  history: MonthlySubscriptionHistory[];
+  total_months: number;
+  overall_average: number;
+  currency: string;
+}
+
 export interface SubscriptionBatchDeleteRequest {
   ids: string[];
 }
@@ -118,6 +132,7 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
       invalidatesTags: [
         { type: 'Subscriptions', id: 'LIST' },
         { type: 'Subscriptions', id: 'STATS' },
+        { type: 'Subscriptions', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -160,6 +175,15 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Subscriptions', id: 'STATS' }],
     }),
 
+    // Subscription History
+    getSubscriptionHistory: builder.query<SubscriptionHistoryResponse, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/subscriptions/history',
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Subscriptions', id: 'HISTORY' }],
+    }),
+
     // Batch delete subscriptions
     batchDeleteSubscriptions: builder.mutation<SubscriptionBatchDeleteResponse, SubscriptionBatchDeleteRequest>({
       query: (data) => ({
@@ -171,6 +195,7 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
         const tags = [
           { type: 'Subscriptions' as const, id: 'LIST' },
           { type: 'Subscriptions' as const, id: 'STATS' },
+          { type: 'Subscriptions' as const, id: 'HISTORY' },
           'Dashboard' as const,
         ];
         if (result && result.deleted_count > 0) {
@@ -190,5 +215,6 @@ export const {
   useUpdateSubscriptionMutation,
   useDeleteSubscriptionMutation,
   useGetSubscriptionStatsQuery,
+  useGetSubscriptionHistoryQuery,
   useBatchDeleteSubscriptionsMutation,
 } = subscriptionsApi;

@@ -82,6 +82,20 @@ export interface ExpenseStats {
   currency: string;
 }
 
+export interface MonthlyExpenseHistory {
+  month: string; // YYYY-MM format
+  total: number;
+  count: number;
+  currency: string;
+}
+
+export interface ExpenseHistoryResponse {
+  history: MonthlyExpenseHistory[];
+  total_months: number;
+  overall_average: number;
+  currency: string;
+}
+
 export interface ListExpensesParams {
   page?: number;
   page_size?: number;
@@ -129,6 +143,7 @@ export const expensesApi = apiSlice.injectEndpoints({
       invalidatesTags: [
         { type: 'Expense', id: 'LIST' },
         { type: 'Expense', id: 'STATS' },
+        { type: 'Expense', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -143,6 +158,7 @@ export const expensesApi = apiSlice.injectEndpoints({
         { type: 'Expense', id },
         { type: 'Expense', id: 'LIST' },
         { type: 'Expense', id: 'STATS' },
+        { type: 'Expense', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -156,6 +172,7 @@ export const expensesApi = apiSlice.injectEndpoints({
         { type: 'Expense', id },
         { type: 'Expense', id: 'LIST' },
         { type: 'Expense', id: 'STATS' },
+        { type: 'Expense', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -170,6 +187,7 @@ export const expensesApi = apiSlice.injectEndpoints({
         const tags = [
           { type: 'Expense' as const, id: 'LIST' },
           { type: 'Expense' as const, id: 'STATS' },
+          { type: 'Expense' as const, id: 'HISTORY' },
           'Dashboard' as const,
         ];
         if (result && result.deleted_count > 0) {
@@ -187,6 +205,15 @@ export const expensesApi = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: 'Expense', id: 'STATS' }],
     }),
+
+    // Expense History
+    getExpenseHistory: builder.query<ExpenseHistoryResponse, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/expenses/history',
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Expense', id: 'HISTORY' }],
+    }),
   }),
 });
 
@@ -198,4 +225,5 @@ export const {
   useDeleteExpenseMutation,
   useBatchDeleteExpensesMutation,
   useGetExpenseStatsQuery,
+  useGetExpenseHistoryQuery,
 } = expensesApi;

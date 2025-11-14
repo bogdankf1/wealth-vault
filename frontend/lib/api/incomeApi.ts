@@ -65,6 +65,20 @@ export interface IncomeStats {
   currency: string;
 }
 
+export interface MonthlyIncomeHistory {
+  month: string; // YYYY-MM format
+  total: number;
+  count: number;
+  currency: string;
+}
+
+export interface IncomeHistoryResponse {
+  history: MonthlyIncomeHistory[];
+  total_months: number;
+  overall_average: number;
+  currency: string;
+}
+
 export interface IncomeSourceCreate {
   name: string;
   description?: string | null;
@@ -175,6 +189,7 @@ export const incomeApi = apiSlice.injectEndpoints({
       invalidatesTags: [
         { type: 'Income', id: 'LIST' },
         { type: 'Income', id: 'STATS' },
+        { type: 'Income', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -189,6 +204,7 @@ export const incomeApi = apiSlice.injectEndpoints({
         { type: 'Income', id },
         { type: 'Income', id: 'LIST' },
         { type: 'Income', id: 'STATS' },
+        { type: 'Income', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -201,6 +217,7 @@ export const incomeApi = apiSlice.injectEndpoints({
       invalidatesTags: [
         { type: 'Income', id: 'LIST' },
         { type: 'Income', id: 'STATS' },
+        { type: 'Income', id: 'HISTORY' },
         'Dashboard',
       ],
     }),
@@ -238,6 +255,15 @@ export const incomeApi = apiSlice.injectEndpoints({
       providesTags: [{ type: 'Income', id: 'STATS' }],
     }),
 
+    // Income History
+    getIncomeHistory: builder.query<IncomeHistoryResponse, { start_date?: string; end_date?: string } | void>({
+      query: (params) => ({
+        url: '/api/v1/income/history',
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Income', id: 'HISTORY' }],
+    }),
+
     // Batch Delete
     batchDeleteIncomeSources: builder.mutation<IncomeSourceBatchDeleteResponse, IncomeSourceBatchDeleteRequest>({
       query: (data) => ({
@@ -245,7 +271,7 @@ export const incomeApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: [{ type: 'Income', id: 'LIST' }, { type: 'Income', id: 'STATS' }, 'Dashboard'],
+      invalidatesTags: [{ type: 'Income', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'HISTORY' }, 'Dashboard'],
     }),
   }),
 });
@@ -260,4 +286,5 @@ export const {
   useListIncomeTransactionsQuery,
   useCreateIncomeTransactionMutation,
   useGetIncomeStatsQuery,
+  useGetIncomeHistoryQuery,
 } = incomeApi;

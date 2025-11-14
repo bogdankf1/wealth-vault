@@ -105,6 +105,18 @@ export default function DashboardLayout({
     await signOut({ callbackUrl: '/login' });
   };
 
+  /**
+   * Check if a navigation item is active
+   * For Dashboard (/dashboard), use exact match
+   * For other items, use startsWith to highlight parent and child routes
+   */
+  const isNavItemActive = (itemHref: string): boolean => {
+    if (itemHref === '/dashboard') {
+      return pathname === '/dashboard';
+    }
+    return pathname.startsWith(itemHref);
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile/Tablet sidebar backdrop */}
@@ -142,7 +154,7 @@ export default function DashboardLayout({
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-2 md:px-3 py-3 md:py-4 overflow-y-auto">
             {accessibleNavigation.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = isNavItemActive(item.href);
               const Icon = item.icon;
 
               return (
@@ -170,7 +182,7 @@ export default function DashboardLayout({
 
             {/* Bottom Navigation */}
             {accessibleBottomNavigation.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = isNavItemActive(item.href);
               const Icon = item.icon;
 
               return (
