@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { UserMinus, AlertCircle, Edit, Trash2, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { UserMinus, AlertCircle, Edit, Trash2, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3, DollarSign } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
-import { ModuleHeader } from '@/components/ui/module-header';
+
 import { StatsCards } from '@/components/ui/stats-cards';
+import { DebtsActionsContext } from '../context';
 import { SearchFilter } from '@/components/ui/search-filter';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -37,6 +38,9 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function DebtsPage() {
+  // Get context for setting actions
+  const { setActions } = React.useContext(DebtsActionsContext);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDebtId, setEditingDebtId] = useState<string | null>(null);
   const [deletingDebt, setDeletingDebt] = useState<Debt | null>(null);
@@ -100,10 +104,40 @@ export default function DebtsPage() {
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = useCallback(() => {
     if (selectedDebtIds.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  };
+  }, []);
+
+  const handleAddDebt = useCallback(() => {
+    setDeletingDebt(null);
+    setIsFormOpen(true);
+  }, []);
+
+  // Set action buttons in layout
+  React.useEffect(() => {
+    setActions(
+      <>
+        {selectedDebtIds.size > 0 && (
+          <Button
+            onClick={handleBatchDelete}
+            variant="destructive"
+            size="default"
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span className="truncate">Delete Selected ({selectedDebtIds.size})</span>
+          </Button>
+        )}
+        <Button onClick={handleAddDebt} size="default" className="w-full sm:w-auto">
+          <DollarSign className="mr-2 h-4 w-4" />
+          <span className="truncate">Add Debt</span>
+        </Button>
+      </>
+    );
+
+    return () => setActions(null);
+  }, [selectedDebtIds.size, setActions, handleBatchDelete, handleAddDebt]);
 
   const confirmBatchDelete = async () => {
     if (selectedDebtIds.size === 0) return;
@@ -202,15 +236,8 @@ export default function DebtsPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-      <ModuleHeader
-        title="Debts"
-        description="Track money owed to you"
-        actionLabel="Add Debt"
-        onAction={() => setIsFormOpen(true)}
-        deleteLabel={selectedDebtIds.size > 0 ? `Delete ${selectedDebtIds.size} Debt${selectedDebtIds.size > 1 ? 's' : ''}` : undefined}
-        onDelete={selectedDebtIds.size > 0 ? handleBatchDelete : undefined}
-      />
+    <div className="space-y-4 md:space-y-6">
+      
 
       {/* Statistics Cards */}
       {isLoading ? (

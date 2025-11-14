@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Wallet, TrendingUp, PiggyBank, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
-import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards } from '@/components/ui/stats-cards';
+import { SavingsActionsContext } from '../context';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -45,6 +45,9 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function SavingsPage() {
+  // Get context for setting actions
+  const { setActions } = React.useContext(SavingsActionsContext);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
   const [deletingAccount, setDeletingAccount] = useState<SavingsAccount | null>(null);
@@ -106,9 +109,39 @@ export default function SavingsPage() {
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = useCallback(() => {
     setBatchDeleteDialogOpen(true);
-  };
+  }, []);
+
+  const handleAddAccount = useCallback(() => {
+    setEditingAccountId(null);
+    setIsFormOpen(true);
+  }, []);
+
+  // Set action buttons in layout
+  React.useEffect(() => {
+    setActions(
+      <>
+        {selectedAccountIds.size > 0 && (
+          <Button
+            onClick={handleBatchDelete}
+            variant="destructive"
+            size="default"
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span className="truncate">Delete Selected ({selectedAccountIds.size})</span>
+          </Button>
+        )}
+        <Button onClick={handleAddAccount} size="default" className="w-full sm:w-auto">
+          <Wallet className="mr-2 h-4 w-4" />
+          <span className="truncate">Add Account</span>
+        </Button>
+      </>
+    );
+
+    return () => setActions(null);
+  }, [selectedAccountIds.size, setActions, handleBatchDelete, handleAddAccount]);
 
   const confirmBatchDelete = async () => {
     if (selectedAccountIds.size === 0) return;
@@ -183,13 +216,8 @@ export default function SavingsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-        <ModuleHeader
-          title="Savings & Accounts"
-          description="Track your savings accounts, investments, and net worth"
-          actionLabel="Add Account"
-          onAction={() => setIsFormOpen(true)}
-        />
+      <div className="space-y-4 md:space-y-6">
+        
         <LoadingCards count={3} />
       </div>
     );
@@ -197,11 +225,8 @@ export default function SavingsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-        <ModuleHeader
-          title="Savings & Accounts"
-          description="Track your savings accounts, investments, and net worth"
-        />
+      <div className="space-y-4 md:space-y-6">
+        
         <ApiErrorState error={error} onRetry={refetch} />
       </div>
     );
@@ -211,15 +236,8 @@ export default function SavingsPage() {
   const hasFilteredResults = filteredAccounts.length > 0;
 
   return (
-    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-      <ModuleHeader
-        title="Savings & Accounts"
-        description="Track your savings accounts, investments, and net worth"
-        actionLabel="Add Account"
-        onAction={() => setIsFormOpen(true)}
-        deleteLabel={selectedAccountIds.size > 0 ? `Delete Selected (${selectedAccountIds.size})` : undefined}
-        onDelete={selectedAccountIds.size > 0 ? handleBatchDelete : undefined}
-      />
+    <div className="space-y-4 md:space-y-6">
+      
 
       {stats && (
         <div className="space-y-3">

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FileText, DollarSign, Percent, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
-import { ModuleHeader } from '@/components/ui/module-header';
+
 import { StatsCards } from '@/components/ui/stats-cards';
+import { TaxesActionsContext } from '../context';
 import { SearchFilter } from '@/components/ui/search-filter';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -36,6 +37,9 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function TaxesPage() {
+  // Get context for setting actions
+  const { setActions } = React.useContext(TaxesActionsContext);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTaxId, setEditingTaxId] = useState<string | null>(null);
   const [deletingTax, setDeletingTax] = useState<Tax | null>(null);
@@ -99,10 +103,40 @@ export default function TaxesPage() {
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = useCallback(() => {
     if (selectedTaxIds.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  };
+  }, []);
+
+  const handleAddTax = useCallback(() => {
+    setDeletingTax(null);
+    setIsFormOpen(true);
+  }, []);
+
+  // Set action buttons in layout
+  React.useEffect(() => {
+    setActions(
+      <>
+        {selectedTaxIds.size > 0 && (
+          <Button
+            onClick={handleBatchDelete}
+            variant="destructive"
+            size="default"
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span className="truncate">Delete Selected ({selectedTaxIds.size})</span>
+          </Button>
+        )}
+        <Button onClick={handleAddTax} size="default" className="w-full sm:w-auto">
+          <DollarSign className="mr-2 h-4 w-4" />
+          <span className="truncate">Add Tax</span>
+        </Button>
+      </>
+    );
+
+    return () => setActions(null);
+  }, [selectedTaxIds.size, setActions, handleBatchDelete, handleAddTax]);
 
   const confirmBatchDelete = async () => {
     if (selectedTaxIds.size === 0) return;
@@ -205,15 +239,8 @@ export default function TaxesPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-      <ModuleHeader
-        title="Taxes"
-        description="Manage your tax obligations and estimates"
-        actionLabel="Add Tax"
-        onAction={() => setIsFormOpen(true)}
-        deleteLabel={selectedTaxIds.size > 0 ? `Delete ${selectedTaxIds.size} Tax${selectedTaxIds.size > 1 ? 'es' : ''}` : undefined}
-        onDelete={selectedTaxIds.size > 0 ? handleBatchDelete : undefined}
-      />
+    <div className="space-y-4 md:space-y-6">
+      
 
       {/* Statistics Cards */}
       {isLoading ? (

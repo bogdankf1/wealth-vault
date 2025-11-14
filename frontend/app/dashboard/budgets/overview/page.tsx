@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
@@ -22,8 +22,8 @@ import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-d
 import { Checkbox } from '@/components/ui/checkbox';
 import { MonthFilter } from '@/components/ui/month-filter';
 import { SearchFilter } from '@/components/ui/search-filter';
-import { ModuleHeader } from '@/components/ui/module-header';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { BudgetsActionsContext } from '../context';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
@@ -49,6 +49,9 @@ export default function BudgetsPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+
+  // Get context for setting actions
+  const { setActions } = React.useContext(BudgetsActionsContext);
 
   const { data: budgets, isLoading: budgetsLoading } = useListBudgetsQuery();
 
@@ -131,10 +134,10 @@ export default function BudgetsPage() {
     return sorted || [];
   }, [budgets, selectedMonth, searchQuery, selectedCategory, sortField, sortDirection]);
 
-  const handleAddBudget = () => {
+  const handleAddBudget = useCallback(() => {
     setEditingBudgetId(null);
     setShowCreateModal(true);
-  };
+  }, []);
 
   const handleEditBudget = (id: string) => {
     setEditingBudgetId(id);
@@ -185,9 +188,9 @@ export default function BudgetsPage() {
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = useCallback(() => {
     setBatchDeleteDialogOpen(true);
-  };
+  }, []);
 
   const confirmBatchDelete = async () => {
     if (selectedBudgetIds.size === 0) return;
@@ -209,6 +212,31 @@ export default function BudgetsPage() {
       toast.error('Failed to delete budgets');
     }
   };
+
+  // Set action buttons in layout
+  React.useEffect(() => {
+    setActions(
+      <>
+        {selectedBudgetIds.size > 0 && (
+          <Button
+            onClick={handleBatchDelete}
+            variant="destructive"
+            size="default"
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span className="truncate">Delete Selected ({selectedBudgetIds.size})</span>
+          </Button>
+        )}
+        <Button onClick={handleAddBudget} size="default" className="w-full sm:w-auto">
+          <Wallet className="mr-2 h-4 w-4" />
+          <span className="truncate">Add Budget</span>
+        </Button>
+      </>
+    );
+
+    return () => setActions(null);
+  }, [selectedBudgetIds.size, setActions, handleBatchDelete, handleAddBudget]);
 
   // Prepare stats cards data from overview
   const statsCards: StatCard[] = overview?.stats
@@ -260,17 +288,7 @@ export default function BudgetsPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-      {/* Header */}
-      <ModuleHeader
-        title="Budget Management"
-        description="Track and manage your spending budgets"
-        actionLabel="Add Budget"
-        onAction={handleAddBudget}
-        deleteLabel={selectedBudgetIds.size > 0 ? `Delete Selected (${selectedBudgetIds.size})` : undefined}
-        onDelete={selectedBudgetIds.size > 0 ? handleBatchDelete : undefined}
-      />
-
+    <div className="space-y-4 md:space-y-6">
       {/* Statistics Cards */}
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">

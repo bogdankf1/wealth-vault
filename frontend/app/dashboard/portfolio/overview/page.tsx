@@ -4,7 +4,7 @@
  */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, BarChart3, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import {
   useListPortfolioAssetsQuery,
@@ -27,8 +27,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { PortfolioForm } from '@/components/portfolio/portfolio-form';
-import { ModuleHeader } from '@/components/ui/module-header';
+
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { PortfolioActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -39,6 +40,9 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function PortfolioPage() {
+  // Get context for setting actions
+  const { setActions } = React.useContext(PortfolioActionsContext);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -69,10 +73,10 @@ export default function PortfolioPage() {
   const [deleteAsset, { isLoading: isDeleting }] = useDeletePortfolioAssetMutation();
   const [batchDeleteAssets, { isLoading: isBatchDeleting }] = useBatchDeleteAssetsMutation();
 
-  const handleAddAsset = () => {
+  const handleAddAsset = useCallback(() => {
     setEditingAssetId(null);
     setIsFormOpen(true);
-  };
+  }, []);
 
   const handleEditAsset = (id: string) => {
     setEditingAssetId(id);
@@ -121,10 +125,35 @@ export default function PortfolioPage() {
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = useCallback(() => {
     if (selectedAssetIds.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  };
+  }, []);
+
+  // Set action buttons in layout
+  React.useEffect(() => {
+    setActions(
+      <>
+        {selectedAssetIds.size > 0 && (
+          <Button
+            onClick={handleBatchDelete}
+            variant="destructive"
+            size="default"
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span className="truncate">Delete Selected ({selectedAssetIds.size})</span>
+          </Button>
+        )}
+        <Button onClick={handleAddAsset} size="default" className="w-full sm:w-auto">
+          <DollarSign className="mr-2 h-4 w-4" />
+          <span className="truncate">Add Asset</span>
+        </Button>
+      </>
+    );
+
+    return () => setActions(null);
+  }, [selectedAssetIds.size, setActions, handleBatchDelete, handleAddAsset]);
 
   const confirmBatchDelete = async () => {
     if (selectedAssetIds.size === 0) return;
@@ -230,17 +259,7 @@ export default function PortfolioPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-      {/* Header */}
-      <ModuleHeader
-        title="Portfolio"
-        description="Track and manage your investment portfolio"
-        actionLabel="Add Asset"
-        onAction={handleAddAsset}
-        deleteLabel={selectedAssetIds.size > 0 ? `Delete ${selectedAssetIds.size} Asset${selectedAssetIds.size > 1 ? 's' : ''}` : undefined}
-        onDelete={selectedAssetIds.size > 0 ? handleBatchDelete : undefined}
-      />
-
+    <div className="space-y-4 md:space-y-6">
       {/* Statistics Cards */}
       {isLoadingStats ? (
         <div className="grid gap-4 md:grid-cols-3">

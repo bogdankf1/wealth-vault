@@ -42,14 +42,14 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Income', href: '/dashboard/income', icon: TrendingUp },
   { name: 'Expenses', href: '/dashboard/expenses', icon: DollarSign },
-  { name: 'Budgets', href: '/dashboard/budgets', icon: Wallet },
-  { name: 'Savings', href: '/dashboard/savings', icon: PiggyBank },
-  { name: 'Portfolio', href: '/dashboard/portfolio', icon: LineChart },
-  { name: 'Goals', href: '/dashboard/goals', icon: Target },
+  { name: 'Budgets', href: '/dashboard/budgets/overview', icon: Wallet },
+  { name: 'Savings', href: '/dashboard/savings/overview', icon: PiggyBank },
+  { name: 'Portfolio', href: '/dashboard/portfolio/overview', icon: LineChart },
+  { name: 'Goals', href: '/dashboard/goals/overview', icon: Target },
   { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: CreditCard },
   { name: 'Installments', href: '/dashboard/installments', icon: Receipt },
-  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus },
-  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText },
+  { name: 'Debts', href: '/dashboard/debts/overview', icon: UserMinus },
+  { name: 'Taxes', href: '/dashboard/taxes/overview', icon: FileText },
 ];
 
 const bottomNavigation = [

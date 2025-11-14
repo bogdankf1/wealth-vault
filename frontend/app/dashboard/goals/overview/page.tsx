@@ -4,7 +4,7 @@
  */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Target, TrendingUp, DollarSign, Edit, Trash2, CheckCircle2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -28,8 +28,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { GoalForm } from '@/components/goals/goal-form';
-import { ModuleHeader } from '@/components/ui/module-header';
+
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { GoalsActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -40,6 +41,9 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function GoalsPage() {
+  // Get context for setting actions
+  const { setActions } = React.useContext(GoalsActionsContext);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -70,10 +74,10 @@ export default function GoalsPage() {
   const [deleteGoal, { isLoading: isDeleting }] = useDeleteGoalMutation();
   const [batchDeleteGoals, { isLoading: isBatchDeleting }] = useBatchDeleteGoalsMutation();
 
-  const handleAddGoal = () => {
+  const handleAddGoal = useCallback(() => {
     setEditingGoalId(null);
     setIsFormOpen(true);
-  };
+  }, []);
 
   const handleEditGoal = (id: string) => {
     setEditingGoalId(id);
@@ -122,10 +126,35 @@ export default function GoalsPage() {
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = useCallback(() => {
     if (selectedGoalIds.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  };
+  }, []);
+
+  // Set action buttons in layout
+  React.useEffect(() => {
+    setActions(
+      <>
+        {selectedGoalIds.size > 0 && (
+          <Button
+            onClick={handleBatchDelete}
+            variant="destructive"
+            size="default"
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span className="truncate">Delete Selected ({selectedGoalIds.size})</span>
+          </Button>
+        )}
+        <Button onClick={handleAddGoal} size="default" className="w-full sm:w-auto">
+          <Target className="mr-2 h-4 w-4" />
+          <span className="truncate">Add Goal</span>
+        </Button>
+      </>
+    );
+
+    return () => setActions(null);
+  }, [selectedGoalIds.size, setActions, handleBatchDelete, handleAddGoal]);
 
   const confirmBatchDelete = async () => {
     if (selectedGoalIds.size === 0) return;
@@ -228,17 +257,7 @@ export default function GoalsPage() {
     : [];
 
   return (
-    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-      {/* Header */}
-      <ModuleHeader
-        title="Goals"
-        description="Track and manage your financial goals"
-        actionLabel="Add Goal"
-        onAction={handleAddGoal}
-        deleteLabel={selectedGoalIds.size > 0 ? `Delete ${selectedGoalIds.size} Goal${selectedGoalIds.size > 1 ? 's' : ''}` : undefined}
-        onDelete={selectedGoalIds.size > 0 ? handleBatchDelete : undefined}
-      />
-
+    <div className="space-y-4 md:space-y-6">
       {/* Statistics Cards */}
       {isLoadingStats ? (
         <div className="grid gap-4 md:grid-cols-3">
