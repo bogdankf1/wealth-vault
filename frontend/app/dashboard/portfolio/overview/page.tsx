@@ -376,61 +376,6 @@ export default function PortfolioPage() {
         </div>
       ) : null}
 
-      {/* Best/Worst Performers */}
-      {stats && (stats.best_performer || stats.worst_performer) && (
-        <div className="grid gap-4 md:grid-cols-2">
-          {stats.best_performer && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Best Performer
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold">{stats.best_performer.asset_name}</p>
-                    {stats.best_performer.symbol && (
-                      <p className="text-sm text-muted-foreground">{stats.best_performer.symbol}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-green-600">
-                      {formatPercentage(stats.best_performer.return_percentage)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {stats.worst_performer && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Worst Performer
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold">{stats.worst_performer.asset_name}</p>
-                    {stats.worst_performer.symbol && (
-                      <p className="text-sm text-muted-foreground">{stats.worst_performer.symbol}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-red-600">
-                      {formatPercentage(stats.worst_performer.return_percentage)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
-
       {/* Search, Filters, and View Toggle */}
       {(portfolioData?.items && portfolioData.items.length > 0) && (
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">

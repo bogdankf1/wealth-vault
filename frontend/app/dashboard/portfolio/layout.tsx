@@ -7,7 +7,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, Archive } from 'lucide-react';
+import { LayoutGrid, Archive, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { PortfolioActionsContext } from './context';
@@ -18,6 +18,12 @@ const PORTFOLIO_TABS: ModuleTab[] = [
     label: 'Overview',
     icon: LayoutGrid,
     href: '/dashboard/portfolio/overview',
+  },
+  {
+    value: 'analysis',
+    label: 'Analysis',
+    icon: BarChart3,
+    href: '/dashboard/portfolio/analysis',
   },
   {
     value: 'archive',
