@@ -321,17 +321,20 @@ async def get_goal_stats(
                 goal.monthly_contribution,
                 goal.start_date
             )
-            if projected and projected <= goal.target_date:
-                goals_on_track += 1
-            else:
+            if projected and projected > goal.target_date:
                 goals_behind += 1
 
     total_remaining = total_target_amount - total_saved
 
-    # Average progress
+    # Calculate goals on track: all in-progress goals that aren't behind schedule
+    in_progress_goals = active_goals - completed_goals
+    goals_on_track = in_progress_goals - goals_behind
+
+    # Calculate overall progress based on total saved vs total target
     average_progress = Decimal('0')
-    if progress_values:
-        average_progress = sum(progress_values) / Decimal(str(len(progress_values)))
+    if total_target_amount > 0:
+        average_progress = (total_saved / total_target_amount) * Decimal('100')
+        average_progress = min(average_progress, Decimal('100'))  # Cap at 100%
 
     return GoalStats(
         total_goals=total_goals,

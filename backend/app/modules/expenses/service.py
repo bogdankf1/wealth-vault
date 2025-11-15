@@ -379,6 +379,10 @@ async def get_expense_stats(
     )
     total_annual_expense = total_monthly_expense * Decimal(12)
 
+    # Calculate daily and weekly equivalents from monthly total
+    total_daily_expense = total_monthly_expense / Decimal(30)
+    total_weekly_expense = total_monthly_expense * Decimal(7) / Decimal(30)
+
     # Use filtered counts if date range was provided, otherwise use all counts
     if start_date and end_date:
         total_expenses = filtered_expenses_count
@@ -390,8 +394,8 @@ async def get_expense_stats(
     return ExpenseStats(
         total_expenses=total_expenses,
         active_expenses=active_expenses,
-        total_daily_expense=total_daily,
-        total_weekly_expense=total_weekly,
+        total_daily_expense=total_daily_expense,
+        total_weekly_expense=total_weekly_expense,
         total_monthly_expense=total_monthly_expense,
         total_annual_expense=total_annual_expense,
         expenses_by_category=expenses_by_category,

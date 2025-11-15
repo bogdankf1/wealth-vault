@@ -544,33 +544,104 @@ async def get_income_stats(
 
     total_annual = total_monthly * 12
 
-    # Get transaction stats
-    transactions_query = select(
-        func.count(IncomeTransaction.id).label("total"),
-        func.coalesce(func.sum(IncomeTransaction.amount), Decimal("0")).label("total_amount")
-    ).where(
-        IncomeTransaction.user_id == current_user.id,
-        IncomeTransaction.deleted_at.is_(None)
+    # Calculate all-time transaction stats from all active sources
+    # Get all active sources (not just from the filtered period)
+    all_active_sources_query = select(IncomeSource).where(
+        IncomeSource.user_id == current_user.id,
+        IncomeSource.is_active == True,
+        IncomeSource.deleted_at.is_(None)
     )
+    all_active_sources_result = await db.execute(all_active_sources_query)
+    all_active_sources = all_active_sources_result.scalars().all()
 
-    transactions_result = await db.execute(transactions_query)
-    transactions_stats = transactions_result.one()
+    # Calculate total amount from all active sources
+    total_transactions_amount = Decimal("0")
+    for source in all_active_sources:
+        if source.frequency == IncomeFrequency.ONE_TIME:
+            # One-time: use full amount
+            source_amount = source.amount
+        else:
+            # Recurring: calculate monthly amount
+            source_amount = source.calculate_monthly_amount() or Decimal("0")
 
-    # Get current month stats
+        # Convert to display currency if needed
+        if source.currency != display_currency:
+            converted_amount = await currency_service.convert_amount(
+                source_amount,
+                source.currency,
+                display_currency
+            )
+            if converted_amount:
+                total_transactions_amount += converted_amount
+            else:
+                total_transactions_amount += source_amount
+        else:
+            total_transactions_amount += source_amount
+
+    # Get current month stats (including active sources)
     now = datetime.utcnow()
     current_month_start = datetime(now.year, now.month, 1)
+    # Calculate next month start for end boundary
+    if now.month == 12:
+        current_month_end = datetime(now.year + 1, 1, 1)
+    else:
+        current_month_end = datetime(now.year, now.month + 1, 1)
 
-    current_month_query = select(
-        func.count(IncomeTransaction.id).label("count"),
-        func.coalesce(func.sum(IncomeTransaction.amount), Decimal("0")).label("amount")
-    ).where(
-        IncomeTransaction.user_id == current_user.id,
-        IncomeTransaction.date >= current_month_start,
-        IncomeTransaction.deleted_at.is_(None)
+    # Get active sources for current month
+    current_month_sources_query = select(IncomeSource).where(
+        and_(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.is_active == True,
+            IncomeSource.deleted_at.is_(None),
+            or_(
+                # One-time sources that fall in current month
+                and_(
+                    IncomeSource.frequency == IncomeFrequency.ONE_TIME,
+                    IncomeSource.date.isnot(None),
+                    IncomeSource.date >= current_month_start,
+                    IncomeSource.date < current_month_end
+                ),
+                # Recurring sources active during current month
+                and_(
+                    IncomeSource.frequency != IncomeFrequency.ONE_TIME,
+                    IncomeSource.start_date.isnot(None),
+                    IncomeSource.start_date < current_month_end,
+                    or_(
+                        IncomeSource.end_date.is_(None),
+                        IncomeSource.end_date >= current_month_start
+                    )
+                )
+            )
+        )
     )
 
-    current_month_result = await db.execute(current_month_query)
-    current_month_stats = current_month_result.one()
+    current_month_sources_result = await db.execute(current_month_sources_query)
+    current_month_sources = current_month_sources_result.scalars().all()
+
+    # Calculate total for current month from sources
+    current_month_amount = Decimal("0")
+    for source in current_month_sources:
+        amount = source.amount
+        if source.frequency == IncomeFrequency.ONE_TIME:
+            # One-time: use full amount
+            source_amount = amount
+        else:
+            # Recurring: calculate monthly amount
+            source_amount = source.calculate_monthly_amount() or Decimal("0")
+
+        # Convert to display currency if needed
+        if source.currency != display_currency:
+            converted_amount = await currency_service.convert_amount(
+                source_amount,
+                source.currency,
+                display_currency
+            )
+            if converted_amount:
+                current_month_amount += converted_amount
+            else:
+                current_month_amount += source_amount
+        else:
+            current_month_amount += source_amount
 
     # Get last month stats
     if now.month == 1:
@@ -580,30 +651,73 @@ async def get_income_stats(
         last_month_start = datetime(now.year, now.month - 1, 1)
         last_month_end = datetime(now.year, now.month, 1)
 
-    last_month_query = select(
-        func.count(IncomeTransaction.id).label("count"),
-        func.coalesce(func.sum(IncomeTransaction.amount), Decimal("0")).label("amount")
-    ).where(
-        IncomeTransaction.user_id == current_user.id,
-        IncomeTransaction.date >= last_month_start,
-        IncomeTransaction.date < last_month_end,
-        IncomeTransaction.deleted_at.is_(None)
+    # Get active sources for last month
+    last_month_sources_query = select(IncomeSource).where(
+        and_(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.is_active == True,
+            IncomeSource.deleted_at.is_(None),
+            or_(
+                # One-time sources that fall in last month
+                and_(
+                    IncomeSource.frequency == IncomeFrequency.ONE_TIME,
+                    IncomeSource.date.isnot(None),
+                    IncomeSource.date >= last_month_start,
+                    IncomeSource.date < last_month_end
+                ),
+                # Recurring sources active during last month
+                and_(
+                    IncomeSource.frequency != IncomeFrequency.ONE_TIME,
+                    IncomeSource.start_date.isnot(None),
+                    IncomeSource.start_date < last_month_end,
+                    or_(
+                        IncomeSource.end_date.is_(None),
+                        IncomeSource.end_date >= last_month_start
+                    )
+                )
+            )
+        )
     )
 
-    last_month_result = await db.execute(last_month_query)
-    last_month_stats = last_month_result.one()
+    last_month_sources_result = await db.execute(last_month_sources_query)
+    last_month_sources = last_month_sources_result.scalars().all()
+
+    # Calculate total for last month from sources
+    last_month_amount = Decimal("0")
+    for source in last_month_sources:
+        amount = source.amount
+        if source.frequency == IncomeFrequency.ONE_TIME:
+            # One-time: use full amount
+            source_amount = amount
+        else:
+            # Recurring: calculate monthly amount
+            source_amount = source.calculate_monthly_amount() or Decimal("0")
+
+        # Convert to display currency if needed
+        if source.currency != display_currency:
+            converted_amount = await currency_service.convert_amount(
+                source_amount,
+                source.currency,
+                display_currency
+            )
+            if converted_amount:
+                last_month_amount += converted_amount
+            else:
+                last_month_amount += source_amount
+        else:
+            last_month_amount += source_amount
 
     return IncomeStatsResponse(
         total_sources=total_sources_count,
         active_sources=active_sources_count,
         total_monthly_income=total_monthly,
         total_annual_income=total_annual,
-        total_transactions=transactions_stats.total or 0,
-        total_transactions_amount=transactions_stats.total_amount,
-        transactions_current_month=current_month_stats.count or 0,
-        transactions_current_month_amount=current_month_stats.amount,
-        transactions_last_month=last_month_stats.count or 0,
-        transactions_last_month_amount=last_month_stats.amount,
+        total_transactions=len(all_active_sources),
+        total_transactions_amount=total_transactions_amount,
+        transactions_current_month=len(current_month_sources),
+        transactions_current_month_amount=current_month_amount,
+        transactions_last_month=len(last_month_sources),
+        transactions_last_month_amount=last_month_amount,
         currency=display_currency
     )
 
