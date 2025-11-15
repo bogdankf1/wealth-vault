@@ -137,6 +137,31 @@ export default function SubscriptionsPage() {
     }
   };
 
+  const handleBatchArchive = React.useCallback(async () => {
+    const idsToArchive = Array.from(selectedSubscriptionIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateSubscription({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive subscription ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} subscription(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} subscription(s)`);
+    }
+
+    setSelectedSubscriptionIds(new Set());
+  }, [selectedSubscriptionIds, updateSubscription]);
+
   const confirmDelete = async () => {
     if (!deletingSubscriptionId) return;
 
@@ -299,15 +324,26 @@ export default function SubscriptionsPage() {
     setActions(
       <>
         {selectedSubscriptionIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedSubscriptionIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedSubscriptionIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedSubscriptionIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddSubscription} size="default" className="w-full sm:w-auto">
           <RefreshCw className="mr-2 h-4 w-4" />
@@ -318,7 +354,7 @@ export default function SubscriptionsPage() {
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSubscriptionIds.size, setActions, handleBatchDelete, handleAddSubscription]);
+  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription]);
 
   return (
     <div className="space-y-4 md:space-y-6">

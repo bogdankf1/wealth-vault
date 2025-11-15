@@ -103,6 +103,31 @@ export default function DebtsPage() {
     }
   };
 
+  const handleBatchArchive = React.useCallback(async () => {
+    const idsToArchive = Array.from(selectedDebtIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateDebt({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive debt ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} debt(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} debt(s)`);
+    }
+
+    setSelectedDebtIds(new Set());
+  }, [selectedDebtIds, updateDebt]);
+
   const handleToggleSelect = (debtId: string) => {
     const newSelected = new Set(selectedDebtIds);
     if (newSelected.has(debtId)) {
@@ -136,15 +161,26 @@ export default function DebtsPage() {
     setActions(
       <>
         {selectedDebtIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedDebtIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedDebtIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedDebtIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddDebt} size="default" className="w-full sm:w-auto">
           <DollarSign className="mr-2 h-4 w-4" />
@@ -154,7 +190,7 @@ export default function DebtsPage() {
     );
 
     return () => setActions(null);
-  }, [selectedDebtIds.size, setActions, handleBatchDelete, handleAddDebt]);
+  }, [selectedDebtIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddDebt]);
 
   const confirmBatchDelete = async () => {
     if (selectedDebtIds.size === 0) return;

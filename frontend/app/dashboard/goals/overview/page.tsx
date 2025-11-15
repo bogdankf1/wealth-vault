@@ -106,6 +106,31 @@ export default function GoalsPage() {
     }
   };
 
+  const handleBatchArchive = useCallback(async () => {
+    const idsToArchive = Array.from(selectedGoalIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateGoal({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive goal ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} goal(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} goal(s)`);
+    }
+
+    setSelectedGoalIds(new Set());
+  }, [selectedGoalIds, updateGoal]);
+
   const confirmDelete = async () => {
     if (!deletingGoalId) return;
 
@@ -153,15 +178,26 @@ export default function GoalsPage() {
     setActions(
       <>
         {selectedGoalIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedGoalIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedGoalIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedGoalIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddGoal} size="default" className="w-full sm:w-auto">
           <Target className="mr-2 h-4 w-4" />
@@ -171,7 +207,7 @@ export default function GoalsPage() {
     );
 
     return () => setActions(null);
-  }, [selectedGoalIds.size, setActions, handleBatchDelete, handleAddGoal]);
+  }, [selectedGoalIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddGoal]);
 
   const confirmBatchDelete = async () => {
     if (selectedGoalIds.size === 0) return;

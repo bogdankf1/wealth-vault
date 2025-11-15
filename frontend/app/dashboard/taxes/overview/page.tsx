@@ -102,6 +102,31 @@ export default function TaxesPage() {
     }
   };
 
+  const handleBatchArchive = React.useCallback(async () => {
+    const idsToArchive = Array.from(selectedTaxIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateTax({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive tax ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} tax(es)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} tax(es)`);
+    }
+
+    setSelectedTaxIds(new Set());
+  }, [selectedTaxIds, updateTax]);
+
   const handleToggleSelect = (taxId: string) => {
     const newSelected = new Set(selectedTaxIds);
     if (newSelected.has(taxId)) {
@@ -135,15 +160,26 @@ export default function TaxesPage() {
     setActions(
       <>
         {selectedTaxIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedTaxIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedTaxIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedTaxIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddTax} size="default" className="w-full sm:w-auto">
           <DollarSign className="mr-2 h-4 w-4" />
@@ -153,7 +189,7 @@ export default function TaxesPage() {
     );
 
     return () => setActions(null);
-  }, [selectedTaxIds.size, setActions, handleBatchDelete, handleAddTax]);
+  }, [selectedTaxIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddTax]);
 
   const confirmBatchDelete = async () => {
     if (selectedTaxIds.size === 0) return;

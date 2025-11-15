@@ -93,6 +93,31 @@ export default function SavingsPage() {
     }
   };
 
+  const handleBatchArchive = useCallback(async () => {
+    const idsToArchive = Array.from(selectedAccountIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateAccount({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive account ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} account(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} account(s)`);
+    }
+
+    setSelectedAccountIds(new Set());
+  }, [selectedAccountIds, updateAccount]);
+
   const handleDelete = async () => {
     if (deletingAccount) {
       try {
@@ -140,15 +165,26 @@ export default function SavingsPage() {
     setActions(
       <>
         {selectedAccountIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedAccountIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedAccountIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedAccountIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddAccount} size="default" className="w-full sm:w-auto">
           <Wallet className="mr-2 h-4 w-4" />
@@ -158,7 +194,7 @@ export default function SavingsPage() {
     );
 
     return () => setActions(null);
-  }, [selectedAccountIds.size, setActions, handleBatchDelete, handleAddAccount]);
+  }, [selectedAccountIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddAccount]);
 
   const confirmBatchDelete = async () => {
     if (selectedAccountIds.size === 0) return;

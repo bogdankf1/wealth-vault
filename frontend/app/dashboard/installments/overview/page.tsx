@@ -137,6 +137,31 @@ export default function InstallmentsPage() {
     }
   };
 
+  const handleBatchArchive = React.useCallback(async () => {
+    const idsToArchive = Array.from(selectedInstallmentIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateInstallment({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive installment ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} installment(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} installment(s)`);
+    }
+
+    setSelectedInstallmentIds(new Set());
+  }, [selectedInstallmentIds, updateInstallment]);
+
   const confirmDelete = async () => {
     if (!deletingInstallmentId) return;
 
@@ -307,10 +332,21 @@ export default function InstallmentsPage() {
     setActions(
       <>
         {selectedInstallmentIds.size > 0 && (
-          <Button onClick={handleBatchDelete} variant="destructive" size="default" className="w-full sm:w-auto">
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedInstallmentIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedInstallmentIds.size})</span>
+            </Button>
+            <Button onClick={handleBatchDelete} variant="destructive" size="default" className="w-full sm:w-auto">
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedInstallmentIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddInstallment} size="default" className="w-full sm:w-auto">
           <CreditCard className="mr-2 h-4 w-4" />
@@ -319,7 +355,7 @@ export default function InstallmentsPage() {
       </>
     );
     return () => setActions(null);
-  }, [selectedInstallmentIds.size, setActions, handleBatchDelete, handleAddInstallment]);
+  }, [selectedInstallmentIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddInstallment]);
 
   return (
     <div className="space-y-4 md:space-y-6">

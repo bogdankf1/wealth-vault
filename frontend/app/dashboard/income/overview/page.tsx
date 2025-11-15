@@ -145,6 +145,31 @@ export default function IncomePage() {
     }
   };
 
+  const handleBatchArchive = React.useCallback(async () => {
+    const idsToArchive = Array.from(selectedSourceIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateSource({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive source ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} source(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} source(s)`);
+    }
+
+    setSelectedSourceIds(new Set());
+  }, [selectedSourceIds, updateSource]);
+
   const confirmDelete = async () => {
     if (!deletingSourceId) return;
 
@@ -294,15 +319,26 @@ export default function IncomePage() {
     setActions(
       <>
         {selectedSourceIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedSourceIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedSourceIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedSourceIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddSource} size="default" className="w-full sm:w-auto">
           <TrendingUp className="mr-2 h-4 w-4" />
@@ -313,7 +349,7 @@ export default function IncomePage() {
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSourceIds.size, setActions, handleBatchDelete, handleAddSource]);
+  }, [selectedSourceIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSource]);
 
   return (
     <div className="space-y-4 md:space-y-6">

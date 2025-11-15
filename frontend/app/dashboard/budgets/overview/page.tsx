@@ -179,6 +179,31 @@ export default function BudgetsPage() {
     }
   };
 
+  const handleBatchArchive = useCallback(async () => {
+    const idsToArchive = Array.from(selectedBudgetIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToArchive) {
+      try {
+        await updateBudget({ id, data: { is_active: false } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to archive budget ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully archived ${successCount} budget(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to archive ${failCount} budget(s)`);
+    }
+
+    setSelectedBudgetIds(new Set());
+  }, [selectedBudgetIds, updateBudget]);
+
   const handleFormClose = () => {
     setShowCreateModal(false);
     setEditingBudgetId(null);
@@ -234,15 +259,26 @@ export default function BudgetsPage() {
     setActions(
       <>
         {selectedBudgetIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedBudgetIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchArchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              <span className="truncate">Archive Selected ({selectedBudgetIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedBudgetIds.size})</span>
+            </Button>
+          </>
         )}
         <Button onClick={handleAddBudget} size="default" className="w-full sm:w-auto">
           <Wallet className="mr-2 h-4 w-4" />
@@ -252,7 +288,7 @@ export default function BudgetsPage() {
     );
 
     return () => setActions(null);
-  }, [selectedBudgetIds.size, setActions, handleBatchDelete, handleAddBudget]);
+  }, [selectedBudgetIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddBudget]);
 
   // Prepare stats cards data from overview
   const statsCards: StatCard[] = overview?.stats
