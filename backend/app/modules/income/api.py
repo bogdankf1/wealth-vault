@@ -452,20 +452,6 @@ async def get_income_stats(
 
     Requires: income_tracking feature
     """
-    # Get income sources stats
-    sources_query = select(
-        func.count(IncomeSource.id).label("total"),
-        func.sum(
-            case((IncomeSource.is_active == True, 1), else_=0)
-        ).label("active")
-    ).where(
-        IncomeSource.user_id == current_user.id,
-        IncomeSource.deleted_at.is_(None)
-    )
-
-    sources_result = await db.execute(sources_query)
-    sources_stats = sources_result.one()
-
     # Get active sources for monthly/annual calculation
     # Apply date filtering if date range is provided
     if start_date and end_date:
@@ -508,6 +494,27 @@ async def get_income_stats(
 
     active_sources_result = await db.execute(active_sources_query)
     active_sources = active_sources_result.scalars().all()
+
+    # Calculate source counts based on whether date filtering is applied
+    if start_date and end_date:
+        # When date range is provided, count only active sources in range
+        total_sources_count = len(active_sources)
+        active_sources_count = len(active_sources)
+    else:
+        # When no date range, count all sources and active sources separately
+        all_sources_query = select(
+            func.count(IncomeSource.id).label("total"),
+            func.sum(
+                case((IncomeSource.is_active == True, 1), else_=0)
+            ).label("active")
+        ).where(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.deleted_at.is_(None)
+        )
+        all_sources_result = await db.execute(all_sources_query)
+        all_sources_stats = all_sources_result.one()
+        total_sources_count = all_sources_stats.total or 0
+        active_sources_count = all_sources_stats.active or 0
 
     # Get user's display currency first
     display_currency = await get_user_display_currency(db, current_user.id)
@@ -587,8 +594,8 @@ async def get_income_stats(
     last_month_stats = last_month_result.one()
 
     return IncomeStatsResponse(
-        total_sources=sources_stats.total or 0,
-        active_sources=sources_stats.active or 0,
+        total_sources=total_sources_count,
+        active_sources=active_sources_count,
         total_monthly_income=total_monthly,
         total_annual_income=total_annual,
         total_transactions=transactions_stats.total or 0,

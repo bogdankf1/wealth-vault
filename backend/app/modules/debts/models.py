@@ -25,6 +25,7 @@ class Debt(Base):
     currency = Column(String(3), nullable=False, default="USD")
 
     # Status tracking
+    is_active = Column(Boolean, nullable=False, default=True)
     is_paid = Column(Boolean, nullable=False, default=False)
     due_date = Column(DateTime, nullable=True)
     paid_date = Column(DateTime, nullable=True)

@@ -44,6 +44,7 @@ async def list_debts(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
     is_paid: Optional[bool] = Query(None, description="Filter by payment status"),
+    is_active: Optional[bool] = Query(None, description="Filter by active status"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -53,6 +54,7 @@ async def list_debts(
         db,
         current_user.id,
         is_paid=is_paid,
+        is_active=is_active,
         skip=skip,
         limit=page_size
     )

@@ -372,10 +372,12 @@ async def get_installment_stats(
         filter_start = start_date.replace(tzinfo=None)
         filter_end = end_date.replace(tzinfo=None)
 
+        # When date filtering is applied, only get active installments
         # Installments overlap if: first_payment_date <= period_end AND (end_date is NULL OR end_date >= period_start)
         query = select(Installment).where(
             and_(
                 Installment.user_id == user_id,
+                Installment.is_active == True,
                 Installment.first_payment_date <= filter_end,
                 or_(
                     Installment.end_date.is_(None),
@@ -389,8 +391,24 @@ async def get_installment_stats(
     result = await db.execute(query)
     installments = result.scalars().all()
 
-    total_installments = len(installments)
-    active_installments = sum(1 for i in installments if i.is_active)
+    # Calculate installment counts based on whether date filtering is applied
+    if start_date and end_date:
+        # When date range is provided, count only active installments in range
+        total_installments = len(installments)
+        active_installments = len(installments)
+    else:
+        # When no date range, count all installments and active installments separately
+        from sqlalchemy import case
+        all_installments_query = select(
+            func.count(Installment.id).label("total"),
+            func.sum(
+                case((Installment.is_active == True, 1), else_=0)
+            ).label("active")
+        ).where(Installment.user_id == user_id)
+        all_installments_result = await db.execute(all_installments_query)
+        all_installments_stats = all_installments_result.one()
+        total_installments = all_installments_stats.total or 0
+        active_installments = all_installments_stats.active or 0
 
     # Calculate totals
     total_debt = Decimal('0')

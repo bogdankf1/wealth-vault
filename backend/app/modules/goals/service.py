@@ -259,13 +259,16 @@ async def get_goal_stats(
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all goals for the user
-    query = select(Goal).where(Goal.user_id == user_id)
+    # Get only active goals for the user
+    query = select(Goal).where(
+        Goal.user_id == user_id,
+        Goal.is_active == True
+    )
     result = await db.execute(query)
     goals = result.scalars().all()
 
     total_goals = len(goals)
-    active_goals = sum(1 for g in goals if g.is_active)
+    active_goals = len(goals)
     completed_goals = sum(1 for g in goals if g.is_completed)
 
     # Calculate totals

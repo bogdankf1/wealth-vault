@@ -111,6 +111,7 @@ async def get_debts(
     db: AsyncSession,
     user_id: UUID,
     is_paid: Optional[bool] = None,
+    is_active: Optional[bool] = None,
     skip: int = 0,
     limit: int = 100
 ) -> Tuple[list[Debt], int]:
@@ -122,6 +123,9 @@ async def get_debts(
 
     if is_paid is not None:
         conditions.append(Debt.is_paid == is_paid)
+
+    if is_active is not None:
+        conditions.append(Debt.is_active == is_active)
 
     # Count query
     count_query = select(func.count(Debt.id)).where(and_(*conditions))
@@ -193,11 +197,12 @@ async def get_debt_stats(
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all non-deleted debts
+    # Get only active debts
     query = select(Debt).where(
         and_(
             Debt.user_id == user_id,
-            Debt.deleted_at.is_(None)
+            Debt.deleted_at.is_(None),
+            Debt.is_active == True
         )
     )
     result = await db.execute(query)

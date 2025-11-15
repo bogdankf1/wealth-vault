@@ -207,10 +207,12 @@ async def get_subscription_stats(
         filter_start = start_date.replace(tzinfo=None)
         filter_end = end_date.replace(tzinfo=None)
 
+        # When date filtering is applied, only get active subscriptions
         # Subscriptions overlap if: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
         query = select(Subscription).where(
             and_(
                 Subscription.user_id == user_id,
+                Subscription.is_active == True,
                 Subscription.start_date <= filter_end,
                 or_(
                     Subscription.end_date.is_(None),
@@ -224,8 +226,24 @@ async def get_subscription_stats(
     result = await db.execute(query)
     subscriptions = result.scalars().all()
 
-    total_subscriptions = len(subscriptions)
-    active_subscriptions = sum(1 for sub in subscriptions if sub.is_active)
+    # Calculate subscription counts based on whether date filtering is applied
+    if start_date and end_date:
+        # When date range is provided, count only active subscriptions in range
+        total_subscriptions = len(subscriptions)
+        active_subscriptions = len(subscriptions)
+    else:
+        # When no date range, count all subscriptions and active subscriptions separately
+        from sqlalchemy import case
+        all_subscriptions_query = select(
+            func.count(Subscription.id).label("total"),
+            func.sum(
+                case((Subscription.is_active == True, 1), else_=0)
+            ).label("active")
+        ).where(Subscription.user_id == user_id)
+        all_subscriptions_result = await db.execute(all_subscriptions_query)
+        all_subscriptions_stats = all_subscriptions_result.one()
+        total_subscriptions = all_subscriptions_stats.total or 0
+        active_subscriptions = all_subscriptions_stats.active or 0
 
     # Calculate costs normalized to monthly and annual
     monthly_cost = Decimal(0)

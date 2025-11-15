@@ -19,6 +19,7 @@ class DebtBase(BaseModel):
     amount: Decimal = Field(..., gt=0, description="Total debt amount")
     amount_paid: Decimal = Field(default=Decimal('0'), ge=0, description="Amount paid so far")
     currency: str = Field(default="USD", min_length=3, max_length=3, description="Currency code")
+    is_active: bool = Field(default=True, description="Whether debt is active (not archived)")
     is_paid: bool = Field(default=False, description="Whether debt is paid")
     due_date: Optional[datetime] = Field(None, description="Due date")
     paid_date: Optional[datetime] = Field(None, description="Date when debt was paid")
@@ -40,6 +41,7 @@ class DebtUpdate(BaseModel):
     amount: Optional[Decimal] = Field(None, gt=0)
     amount_paid: Optional[Decimal] = Field(None, ge=0)
     currency: Optional[str] = Field(None, min_length=3, max_length=3)
+    is_active: Optional[bool] = None
     is_paid: Optional[bool] = None
     due_date: Optional[datetime] = None
     paid_date: Optional[datetime] = None

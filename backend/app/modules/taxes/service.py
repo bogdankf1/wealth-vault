@@ -224,18 +224,19 @@ async def get_tax_stats(
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all non-deleted taxes
+    # Get only active taxes
     query = select(Tax).where(
         and_(
             Tax.user_id == user_id,
-            Tax.deleted_at.is_(None)
+            Tax.deleted_at.is_(None),
+            Tax.is_active == True
         )
     )
     result = await db.execute(query)
     taxes = list(result.scalars().all())
 
     total_taxes = len(taxes)
-    active_taxes = 0
+    active_taxes = len(taxes)
     total_tax_amount = Decimal("0")
     total_fixed_taxes = Decimal("0")
     total_percentage_taxes = Decimal("0")
@@ -244,29 +245,26 @@ async def get_tax_stats(
     total_income = await get_total_monthly_income(db, user_id)
 
     for tax in taxes:
-        if tax.is_active:
-            active_taxes += 1
+        if tax.tax_type == "fixed" and tax.fixed_amount:
+            # Convert to display currency
+            amount_in_display = tax.fixed_amount
+            if tax.currency != display_currency:
+                converted = await currency_service.convert_amount(
+                    tax.fixed_amount,
+                    tax.currency,
+                    display_currency
+                )
+                if converted is not None:
+                    amount_in_display = converted
 
-            if tax.tax_type == "fixed" and tax.fixed_amount:
-                # Convert to display currency
-                amount_in_display = tax.fixed_amount
-                if tax.currency != display_currency:
-                    converted = await currency_service.convert_amount(
-                        tax.fixed_amount,
-                        tax.currency,
-                        display_currency
-                    )
-                    if converted is not None:
-                        amount_in_display = converted
+            total_fixed_taxes += amount_in_display
+            total_tax_amount += amount_in_display
 
-                total_fixed_taxes += amount_in_display
-                total_tax_amount += amount_in_display
-
-            elif tax.tax_type == "percentage" and tax.percentage:
-                # Calculate percentage of income
-                tax_amount = (total_income * tax.percentage) / Decimal("100")
-                total_percentage_taxes += tax_amount
-                total_tax_amount += tax_amount
+        elif tax.tax_type == "percentage" and tax.percentage:
+            # Calculate percentage of income
+            tax_amount = (total_income * tax.percentage) / Decimal("100")
+            total_percentage_taxes += tax_amount
+            total_tax_amount += tax_amount
 
     return TaxStats(
         total_taxes=total_taxes,

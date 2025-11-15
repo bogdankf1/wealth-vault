@@ -272,12 +272,13 @@ async def get_budget_overview(
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get active budgets, optionally filtered by date range
+    # Get budgets, optionally filtered by date range
     if start_date and end_date:
         # Remove timezone info for comparison
         filter_start = start_date.replace(tzinfo=None)
         filter_end = end_date.replace(tzinfo=None)
 
+        # When date filtering is applied, only get active budgets
         # Budgets overlap if: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
         query = select(Budget).where(
             and_(
@@ -294,6 +295,7 @@ async def get_budget_overview(
         result = await db.execute(query)
         budgets = list(result.scalars().all())
     else:
+        # When no date range, get only active budgets
         budgets = await get_budgets(db, user_id, is_active=True)
 
     if not budgets:
@@ -393,9 +395,14 @@ async def get_budget_overview(
     total_remaining = total_budgeted - total_spent
     overall_percentage_used = float((total_spent / total_budgeted) * 100) if total_budgeted > 0 else 0.0
 
+    # Calculate budget counts
+    # Since we now only fetch active budgets, total and active counts are the same
+    total_budgets_count = len(budgets)
+    active_budgets_count = len(budgets)
+
     stats = BudgetStats(
-        total_budgets=len(budgets),
-        active_budgets=len([b for b in budgets if b.is_active]),
+        total_budgets=total_budgets_count,
+        active_budgets=active_budgets_count,
         total_budgeted=total_budgeted,
         total_spent=total_spent,
         total_remaining=total_remaining,

@@ -253,13 +253,16 @@ async def get_savings_stats(
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all accounts
-    query = select(SavingsAccount).where(SavingsAccount.user_id == user_id)
+    # Get only active accounts
+    query = select(SavingsAccount).where(
+        SavingsAccount.user_id == user_id,
+        SavingsAccount.is_active == True
+    )
     result = await db.execute(query)
     accounts = result.scalars().all()
 
     total_accounts = len(accounts)
-    active_accounts = sum(1 for acc in accounts if acc.is_active)
+    active_accounts = len(accounts)
 
     # Calculate totals in display currency
     total_balance = Decimal('0')
@@ -267,27 +270,26 @@ async def get_savings_stats(
     balance_by_type = {}
 
     for account in accounts:
-        if account.is_active:
-            # Track original currency balances
-            currency = account.currency
-            balance_by_currency[currency] = balance_by_currency.get(currency, Decimal(0)) + account.current_balance
+        # Track original currency balances
+        currency = account.currency
+        balance_by_currency[currency] = balance_by_currency.get(currency, Decimal(0)) + account.current_balance
 
-            # Convert to display currency for totals
-            balance_in_display = account.current_balance
-            if account.currency != display_currency:
-                converted = await currency_service.convert_amount(
-                    account.current_balance,
-                    account.currency,
-                    display_currency
-                )
-                if converted is not None:
-                    balance_in_display = converted
+        # Convert to display currency for totals
+        balance_in_display = account.current_balance
+        if account.currency != display_currency:
+            converted = await currency_service.convert_amount(
+                account.current_balance,
+                account.currency,
+                display_currency
+            )
+            if converted is not None:
+                balance_in_display = converted
 
-            total_balance += balance_in_display
+        total_balance += balance_in_display
 
-            # Balance by account type in display currency
-            acc_type = account.account_type
-            balance_by_type[acc_type] = balance_by_type.get(acc_type, Decimal(0)) + balance_in_display
+        # Balance by account type in display currency
+        acc_type = account.account_type
+        balance_by_type[acc_type] = balance_by_type.get(acc_type, Decimal(0)) + balance_in_display
 
     return SavingsStats(
         total_accounts=total_accounts,
