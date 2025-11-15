@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/table';
 import { useListBudgetsQuery, useGetBudgetOverviewQuery, useUpdateBudgetMutation, useDeleteBudgetMutation, useBatchDeleteBudgetsMutation } from '@/lib/api/budgetsApi';
 import { BudgetForm } from '@/components/budgets/budget-form';
-import { BudgetProgressChart } from '@/components/budgets/budget-progress-chart';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -401,120 +400,6 @@ export default function BudgetsPage() {
           )}
         </div>
       ) : null}
-
-      {/* Alerts Section */}
-      {overview && (
-        <>
-          {overview.alerts.length > 0 && (
-            <Card className="border-amber-200 dark:border-amber-800">
-              <CardHeader>
-                <CardTitle className="flex items-center text-amber-600 dark:text-amber-400">
-                  <AlertCircle className="mr-2 h-5 w-5" />
-                  Budget Alerts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {overview.alerts.map((alert, index) => (
-                    <div
-                      key={index}
-                      className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-sm"
-                    >
-                      {alert}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Budget Progress Chart */}
-          {overview.by_category.length > 0 && (
-            <BudgetProgressChart data={overview.by_category} currency={overview.stats.currency} />
-          )}
-
-          {/* Budget by Category */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget by Category</CardTitle>
-              <CardDescription>Your spending by category</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {overview.by_category.map((category) => (
-                  <div key={category.category} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{category.category}</span>
-                        {category.is_overspent && (
-                          <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
-                            Overspent
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        <CurrencyDisplay
-                          amount={category.spent}
-                          currency={overview.stats.currency}
-                          showSymbol={false}
-                          showCode={false}
-                        /> / <CurrencyDisplay
-                          amount={category.budgeted}
-                          currency={overview.stats.currency}
-                          showSymbol={false}
-                          showCode={true}
-                        />
-                      </span>
-                    </div>
-                    <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          category.is_overspent
-                            ? 'bg-red-500'
-                            : Number(category.percentage_used) >= 80
-                            ? 'bg-amber-500'
-                            : 'bg-green-500'
-                        }`}
-                        style={{ width: `${Math.min(Number(category.percentage_used), 100)}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {Number(category.percentage_used).toFixed(1)}% used
-                      </span>
-                      <span className={Number(category.remaining) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-                        {Number(category.remaining) >= 0 ? (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3" />
-                            <CurrencyDisplay
-                              amount={category.remaining}
-                              currency={overview.stats.currency}
-                              showSymbol={false}
-                              showCode={false}
-                            />
-                            <span>left</span>
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1">
-                            <TrendingDown className="h-3 w-3" />
-                            <CurrencyDisplay
-                              amount={Math.abs(Number(category.remaining))}
-                              currency={overview.stats.currency}
-                              showSymbol={false}
-                              showCode={false}
-                            />
-                            <span>over</span>
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
 
       {/* Search, Filters, and View Toggle */}
       {(budgets && budgets.length > 0) && (
