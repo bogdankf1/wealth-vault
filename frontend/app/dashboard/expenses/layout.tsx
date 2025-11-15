@@ -5,7 +5,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, History, Upload } from 'lucide-react';
+import { LayoutGrid, History, Upload, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import type { ModuleTab } from '@/types/module-layout';
@@ -15,6 +15,7 @@ const EXPENSES_TABS: ModuleTab[] = [
   { value: 'overview', label: 'Overview', icon: LayoutGrid, href: '/dashboard/expenses/overview' },
   { value: 'history', label: 'History', icon: History, href: '/dashboard/expenses/history' },
   { value: 'import', label: 'Import', icon: Upload, href: '/dashboard/expenses/import' },
+  { value: 'archive', label: 'Archive', icon: Archive, href: '/dashboard/expenses/archive' },
 ];
 
 export default function ExpensesLayout({ children }: { children: React.ReactNode }) {

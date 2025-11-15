@@ -7,7 +7,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, History } from 'lucide-react';
+import { LayoutGrid, History, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { SubscriptionsActionsContext } from './context';
@@ -24,6 +24,12 @@ const SUBSCRIPTIONS_TABS: ModuleTab[] = [
     label: 'History',
     icon: History,
     href: '/dashboard/subscriptions/history',
+  },
+  {
+    value: 'archive',
+    label: 'Archive',
+    icon: Archive,
+    href: '/dashboard/subscriptions/archive',
   },
 ];
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useListBudgetsQuery, useGetBudgetOverviewQuery, useDeleteBudgetMutation, useBatchDeleteBudgetsMutation } from '@/lib/api/budgetsApi';
+import { useListBudgetsQuery, useGetBudgetOverviewQuery, useUpdateBudgetMutation, useDeleteBudgetMutation, useBatchDeleteBudgetsMutation } from '@/lib/api/budgetsApi';
 import { BudgetForm } from '@/components/budgets/budget-form';
 import { BudgetProgressChart } from '@/components/budgets/budget-progress-chart';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
@@ -53,7 +53,7 @@ export default function BudgetsPage() {
   // Get context for setting actions
   const { setActions } = React.useContext(BudgetsActionsContext);
 
-  const { data: budgets, isLoading: budgetsLoading } = useListBudgetsQuery();
+  const { data: budgets, isLoading: budgetsLoading } = useListBudgetsQuery({ is_active: true });
 
   // Calculate date range from selectedMonth for overview stats
   const overviewParams = useMemo(() => {
@@ -70,6 +70,7 @@ export default function BudgetsPage() {
   }, [selectedMonth]);
 
   const { data: overview, isLoading: overviewLoading } = useGetBudgetOverviewQuery(overviewParams);
+  const [updateBudget] = useUpdateBudgetMutation();
   const [deleteBudget, { isLoading: isDeleting }] = useDeleteBudgetMutation();
   const [batchDeleteBudgets, { isLoading: isBatchDeleting }] = useBatchDeleteBudgetsMutation();
 
@@ -160,6 +161,21 @@ export default function BudgetsPage() {
     } catch (error) {
       console.error('Failed to delete budget:', error);
       toast.error('Failed to delete budget');
+    }
+  };
+
+  const handleArchiveBudget = async (id: string) => {
+    try {
+      await updateBudget({ id, data: { is_active: false } }).unwrap();
+      toast.success('Budget archived successfully');
+      setSelectedBudgetIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to archive budget:', error);
+      toast.error('Failed to archive budget');
     }
   };
 
@@ -626,6 +642,14 @@ export default function BudgetsPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleArchiveBudget(budget.id)}
+                      >
+                        <Archive className="mr-1 h-3 w-3" />
+                        Archive
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleDeleteBudget(budget.id)}
                         disabled={isDeleting}
                       >
@@ -660,7 +684,7 @@ export default function BudgetsPage() {
                     <TableHead className="hidden xl:table-cell">Date Range</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
                     <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                    <TableHead className="text-right w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -735,6 +759,14 @@ export default function BudgetsPage() {
                             className="h-8 w-8 p-0"
                           >
                             <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleArchiveBudget(budget.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Archive className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"

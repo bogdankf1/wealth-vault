@@ -5,11 +5,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TrendingUp, Calendar, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import { TrendingUp, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListIncomeSourcesQuery,
   useGetIncomeStatsQuery,
+  useUpdateIncomeSourceMutation,
   useDeleteIncomeSourceMutation,
   useBatchDeleteIncomeSourcesMutation,
 } from '@/lib/api/incomeApi';
@@ -79,7 +80,7 @@ export default function IncomePage() {
     isLoading: isLoadingSources,
     error: sourcesError,
     refetch: refetchSources,
-  } = useListIncomeSourcesQuery({});
+  } = useListIncomeSourcesQuery({ is_active: true });
 
   // Calculate date range from selectedMonth
   const statsParams = React.useMemo(() => {
@@ -101,6 +102,7 @@ export default function IncomePage() {
     error: statsError,
   } = useGetIncomeStatsQuery(statsParams);
 
+  const [updateSource] = useUpdateIncomeSourceMutation();
   const [deleteSource, { isLoading: isDeleting }] = useDeleteIncomeSourceMutation();
   const [batchDeleteIncomeSources, { isLoading: isBatchDeleting }] = useBatchDeleteIncomeSourcesMutation();
 
@@ -126,6 +128,21 @@ export default function IncomePage() {
   const handleDeleteSource = (id: string) => {
     setDeletingSourceId(id);
     setDeleteDialogOpen(true);
+  };
+
+  const handleArchiveSource = async (id: string) => {
+    try {
+      await updateSource({ id, data: { is_active: false } }).unwrap();
+      toast.success('Income source archived successfully');
+      setSelectedSourceIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to archive income source:', error);
+      toast.error('Failed to archive income source');
+    }
   };
 
   const confirmDelete = async () => {
@@ -577,6 +594,14 @@ export default function IncomePage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleArchiveSource(source.id)}
+                      >
+                        <Archive className="mr-1 h-3 w-3" />
+                        Archive
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleDeleteSource(source.id)}
                         disabled={isDeleting}
                       >
@@ -611,7 +636,7 @@ export default function IncomePage() {
                     <TableHead className="hidden xl:table-cell text-right">Monthly Equiv.</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
                     <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                    <TableHead className="text-right w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -694,6 +719,14 @@ export default function IncomePage() {
                             className="h-8 w-8 p-0"
                           >
                             <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleArchiveSource(source.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Archive className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Wallet, TrendingUp, PiggyBank, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { Wallet, TrendingUp, PiggyBank, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { StatsCards } from '@/components/ui/stats-cards';
 import { SavingsActionsContext } from '../context';
@@ -27,6 +27,7 @@ import {
 import {
   useListAccountsQuery,
   useGetSavingsStatsQuery,
+  useUpdateAccountMutation,
   useDeleteAccountMutation,
   useBatchDeleteSavingsAccountsMutation,
   type SavingsAccount,
@@ -61,8 +62,9 @@ export default function SavingsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
-  const { data: accountsData, isLoading, error, refetch } = useListAccountsQuery();
+  const { data: accountsData, isLoading, error, refetch } = useListAccountsQuery({ is_active: true });
   const { data: stats } = useGetSavingsStatsQuery();
+  const [updateAccount] = useUpdateAccountMutation();
   const [deleteAccount] = useDeleteAccountMutation();
   const [batchDeleteAccounts, { isLoading: isBatchDeleting }] = useBatchDeleteSavingsAccountsMutation();
 
@@ -74,6 +76,21 @@ export default function SavingsPage() {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingAccountId(null);
+  };
+
+  const handleArchive = async (accountId: string) => {
+    try {
+      await updateAccount({ id: accountId, data: { is_active: false } }).unwrap();
+      toast.success('Savings account archived successfully');
+      setSelectedAccountIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(accountId);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to archive account:', error);
+      toast.error('Failed to archive savings account');
+    }
   };
 
   const handleDelete = async () => {
@@ -437,6 +454,14 @@ export default function SavingsPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleArchive(account.id)}
+                    >
+                      <Archive className="mr-1 h-3 w-3" />
+                      Archive
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setDeletingAccount(account)}
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
@@ -469,7 +494,7 @@ export default function SavingsPage() {
                   <TableHead className="hidden sm:table-cell">Account #</TableHead>
                   <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
                   <TableHead className="hidden sm:table-cell">Status</TableHead>
-                  <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  <TableHead className="text-right w-[180px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -540,6 +565,14 @@ export default function SavingsPage() {
                           className="h-8 w-8 p-0"
                         >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleArchive(account.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Archive className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"

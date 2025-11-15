@@ -1,15 +1,14 @@
 /**
- * Subscriptions Tracking Page
- * Displays user's subscriptions with next renewal dates
+ * Subscription Archive Page
+ * Displays archived subscriptions with unarchive functionality
  */
 'use client';
 
-import React, { useState } from 'react';
-import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
-import { CurrencyDisplay } from '@/components/currency/currency-display';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   useListSubscriptionsQuery,
-  useGetSubscriptionStatsQuery,
   useUpdateSubscriptionMutation,
   useDeleteSubscriptionMutation,
   useBatchDeleteSubscriptionsMutation,
@@ -34,18 +33,14 @@ import {
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
-import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
-import { StatsCards, StatCard } from '@/components/ui/stats-cards';
-import { SubscriptionsActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
-import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { CalendarView } from '@/components/ui/calendar-view';
-import { toast } from 'sonner';
+import { SubscriptionsActionsContext } from '../context';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   monthly: 'Monthly',
@@ -54,87 +49,109 @@ const FREQUENCY_LABELS: Record<string, string> = {
   annually: 'Annually',
 };
 
-export default function SubscriptionsPage() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingSubscriptionId, setEditingSubscriptionId] = useState<string | null>(null);
+export default function SubscriptionsArchivePage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingSubscriptionId, setDeletingSubscriptionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  // Default to current month in YYYY-MM format
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedSubscriptionIds, setSelectedSubscriptionIds] = useState<Set<string>>(new Set());
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
-  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { viewMode, setViewMode } = useViewPreferences();
 
   // Context to set action buttons in layout
   const { setActions } = React.useContext(SubscriptionsActionsContext);
 
+  // Fetch only archived subscriptions (is_active: false)
   const {
     data: subscriptionsData,
     isLoading: isLoadingSubscriptions,
     error: subscriptionsError,
-    refetch: refetchSubscriptions,
-  } = useListSubscriptionsQuery({ is_active: true });
-
-  // Calculate date range from selectedMonth
-  const statsParams = React.useMemo(() => {
-    if (!selectedMonth) return undefined;
-
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
-
-    return {
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-    };
-  }, [selectedMonth]);
-
-  const {
-    data: stats,
-    isLoading: isLoadingStats,
-    error: statsError,
-  } = useGetSubscriptionStatsQuery(statsParams);
+  } = useListSubscriptionsQuery({ is_active: false });
 
   const [updateSubscription] = useUpdateSubscriptionMutation();
   const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
   const [batchDeleteSubscriptions, { isLoading: isBatchDeleting }] = useBatchDeleteSubscriptionsMutation();
 
-  const handleAddSubscription = React.useCallback(() => {
-    setEditingSubscriptionId(null);
-    setIsFormOpen(true);
-  }, []);
+  const subscriptions = useMemo(() => subscriptionsData?.items || [], [subscriptionsData?.items]);
 
-  const handleEditSubscription = (id: string) => {
-    setEditingSubscriptionId(id);
-    setIsFormOpen(true);
-  };
+  // Get unique categories
+  const uniqueCategories = React.useMemo(() => {
+    const categories = subscriptions
+      .map((subscription) => subscription.category)
+      .filter((cat): cat is string => !!cat);
+    return Array.from(new Set(categories)).sort();
+  }, [subscriptions]);
 
-  const handleDeleteSubscription = (id: string) => {
-    setDeletingSubscriptionId(id);
-    setDeleteDialogOpen(true);
-  };
+  // Filter and sort subscriptions
+  const filteredSubscriptions = React.useMemo(() => {
+    const filtered = filterBySearchAndCategory(
+      subscriptions,
+      searchQuery,
+      selectedCategory,
+      (subscription) => subscription.name,
+      (subscription) => subscription.category || undefined
+    );
 
-  const handleArchiveSubscription = async (id: string) => {
+    // Apply sorting
+    const sorted = sortItems(
+      filtered,
+      sortField,
+      sortDirection,
+      (subscription) => subscription.name,
+      (subscription) => subscription.display_amount || subscription.amount,
+      (subscription) => subscription.start_date || subscription.created_at
+    );
+
+    return sorted || [];
+  }, [subscriptions, searchQuery, selectedCategory, sortField, sortDirection]);
+
+  const handleUnarchive = async (id: string) => {
     try {
-      await updateSubscription({ id, data: { is_active: false } }).unwrap();
-      toast.success('Subscription archived successfully');
+      await updateSubscription({ id, data: { is_active: true } }).unwrap();
+      toast.success('Subscription unarchived successfully');
       setSelectedSubscriptionIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive subscription:', error);
-      toast.error('Failed to archive subscription');
+      console.error('Failed to unarchive subscription:', error);
+      toast.error('Failed to unarchive subscription');
     }
+  };
+
+  const handleBatchUnarchive = useCallback(async () => {
+    const idsToUnarchive = Array.from(selectedSubscriptionIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToUnarchive) {
+      try {
+        await updateSubscription({ id, data: { is_active: true } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to unarchive subscription ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully unarchived ${successCount} subscription(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to unarchive ${failCount} subscription(s)`);
+    }
+
+    setSelectedSubscriptionIds(new Set());
+  }, [selectedSubscriptionIds, updateSubscription]);
+
+  const handleDelete = (id: string) => {
+    setDeletingSubscriptionId(id);
+    setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -142,18 +159,18 @@ export default function SubscriptionsPage() {
 
     try {
       await deleteSubscription(deletingSubscriptionId).unwrap();
-      toast.success('Subscription deleted successfully');
+      toast.success('Subscription deleted permanently');
       setDeleteDialogOpen(false);
       setDeletingSubscriptionId(null);
+      setSelectedSubscriptionIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(deletingSubscriptionId);
+        return newSet;
+      });
     } catch (error) {
       console.error('Failed to delete subscription:', error);
       toast.error('Failed to delete subscription');
     }
-  };
-
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    setEditingSubscriptionId(null);
   };
 
   const handleToggleSelect = (subscriptionId: string) => {
@@ -169,17 +186,16 @@ export default function SubscriptionsPage() {
   };
 
   const handleSelectAll = () => {
-    if (selectedSubscriptionIds.size === filteredSubscriptions.length) {
+    if (selectedSubscriptionIds.size === filteredSubscriptions.length && filteredSubscriptions.length > 0) {
       setSelectedSubscriptionIds(new Set());
     } else {
-      setSelectedSubscriptionIds(new Set(filteredSubscriptions.map((s) => s.id)));
+      setSelectedSubscriptionIds(new Set(filteredSubscriptions.map((subscription) => subscription.id)));
     }
   };
 
-  const handleBatchDelete = React.useCallback(() => {
-    if (selectedSubscriptionIds.size === 0) return;
+  const handleBatchDelete = () => {
     setBatchDeleteDialogOpen(true);
-  }, [selectedSubscriptionIds.size]);
+  };
 
   const confirmBatchDelete = async () => {
     if (selectedSubscriptionIds.size === 0) return;
@@ -192,95 +208,16 @@ export default function SubscriptionsPage() {
       if (result.failed_ids.length > 0) {
         toast.error(`Failed to delete ${result.failed_ids.length} subscription(s)`);
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} subscription(s)`);
+        toast.success(`Successfully deleted ${result.deleted_count} subscription(s) permanently`);
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedSubscriptionIds(new Set());
     } catch (error) {
-      console.error('Failed to batch delete subscriptions:', error);
+      console.error('Failed to delete subscriptions:', error);
       toast.error('Failed to delete subscriptions');
     }
   };
-
-
-  // Get unique categories from subscriptions
-  const uniqueCategories = React.useMemo(() => {
-    if (!subscriptionsData?.items) return [];
-    const categories = subscriptionsData.items
-      .map((subscription) => subscription.category)
-      .filter((cat): cat is string => !!cat);
-    return Array.from(new Set(categories)).sort();
-  }, [subscriptionsData?.items]);
-
-  // Apply month filter first - filter by start_date and end_date range
-  const monthFilteredSubscriptions = filterByMonth(
-    subscriptionsData?.items,
-    selectedMonth,
-    (subscription) => subscription.frequency, // All subscriptions are recurring
-    () => null, // No one-time date field
-    (subscription) => subscription.start_date,
-    (subscription) => subscription.end_date
-  );
-
-  // Apply search and category filters
-  const searchFilteredSubscriptions = filterBySearchAndCategory(
-    monthFilteredSubscriptions,
-    searchQuery,
-    selectedCategory,
-    (subscription) => subscription.name,
-    (subscription) => subscription.category
-  );
-
-  // Apply sorting (using display_amount for currency-aware sorting)
-  const filteredSubscriptions = sortItems(
-    searchFilteredSubscriptions,
-    sortField,
-    sortDirection,
-    (subscription) => subscription.name,
-    (subscription) => subscription.display_amount || subscription.amount,
-    (subscription) => subscription.start_date
-  ) || [];
-
-  // Prepare stats cards data
-  const statsCards: StatCard[] = stats
-    ? [
-        {
-          title: 'Total Subscriptions',
-          value: stats.total_subscriptions,
-          description: selectedMonth
-            ? `${stats.active_subscriptions} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${stats.active_subscriptions} active`,
-          icon: RefreshCw,
-        },
-        {
-          title: selectedMonth ? 'Period Cost' : 'Monthly Cost',
-          value: (
-            <CurrencyDisplay
-              amount={stats.monthly_cost}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: `From ${stats.active_subscriptions} active ${stats.active_subscriptions === 1 ? 'subscription' : 'subscriptions'}`,
-          icon: TrendingDown,
-        },
-        {
-          title: 'Annual Cost',
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_annual_cost}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: selectedMonth ? 'Based on period cost' : 'Projected yearly cost',
-          icon: Calendar,
-        },
-      ]
-    : [];
 
   // Get renewal badge variant based on urgency
   const getRenewalBadgeVariant = (urgency: string): 'default' | 'secondary' | 'destructive' => {
@@ -299,95 +236,49 @@ export default function SubscriptionsPage() {
     setActions(
       <>
         {selectedSubscriptionIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedSubscriptionIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchUnarchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <ArchiveRestore className="mr-2 h-4 w-4" />
+              <span className="truncate">Unarchive Selected ({selectedSubscriptionIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedSubscriptionIds.size})</span>
+            </Button>
+          </>
         )}
-        <Button onClick={handleAddSubscription} size="default" className="w-full sm:w-auto">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Subscription</span>
-        </Button>
       </>
     );
 
-    // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSubscriptionIds.size, setActions, handleBatchDelete, handleAddSubscription]);
+  }, [selectedSubscriptionIds.size, setActions, handleBatchUnarchive]);
+
+  const isLoading = isLoadingSubscriptions;
+  const hasError = subscriptionsError;
+
+  if (hasError) {
+    return (
+      <ApiErrorState
+        error={subscriptionsError}
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
-
-      {/* Statistics Cards */}
-      {isLoadingStats ? (
-        <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="space-y-2">
-                <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      ) : statsError ? (
-        <ApiErrorState error={statsError} />
-      ) : stats ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-end">
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
-              <Button
-                variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('cards')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('compact')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Rows3 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {statsViewMode === 'cards' ? (
-            <StatsCards stats={statsCards} />
-          ) : (
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <div className="divide-y">
-                {statsCards.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium truncate">{stat.title}</span>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-lg font-bold">{stat.value}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {/* Search, Filters, and View Toggle */}
-      {(subscriptionsData?.items && subscriptionsData.items.length > 0) && (
+      {/* Search and Filters */}
+      {(subscriptions.length > 0 || searchQuery || selectedCategory) && (
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
           <div className="flex-1">
             <SearchFilter
@@ -396,15 +287,11 @@ export default function SubscriptionsPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search subscriptions..."
+              searchPlaceholder="Search archived subscriptions..."
               categoryPlaceholder="All Categories"
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <MonthFilter
-              selectedMonth={selectedMonth}
-              onMonthChange={setSelectedMonth}
-            />
             <SortFilter
               sortField={sortField}
               sortDirection={sortDirection}
@@ -417,7 +304,6 @@ export default function SubscriptionsPage() {
                 size="sm"
                 onClick={() => setViewMode('card')}
                 className="h-[32px] w-[32px] p-0"
-                title="Card View"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -426,82 +312,30 @@ export default function SubscriptionsPage() {
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="h-[32px] w-[32px] p-0"
-                title="List View"
               >
                 <List className="h-4 w-4" />
               </Button>
-              {selectedMonth && (
-                <Button
-                  variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('calendar')}
-                  className="h-[32px] w-[32px] p-0"
-                  title="Calendar View"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                </Button>
-              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Subscriptions List */}
+      {/* Subscription List */}
       <div>
-        {isLoadingSubscriptions ? (
-          <LoadingCards count={3} />
-        ) : subscriptionsError ? (
-          <ApiErrorState error={subscriptionsError} onRetry={refetchSubscriptions} />
-        ) : !subscriptionsData?.items || subscriptionsData.items.length === 0 ? (
+        {isLoading ? (
+          <LoadingCards count={6} />
+        ) : !subscriptions || subscriptions.length === 0 ? (
           <EmptyState
-            icon={RefreshCw}
-            title="No subscriptions yet"
-            description="Start tracking your subscriptions by adding your first one."
-            actionLabel="Add Subscription"
-            onAction={handleAddSubscription}
-          />
-        ) : viewMode === 'calendar' && selectedMonth ? (
-          <CalendarView
-            items={filteredSubscriptions.map((subscription) => ({
-              id: subscription.id,
-              name: subscription.name,
-              amount: subscription.amount,
-              currency: subscription.currency,
-              display_amount: subscription.display_amount,
-              display_currency: subscription.display_currency,
-              category: subscription.category,
-              date: null,
-              start_date: subscription.start_date,
-              frequency: subscription.frequency,
-              is_active: subscription.is_active,
-            }))}
-            selectedMonth={selectedMonth}
-            onMonthChange={setSelectedMonth}
-            onItemClick={handleEditSubscription}
-            selectedItemIds={selectedSubscriptionIds}
-            onToggleSelect={handleToggleSelect}
+            icon={Archive}
+            title="No archived subscriptions"
+            description="Archived subscriptions will appear here"
           />
         ) : !filteredSubscriptions || filteredSubscriptions.length === 0 ? (
-          selectedMonth ? (
-            <EmptyState
-              icon={RefreshCw}
-              title="No subscriptions for this month"
-              description={`No subscriptions active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
-              actionLabel="Clear Filter"
-              onAction={() => setSelectedMonth(null)}
-            />
-          ) : (
-            <EmptyState
-              icon={RefreshCw}
-              title="No subscriptions found"
-              description="Try adjusting your search or filter criteria."
-              actionLabel="Clear Filters"
-              onAction={() => {
-                setSearchQuery('');
-                setSelectedCategory(null);
-              }}
-            />
-          )
+          <EmptyState
+            icon={Archive}
+            title="No archived subscriptions found"
+            description="Try adjusting your search or filters"
+          />
         ) : viewMode === 'card' ? (
           <>
             {filteredSubscriptions.length > 0 && (
@@ -528,7 +362,7 @@ export default function SubscriptionsPage() {
               const renewalMessage = getRenewalMessage(daysUntilRenewal, isEnded);
 
               return (
-                <Card key={subscription.id} className="relative">
+                <Card key={subscription.id} className="relative opacity-75">
                   <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
@@ -541,12 +375,12 @@ export default function SubscriptionsPage() {
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-base md:text-lg truncate">{subscription.name}</CardTitle>
                           <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                            {subscription.description || <>&nbsp;</>}
+                            {subscription.description || ' '}
                           </CardDescription>
                         </div>
                       </div>
-                      <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                        {subscription.is_active ? 'Active' : 'Inactive'}
+                      <Badge variant="secondary" className="text-xs flex-shrink-0">
+                        Archived
                       </Badge>
                     </div>
                   </CardHeader>
@@ -563,15 +397,22 @@ export default function SubscriptionsPage() {
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {FREQUENCY_LABELS[subscription.frequency] || subscription.frequency}
-                          {subscription.display_currency && subscription.display_currency !== subscription.currency && (
-                            <span className="ml-1 text-[10px] md:text-xs">
-                              (orig: {subscription.amount} {subscription.currency})
-                            </span>
-                          )}
                         </p>
+                        <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
+                          {subscription.display_currency && subscription.display_currency !== subscription.currency && (
+                            <>
+                              Original: <CurrencyDisplay
+                                amount={subscription.amount}
+                                currency={subscription.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Next Renewal Date - Key Feature */}
+                      {/* Next Renewal Date or Status */}
                       <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextRenewal ? (
                           <>
@@ -596,7 +437,7 @@ export default function SubscriptionsPage() {
 
                       <div className="min-h-[24px]">
                         {subscription.category && (
-                          <Badge variant="outline" className="text-xs">{subscription.category}</Badge>
+                          <Badge variant="outline" className="text-xs flex-shrink-0">{subscription.category}</Badge>
                         )}
                       </div>
 
@@ -604,23 +445,15 @@ export default function SubscriptionsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditSubscription(subscription.id)}
+                          onClick={() => handleUnarchive(subscription.id)}
                         >
-                          <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          <ArchiveRestore className="mr-1 h-3 w-3" />
+                          Unarchive
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleArchiveSubscription(subscription.id)}
-                        >
-                          <Archive className="mr-1 h-3 w-3" />
-                          Archive
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteSubscription(subscription.id)}
+                          onClick={() => handleDelete(subscription.id)}
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
@@ -654,7 +487,6 @@ export default function SubscriptionsPage() {
                     <TableHead className="hidden sm:table-cell">Frequency</TableHead>
                     <TableHead className="hidden xl:table-cell">Next Renewal</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
                     <TableHead className="text-right w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -669,7 +501,7 @@ export default function SubscriptionsPage() {
                     const renewalMessage = getRenewalMessage(daysUntilRenewal, isEnded);
 
                     return (
-                      <TableRow key={subscription.id}>
+                      <TableRow key={subscription.id} className="opacity-75">
                         <TableCell>
                           <Checkbox
                             checked={selectedSubscriptionIds.has(subscription.id)}
@@ -738,33 +570,20 @@ export default function SubscriptionsPage() {
                             <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs">
-                            {subscription.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleEditSubscription(subscription.id)}
+                              onClick={() => handleUnarchive(subscription.id)}
                               className="h-8 w-8 p-0"
                             >
-                              <Edit className="h-4 w-4" />
+                              <ArchiveRestore className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleArchiveSubscription(subscription.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Archive className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteSubscription(subscription.id)}
+                              onClick={() => handleDelete(subscription.id)}
                               disabled={isDeleting}
                               className="h-8 w-8 p-0"
                             >
@@ -782,21 +601,13 @@ export default function SubscriptionsPage() {
         )}
       </div>
 
-      {/* Subscription Form Dialog */}
-      {isFormOpen && (
-        <SubscriptionForm
-          subscriptionId={editingSubscriptionId}
-          isOpen={isFormOpen}
-          onClose={handleFormClose}
-        />
-      )}
-
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Subscription"
+        title="Delete Subscription Permanently"
+        description="This will permanently delete this subscription. This action cannot be undone."
         itemName="subscription"
         isDeleting={isDeleting}
       />

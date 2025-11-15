@@ -7,7 +7,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, History } from 'lucide-react';
+import { LayoutGrid, History, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { InstallmentsActionsContext } from './context';
@@ -24,6 +24,12 @@ const INSTALLMENTS_TABS: ModuleTab[] = [
     label: 'History',
     icon: History,
     href: '/dashboard/installments/history',
+  },
+  {
+    value: 'archive',
+    label: 'Archive',
+    icon: Archive,
+    href: '/dashboard/installments/archive',
   },
 ];
 

@@ -1,26 +1,18 @@
 /**
- * Installments Tracking Page
- * Displays user's installments/loans with payment tracking
+ * Installment Archive Page
+ * Displays archived installments with unarchive functionality
  */
 'use client';
 
-import React, { useState } from 'react';
-import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
-import { CurrencyDisplay } from '@/components/currency/currency-display';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   useListInstallmentsQuery,
-  useGetInstallmentStatsQuery,
   useUpdateInstallmentMutation,
   useDeleteInstallmentMutation,
   useBatchDeleteInstallmentsMutation,
 } from '@/lib/api/installmentsApi';
-import {
-  calculateNextPaymentDate,
-  getPaymentUrgency,
-  formatPaymentDate,
-  getPaymentMessage,
-  calculatePercentPaid,
-} from '@/lib/utils/installment-payment';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,19 +27,22 @@ import {
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
-import { InstallmentForm } from '@/components/installments/installment-form';
-import { StatsCards, StatCard } from '@/components/ui/stats-cards';
-import { InstallmentsActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
-import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
-import { Progress } from '@/components/ui/progress';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { CalendarView } from '@/components/ui/calendar-view';
-import { toast } from 'sonner';
+import { InstallmentsActionsContext } from '../context';
+import { Progress } from '@/components/ui/progress';
+import {
+  calculateNextPaymentDate,
+  getPaymentUrgency,
+  formatPaymentDate,
+  getPaymentMessage,
+  calculatePercentPaid,
+} from '@/lib/utils/installment-payment';
 
 const FREQUENCY_LABELS: Record<string, string> = {
   weekly: 'Weekly',
@@ -55,86 +50,109 @@ const FREQUENCY_LABELS: Record<string, string> = {
   monthly: 'Monthly',
 };
 
-export default function InstallmentsPage() {
-  const { setActions } = React.useContext(InstallmentsActionsContext);
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingInstallmentId, setEditingInstallmentId] = useState<string | null>(null);
+export default function InstallmentsArchivePage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingInstallmentId, setDeletingInstallmentId] = useState<string | null>(null);
-  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
-  const [selectedInstallmentIds, setSelectedInstallmentIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  // Default to current month in YYYY-MM format
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedInstallmentIds, setSelectedInstallmentIds] = useState<Set<string>>(new Set());
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
-  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { viewMode, setViewMode } = useViewPreferences();
 
+  // Context to set action buttons in layout
+  const { setActions } = React.useContext(InstallmentsActionsContext);
+
+  // Fetch only archived installments (is_active: false)
   const {
     data: installmentsData,
     isLoading: isLoadingInstallments,
     error: installmentsError,
-    refetch: refetchInstallments,
-  } = useListInstallmentsQuery({ is_active: true });
-
-  // Calculate date range from selectedMonth
-  const statsParams = React.useMemo(() => {
-    if (!selectedMonth) return undefined;
-
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
-
-    return {
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-    };
-  }, [selectedMonth]);
-
-  const {
-    data: stats,
-    isLoading: isLoadingStats,
-    error: statsError,
-  } = useGetInstallmentStatsQuery(statsParams);
+  } = useListInstallmentsQuery({ is_active: false });
 
   const [updateInstallment] = useUpdateInstallmentMutation();
   const [deleteInstallment, { isLoading: isDeleting }] = useDeleteInstallmentMutation();
   const [batchDeleteInstallments, { isLoading: isBatchDeleting }] = useBatchDeleteInstallmentsMutation();
 
-  const handleAddInstallment = React.useCallback(() => {
-    setEditingInstallmentId(null);
-    setIsFormOpen(true);
-  }, []);
+  const installments = useMemo(() => installmentsData?.items || [], [installmentsData?.items]);
 
-  const handleEditInstallment = React.useCallback((id: string) => {
-    setEditingInstallmentId(id);
-    setIsFormOpen(true);
-  }, []);
+  // Get unique categories
+  const uniqueCategories = React.useMemo(() => {
+    const categories = installments
+      .map((installment) => installment.category)
+      .filter((cat): cat is string => !!cat);
+    return Array.from(new Set(categories)).sort();
+  }, [installments]);
 
-  const handleDeleteInstallment = React.useCallback((id: string) => {
-    setDeletingInstallmentId(id);
-    setDeleteDialogOpen(true);
-  }, []);
+  // Filter and sort installments
+  const filteredInstallments = React.useMemo(() => {
+    const filtered = filterBySearchAndCategory(
+      installments,
+      searchQuery,
+      selectedCategory,
+      (installment) => installment.name,
+      (installment) => installment.category || undefined
+    );
 
-  const handleArchiveInstallment = async (id: string) => {
+    // Apply sorting
+    const sorted = sortItems(
+      filtered,
+      sortField,
+      sortDirection,
+      (installment) => installment.name,
+      (installment) => installment.display_total_amount || installment.total_amount,
+      (installment) => installment.start_date || installment.created_at
+    );
+
+    return sorted || [];
+  }, [installments, searchQuery, selectedCategory, sortField, sortDirection]);
+
+  const handleUnarchive = async (id: string) => {
     try {
-      await updateInstallment({ id, data: { is_active: false } }).unwrap();
-      toast.success('Installment archived successfully');
+      await updateInstallment({ id, data: { is_active: true } }).unwrap();
+      toast.success('Installment unarchived successfully');
       setSelectedInstallmentIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive installment:', error);
-      toast.error('Failed to archive installment');
+      console.error('Failed to unarchive installment:', error);
+      toast.error('Failed to unarchive installment');
     }
+  };
+
+  const handleBatchUnarchive = useCallback(async () => {
+    const idsToUnarchive = Array.from(selectedInstallmentIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToUnarchive) {
+      try {
+        await updateInstallment({ id, data: { is_active: true } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to unarchive installment ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully unarchived ${successCount} installment(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to unarchive ${failCount} installment(s)`);
+    }
+
+    setSelectedInstallmentIds(new Set());
+  }, [selectedInstallmentIds, updateInstallment]);
+
+  const handleDelete = (id: string) => {
+    setDeletingInstallmentId(id);
+    setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -142,42 +160,43 @@ export default function InstallmentsPage() {
 
     try {
       await deleteInstallment(deletingInstallmentId).unwrap();
-      toast.success('Installment deleted successfully');
+      toast.success('Installment deleted permanently');
       setDeleteDialogOpen(false);
       setDeletingInstallmentId(null);
+      setSelectedInstallmentIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(deletingInstallmentId);
+        return newSet;
+      });
     } catch (error) {
       console.error('Failed to delete installment:', error);
       toast.error('Failed to delete installment');
     }
   };
 
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    setEditingInstallmentId(null);
-  };
-
   const handleToggleSelect = (installmentId: string) => {
-    const newSelected = new Set(selectedInstallmentIds);
-    if (newSelected.has(installmentId)) {
-      newSelected.delete(installmentId);
-    } else {
-      newSelected.add(installmentId);
-    }
-    setSelectedInstallmentIds(newSelected);
+    setSelectedInstallmentIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(installmentId)) {
+        newSet.delete(installmentId);
+      } else {
+        newSet.add(installmentId);
+      }
+      return newSet;
+    });
   };
 
   const handleSelectAll = () => {
-    if (selectedInstallmentIds.size === filteredInstallments.length) {
+    if (selectedInstallmentIds.size === filteredInstallments.length && filteredInstallments.length > 0) {
       setSelectedInstallmentIds(new Set());
     } else {
-      setSelectedInstallmentIds(new Set(filteredInstallments.map(installment => installment.id)));
+      setSelectedInstallmentIds(new Set(filteredInstallments.map((installment) => installment.id)));
     }
   };
 
-  const handleBatchDelete = React.useCallback(() => {
-    if (selectedInstallmentIds.size === 0) return;
+  const handleBatchDelete = () => {
     setBatchDeleteDialogOpen(true);
-  }, [selectedInstallmentIds.size]);
+  };
 
   const confirmBatchDelete = async () => {
     if (selectedInstallmentIds.size === 0) return;
@@ -190,205 +209,65 @@ export default function InstallmentsPage() {
       if (result.failed_ids.length > 0) {
         toast.error(`Failed to delete ${result.failed_ids.length} installment(s)`);
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} installment(s)`);
+        toast.success(`Successfully deleted ${result.deleted_count} installment(s) permanently`);
       }
+
       setBatchDeleteDialogOpen(false);
       setSelectedInstallmentIds(new Set());
     } catch (error) {
-      console.error('Batch delete failed:', error);
+      console.error('Failed to delete installments:', error);
       toast.error('Failed to delete installments');
     }
   };
 
-  // Get unique categories from installments
-  const uniqueCategories = React.useMemo(() => {
-    if (!installmentsData?.items) return [];
-    const categories = installmentsData.items
-      .map((installment) => installment.category)
-      .filter((cat): cat is string => !!cat);
-    return Array.from(new Set(categories)).sort();
-  }, [installmentsData?.items]);
-
-  // Apply month filter first - filter by first_payment_date and end_date range
-  const monthFilteredInstallments = filterByMonth(
-    installmentsData?.items,
-    selectedMonth,
-    (installment) => installment.frequency, // All installments are recurring
-    () => null, // No one-time date field
-    (installment) => installment.first_payment_date,
-    (installment) => installment.end_date
-  );
-
-  // Apply search and category filters
-  const searchFilteredInstallments = filterBySearchAndCategory(
-    monthFilteredInstallments,
-    searchQuery,
-    selectedCategory,
-    (installment) => installment.name,
-    (installment) => installment.category
-  );
-
-  // Apply sorting (using display_total_amount for currency-aware sorting)
-  const filteredInstallments = sortItems(
-    searchFilteredInstallments,
-    sortField,
-    sortDirection,
-    (installment) => installment.name,
-    (installment) => installment.display_total_amount || installment.total_amount,
-    (installment) => installment.start_date
-  ) || [];
-
-  // Prepare stats cards data
-  const statsCards: StatCard[] = stats
-    ? [
-        {
-          title: 'Total Installments',
-          value: stats.total_installments,
-          description: selectedMonth
-            ? `${stats.active_installments} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${stats.active_installments} active`,
-          icon: CreditCard,
-        },
-        {
-          title: 'Total Debt',
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_debt}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: stats.debt_free_date
-            ? `Debt-free by ${new Date(stats.debt_free_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : 'No debt-free date projected',
-          icon: TrendingDown,
-        },
-        {
-          title: selectedMonth ? 'Period Payment' : 'Monthly Payment',
-          value: (
-            <CurrencyDisplay
-              amount={stats.monthly_payment}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: (
-            <>
-              <CurrencyDisplay
-                amount={stats.total_paid}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />{' '}
-              paid so far
-            </>
-          ),
-          icon: DollarSign,
-        },
-      ]
-    : [];
-
-  // Get payment badge variant based on urgency
-  const getPaymentBadgeVariant = (urgency: string): 'default' | 'secondary' | 'destructive' => {
-    switch (urgency) {
-      case 'high':
-        return 'destructive';
-      case 'medium':
-        return 'default';
-      default:
-        return 'secondary';
-    }
-  };
-
-  // Inject action buttons into layout
+  // Set action buttons in layout
   React.useEffect(() => {
     setActions(
       <>
         {selectedInstallmentIds.size > 0 && (
-          <Button onClick={handleBatchDelete} variant="destructive" size="default" className="w-full sm:w-auto">
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedInstallmentIds.size})</span>
-          </Button>
+          <>
+            <Button
+              onClick={handleBatchUnarchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <ArchiveRestore className="mr-2 h-4 w-4" />
+              <span className="truncate">Unarchive Selected ({selectedInstallmentIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedInstallmentIds.size})</span>
+            </Button>
+          </>
         )}
-        <Button onClick={handleAddInstallment} size="default" className="w-full sm:w-auto">
-          <CreditCard className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Installment</span>
-        </Button>
       </>
     );
+
     return () => setActions(null);
-  }, [selectedInstallmentIds.size, setActions, handleBatchDelete, handleAddInstallment]);
+  }, [selectedInstallmentIds.size, setActions, handleBatchUnarchive]);
+
+  const isLoading = isLoadingInstallments;
+  const hasError = installmentsError;
+
+  if (hasError) {
+    return (
+      <ApiErrorState
+        error={installmentsError}
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
-
-      {/* Statistics Cards */}
-      {isLoadingStats ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="space-y-2">
-                <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      ) : statsError ? (
-        <ApiErrorState error={statsError} />
-      ) : stats ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-end">
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
-              <Button
-                variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('cards')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('compact')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Rows3 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {statsViewMode === 'cards' ? (
-            <StatsCards stats={statsCards} />
-          ) : (
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <div className="divide-y">
-                {statsCards.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium truncate">{stat.title}</span>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-lg font-bold">{stat.value}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {/* Search, Filters, and View Toggle */}
-      {(installmentsData?.items && installmentsData.items.length > 0) && (
+      {/* Search and Filters */}
+      {(installments.length > 0 || searchQuery || selectedCategory) && (
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
           <div className="flex-1">
             <SearchFilter
@@ -397,15 +276,11 @@ export default function InstallmentsPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search installments..."
+              searchPlaceholder="Search archived installments..."
               categoryPlaceholder="All Categories"
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <MonthFilter
-              selectedMonth={selectedMonth}
-              onMonthChange={setSelectedMonth}
-            />
             <SortFilter
               sortField={sortField}
               sortDirection={sortDirection}
@@ -418,7 +293,6 @@ export default function InstallmentsPage() {
                 size="sm"
                 onClick={() => setViewMode('card')}
                 className="h-[32px] w-[32px] p-0"
-                title="Card View"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -427,86 +301,34 @@ export default function InstallmentsPage() {
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="h-[32px] w-[32px] p-0"
-                title="List View"
               >
                 <List className="h-4 w-4" />
               </Button>
-              {selectedMonth && (
-                <Button
-                  variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('calendar')}
-                  className="h-[32px] w-[32px] p-0"
-                  title="Calendar View"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                </Button>
-              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Installments List */}
+      {/* Installment List */}
       <div>
-        {isLoadingInstallments ? (
-          <LoadingCards count={3} />
-        ) : installmentsError ? (
-          <ApiErrorState error={installmentsError} onRetry={refetchInstallments} />
-        ) : !installmentsData?.items || installmentsData.items.length === 0 ? (
+        {isLoading ? (
+          <LoadingCards count={6} />
+        ) : !installments || installments.length === 0 ? (
           <EmptyState
-            icon={CreditCard}
-            title="No installments yet"
-            description="Start tracking your loans and payment plans by adding your first one."
-            actionLabel="Add Installment"
-            onAction={handleAddInstallment}
-          />
-        ) : viewMode === 'calendar' && selectedMonth ? (
-          <CalendarView
-            items={filteredInstallments.map((installment) => ({
-              id: installment.id,
-              name: installment.name,
-              amount: installment.amount_per_payment,
-              currency: installment.currency,
-              display_amount: installment.display_amount_per_payment,
-              display_currency: installment.display_currency,
-              category: installment.category,
-              date: null,
-              start_date: installment.start_date,
-              frequency: installment.frequency,
-              is_active: installment.is_active,
-            }))}
-            selectedMonth={selectedMonth}
-            onMonthChange={setSelectedMonth}
-            onItemClick={handleEditInstallment}
-            selectedItemIds={selectedInstallmentIds}
-            onToggleSelect={handleToggleSelect}
+            icon={Archive}
+            title="No archived installments"
+            description="Archived installments will appear here"
           />
         ) : !filteredInstallments || filteredInstallments.length === 0 ? (
-          selectedMonth ? (
-            <EmptyState
-              icon={CreditCard}
-              title="No installments for this month"
-              description={`No installments active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
-              actionLabel="Clear Filter"
-              onAction={() => setSelectedMonth(null)}
-            />
-          ) : (
-            <EmptyState
-              icon={CreditCard}
-              title="No installments found"
-              description="Try adjusting your search or filter criteria."
-              actionLabel="Clear Filters"
-              onAction={() => {
-                setSearchQuery('');
-                setSelectedCategory(null);
-              }}
-            />
-          )
+          <EmptyState
+            icon={Archive}
+            title="No archived installments found"
+            description="Try adjusting your search or filters"
+          />
         ) : viewMode === 'card' ? (
-          <div className="space-y-3">
+          <>
             {filteredInstallments.length > 0 && (
-              <div className="flex items-center gap-2 px-1">
+              <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
                   checked={selectedInstallmentIds.size === filteredInstallments.length}
                   onCheckedChange={handleSelectAll}
@@ -519,6 +341,12 @@ export default function InstallmentsPage() {
             )}
             <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredInstallments.map((installment) => {
+              // Calculate payment progress
+              const percentPaid = calculatePercentPaid(
+                installment.payments_made,
+                installment.number_of_payments
+              );
+
               // Calculate next payment date
               const { nextPayment, isPaidOff, daysUntilPayment } = calculateNextPaymentDate(
                 installment.first_payment_date,
@@ -529,13 +357,21 @@ export default function InstallmentsPage() {
               );
               const urgency = getPaymentUrgency(daysUntilPayment);
               const paymentMessage = getPaymentMessage(daysUntilPayment, isPaidOff);
-              const percentPaid = calculatePercentPaid(
-                installment.payments_made,
-                installment.number_of_payments
-              );
+
+              // Get payment badge variant based on urgency
+              const getPaymentBadgeVariant = (urgency: string): 'default' | 'secondary' | 'destructive' => {
+                switch (urgency) {
+                  case 'high':
+                    return 'destructive';
+                  case 'medium':
+                    return 'default';
+                  default:
+                    return 'secondary';
+                }
+              };
 
               return (
-                <Card key={installment.id} className="relative">
+                <Card key={installment.id} className="relative opacity-75">
                   <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
@@ -546,14 +382,14 @@ export default function InstallmentsPage() {
                           className="mt-1"
                         />
                         <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base md:text-lg truncate">{installment.name}</CardTitle>
-                        <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                          {installment.description || <>&nbsp;</>}
-                        </CardDescription>
+                          <CardTitle className="text-base md:text-lg truncate">{installment.name}</CardTitle>
+                          <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
+                            {installment.description || ' '}
+                          </CardDescription>
                         </div>
                       </div>
-                      <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                        {installment.is_active ? 'Active' : 'Inactive'}
+                      <Badge variant="secondary" className="text-xs flex-shrink-0">
+                        Archived
                       </Badge>
                     </div>
                   </CardHeader>
@@ -623,7 +459,7 @@ export default function InstallmentsPage() {
                         <Progress value={percentPaid} className="h-2" />
                       </div>
 
-                      {/* Next Payment Date - Key Feature */}
+                      {/* Next Payment Date */}
                       <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextPayment ? (
                           <>
@@ -658,23 +494,15 @@ export default function InstallmentsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditInstallment(installment.id)}
+                          onClick={() => handleUnarchive(installment.id)}
                         >
-                          <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          <ArchiveRestore className="mr-1 h-3 w-3" />
+                          Unarchive
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleArchiveInstallment(installment.id)}
-                        >
-                          <Archive className="mr-1 h-3 w-3" />
-                          Archive
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteInstallment(installment.id)}
+                          onClick={() => handleDelete(installment.id)}
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
@@ -687,7 +515,7 @@ export default function InstallmentsPage() {
               );
             })}
             </div>
-          </div>
+          </>
         ) : (
           <div className="border rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
@@ -696,40 +524,30 @@ export default function InstallmentsPage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedInstallmentIds.size === filteredInstallments.length}
+                        checked={selectedInstallmentIds.size === filteredInstallments.length && filteredInstallments.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all installments"
+                        aria-label="Select all"
                       />
                     </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead className="hidden lg:table-cell">Category</TableHead>
                     <TableHead className="text-right">Remaining</TableHead>
                     <TableHead className="hidden sm:table-cell text-right">Payment</TableHead>
-                    <TableHead className="hidden lg:table-cell text-right">Progress</TableHead>
-                    <TableHead className="hidden xl:table-cell">Next Payment</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">Progress</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
                     <TableHead className="text-right w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredInstallments.map((installment) => {
-                    const { nextPayment, isPaidOff, daysUntilPayment } = calculateNextPaymentDate(
-                      installment.first_payment_date,
-                      installment.frequency,
-                      installment.payments_made,
-                      installment.number_of_payments,
-                      installment.end_date
-                    );
-                    const urgency = getPaymentUrgency(daysUntilPayment);
-                    const paymentMessage = getPaymentMessage(daysUntilPayment, isPaidOff);
                     const percentPaid = calculatePercentPaid(
                       installment.payments_made,
                       installment.number_of_payments
                     );
 
                     return (
-                      <TableRow key={installment.id}>
+                      <TableRow key={installment.id} className="opacity-75">
                         <TableCell>
                           <Checkbox
                             checked={selectedInstallmentIds.has(installment.id)}
@@ -746,6 +564,11 @@ export default function InstallmentsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
+                          <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                            {installment.description || '-'}
+                          </p>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {installment.category ? (
                             <Badge variant="outline" className="text-xs">{installment.category}</Badge>
                           ) : (
@@ -775,31 +598,12 @@ export default function InstallmentsPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-right">
+                        <TableCell className="hidden xl:table-cell text-right">
                           <div className="flex flex-col items-end gap-1">
                             <span className="text-sm">{installment.payments_made}/{installment.number_of_payments}</span>
                             <Progress value={percentPaid} className="h-1 w-16" />
                             <span className="text-xs text-muted-foreground">{percentPaid}%</span>
                           </div>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          {nextPayment ? (
-                            <div className="flex flex-col gap-1">
-                              <span className="text-sm">
-                                {formatPaymentDate(nextPayment)}
-                              </span>
-                              <Badge
-                                variant={getPaymentBadgeVariant(urgency)}
-                                className="text-xs w-fit"
-                              >
-                                {paymentMessage}
-                              </Badge>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">
-                              {isPaidOff ? 'Paid Off' : '-'}
-                            </span>
-                          )}
                         </TableCell>
                         <TableCell className="hidden 2xl:table-cell text-right">
                           {installment.display_currency && installment.display_currency !== installment.currency ? (
@@ -810,33 +614,20 @@ export default function InstallmentsPage() {
                             <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs">
-                            {installment.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleEditInstallment(installment.id)}
+                              onClick={() => handleUnarchive(installment.id)}
                               className="h-8 w-8 p-0"
                             >
-                              <Edit className="h-4 w-4" />
+                              <ArchiveRestore className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleArchiveInstallment(installment.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Archive className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteInstallment(installment.id)}
+                              onClick={() => handleDelete(installment.id)}
                               disabled={isDeleting}
                               className="h-8 w-8 p-0"
                             >
@@ -854,21 +645,13 @@ export default function InstallmentsPage() {
         )}
       </div>
 
-      {/* Installment Form Dialog */}
-      {isFormOpen && (
-        <InstallmentForm
-          installmentId={editingInstallmentId}
-          isOpen={isFormOpen}
-          onClose={handleFormClose}
-        />
-      )}
-
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Installment"
+        title="Delete Installment Permanently"
+        description="This will permanently delete this installment. This action cannot be undone."
         itemName="installment"
         isDeleting={isDeleting}
       />

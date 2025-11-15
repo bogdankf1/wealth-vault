@@ -1,15 +1,14 @@
 /**
- * Goals Tracking Page
- * Displays user's financial goals with progress tracking
+ * Goals Archive Page
+ * Displays archived goals with unarchive functionality
  */
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { Target, TrendingUp, DollarSign, Edit, Trash2, Archive, CheckCircle2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
-import { CurrencyDisplay } from '@/components/currency/currency-display';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   useListGoalsQuery,
-  useGetGoalStatsQuery,
   useUpdateGoalMutation,
   useDeleteGoalMutation,
   useBatchDeleteGoalsMutation,
@@ -28,82 +27,119 @@ import {
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
-import { GoalForm } from '@/components/goals/goal-form';
-
-import { StatsCards, StatCard } from '@/components/ui/stats-cards';
-import { GoalsActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
-import { Progress } from '@/components/ui/progress';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { toast } from 'sonner';
+import { GoalsActionsContext } from '../context';
+import { Progress } from '@/components/ui/progress';
 
-export default function GoalsPage() {
-  // Get context for setting actions
-  const { setActions } = React.useContext(GoalsActionsContext);
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
+export default function GoalsArchivePage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
-  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
-  const [selectedGoalIds, setSelectedGoalIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedGoalIds, setSelectedGoalIds] = useState<Set<string>>(new Set());
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
-  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { viewMode, setViewMode } = useViewPreferences();
 
+  // Context to set action buttons in layout
+  const { setActions } = React.useContext(GoalsActionsContext);
+
+  // Fetch only archived goals (is_active: false)
   const {
     data: goalsData,
     isLoading: isLoadingGoals,
     error: goalsError,
-    refetch: refetchGoals,
-  } = useListGoalsQuery({ is_active: true });
-
-  const {
-    data: stats,
-    isLoading: isLoadingStats,
-    error: statsError,
-  } = useGetGoalStatsQuery();
+  } = useListGoalsQuery({ is_active: false });
 
   const [updateGoal] = useUpdateGoalMutation();
   const [deleteGoal, { isLoading: isDeleting }] = useDeleteGoalMutation();
   const [batchDeleteGoals, { isLoading: isBatchDeleting }] = useBatchDeleteGoalsMutation();
 
-  const handleAddGoal = useCallback(() => {
-    setEditingGoalId(null);
-    setIsFormOpen(true);
-  }, []);
+  const goals = useMemo(() => goalsData?.items || [], [goalsData?.items]);
 
-  const handleEditGoal = (id: string) => {
-    setEditingGoalId(id);
-    setIsFormOpen(true);
-  };
+  // Get unique categories
+  const uniqueCategories = React.useMemo(() => {
+    const categories = goals
+      .map((goal) => goal.category)
+      .filter((cat): cat is string => !!cat);
+    return Array.from(new Set(categories)).sort();
+  }, [goals]);
 
-  const handleDeleteGoal = (id: string) => {
-    setDeletingGoalId(id);
-    setDeleteDialogOpen(true);
-  };
+  // Filter and sort goals
+  const filteredGoals = React.useMemo(() => {
+    const filtered = filterBySearchAndCategory(
+      goals,
+      searchQuery,
+      selectedCategory,
+      (goal) => goal.name,
+      (goal) => goal.category || undefined
+    );
 
-  const handleArchiveGoal = async (id: string) => {
+    // Apply sorting
+    const sorted = sortItems(
+      filtered,
+      sortField,
+      sortDirection,
+      (goal) => goal.name,
+      (goal) => goal.display_target_amount || goal.target_amount,
+      (goal) => goal.target_date || goal.start_date || goal.created_at
+    );
+
+    return sorted || [];
+  }, [goals, searchQuery, selectedCategory, sortField, sortDirection]);
+
+  const handleUnarchive = async (id: string) => {
     try {
-      await updateGoal({ id, data: { is_active: false } }).unwrap();
-      toast.success('Goal archived successfully');
+      await updateGoal({ id, data: { is_active: true } }).unwrap();
+      toast.success('Goal unarchived successfully');
       setSelectedGoalIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive goal:', error);
-      toast.error('Failed to archive goal');
+      console.error('Failed to unarchive goal:', error);
+      toast.error('Failed to unarchive goal');
     }
+  };
+
+  const handleBatchUnarchive = useCallback(async () => {
+    const idsToUnarchive = Array.from(selectedGoalIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToUnarchive) {
+      try {
+        await updateGoal({ id, data: { is_active: true } }).unwrap();
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to unarchive goal ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Successfully unarchived ${successCount} goal(s)`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to unarchive ${failCount} goal(s)`);
+    }
+
+    setSelectedGoalIds(new Set());
+  }, [selectedGoalIds, updateGoal]);
+
+  const handleDelete = (id: string) => {
+    setDeletingGoalId(id);
+    setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -111,67 +147,43 @@ export default function GoalsPage() {
 
     try {
       await deleteGoal(deletingGoalId).unwrap();
-      toast.success('Goal deleted successfully');
+      toast.success('Goal deleted permanently');
       setDeleteDialogOpen(false);
       setDeletingGoalId(null);
+      setSelectedGoalIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(deletingGoalId);
+        return newSet;
+      });
     } catch (error) {
       console.error('Failed to delete goal:', error);
       toast.error('Failed to delete goal');
     }
   };
 
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    setEditingGoalId(null);
-  };
-
   const handleToggleSelect = (goalId: string) => {
-    const newSelected = new Set(selectedGoalIds);
-    if (newSelected.has(goalId)) {
-      newSelected.delete(goalId);
-    } else {
-      newSelected.add(goalId);
-    }
-    setSelectedGoalIds(newSelected);
+    setSelectedGoalIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(goalId)) {
+        newSet.delete(goalId);
+      } else {
+        newSet.add(goalId);
+      }
+      return newSet;
+    });
   };
 
   const handleSelectAll = () => {
-    if (selectedGoalIds.size === filteredGoals.length) {
+    if (selectedGoalIds.size === filteredGoals.length && filteredGoals.length > 0) {
       setSelectedGoalIds(new Set());
     } else {
-      setSelectedGoalIds(new Set(filteredGoals.map(goal => goal.id)));
+      setSelectedGoalIds(new Set(filteredGoals.map((goal) => goal.id)));
     }
   };
 
-  const handleBatchDelete = useCallback(() => {
-    if (selectedGoalIds.size === 0) return;
+  const handleBatchDelete = () => {
     setBatchDeleteDialogOpen(true);
-  }, [selectedGoalIds]);
-
-  // Set action buttons in layout
-  React.useEffect(() => {
-    setActions(
-      <>
-        {selectedGoalIds.size > 0 && (
-          <Button
-            onClick={handleBatchDelete}
-            variant="destructive"
-            size="default"
-            className="w-full sm:w-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span className="truncate">Delete Selected ({selectedGoalIds.size})</span>
-          </Button>
-        )}
-        <Button onClick={handleAddGoal} size="default" className="w-full sm:w-auto">
-          <Target className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Goal</span>
-        </Button>
-      </>
-    );
-
-    return () => setActions(null);
-  }, [selectedGoalIds.size, setActions, handleBatchDelete, handleAddGoal]);
+  };
 
   const confirmBatchDelete = async () => {
     if (selectedGoalIds.size === 0) return;
@@ -184,162 +196,65 @@ export default function GoalsPage() {
       if (result.failed_ids.length > 0) {
         toast.error(`Failed to delete ${result.failed_ids.length} goal(s)`);
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} goal(s)`);
+        toast.success(`Successfully deleted ${result.deleted_count} goal(s) permanently`);
       }
+
       setBatchDeleteDialogOpen(false);
       setSelectedGoalIds(new Set());
     } catch (error) {
-      console.error('Batch delete failed:', error);
+      console.error('Failed to delete goals:', error);
       toast.error('Failed to delete goals');
     }
   };
 
-  // Get unique categories from goals
-  const uniqueCategories = React.useMemo(() => {
-    if (!goalsData?.items) return [];
-    const categories = goalsData.items
-      .map((goal) => goal.category)
-      .filter((cat): cat is string => !!cat);
-    return Array.from(new Set(categories)).sort();
-  }, [goalsData?.items]);
+  // Set action buttons in layout
+  React.useEffect(() => {
+    setActions(
+      <>
+        {selectedGoalIds.size > 0 && (
+          <>
+            <Button
+              onClick={handleBatchUnarchive}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <ArchiveRestore className="mr-2 h-4 w-4" />
+              <span className="truncate">Unarchive Selected ({selectedGoalIds.size})</span>
+            </Button>
+            <Button
+              onClick={handleBatchDelete}
+              variant="destructive"
+              size="default"
+              className="w-full sm:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span className="truncate">Delete Selected ({selectedGoalIds.size})</span>
+            </Button>
+          </>
+        )}
+      </>
+    );
 
-  // Apply search and category filters
-  const searchFilteredGoals = filterBySearchAndCategory(
-    goalsData?.items,
-    searchQuery,
-    selectedCategory,
-    (goal) => goal.name,
-    (goal) => goal.category
-  );
+    return () => setActions(null);
+  }, [selectedGoalIds.size, setActions, handleBatchUnarchive]);
 
-  // Apply sorting (using display_target_amount for currency-aware sorting)
-  const filteredGoals = sortItems(
-    searchFilteredGoals,
-    sortField,
-    sortDirection,
-    (goal) => goal.name,
-    (goal) => goal.display_target_amount || goal.target_amount,
-    (goal) => goal.target_date
-  ) || [];
+  const isLoading = isLoadingGoals;
+  const hasError = goalsError;
 
-  // Prepare stats cards data
-  const statsCards: StatCard[] = stats
-    ? [
-        {
-          title: 'Total Goals',
-          value: stats.total_goals,
-          description: `${stats.completed_goals} completed, ${stats.active_goals} active`,
-          icon: Target,
-        },
-        {
-          title: 'Total Target',
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_target_amount}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: (
-            <>
-              <CurrencyDisplay
-                amount={stats.total_saved}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />{' '}
-              saved so far
-            </>
-          ),
-          icon: DollarSign,
-        },
-        {
-          title: 'Average Progress',
-          value: `${Math.round(stats.average_progress)}%`,
-          description: (
-            <>
-              <CurrencyDisplay
-                amount={stats.total_remaining}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />{' '}
-              remaining
-            </>
-          ),
-          icon: TrendingUp,
-        },
-      ]
-    : [];
+  if (hasError) {
+    return (
+      <ApiErrorState
+        error={goalsError}
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Statistics Cards */}
-      {isLoadingStats ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="space-y-2">
-                <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      ) : statsError ? (
-        <ApiErrorState error={statsError} />
-      ) : stats ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-end">
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
-              <Button
-                variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('cards')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('compact')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Rows3 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {statsViewMode === 'cards' ? (
-            <StatsCards stats={statsCards} />
-          ) : (
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <div className="divide-y">
-                {statsCards.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium truncate">{stat.title}</span>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-lg font-bold">{stat.value}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {/* Search, Filters, and View Toggle */}
-      {(goalsData?.items && goalsData.items.length > 0) && (
+      {/* Search and Filters */}
+      {(goals.length > 0 || searchQuery || selectedCategory) && (
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
           <div className="flex-1">
             <SearchFilter
@@ -348,7 +263,7 @@ export default function GoalsPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search goals..."
+              searchPlaceholder="Search archived goals..."
               categoryPlaceholder="All Categories"
             />
           </div>
@@ -383,34 +298,24 @@ export default function GoalsPage() {
 
       {/* Goals List */}
       <div>
-
-        {isLoadingGoals ? (
-          <LoadingCards count={3} />
-        ) : goalsError ? (
-          <ApiErrorState error={goalsError} onRetry={refetchGoals} />
-        ) : !goalsData?.items || goalsData.items.length === 0 ? (
+        {isLoading ? (
+          <LoadingCards count={6} />
+        ) : !goals || goals.length === 0 ? (
           <EmptyState
-            icon={Target}
-            title="No goals yet"
-            description="Start tracking your financial goals by adding your first one."
-            actionLabel="Add Goal"
-            onAction={handleAddGoal}
+            icon={Archive}
+            title="No archived goals"
+            description="Archived goals will appear here"
           />
         ) : !filteredGoals || filteredGoals.length === 0 ? (
           <EmptyState
-            icon={Target}
-            title="No goals found"
-            description="Try adjusting your search or filter criteria."
-            actionLabel="Clear Filters"
-            onAction={() => {
-              setSearchQuery('');
-              setSelectedCategory(null);
-            }}
+            icon={Archive}
+            title="No archived goals found"
+            description="Try adjusting your search or filters"
           />
         ) : viewMode === 'card' ? (
-          <div className="space-y-3">
+          <>
             {filteredGoals.length > 0 && (
-              <div className="flex items-center gap-2 px-1">
+              <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
                   checked={selectedGoalIds.size === filteredGoals.length}
                   onCheckedChange={handleSelectAll}
@@ -421,7 +326,7 @@ export default function GoalsPage() {
                 </span>
               </div>
             )}
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredGoals.map((goal) => {
               const progress = goal.progress_percentage || 0;
               const displayTarget = goal.display_target_amount ?? goal.target_amount;
@@ -430,8 +335,8 @@ export default function GoalsPage() {
               const remaining = displayTarget - displayCurrent;
 
               return (
-                <Card key={goal.id} className="relative">
-                  <CardHeader>
+                <Card key={goal.id} className="relative opacity-75">
+                  <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <Checkbox
@@ -440,30 +345,25 @@ export default function GoalsPage() {
                           aria-label={`Select ${goal.name}`}
                           className="mt-1"
                         />
-                        <div className="flex-1">
-                        <CardTitle className="text-lg">{goal.name}</CardTitle>
-                        <CardDescription className="mt-1 min-h-[20px]">
-                          {goal.description || <>&nbsp;</>}
-                        </CardDescription>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base md:text-lg truncate">{goal.name}</CardTitle>
+                          <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
+                            {goal.description || ' '}
+                          </CardDescription>
                         </div>
                       </div>
-                      <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'} className="flex-shrink-0">
-                        {goal.is_completed ? (
-                          <span className="flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Completed
-                          </span>
-                        ) : goal.is_active ? 'Active' : 'Paused'}
+                      <Badge variant="secondary" className="text-xs flex-shrink-0">
+                        Archived
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
+                  <CardContent className="pt-0">
+                    <div className="space-y-2 md:space-y-3">
                       {/* Target and Current Amounts */}
-                      <div className="rounded-lg border bg-muted/50 p-3">
+                      <div className="rounded-lg border bg-muted/50 p-2 md:p-3">
                         <div className="flex items-baseline justify-between mb-1">
                           <span className="text-xs text-muted-foreground">Saved</span>
-                          <span className="text-2xl font-bold">
+                          <span className="text-xl md:text-2xl font-bold">
                             <CurrencyDisplay
                               amount={displayCurrent}
                               currency={displayCurrency}
@@ -492,7 +392,7 @@ export default function GoalsPage() {
                             </span>
                           )}
                         </div>
-                        <div className="mt-2 text-xs text-muted-foreground min-h-[16px]">
+                        <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
                           {goal.display_currency && goal.display_currency !== goal.currency && (
                             <>
                               Original: <CurrencyDisplay
@@ -531,11 +431,13 @@ export default function GoalsPage() {
                         <Progress value={progress} className="h-2" />
                       </div>
 
-                      {/* Target Date */}
-                      <div className="rounded-lg bg-muted p-3 min-h-[60px]">
+                      {/* Target Date and Status */}
+                      <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px] flex items-center justify-center">
                         {goal.target_date ? (
-                          <>
-                            <p className="text-xs text-muted-foreground">Target Date</p>
+                          <div className="text-center w-full">
+                            <p className="text-[10px] md:text-xs text-muted-foreground">
+                              Target Date
+                            </p>
                             <p className="text-sm font-semibold">
                               {new Date(goal.target_date).toLocaleDateString('en-US', {
                                 month: 'short',
@@ -543,15 +445,29 @@ export default function GoalsPage() {
                                 year: 'numeric',
                               })}
                             </p>
-                          </>
+                            {goal.is_completed && (
+                              <Badge variant="default" className="text-xs mt-1">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Completed
+                              </Badge>
+                            )}
+                          </div>
                         ) : (
-                          <p className="text-xs text-muted-foreground">&nbsp;</p>
+                          <div className="text-center w-full">
+                            <p className="text-[10px] md:text-xs text-muted-foreground">-</p>
+                            {goal.is_completed && (
+                              <Badge variant="default" className="text-xs">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Completed
+                              </Badge>
+                            )}
+                          </div>
                         )}
                       </div>
 
                       <div className="min-h-[24px]">
                         {goal.category && (
-                          <Badge variant="outline">{goal.category}</Badge>
+                          <Badge variant="outline" className="text-xs flex-shrink-0">{goal.category}</Badge>
                         )}
                       </div>
 
@@ -559,23 +475,15 @@ export default function GoalsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditGoal(goal.id)}
+                          onClick={() => handleUnarchive(goal.id)}
                         >
-                          <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          <ArchiveRestore className="mr-1 h-3 w-3" />
+                          Unarchive
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleArchiveGoal(goal.id)}
-                        >
-                          <Archive className="mr-1 h-3 w-3" />
-                          Archive
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteGoal(goal.id)}
+                          onClick={() => handleDelete(goal.id)}
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
@@ -588,7 +496,7 @@ export default function GoalsPage() {
               );
             })}
             </div>
-          </div>
+          </>
         ) : (
           <div className="border rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
@@ -597,13 +505,14 @@ export default function GoalsPage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedGoalIds.size === filteredGoals.length}
+                        checked={selectedGoalIds.size === filteredGoals.length && filteredGoals.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all goals"
+                        aria-label="Select all"
                       />
                     </TableHead>
                     <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead className="hidden lg:table-cell">Category</TableHead>
                     <TableHead className="text-right">Saved</TableHead>
                     <TableHead className="text-right">Target</TableHead>
                     <TableHead className="hidden sm:table-cell text-right">Progress</TableHead>
@@ -622,7 +531,7 @@ export default function GoalsPage() {
                     const displayCurrency = goal.display_currency ?? goal.currency;
 
                     return (
-                      <TableRow key={goal.id}>
+                      <TableRow key={goal.id} className="opacity-75">
                         <TableCell>
                           <Checkbox
                             checked={selectedGoalIds.has(goal.id)}
@@ -639,6 +548,11 @@ export default function GoalsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
+                          <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                            {goal.description || '-'}
+                          </p>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {goal.category ? (
                             <Badge variant="outline" className="text-xs">{goal.category}</Badge>
                           ) : (
@@ -706,13 +620,13 @@ export default function GoalsPage() {
                           )}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
-                          <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'} className="text-xs">
+                          <Badge variant={goal.is_completed ? 'default' : 'outline'} className="text-xs">
                             {goal.is_completed ? (
                               <span className="flex items-center gap-1">
                                 <CheckCircle2 className="h-3 w-3" />
                                 Done
                               </span>
-                            ) : goal.is_active ? 'Active' : 'Paused'}
+                            ) : 'Archived'}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -720,23 +634,15 @@ export default function GoalsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleEditGoal(goal.id)}
+                              onClick={() => handleUnarchive(goal.id)}
                               className="h-8 w-8 p-0"
                             >
-                              <Edit className="h-4 w-4" />
+                              <ArchiveRestore className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleArchiveGoal(goal.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Archive className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteGoal(goal.id)}
+                              onClick={() => handleDelete(goal.id)}
                               disabled={isDeleting}
                               className="h-8 w-8 p-0"
                             >
@@ -754,21 +660,13 @@ export default function GoalsPage() {
         )}
       </div>
 
-      {/* Goal Form Dialog */}
-      {isFormOpen && (
-        <GoalForm
-          goalId={editingGoalId}
-          isOpen={isFormOpen}
-          onClose={handleFormClose}
-        />
-      )}
-
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Goal"
+        title="Delete Goal Permanently"
+        description="This will permanently delete this goal. This action cannot be undone."
         itemName="goal"
         isDeleting={isDeleting}
       />

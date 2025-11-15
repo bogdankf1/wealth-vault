@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { FileText, DollarSign, Percent, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -28,6 +28,7 @@ import {
 import {
   useListTaxesQuery,
   useGetTaxStatsQuery,
+  useUpdateTaxMutation,
   useDeleteTaxMutation,
   useBatchDeleteTaxRecordsMutation,
   type Tax,
@@ -53,8 +54,9 @@ export default function TaxesPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
-  const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery();
+  const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery({ is_active: true });
   const { data: stats } = useGetTaxStatsQuery();
+  const [updateTax] = useUpdateTaxMutation();
   const [deleteTax] = useDeleteTaxMutation();
   const [batchDeleteTaxRecords, { isLoading: isBatchDeleting }] = useBatchDeleteTaxRecordsMutation();
 
@@ -85,6 +87,21 @@ export default function TaxesPage() {
     }
   };
 
+  const handleArchiveTax = async (id: string) => {
+    try {
+      await updateTax({ id, data: { is_active: false } }).unwrap();
+      toast.success('Tax archived successfully');
+      setSelectedTaxIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to archive tax:', error);
+      toast.error('Failed to archive tax');
+    }
+  };
+
   const handleToggleSelect = (taxId: string) => {
     const newSelected = new Set(selectedTaxIds);
     if (newSelected.has(taxId)) {
@@ -106,7 +123,7 @@ export default function TaxesPage() {
   const handleBatchDelete = useCallback(() => {
     if (selectedTaxIds.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  }, []);
+  }, [selectedTaxIds]);
 
   const handleAddTax = useCallback(() => {
     setDeletingTax(null);
@@ -494,6 +511,14 @@ export default function TaxesPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleArchiveTax(tax.id)}
+                    >
+                      <Archive className="mr-1 h-3 w-3" />
+                      Archive
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDeleteClick(tax)}
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
@@ -526,7 +551,7 @@ export default function TaxesPage() {
                 <TableHead className="hidden xl:table-cell">Notes</TableHead>
                 <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right w-[180px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -622,20 +647,30 @@ export default function TaxesPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(tax.id)}
+                        className="h-8 w-8 p-0"
                       >
-                        <Edit className="h-3 w-3" />
+                        <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleArchiveTax(tax.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteClick(tax)}
+                        className="h-8 w-8 p-0"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

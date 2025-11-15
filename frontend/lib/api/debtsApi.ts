@@ -13,6 +13,7 @@ export interface Debt {
   amount_paid: number;
   currency: string;
   is_paid: boolean;
+  is_active: boolean;
   due_date?: string;
   paid_date?: string;
   notes?: string;
@@ -35,6 +36,7 @@ export interface DebtCreate {
   amount_paid?: number;
   currency?: string;
   is_paid?: boolean;
+  is_active?: boolean;
   due_date?: string;
   paid_date?: string;
   notes?: string;
@@ -47,6 +49,7 @@ export interface DebtUpdate {
   amount_paid?: number;
   currency?: string;
   is_paid?: boolean;
+  is_active?: boolean;
   due_date?: string;
   paid_date?: string;
   notes?: string;
@@ -73,6 +76,7 @@ export interface ListDebtsParams {
   page?: number;
   page_size?: number;
   is_paid?: boolean;
+  is_active?: boolean;
 }
 
 

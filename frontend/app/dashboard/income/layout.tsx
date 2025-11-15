@@ -5,7 +5,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, History } from 'lucide-react';
+import { LayoutGrid, History, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import type { ModuleTab } from '@/types/module-layout';
@@ -14,6 +14,7 @@ import { IncomeActionsContext } from './context';
 const INCOME_TABS: ModuleTab[] = [
   { value: 'overview', label: 'Overview', icon: LayoutGrid, href: '/dashboard/income/overview' },
   { value: 'history', label: 'History', icon: History, href: '/dashboard/income/history' },
+  { value: 'archive', label: 'Archive', icon: Archive, href: '/dashboard/income/archive' },
 ];
 
 export default function IncomeLayout({ children }: { children: React.ReactNode }) {

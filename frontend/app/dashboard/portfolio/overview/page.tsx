@@ -5,10 +5,11 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, BarChart3, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
 import {
   useListPortfolioAssetsQuery,
   useGetPortfolioStatsQuery,
+  useUpdatePortfolioAssetMutation,
   useDeletePortfolioAssetMutation,
   useBatchDeleteAssetsMutation,
 } from '@/lib/api/portfolioApi';
@@ -62,7 +63,7 @@ export default function PortfolioPage() {
     isLoading: isLoadingAssets,
     error: assetsError,
     refetch: refetchAssets,
-  } = useListPortfolioAssetsQuery({});
+  } = useListPortfolioAssetsQuery({ is_active: true });
 
   const {
     data: stats,
@@ -70,6 +71,7 @@ export default function PortfolioPage() {
     error: statsError,
   } = useGetPortfolioStatsQuery();
 
+  const [updateAsset] = useUpdatePortfolioAssetMutation();
   const [deleteAsset, { isLoading: isDeleting }] = useDeletePortfolioAssetMutation();
   const [batchDeleteAssets, { isLoading: isBatchDeleting }] = useBatchDeleteAssetsMutation();
 
@@ -86,6 +88,21 @@ export default function PortfolioPage() {
   const handleDeleteAsset = (id: string) => {
     setDeletingAssetId(id);
     setDeleteDialogOpen(true);
+  };
+
+  const handleArchiveAsset = async (id: string) => {
+    try {
+      await updateAsset({ id, data: { is_active: false } }).unwrap();
+      toast.success('Portfolio asset archived successfully');
+      setSelectedAssetIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to archive asset:', error);
+      toast.error('Failed to archive portfolio asset');
+    }
   };
 
   const confirmDelete = async () => {
@@ -128,7 +145,7 @@ export default function PortfolioPage() {
   const handleBatchDelete = useCallback(() => {
     if (selectedAssetIds.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  }, []);
+  }, [selectedAssetIds]);
 
   // Set action buttons in layout
   React.useEffect(() => {
@@ -635,6 +652,14 @@ export default function PortfolioPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handleArchiveAsset(asset.id)}
+                        >
+                          <Archive className="mr-1 h-3 w-3" />
+                          Archive
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleDeleteAsset(asset.id)}
                           disabled={isDeleting}
                         >
@@ -670,7 +695,7 @@ export default function PortfolioPage() {
                     <TableHead className="hidden xl:table-cell text-right">Current Price</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">Original Value</TableHead>
                     <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                    <TableHead className="text-right w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -769,6 +794,14 @@ export default function PortfolioPage() {
                               className="h-8 w-8 p-0"
                             >
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleArchiveAsset(asset.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Archive className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"

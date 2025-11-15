@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { UserMinus, AlertCircle, Edit, Trash2, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3, DollarSign } from 'lucide-react';
+import { UserMinus, AlertCircle, Edit, Trash2, Archive, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3, DollarSign } from 'lucide-react';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -29,6 +29,7 @@ import {
 import {
   useListDebtsQuery,
   useGetDebtStatsQuery,
+  useUpdateDebtMutation,
   useDeleteDebtMutation,
   useBatchDeleteDebtsMutation,
   type Debt,
@@ -54,8 +55,9 @@ export default function DebtsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
 
-  const { data: debtsData, isLoading, error, refetch } = useListDebtsQuery();
+  const { data: debtsData, isLoading, error, refetch } = useListDebtsQuery({ is_active: true });
   const { data: stats } = useGetDebtStatsQuery();
+  const [updateDebt] = useUpdateDebtMutation();
   const [deleteDebt] = useDeleteDebtMutation();
   const [batchDeleteDebts, { isLoading: isBatchDeleting }] = useBatchDeleteDebtsMutation();
 
@@ -86,6 +88,21 @@ export default function DebtsPage() {
     }
   };
 
+  const handleArchiveDebt = async (id: string) => {
+    try {
+      await updateDebt({ id, data: { is_active: false } }).unwrap();
+      toast.success('Debt archived successfully');
+      setSelectedDebtIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to archive debt:', error);
+      toast.error('Failed to archive debt');
+    }
+  };
+
   const handleToggleSelect = (debtId: string) => {
     const newSelected = new Set(selectedDebtIds);
     if (newSelected.has(debtId)) {
@@ -107,7 +124,7 @@ export default function DebtsPage() {
   const handleBatchDelete = useCallback(() => {
     if (selectedDebtIds.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  }, []);
+  }, [selectedDebtIds]);
 
   const handleAddDebt = useCallback(() => {
     setDeletingDebt(null);
@@ -503,6 +520,14 @@ export default function DebtsPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleArchiveDebt(debt.id)}
+                    >
+                      <Archive className="mr-1 h-3 w-3" />
+                      Archive
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDeleteClick(debt)}
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
@@ -536,7 +561,7 @@ export default function DebtsPage() {
                   <TableHead className="hidden xl:table-cell">Dates</TableHead>
                   <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
                   <TableHead className="hidden sm:table-cell">Status</TableHead>
-                  <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  <TableHead className="text-right w-[180px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -636,6 +661,14 @@ export default function DebtsPage() {
                           className="h-8 w-8 p-0"
                         >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleArchiveDebt(debt.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Archive className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"

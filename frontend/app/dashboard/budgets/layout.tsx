@@ -7,7 +7,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { BudgetsActionsContext } from './context';
@@ -18,6 +18,12 @@ const BUDGETS_TABS: ModuleTab[] = [
     label: 'Overview',
     icon: LayoutGrid,
     href: '/dashboard/budgets/overview',
+  },
+  {
+    value: 'archive',
+    label: 'Archive',
+    icon: Archive,
+    href: '/dashboard/budgets/archive',
   },
 ];
 

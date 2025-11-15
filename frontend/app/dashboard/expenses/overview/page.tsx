@@ -5,11 +5,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useListExpensesQuery,
   useGetExpenseStatsQuery,
+  useUpdateExpenseMutation,
   useDeleteExpenseMutation,
   useBatchDeleteExpensesMutation,
 } from '@/lib/api/expensesApi';
@@ -77,7 +78,7 @@ export default function ExpensesPage() {
     isLoading: isLoadingExpenses,
     error: expensesError,
     refetch: refetchExpenses,
-  } = useListExpensesQuery({});
+  } = useListExpensesQuery({ is_active: true });
 
   // Calculate date range from selectedMonth
   const statsParams = React.useMemo(() => {
@@ -99,6 +100,7 @@ export default function ExpensesPage() {
     error: statsError,
   } = useGetExpenseStatsQuery(statsParams);
 
+  const [updateExpense] = useUpdateExpenseMutation();
   const [deleteExpense, { isLoading: isDeleting }] = useDeleteExpenseMutation();
   const [batchDeleteExpenses, { isLoading: isBatchDeleting }] = useBatchDeleteExpensesMutation();
 
@@ -115,6 +117,21 @@ export default function ExpensesPage() {
   const handleDeleteExpense = (id: string) => {
     setDeletingExpenseId(id);
     setDeleteDialogOpen(true);
+  };
+
+  const handleArchiveExpense = async (id: string) => {
+    try {
+      await updateExpense({ id, data: { is_active: false } }).unwrap();
+      toast.success('Expense archived successfully');
+      setSelectedExpenseIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to archive expense:', error);
+      toast.error('Failed to archive expense');
+    }
   };
 
   const confirmDelete = async () => {
@@ -582,6 +599,14 @@ export default function ExpensesPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleArchiveExpense(expense.id)}
+                      >
+                        <Archive className="mr-1 h-3 w-3" />
+                        Archive
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleDeleteExpense(expense.id)}
                         disabled={isDeleting}
                       >
@@ -617,7 +642,7 @@ export default function ExpensesPage() {
                     <TableHead className="hidden xl:table-cell text-right">Monthly Equiv.</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
                     <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[140px]">Actions</TableHead>
+                    <TableHead className="text-right w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -714,6 +739,14 @@ export default function ExpensesPage() {
                             className="h-8 w-8 p-0"
                           >
                             <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleArchiveExpense(expense.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Archive className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
