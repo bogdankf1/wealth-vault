@@ -349,7 +349,13 @@
         "nameRequired": "Please enter a layout name."
       }
     },
-    "confirmDelete": "Are you sure you want to delete this layout?"
+    "deleteDialog": {
+      "title": "Delete Layout",
+      "description": "Are you sure you want to delete this layout? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    }
   },
   "notifications": {
     "email": {

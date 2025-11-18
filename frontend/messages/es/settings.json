@@ -349,7 +349,13 @@
         "nameRequired": "Por favor, ingresa un nombre de diseño."
       }
     },
-    "confirmDelete": "¿Estás seguro de que deseas eliminar este diseño?"
+    "deleteDialog": {
+      "title": "Eliminar Diseño",
+      "description": "¿Estás seguro de que deseas eliminar este diseño? Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "deleting": "Eliminando..."
+    }
   },
   "notifications": {
     "email": {

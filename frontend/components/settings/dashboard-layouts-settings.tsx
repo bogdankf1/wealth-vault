@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { useTranslations } from 'next-intl';
 
 export function DashboardLayoutsSettings() {
@@ -37,11 +38,13 @@ export function DashboardLayoutsSettings() {
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: layoutsData, isLoading } = useListLayoutsQuery();
   const [activateLayout] = useActivateLayoutMutation();
-  const [deleteLayout] = useDeleteLayoutMutation();
+  const [deleteLayout, { isLoading: isDeleting }] = useDeleteLayoutMutation();
   const [initializePresets] = useInitializePresetsMutation();
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingLayout, setEditingLayout] = useState<DashboardLayout | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingLayoutId, setDeletingLayoutId] = useState<string | null>(null);
 
   // Check if user has Wealth tier
   const isWealthTier = currentUser?.tier?.name === 'wealth';
@@ -62,15 +65,22 @@ export function DashboardLayoutsSettings() {
     }
   };
 
-  const handleDelete = async (layoutId: string) => {
-    if (!confirm(t('confirmDelete'))) return;
+  const handleDelete = (layoutId: string) => {
+    setDeletingLayoutId(layoutId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingLayoutId) return;
 
     try {
-      await deleteLayout(layoutId).unwrap();
+      await deleteLayout(deletingLayoutId).unwrap();
       toast({
         title: t('toasts.layoutDeleted.title'),
         description: t('toasts.layoutDeleted.description'),
       });
+      setDeleteDialogOpen(false);
+      setDeletingLayoutId(null);
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'data' in error
         && typeof error.data === 'object' && error.data && 'detail' in error.data
@@ -263,6 +273,19 @@ export function DashboardLayoutsSettings() {
           setEditingLayout(null);
         }}
         layout={editingLayout}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title={t('deleteDialog.title')}
+        description={t('deleteDialog.description')}
+        cancelLabel={t('deleteDialog.cancel')}
+        deleteLabel={t('deleteDialog.delete')}
+        deletingLabel={t('deleteDialog.deleting')}
+        isDeleting={isDeleting}
       />
     </>
   );
