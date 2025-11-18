@@ -1943,5 +1943,47 @@
     "module_completion": "A module is complete when it has backend API, frontend UI, tests, tier checks, and documentation",
     "code_quality": "Code should be readable, maintainable, performant, and follow established patterns. Frontend code must have 0 lint/prettier/TypeScript errors and NO 'any' types.",
     "user_experience": "Features should be intuitive, responsive, accessible, and provide helpful feedback"
+  },
+
+  "internationalization": {
+    "overview": "Wealth Vault supports multiple languages for the user interface. All new features and components must be built with internationalization (i18n) in mind.",
+    "framework": "next-intl library for Next.js App Router",
+    "supported_languages": [
+      "en - English (default)",
+      "uk - Ukrainian (Українська)",
+      "es - Spanish (Español)"
+    ],
+    "guidelines": {
+      "all_text_must_be_translatable": "Never hardcode user-facing text in components. Always use translation keys from message files.",
+      "translation_files_location": "frontend/messages/{locale}/{module}.json",
+      "common_translations": "Shared UI elements (buttons, labels, errors) go in frontend/messages/{locale}/common.json",
+      "module_translations": "Module-specific translations go in frontend/messages/{locale}/{module_name}.json (e.g., expenses.json, income.json)",
+      "use_translation_hook": "Import and use useTranslations from next-intl: const t = useTranslations('expenses')",
+      "translation_key_format": "Use dot notation for nested keys: t('overview.title'), t('form.namePlaceholder')",
+      "parameterized_translations": "Use placeholders for dynamic values: t('analysis.sourcesActive', { count: 3, total: 5 })",
+      "admin_panel_management": "Languages can be managed from the Admin Panel > Languages page",
+      "user_preference": "Users can select their preferred language in Settings > Appearance > Language",
+      "backend_storage": "User language preference is stored in user_preferences.language field"
+    },
+    "adding_new_translations": {
+      "step1": "Add translation keys to all language files (en, uk, es) in the appropriate module file",
+      "step2": "Use useTranslations hook in the component to access translations",
+      "step3": "Test language switching in the UI to ensure all text is properly translated",
+      "step4": "Verify no hardcoded text remains in the component"
+    },
+    "example_usage": {
+      "component_import": "import { useTranslations } from 'next-intl';",
+      "hook_usage": "const t = useTranslations('expenses');",
+      "simple_text": "t('overview.title') // Returns: 'Expenses Overview' or 'Огляд витрат' or 'Resumen de gastos'",
+      "with_parameters": "t('analysis.sourcesActive', { count: 3, total: 5 }) // Returns: '3 of 5 sources actively incurring expenses'",
+      "nested_keys": "t('form.namePlaceholder') // Returns: 'Enter expense name'"
+    },
+    "important_notes": [
+      "ALWAYS add translations for ALL supported languages when creating new features",
+      "Translation files must be valid JSON with consistent structure across all languages",
+      "Test language switching to ensure no text is missed",
+      "Keep translation keys organized by feature/section for maintainability",
+      "Use descriptive key names that indicate the context and purpose of the text"
+    ]
   }
 }
