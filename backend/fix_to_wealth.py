@@ -29,7 +29,7 @@ async def update_to_wealth():
             LEFT JOIN tiers t ON u.tier_id = t.id
             WHERE u.email = 'bogdankf1@gmail.com'
         """)
-        print(f"   Current tier: {user['tier_name']}")
+        print(f"  Current tier: {user['tier_name']}")
 
     finally:
         await conn.close()
