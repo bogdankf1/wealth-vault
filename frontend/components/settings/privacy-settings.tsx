@@ -9,8 +9,10 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useGetMyPreferencesQuery, useUpdateMyPreferencesMutation, AnalyticsOptOut } from '@/lib/api/preferencesApi';
+import { useTranslations } from 'next-intl';
 
 export function PrivacySettings() {
+  const t = useTranslations('settings.privacy');
   const { toast } = useToast();
   const { data: preferences, isLoading } = useGetMyPreferencesQuery();
   const [updatePreferences] = useUpdateMyPreferencesMutation();
@@ -38,13 +40,13 @@ export function PrivacySettings() {
     try {
       await updatePreferences({ analytics_opt_out: updated }).unwrap();
       toast({
-        title: 'Analytics Preferences Updated',
-        description: 'Your privacy preferences have been saved.',
+        title: t('toasts.analyticsUpdated.title'),
+        description: t('toasts.analyticsUpdated.description'),
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to update privacy preferences',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.analyticsDescription'),
         variant: 'destructive',
       });
       setAnalyticsOptOut(analyticsOptOut);
@@ -57,13 +59,13 @@ export function PrivacySettings() {
     try {
       await updatePreferences({ data_visibility: value }).unwrap();
       toast({
-        title: 'Data Visibility Updated',
-        description: `Your data visibility is now set to ${value}.`,
+        title: t('toasts.dataVisibilityUpdated.title'),
+        description: `${t('toasts.dataVisibilityUpdated.description')} ${value}`,
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to update data visibility',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.dataVisibilityDescription'),
         variant: 'destructive',
       });
       setDataVisibility(dataVisibility);
@@ -72,8 +74,8 @@ export function PrivacySettings() {
 
   const handleExportData = () => {
     toast({
-      title: 'Data Export Requested',
-      description: 'Your data export will be ready shortly. We\'ll send you an email with the download link.',
+      title: t('toasts.dataExportRequested.title'),
+      description: t('toasts.dataExportRequested.description'),
     });
     // TODO: Implement actual data export functionality
   };
@@ -103,18 +105,18 @@ export function PrivacySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Analytics & Tracking
+            {t('analytics.title')}
           </CardTitle>
           <CardDescription>
-            Control what data we collect to improve our service
+            {t('analytics.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="analytics-usage">Usage Analytics</Label>
+              <Label htmlFor="analytics-usage">{t('analytics.usageAnalytics.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Help us improve by sharing anonymous usage data
+                {t('analytics.usageAnalytics.description')}
               </p>
             </div>
             <Switch
@@ -126,9 +128,9 @@ export function PrivacySettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="analytics-errors">Error Reporting</Label>
+              <Label htmlFor="analytics-errors">{t('analytics.errorReporting.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Automatically send error reports to help us fix bugs
+                {t('analytics.errorReporting.description')}
               </p>
             </div>
             <Switch
@@ -140,9 +142,9 @@ export function PrivacySettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="analytics-performance">Performance Monitoring</Label>
+              <Label htmlFor="analytics-performance">{t('analytics.performanceMonitoring.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Help us optimize performance by sharing performance metrics
+                {t('analytics.performanceMonitoring.description')}
               </p>
             </div>
             <Switch
@@ -159,10 +161,10 @@ export function PrivacySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
-            Data Visibility
+            {t('dataVisibility.title')}
           </CardTitle>
           <CardDescription>
-            Control how your data is used within the platform
+            {t('dataVisibility.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,10 +174,10 @@ export function PrivacySettings() {
                 <RadioGroupItem value="private" id="visibility-private" />
                 <div className="flex-1">
                   <Label htmlFor="visibility-private" className="font-medium">
-                    Private
+                    {t('dataVisibility.private.label')}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Your data is completely private and never shared or used in aggregate statistics
+                    {t('dataVisibility.private.description')}
                   </p>
                 </div>
               </div>
@@ -184,10 +186,10 @@ export function PrivacySettings() {
                 <RadioGroupItem value="anonymous" id="visibility-anonymous" />
                 <div className="flex-1">
                   <Label htmlFor="visibility-anonymous" className="font-medium">
-                    Anonymous
+                    {t('dataVisibility.anonymous.label')}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Your data may be used in anonymous aggregate statistics to improve our service
+                    {t('dataVisibility.anonymous.description')}
                   </p>
                 </div>
               </div>
@@ -201,28 +203,27 @@ export function PrivacySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Download className="h-5 w-5" />
-            Export Your Data
+            {t('dataExport.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              Coming Soon
+              {t('dataExport.comingSoon')}
             </span>
           </CardTitle>
           <CardDescription>
-            Download all your data in a portable format (GDPR compliant)
+            {t('dataExport.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Data export functionality is currently in development. Once available, you&apos;ll be able to download all your financial data.
+              {t('dataExport.warningMessage')}
             </p>
           </div>
           <p className="text-sm text-muted-foreground">
-            You will be able to request a copy of all your personal data. We&apos;ll prepare a downloadable file containing
-            all your information including income sources, expenses, goals, and account details.
+            {t('dataExport.info')}
           </p>
           <Button onClick={handleExportData} variant="outline" disabled className="cursor-not-allowed opacity-50">
             <Download className="h-4 w-4 mr-2" />
-            Request Data Export
+            {t('dataExport.button')}
           </Button>
         </CardContent>
       </Card>

@@ -18,6 +18,11 @@ interface BatchDeleteConfirmDialogProps {
   count: number;
   itemName?: string;
   isDeleting?: boolean;
+  title?: string;
+  description?: string;
+  cancelLabel?: string;
+  deleteLabel?: string;
+  deletingLabel?: string;
 }
 
 export function BatchDeleteConfirmDialog({
@@ -27,20 +32,28 @@ export function BatchDeleteConfirmDialog({
   count,
   itemName = 'item',
   isDeleting = false,
+  title,
+  description,
+  cancelLabel = 'Cancel',
+  deleteLabel = 'Delete',
+  deletingLabel = 'Deleting...',
 }: BatchDeleteConfirmDialogProps) {
+  const defaultTitle = `Delete ${count} ${itemName}${count > 1 ? 's' : ''}?`;
+  const defaultDescription = `This action cannot be undone. This will permanently delete ${count} ${itemName}${count > 1 ? 's' : ''} from the system.`;
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete {count} {itemName}{count > 1 ? 's' : ''}?</AlertDialogTitle>
+          <AlertDialogTitle>{title || defaultTitle}</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete {count} {itemName}{count > 1 ? 's' : ''} from the system.
+            {description || defaultDescription}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} disabled={isDeleting} className="bg-destructive text-white hover:bg-destructive/90">
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            {isDeleting ? deletingLabel : deleteLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

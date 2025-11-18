@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   useListGoalsQuery,
@@ -38,6 +39,12 @@ import { GoalsActionsContext } from '../context';
 import { Progress } from '@/components/ui/progress';
 
 export default function GoalsArchivePage() {
+  // Translations
+  const tArchive = useTranslations('goals.archive');
+  const tActions = useTranslations('goals.actions');
+  const tCommon = useTranslations('common');
+  const tStatus = useTranslations('goals.status');
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,7 +107,7 @@ export default function GoalsArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateGoal({ id, data: { is_active: true } }).unwrap();
-      toast.success('Goal unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedGoalIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -108,7 +115,7 @@ export default function GoalsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive goal:', error);
-      toast.error('Failed to unarchive goal');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -128,14 +135,14 @@ export default function GoalsArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} goal(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} goal(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedGoalIds(new Set());
-  }, [selectedGoalIds, updateGoal]);
+  }, [selectedGoalIds, updateGoal, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingGoalId(id);
@@ -147,7 +154,7 @@ export default function GoalsArchivePage() {
 
     try {
       await deleteGoal(deletingGoalId).unwrap();
-      toast.success('Goal deleted permanently');
+      toast.success(tCommon('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingGoalId(null);
       setSelectedGoalIds((prev) => {
@@ -157,7 +164,7 @@ export default function GoalsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete goal:', error);
-      toast.error('Failed to delete goal');
+      toast.error(tCommon('deleteError'));
     }
   };
 
@@ -194,16 +201,16 @@ export default function GoalsArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} goal(s)`);
+        toast.error(tCommon('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} goal(s) permanently`);
+        toast.success(tCommon('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedGoalIds(new Set());
     } catch (error) {
       console.error('Failed to delete goals:', error);
-      toast.error('Failed to delete goals');
+      toast.error(tCommon('deleteError'));
     }
   };
 
@@ -220,7 +227,7 @@ export default function GoalsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedGoalIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedGoalIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -229,7 +236,7 @@ export default function GoalsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedGoalIds.size})</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selectedGoalIds.size })}</span>
             </Button>
           </>
         )}
@@ -237,7 +244,7 @@ export default function GoalsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedGoalIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedGoalIds.size, setActions, handleBatchUnarchive, tArchive]);
 
   const isLoading = isLoadingGoals;
   const hasError = goalsError;
@@ -263,8 +270,8 @@ export default function GoalsArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search archived goals..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tCommon('common.allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -273,6 +280,7 @@ export default function GoalsArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -303,14 +311,14 @@ export default function GoalsArchivePage() {
         ) : !goals || goals.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived goals"
-            description="Archived goals will appear here"
+            title={tArchive('noAccounts')}
+            description={tArchive('noAccountsDescription')}
           />
         ) : !filteredGoals || filteredGoals.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived goals found"
-            description="Try adjusting your search or filters"
+            title={tCommon('noResults')}
+            description={tArchive('noFilterResults')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -319,10 +327,10 @@ export default function GoalsArchivePage() {
                 <Checkbox
                   checked={selectedGoalIds.size === filteredGoals.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all goals"
+                  aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedGoalIds.size === filteredGoals.length ? 'Deselect all' : 'Select all'}
+                  {selectedGoalIds.size === filteredGoals.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -353,7 +361,7 @@ export default function GoalsArchivePage() {
                         </div>
                       </div>
                       <Badge variant="secondary" className="text-xs flex-shrink-0">
-                        Archived
+                        {tStatus('archived')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -471,14 +479,14 @@ export default function GoalsArchivePage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleUnarchive(goal.id)}
                         >
                           <ArchiveRestore className="mr-1 h-3 w-3" />
-                          Unarchive
+                          {tActions('unarchive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -487,7 +495,7 @@ export default function GoalsArchivePage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -624,9 +632,9 @@ export default function GoalsArchivePage() {
                             {goal.is_completed ? (
                               <span className="flex items-center gap-1">
                                 <CheckCircle2 className="h-3 w-3" />
-                                Done
+                                {tStatus('done')}
                               </span>
-                            ) : 'Archived'}
+                            ) : tStatus('archived')}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -665,10 +673,12 @@ export default function GoalsArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Goal Permanently"
-        description="This will permanently delete this goal. This action cannot be undone."
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
         itemName="goal"
         isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -679,6 +689,8 @@ export default function GoalsArchivePage() {
         count={selectedGoalIds.size}
         itemName="goal"
         isDeleting={isBatchDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

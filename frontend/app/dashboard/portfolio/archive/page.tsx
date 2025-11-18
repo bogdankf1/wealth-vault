@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   useListPortfolioAssetsQuery,
@@ -37,6 +38,23 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { PortfolioActionsContext } from '../context';
 
 export default function PortfolioArchivePage() {
+  // Translation hooks
+  const tArchive = useTranslations('portfolio.archive');
+  const tOverview = useTranslations('portfolio.overview');
+  const tActions = useTranslations('portfolio.actions');
+  const tCommon = useTranslations('common');
+  const tAssetTypes = useTranslations('portfolio.assetTypes');
+
+  const ASSET_TYPE_LABELS: Record<string, string> = {
+    stocks: tAssetTypes('stocks'),
+    bonds: tAssetTypes('bonds'),
+    etfs: tAssetTypes('etfs'),
+    crypto: tAssetTypes('crypto'),
+    realEstate: tAssetTypes('realEstate'),
+    commodities: tAssetTypes('commodities'),
+    mutualFunds: tAssetTypes('mutualFunds'),
+    other: tAssetTypes('other'),
+  };
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,7 +117,7 @@ export default function PortfolioArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateAsset({ id, data: { is_active: true } }).unwrap();
-      toast.success('Portfolio asset unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedAssetIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -107,7 +125,7 @@ export default function PortfolioArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive portfolio asset:', error);
-      toast.error('Failed to unarchive portfolio asset');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -127,14 +145,14 @@ export default function PortfolioArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} asset(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} asset(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedAssetIds(new Set());
-  }, [selectedAssetIds, updateAsset]);
+  }, [selectedAssetIds, updateAsset, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingAssetId(id);
@@ -146,7 +164,7 @@ export default function PortfolioArchivePage() {
 
     try {
       await deleteAsset(deletingAssetId).unwrap();
-      toast.success('Portfolio asset deleted permanently');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingAssetId(null);
       setSelectedAssetIds((prev) => {
@@ -156,7 +174,7 @@ export default function PortfolioArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete portfolio asset:', error);
-      toast.error('Failed to delete portfolio asset');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -193,16 +211,16 @@ export default function PortfolioArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} asset(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} asset(s) permanently`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedAssetIds(new Set());
     } catch (error) {
       console.error('Failed to delete portfolio assets:', error);
-      toast.error('Failed to delete portfolio assets');
+      toast.error(tOverview('batchDeleteError', { count: selectedAssetIds.size }));
     }
   };
 
@@ -225,7 +243,7 @@ export default function PortfolioArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedAssetIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedAssetIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -234,7 +252,7 @@ export default function PortfolioArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedAssetIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedAssetIds.size })}</span>
             </Button>
           </>
         )}
@@ -242,7 +260,7 @@ export default function PortfolioArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedAssetIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedAssetIds.size, setActions, handleBatchUnarchive, tArchive, tOverview]);
 
   const isLoading = isLoadingAssets;
   const hasError = assetsError;
@@ -268,8 +286,9 @@ export default function PortfolioArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueAssetTypes}
-              searchPlaceholder="Search archived portfolio assets..."
-              categoryPlaceholder="All Asset Types"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allAssetTypes')}
+              categoryLabels={ASSET_TYPE_LABELS}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -278,6 +297,7 @@ export default function PortfolioArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -308,14 +328,14 @@ export default function PortfolioArchivePage() {
         ) : !assets || assets.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived portfolio assets"
-            description="Archived portfolio assets will appear here"
+            title={tArchive('noAccounts')}
+            description={tArchive('noAccountsDescription')}
           />
         ) : !filteredAssets || filteredAssets.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived portfolio assets found"
-            description="Try adjusting your search or filters"
+            title={tCommon('noResults')}
+            description={tOverview('noFilterResults')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -324,10 +344,10 @@ export default function PortfolioArchivePage() {
                 <Checkbox
                   checked={selectedAssetIds.size === filteredAssets.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all portfolio assets"
+                  aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedAssetIds.size === filteredAssets.length ? 'Deselect all' : 'Select all'}
+                  {selectedAssetIds.size === filteredAssets.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -366,7 +386,7 @@ export default function PortfolioArchivePage() {
                         </div>
                       </div>
                       <Badge variant="secondary" className="text-xs flex-shrink-0">
-                        Archived
+                        {tArchive('archived')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -383,12 +403,12 @@ export default function PortfolioArchivePage() {
                           />
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Current Value
+                          {tOverview('currentValue')}
                         </p>
                         <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
                           {asset.display_currency && asset.display_currency !== asset.currency && (
                             <>
-                              Original: <CurrencyDisplay
+                              {tOverview('original')} <CurrencyDisplay
                                 amount={asset.current_value || 0}
                                 currency={asset.currency}
                                 showSymbol={true}
@@ -403,7 +423,7 @@ export default function PortfolioArchivePage() {
                       <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px] flex items-center justify-center">
                         <div className="text-center w-full">
                           <p className="text-[10px] md:text-xs text-muted-foreground">
-                            Total Return
+                            {tOverview('return')}
                           </p>
                           <p className={`text-sm font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                             <CurrencyDisplay
@@ -422,11 +442,11 @@ export default function PortfolioArchivePage() {
                       {/* Holdings Info */}
                       <div className="rounded-lg bg-muted/50 p-2 md:p-3 space-y-1">
                         <div className="flex justify-between text-xs md:text-sm">
-                          <span className="text-muted-foreground">Quantity:</span>
+                          <span className="text-muted-foreground">{tOverview('quantity')}:</span>
                           <span className="font-semibold">{parseFloat(asset.quantity.toString()).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-xs md:text-sm">
-                          <span className="text-muted-foreground">Purchase Price:</span>
+                          <span className="text-muted-foreground">{tCommon('common.purchasePrice')}:</span>
                           <span className="font-semibold">
                             <CurrencyDisplay
                               amount={displayPurchasePrice}
@@ -437,7 +457,7 @@ export default function PortfolioArchivePage() {
                           </span>
                         </div>
                         <div className="flex justify-between text-xs md:text-sm">
-                          <span className="text-muted-foreground">Current Price:</span>
+                          <span className="text-muted-foreground">{tOverview('currentPrice')}:</span>
                           <span className="font-semibold">
                             <CurrencyDisplay
                               amount={displayCurrentPrice}
@@ -455,14 +475,14 @@ export default function PortfolioArchivePage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleUnarchive(asset.id)}
                         >
                           <ArchiveRestore className="mr-1 h-3 w-3" />
-                          Unarchive
+                          {tArchive('unarchive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -471,7 +491,7 @@ export default function PortfolioArchivePage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -494,15 +514,15 @@ export default function PortfolioArchivePage() {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Asset</TableHead>
-                    <TableHead className="hidden md:table-cell">Symbol</TableHead>
-                    <TableHead className="hidden lg:table-cell">Type</TableHead>
-                    <TableHead className="text-right">Current Value</TableHead>
-                    <TableHead className="hidden sm:table-cell text-right">Return</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Quantity</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Current Price</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Value</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('asset')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tOverview('symbol')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('type')}</TableHead>
+                    <TableHead className="text-right">{tOverview('currentValue')}</TableHead>
+                    <TableHead className="hidden sm:table-cell text-right">{tOverview('return')}</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">{tOverview('quantity')}</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">{tOverview('currentPrice')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalValue')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -630,10 +650,12 @@ export default function PortfolioArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Portfolio Asset Permanently"
-        description="This will permanently delete this portfolio asset. This action cannot be undone."
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
         itemName="portfolio asset"
         isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -644,6 +666,8 @@ export default function PortfolioArchivePage() {
         count={selectedAssetIds.size}
         itemName="portfolio asset"
         isDeleting={isBatchDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   useListSubscriptionsQuery,
@@ -42,14 +43,22 @@ import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { SubscriptionsActionsContext } from '../context';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  biannually: 'Bi-annually',
-  annually: 'Annually',
-};
-
 export default function SubscriptionsArchivePage() {
+  // Translation hooks
+  const tArchive = useTranslations('subscriptions.archive');
+  const tActions = useTranslations('subscriptions.actions');
+  const tCommon = useTranslations('common');
+  const tRenewal = useTranslations('subscriptions.renewal');
+  const tFrequencies = useTranslations('subscriptions.frequencies');
+  const tStatus = useTranslations('subscriptions.status');
+
+  const FREQUENCY_LABELS: Record<string, string> = {
+    monthly: tFrequencies('monthly'),
+    quarterly: tFrequencies('quarterly'),
+    biannually: tFrequencies('biannually'),
+    annually: tFrequencies('annually'),
+  };
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingSubscriptionId, setDeletingSubscriptionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,7 +121,7 @@ export default function SubscriptionsArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateSubscription({ id, data: { is_active: true } }).unwrap();
-      toast.success('Subscription unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedSubscriptionIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -120,7 +129,7 @@ export default function SubscriptionsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive subscription:', error);
-      toast.error('Failed to unarchive subscription');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -140,14 +149,14 @@ export default function SubscriptionsArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} subscription(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} subscription(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedSubscriptionIds(new Set());
-  }, [selectedSubscriptionIds, updateSubscription]);
+  }, [selectedSubscriptionIds, updateSubscription, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingSubscriptionId(id);
@@ -159,7 +168,7 @@ export default function SubscriptionsArchivePage() {
 
     try {
       await deleteSubscription(deletingSubscriptionId).unwrap();
-      toast.success('Subscription deleted permanently');
+      toast.success(tArchive('unarchiveSuccess'));
       setDeleteDialogOpen(false);
       setDeletingSubscriptionId(null);
       setSelectedSubscriptionIds((prev) => {
@@ -169,7 +178,7 @@ export default function SubscriptionsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete subscription:', error);
-      toast.error('Failed to delete subscription');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -206,16 +215,16 @@ export default function SubscriptionsArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} subscription(s)`);
+        toast.error(tArchive('batchUnarchiveError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} subscription(s) permanently`);
+        toast.success(tArchive('batchUnarchiveSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedSubscriptionIds(new Set());
     } catch (error) {
       console.error('Failed to delete subscriptions:', error);
-      toast.error('Failed to delete subscriptions');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -244,7 +253,7 @@ export default function SubscriptionsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedSubscriptionIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedSubscriptionIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -253,7 +262,7 @@ export default function SubscriptionsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedSubscriptionIds.size})</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selectedSubscriptionIds.size })}</span>
             </Button>
           </>
         )}
@@ -261,7 +270,7 @@ export default function SubscriptionsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedSubscriptionIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedSubscriptionIds.size, setActions, handleBatchUnarchive, tArchive]);
 
   const isLoading = isLoadingSubscriptions;
   const hasError = subscriptionsError;
@@ -287,8 +296,8 @@ export default function SubscriptionsArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search archived subscriptions..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tCommon('common.allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -297,6 +306,7 @@ export default function SubscriptionsArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -327,14 +337,14 @@ export default function SubscriptionsArchivePage() {
         ) : !subscriptions || subscriptions.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived subscriptions"
-            description="Archived subscriptions will appear here"
+            title={tArchive('noSubscriptions')}
+            description={tArchive('noSubscriptionsDescription')}
           />
         ) : !filteredSubscriptions || filteredSubscriptions.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived subscriptions found"
-            description="Try adjusting your search or filters"
+            title={tArchive('noFilterResults')}
+            description={tArchive('noSubscriptionsDescription')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -343,10 +353,10 @@ export default function SubscriptionsArchivePage() {
                 <Checkbox
                   checked={selectedSubscriptionIds.size === filteredSubscriptions.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all subscriptions"
+                  aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedSubscriptionIds.size === filteredSubscriptions.length ? 'Deselect all' : 'Select all'}
+                  {selectedSubscriptionIds.size === filteredSubscriptions.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -359,7 +369,20 @@ export default function SubscriptionsArchivePage() {
                 subscription.end_date
               );
               const urgency = getRenewalUrgency(daysUntilRenewal);
-              const renewalMessage = getRenewalMessage(daysUntilRenewal, isEnded);
+
+              // Get renewal message with translations
+              let renewalMessage = '';
+              if (isEnded) {
+                renewalMessage = tRenewal('ended');
+              } else if (daysUntilRenewal < 0) {
+                renewalMessage = tRenewal('noRenewalScheduled');
+              } else if (daysUntilRenewal === 0) {
+                renewalMessage = tRenewal('renewsToday');
+              } else if (daysUntilRenewal === 1) {
+                renewalMessage = tRenewal('renewsIn1Day', { days: 1 });
+              } else {
+                renewalMessage = tRenewal('renewsInDays', { days: daysUntilRenewal });
+              }
 
               return (
                 <Card key={subscription.id} className="relative opacity-75">
@@ -380,7 +403,7 @@ export default function SubscriptionsArchivePage() {
                         </div>
                       </div>
                       <Badge variant="secondary" className="text-xs flex-shrink-0">
-                        Archived
+                        {tArchive('archived')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -416,7 +439,7 @@ export default function SubscriptionsArchivePage() {
                       <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextRenewal ? (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Next Renewal</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tArchive('nextRenewal')}</p>
                             <p className="text-sm font-semibold">
                               {formatRenewalDate(nextRenewal)}
                             </p>
@@ -429,8 +452,8 @@ export default function SubscriptionsArchivePage() {
                           </>
                         ) : (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Status</p>
-                            <p className="text-sm font-semibold">{isEnded ? 'Ended' : 'No upcoming renewal'}</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tArchive('status')}</p>
+                            <p className="text-sm font-semibold">{isEnded ? tStatus('expired') : tArchive('nextRenewal')}</p>
                           </>
                         )}
                       </div>
@@ -441,14 +464,14 @@ export default function SubscriptionsArchivePage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleUnarchive(subscription.id)}
                         >
                           <ArchiveRestore className="mr-1 h-3 w-3" />
-                          Unarchive
+                          {tArchive('unarchive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -457,7 +480,7 @@ export default function SubscriptionsArchivePage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -477,17 +500,17 @@ export default function SubscriptionsArchivePage() {
                       <Checkbox
                         checked={selectedSubscriptionIds.size === filteredSubscriptions.length && filteredSubscriptions.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tArchive('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
-                    <TableHead className="hidden xl:table-cell">Next Renewal</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tCommon('common.name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tCommon('common.description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tCommon('common.category')}</TableHead>
+                    <TableHead className="text-right">{tCommon('common.amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tArchive('frequency')}</TableHead>
+                    <TableHead className="hidden xl:table-cell">{tArchive('nextRenewal')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tArchive('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -498,7 +521,20 @@ export default function SubscriptionsArchivePage() {
                       subscription.end_date
                     );
                     const urgency = getRenewalUrgency(daysUntilRenewal);
-                    const renewalMessage = getRenewalMessage(daysUntilRenewal, isEnded);
+
+                    // Get renewal message with translations
+                    let renewalMessage = '';
+                    if (isEnded) {
+                      renewalMessage = tRenewal('ended');
+                    } else if (daysUntilRenewal < 0) {
+                      renewalMessage = tRenewal('noRenewalScheduled');
+                    } else if (daysUntilRenewal === 0) {
+                      renewalMessage = tRenewal('renewsToday');
+                    } else if (daysUntilRenewal === 1) {
+                      renewalMessage = tRenewal('renewsIn1Day', { days: 1 });
+                    } else {
+                      renewalMessage = tRenewal('renewsInDays', { days: daysUntilRenewal });
+                    }
 
                     return (
                       <TableRow key={subscription.id} className="opacity-75">
@@ -606,10 +642,12 @@ export default function SubscriptionsArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Subscription Permanently"
-        description="This will permanently delete this subscription. This action cannot be undone."
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
         itemName="subscription"
         isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -620,6 +658,8 @@ export default function SubscriptionsArchivePage() {
         count={selectedSubscriptionIds.size}
         itemName="subscription"
         isDeleting={isBatchDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

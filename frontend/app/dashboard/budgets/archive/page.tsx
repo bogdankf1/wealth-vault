@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   useListBudgetsQuery,
@@ -36,13 +37,14 @@ import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { BudgetsActionsContext } from '../context';
 
-const PERIOD_LABELS: Record<string, string> = {
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  yearly: 'Yearly',
-};
-
 export default function BudgetsArchivePage() {
+  // Translation hooks
+  const tArchive = useTranslations('budgets.archive');
+  const tActions = useTranslations('budgets.actions');
+  const tCommon = useTranslations('common');
+  const tPeriod = useTranslations('budgets.period');
+  const tOverview = useTranslations('budgets.overview');
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingBudgetId, setDeletingBudgetId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,6 +59,13 @@ export default function BudgetsArchivePage() {
 
   // Context to set action buttons in layout
   const { setActions } = React.useContext(BudgetsActionsContext);
+
+  // Period labels with translations
+  const PERIOD_LABELS: Record<string, string> = {
+    monthly: tPeriod('monthly'),
+    quarterly: tPeriod('quarterly'),
+    yearly: tPeriod('yearly'),
+  };
 
   // Fetch only archived budgets (is_active: false)
   const {
@@ -105,7 +114,7 @@ export default function BudgetsArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateBudget({ id, data: { is_active: true } }).unwrap();
-      toast.success('Budget unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedBudgetIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -113,7 +122,7 @@ export default function BudgetsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive budget:', error);
-      toast.error('Failed to unarchive budget');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -133,14 +142,14 @@ export default function BudgetsArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} budget(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} budget(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedBudgetIds(new Set());
-  }, [selectedBudgetIds, updateBudget]);
+  }, [selectedBudgetIds, updateBudget, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingBudgetId(id);
@@ -152,7 +161,7 @@ export default function BudgetsArchivePage() {
 
     try {
       await deleteBudget(deletingBudgetId).unwrap();
-      toast.success('Budget deleted permanently');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingBudgetId(null);
       setSelectedBudgetIds((prev) => {
@@ -162,7 +171,7 @@ export default function BudgetsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete budget:', error);
-      toast.error('Failed to delete budget');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -199,16 +208,16 @@ export default function BudgetsArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} budget(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} budget(s) permanently`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedBudgetIds(new Set());
     } catch (error) {
       console.error('Failed to delete budgets:', error);
-      toast.error('Failed to delete budgets');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -225,7 +234,7 @@ export default function BudgetsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedBudgetIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedBudgetIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -234,7 +243,7 @@ export default function BudgetsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedBudgetIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedBudgetIds.size })}</span>
             </Button>
           </>
         )}
@@ -242,7 +251,7 @@ export default function BudgetsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedBudgetIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedBudgetIds.size, setActions, tArchive, tOverview]);
 
   const isLoading = isLoadingBudgets;
   const hasError = budgetsError;
@@ -287,8 +296,8 @@ export default function BudgetsArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search archived budgets..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -297,6 +306,7 @@ export default function BudgetsArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -327,14 +337,14 @@ export default function BudgetsArchivePage() {
         ) : !budgets || budgets.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived budgets"
-            description="Archived budgets will appear here"
+            title={tArchive('noBudgets')}
+            description={tArchive('noBudgetsDescription')}
           />
         ) : !filteredBudgets || filteredBudgets.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived budgets found"
-            description="Try adjusting your search or filters"
+            title={tOverview('noFilterResults')}
+            description={tArchive('noBudgetsDescription')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -343,10 +353,10 @@ export default function BudgetsArchivePage() {
                 <Checkbox
                   checked={selectedBudgetIds.size === filteredBudgets.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all budgets"
+                  aria-label={tOverview('selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedBudgetIds.size === filteredBudgets.length ? 'Deselect all' : 'Select all'}
+                  {selectedBudgetIds.size === filteredBudgets.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -376,7 +386,7 @@ export default function BudgetsArchivePage() {
                         </div>
                       </div>
                       <Badge variant="secondary" className="text-xs flex-shrink-0">
-                        Archived
+                        {tArchive('archived')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -411,7 +421,7 @@ export default function BudgetsArchivePage() {
                       {/* Progress Bar */}
                       <div className="rounded-lg bg-muted p-2 md:p-3 space-y-2">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">Spent</span>
+                          <span className="text-muted-foreground">{tOverview('spent')}</span>
                           <span className="font-semibold">
                             <CurrencyDisplay
                               amount={spent}
@@ -468,14 +478,14 @@ export default function BudgetsArchivePage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex gap-2 pt-2 flex-wrap">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleUnarchive(budget.id)}
                         >
                           <ArchiveRestore className="mr-1 h-3 w-3" />
-                          Unarchive
+                          {tActions('unarchive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -484,7 +494,7 @@ export default function BudgetsArchivePage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -504,19 +514,19 @@ export default function BudgetsArchivePage() {
                       <Checkbox
                         checked={selectedBudgetIds.size === filteredBudgets.length && filteredBudgets.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Budget</TableHead>
-                    <TableHead className="text-right">Spent</TableHead>
-                    <TableHead className="text-right">Remaining</TableHead>
-                    <TableHead className="hidden sm:table-cell">Period</TableHead>
-                    <TableHead className="hidden xl:table-cell">Date Range</TableHead>
-                    <TableHead className="hidden 2xl:table-cell">Progress</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('budgetedAmount')}</TableHead>
+                    <TableHead className="text-right">{tOverview('spent')}</TableHead>
+                    <TableHead className="text-right">{tOverview('remaining')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('period')}</TableHead>
+                    <TableHead className="hidden xl:table-cell">{tOverview('dateRange')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell">{tArchive('progress')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -643,9 +653,11 @@ export default function BudgetsArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Budget Permanently"
-        description="This will permanently delete this budget. This action cannot be undone."
-        itemName="budget"
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 

@@ -19,10 +19,23 @@ import {
   type SupportTopic,
 } from '@/lib/api/supportApi';
 import { formatDistanceToNow } from 'date-fns';
+import { enUS, es, uk } from 'date-fns/locale';
+import { useTranslations } from 'next-intl';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function HelpCenterPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { locale } = useLanguage();
+  const tPage = useTranslations('help.page');
+  const tCreateTopic = useTranslations('help.createTopic');
+  const tTopicsList = useTranslations('help.topicsList');
+  const tTopicDetail = useTranslations('help.topicDetail');
+  const tStatus = useTranslations('help.status');
+  const tToasts = useTranslations('help.toasts');
+
+  // Get date-fns locale based on current language
+  const dateLocale = locale === 'es' ? es : locale === 'uk' ? uk : enUS;
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [newTopicTitle, setNewTopicTitle] = useState('');
   const [newTopicMessage, setNewTopicMessage] = useState('');
@@ -40,8 +53,8 @@ export default function HelpCenterPage() {
     e.preventDefault();
     if (!newTopicTitle.trim() || !newTopicMessage.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please fill in both title and message',
+        title: tToasts('createError'),
+        description: tToasts('createErrorDescription'),
         variant: 'destructive',
       });
       return;
@@ -54,8 +67,8 @@ export default function HelpCenterPage() {
       }).unwrap();
 
       toast({
-        title: 'Success',
-        description: 'Your support topic has been created',
+        title: tToasts('createSuccess'),
+        description: tToasts('createSuccessDescription'),
       });
 
       setNewTopicTitle('');
@@ -63,8 +76,8 @@ export default function HelpCenterPage() {
       refetchTopics();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to create topic. Please try again.',
+        title: tToasts('createFailed'),
+        description: tToasts('createFailedDescription'),
         variant: 'destructive',
       });
     }
@@ -81,16 +94,16 @@ export default function HelpCenterPage() {
       }).unwrap();
 
       toast({
-        title: 'Success',
-        description: 'Your reply has been sent',
+        title: tToasts('replySuccess'),
+        description: tToasts('replySuccessDescription'),
       });
 
       setReplyMessage('');
       refetchDetail();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to send reply. Please try again.',
+        title: tToasts('replyFailed'),
+        description: tToasts('replyFailedDescription'),
         variant: 'destructive',
       });
     }
@@ -102,21 +115,21 @@ export default function HelpCenterPage() {
         return (
           <Badge variant="outline" className="border-blue-500 text-blue-500">
             <Clock className="h-3 w-3 mr-1" />
-            Open
+            {tStatus('open')}
           </Badge>
         );
       case SupportTopicStatus.IN_PROGRESS:
         return (
           <Badge variant="outline" className="border-yellow-500 text-yellow-500">
             <AlertCircle className="h-3 w-3 mr-1" />
-            In Progress
+            {tStatus('inProgress')}
           </Badge>
         );
       case SupportTopicStatus.RESOLVED:
         return (
           <Badge variant="outline" className="border-green-500 text-green-500">
             <CheckCircle2 className="h-3 w-3 mr-1" />
-            Resolved
+            {tStatus('resolved')}
           </Badge>
         );
       default:
@@ -134,7 +147,7 @@ export default function HelpCenterPage() {
           className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Topics
+          {tTopicDetail('backButton')}
         </Button>
 
         <Card>
@@ -143,7 +156,7 @@ export default function HelpCenterPage() {
               <div className="flex-1">
                 <CardTitle className="text-2xl">{topicDetail.title}</CardTitle>
                 <CardDescription className="mt-2">
-                  Created {formatDistanceToNow(new Date(topicDetail.created_at))} ago
+                  {tTopicDetail('created')} {formatDistanceToNow(new Date(topicDetail.created_at), { locale: dateLocale })} {tTopicDetail('ago')}
                 </CardDescription>
               </div>
               <div className="flex flex-col items-end gap-2">
@@ -154,7 +167,7 @@ export default function HelpCenterPage() {
                   onClick={() => refetchDetail()}
                 >
                   <RefreshCw className="h-4 w-4 mr-1" />
-                  Refresh
+                  {tTopicDetail('refreshButton')}
                 </Button>
               </div>
             </div>
@@ -163,7 +176,7 @@ export default function HelpCenterPage() {
             {/* Disclaimer */}
             <div className="mb-6 p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">
-                <strong>Note:</strong> We typically respond within 24-48 hours. Please refresh this page to see new replies from our support team.
+                <strong>{tTopicDetail('noteTitle')}</strong> {tTopicDetail('noteText')}
               </p>
             </div>
 
@@ -183,10 +196,10 @@ export default function HelpCenterPage() {
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs font-semibold">
-                        {message.is_admin_reply ? 'Support Team' : 'You'}
+                        {message.is_admin_reply ? tTopicDetail('supportTeam') : tTopicDetail('you')}
                       </span>
                       <span className="text-xs opacity-70">
-                        {formatDistanceToNow(new Date(message.created_at))} ago
+                        {formatDistanceToNow(new Date(message.created_at), { locale: dateLocale })} {tTopicDetail('ago')}
                       </span>
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{message.message}</p>
@@ -199,7 +212,7 @@ export default function HelpCenterPage() {
             {topicDetail.status !== SupportTopicStatus.RESOLVED && (
               <form onSubmit={handleAddReply} className="space-y-4">
                 <Textarea
-                  placeholder="Type your reply here..."
+                  placeholder={tTopicDetail('replyPlaceholder')}
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
                   rows={4}
@@ -207,7 +220,7 @@ export default function HelpCenterPage() {
                 />
                 <Button type="submit" disabled={replying || !replyMessage.trim()}>
                   <Send className="h-4 w-4 mr-2" />
-                  {replying ? 'Sending...' : 'Send Reply'}
+                  {replying ? tTopicDetail('sending') : tTopicDetail('sendButton')}
                 </Button>
               </form>
             )}
@@ -215,7 +228,7 @@ export default function HelpCenterPage() {
             {topicDetail.status === SupportTopicStatus.RESOLVED && (
               <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg text-center">
                 <p className="text-sm text-green-800 dark:text-green-200">
-                  This topic has been marked as resolved. If you need further assistance, please create a new topic.
+                  {tTopicDetail('resolvedMessage')}
                 </p>
               </div>
             )}
@@ -229,25 +242,25 @@ export default function HelpCenterPage() {
   return (
     <div className="container mx-auto py-6 px-4 max-w-5xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Help Center</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">{tPage('title')}</h1>
         <p className="text-muted-foreground">
-          Get help with your questions or report issues. Our support team is here to assist you.
+          {tPage('description')}
         </p>
       </div>
 
       {/* Create new topic form */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Create New Support Topic</CardTitle>
+          <CardTitle>{tCreateTopic('title')}</CardTitle>
           <CardDescription>
-            Have a question or need help? Create a new topic and we will get back to you.
+            {tCreateTopic('description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCreateTopic} className="space-y-4">
             <div>
               <Input
-                placeholder="Topic title (e.g., 'Unable to add expense')"
+                placeholder={tCreateTopic('titlePlaceholder')}
                 value={newTopicTitle}
                 onChange={(e) => setNewTopicTitle(e.target.value)}
                 required
@@ -256,7 +269,7 @@ export default function HelpCenterPage() {
             </div>
             <div>
               <Textarea
-                placeholder="Describe your issue or question in detail..."
+                placeholder={tCreateTopic('messagePlaceholder')}
                 value={newTopicMessage}
                 onChange={(e) => setNewTopicMessage(e.target.value)}
                 rows={4}
@@ -265,7 +278,7 @@ export default function HelpCenterPage() {
             </div>
             <Button type="submit" disabled={creating}>
               <MessageSquare className="h-4 w-4 mr-2" />
-              {creating ? 'Creating...' : 'Create Topic'}
+              {creating ? tCreateTopic('creating') : tCreateTopic('button')}
             </Button>
           </form>
         </CardContent>
@@ -273,7 +286,7 @@ export default function HelpCenterPage() {
 
       {/* Topics list */}
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Your Support Topics</h2>
+        <h2 className="text-2xl font-semibold mb-4">{tTopicsList('title')}</h2>
 
         {topicsLoading ? (
           <div className="space-y-4">
@@ -299,15 +312,15 @@ export default function HelpCenterPage() {
                     <div className="flex-1">
                       <CardTitle className="text-lg">{topic.title}</CardTitle>
                       <CardDescription className="mt-1">
-                        Created {formatDistanceToNow(new Date(topic.created_at))} ago
+                        {tTopicsList('created')} {formatDistanceToNow(new Date(topic.created_at), { locale: dateLocale })} {tTopicsList('ago')}
                         {topic.last_message_at && (
-                          <> · Last activity {formatDistanceToNow(new Date(topic.last_message_at))} ago</>
+                          <> · {tTopicsList('lastActivity')} {formatDistanceToNow(new Date(topic.last_message_at), { locale: dateLocale })} {tTopicsList('ago')}</>
                         )}
                       </CardDescription>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       {getStatusBadge(topic.status)}
-                      <Badge variant="secondary">{topic.message_count} messages</Badge>
+                      <Badge variant="secondary">{topic.message_count} {tTopicsList('messages')}</Badge>
                     </div>
                   </div>
                 </CardHeader>
@@ -318,9 +331,9 @@ export default function HelpCenterPage() {
           <Card>
             <CardContent className="text-center py-12">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground mb-2">No support topics yet</p>
+              <p className="text-muted-foreground mb-2">{tTopicsList('empty')}</p>
               <p className="text-sm text-muted-foreground">
-                Create your first topic above to get help from our support team.
+                {tTopicsList('emptyDescription')}
               </p>
             </CardContent>
           </Card>

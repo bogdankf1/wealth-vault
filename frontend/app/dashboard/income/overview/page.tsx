@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { TrendingUp, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListIncomeSourcesQuery,
@@ -43,16 +44,13 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  one_time: 'One-time',
-  weekly: 'Weekly',
-  biweekly: 'Bi-weekly',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  annually: 'Annually',
-};
-
 export default function IncomePage() {
+  const tOverview = useTranslations('income.overview');
+  const tActions = useTranslations('income.actions');
+  const tStatus = useTranslations('income.status');
+  const tFrequency = useTranslations('income.frequency');
+  const tCommon = useTranslations('common');
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -74,6 +72,11 @@ export default function IncomePage() {
 
   // Context to set action buttons in layout
   const { setActions } = React.useContext(IncomeActionsContext);
+
+  // Helper function to get frequency label
+  const getFrequencyLabel = (frequency: string) => {
+    return tFrequency(frequency);
+  };
 
   const {
     data: sourcesData,
@@ -175,12 +178,12 @@ export default function IncomePage() {
 
     try {
       await deleteSource(deletingSourceId).unwrap();
-      toast.success('Income source deleted successfully');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingSourceId(null);
     } catch (error) {
       console.error('Failed to delete income source:', error);
-      toast.error('Failed to delete income source');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -223,16 +226,16 @@ export default function IncomePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} income source(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} income source(s)`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedSourceIds(new Set());
     } catch (error) {
       console.error('Failed to batch delete income sources:', error);
-      toast.error('Failed to delete income sources');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -278,15 +281,18 @@ export default function IncomePage() {
   const statsCards: StatCard[] = stats
     ? [
         {
-          title: 'Total Sources',
+          title: tOverview('totalIncome'),
           value: stats.total_sources,
           description: selectedMonth
-            ? `${stats.active_sources} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${stats.active_sources} active`,
+            ? tOverview('activeIn', {
+                count: stats.active_sources,
+                month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+              })
+            : tOverview('active', { count: stats.active_sources }),
           icon: TrendingUp,
         },
         {
-          title: selectedMonth ? 'Period Income' : 'Monthly Income',
+          title: selectedMonth ? tOverview('periodIncome') : tOverview('monthlyIncome'),
           value: (
             <CurrencyDisplay
               amount={stats.total_monthly_income}
@@ -295,11 +301,11 @@ export default function IncomePage() {
               showCode={false}
             />
           ),
-          description: `From ${stats.active_sources} active ${stats.active_sources === 1 ? 'source' : 'sources'}`,
+          description: `${stats.active_sources} ${tOverview('active')}`,
           icon: TrendingUp,
         },
         {
-          title: 'Annual Income',
+          title: tOverview('annualIncome'),
           value: (
             <CurrencyDisplay
               amount={stats.total_annual_income}
@@ -308,7 +314,7 @@ export default function IncomePage() {
               showCode={false}
             />
           ),
-          description: selectedMonth ? 'Based on period income' : 'Projected yearly income',
+          description: selectedMonth ? tOverview('totalFor', { month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) }) : tOverview('projectedYearlyIncome'),
           icon: Calendar,
         },
       ]
@@ -327,7 +333,7 @@ export default function IncomePage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedSourceIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedSourceIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -336,20 +342,20 @@ export default function IncomePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedSourceIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedSourceIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddSource} size="default" className="w-full sm:w-auto">
           <TrendingUp className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Income Source</span>
+          <span className="truncate">{tOverview('addIncome')}</span>
         </Button>
       </>
     );
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSourceIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSource]);
+  }, [selectedSourceIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSource, tOverview]);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -427,20 +433,23 @@ export default function IncomePage() {
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
                 categories={uniqueCategories}
-                searchPlaceholder="Search income sources..."
-                categoryPlaceholder="All Categories"
+                searchPlaceholder={tOverview('searchPlaceholder')}
+                categoryPlaceholder={tOverview('allCategories')}
               />
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <MonthFilter
                 selectedMonth={selectedMonth}
                 onMonthChange={setSelectedMonth}
+                label={tCommon('common.filterBy')}
+                clearLabel={tCommon('common.clear')}
               />
               <SortFilter
                 sortField={sortField}
                 sortDirection={sortDirection}
                 onSortFieldChange={setSortField}
                 onSortDirectionChange={setSortDirection}
+                sortByLabel={tCommon('common.sortBy')}
               />
               <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
                 <Button
@@ -487,9 +496,9 @@ export default function IncomePage() {
         ) : !sourcesData?.items || sourcesData.items.length === 0 ? (
           <EmptyState
             icon={TrendingUp}
-            title="No income sources yet"
-            description="Start tracking your income by adding your first income source."
-            actionLabel="Add Income Source"
+            title={tOverview('noIncome')}
+            description={tOverview('noIncomeDescription')}
+            actionLabel={tOverview('addIncome')}
             onAction={handleAddSource}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
@@ -517,17 +526,19 @@ export default function IncomePage() {
           selectedMonth ? (
             <EmptyState
               icon={TrendingUp}
-              title="No income sources for this month"
-              description={`No income sources found for ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
-              actionLabel="Clear Filter"
+              title={tOverview('noIncomeForMonth')}
+              description={tOverview('noIncomeForMonthDescription', {
+                month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+              })}
+              actionLabel={tOverview('clearFilter')}
               onAction={() => setSelectedMonth(null)}
             />
           ) : (
             <EmptyState
               icon={TrendingUp}
-              title="No income sources yet"
-              description="Start tracking your income by adding your first income source."
-              actionLabel="Add Income Source"
+              title={tOverview('noIncome')}
+              description={tOverview('noIncomeDescription')}
+              actionLabel={tOverview('addIncome')}
               onAction={handleAddSource}
             />
           )
@@ -538,10 +549,10 @@ export default function IncomePage() {
                 <Checkbox
                   checked={selectedSourceIds.size === filteredSources.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all sources"
+                  aria-label={tOverview('selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedSourceIds.size === filteredSources.length ? 'Deselect all' : 'Select all'}
+                  {selectedSourceIds.size === filteredSources.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -565,7 +576,7 @@ export default function IncomePage() {
                       </div>
                     </div>
                     <Badge variant={source.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {source.is_active ? 'Active' : 'Inactive'}
+                      {source.is_active ? tStatus('active') : tStatus('inactive')}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -581,7 +592,7 @@ export default function IncomePage() {
                         />
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {FREQUENCY_LABELS[source.frequency] || source.frequency}
+                        {getFrequencyLabel(source.frequency)}
                         {source.display_currency && source.display_currency !== source.currency && (
                           <span className="ml-1 text-xs">
                             (orig: {source.amount} {source.currency})
@@ -595,7 +606,7 @@ export default function IncomePage() {
                         {(source.display_monthly_equivalent ?? source.monthly_equivalent) ? (
                           <>
                             <p className="text-[10px] md:text-xs text-muted-foreground">
-                              Monthly equivalent
+                              {tOverview('monthlyEquivalent')}
                             </p>
                             <p className="text-xs md:text-sm font-semibold">
                               <CurrencyDisplay
@@ -618,14 +629,14 @@ export default function IncomePage() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-wrap gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditSource(source.id)}
                       >
                         <Edit className="mr-1 h-3 w-3" />
-                        Edit
+                        {tActions('edit')}
                       </Button>
                       <Button
                         variant="outline"
@@ -633,7 +644,7 @@ export default function IncomePage() {
                         onClick={() => handleArchiveSource(source.id)}
                       >
                         <Archive className="mr-1 h-3 w-3" />
-                        Archive
+                        {tActions('archive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -642,7 +653,7 @@ export default function IncomePage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -661,18 +672,18 @@ export default function IncomePage() {
                       <Checkbox
                         checked={selectedSourceIds.size === filteredSources.length && filteredSources.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Monthly Equiv.</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('frequency')}</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyEquivalent')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -715,7 +726,7 @@ export default function IncomePage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">
-                          {FREQUENCY_LABELS[source.frequency] || source.frequency}
+                          {getFrequencyLabel(source.frequency)}
                         </span>
                       </TableCell>
                       <TableCell className="hidden xl:table-cell text-right">
@@ -743,7 +754,7 @@ export default function IncomePage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <Badge variant={source.is_active ? 'default' : 'secondary'} className="text-xs">
-                          {source.is_active ? 'Active' : 'Inactive'}
+                          {source.is_active ? tStatus('active') : tStatus('inactive')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -798,8 +809,11 @@ export default function IncomePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Income Source"
-        itemName="income source"
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 

@@ -6,9 +6,11 @@
 import { Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
 
 function LoginForm() {
+  const t = useTranslations('login');
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
@@ -24,10 +26,10 @@ function LoginForm() {
             <WealthVaultLogo size={48} />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Wealth Vault
+            {t('title')}
           </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Ultimate personal finance management
+            {t('tagline')}
           </p>
         </div>
 
@@ -54,11 +56,11 @@ function LoginForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            {t('button.google')}
           </button>
 
           <div className="text-xs text-center text-gray-500 dark:text-gray-400">
-            By continuing, you agree to our Terms of Service and Privacy Policy
+            {t('legal')}
           </div>
         </div>
       </div>

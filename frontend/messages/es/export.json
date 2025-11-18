@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Exportar Datos",
+    "description": "Exporta tus datos financieros en varios formatos"
+  },
+  "card": {
+    "title": "Configuración de Exportación",
+    "description": "Selecciona el tipo de datos, período y formato que deseas exportar"
+  },
+  "labels": {
+    "dataType": "Tipo de Datos",
+    "exportFormat": "Formato de Exportación",
+    "month": "Mes",
+    "year": "Año"
+  },
+  "placeholders": {
+    "selectDataType": "Seleccionar tipo de datos",
+    "selectFormat": "Seleccionar formato",
+    "selectMonth": "Seleccionar mes",
+    "selectYear": "Seleccionar año"
+  },
+  "entryTypes": {
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "subscriptions": "Suscripciones",
+    "installments": "Cuotas",
+    "budgets": "Presupuestos",
+    "savings": "Ahorros",
+    "portfolio": "Portafolio",
+    "goals": "Objetivos",
+    "debts": "Deudas",
+    "taxes": "Impuestos"
+  },
+  "months": {
+    "january": "Enero",
+    "february": "Febrero",
+    "march": "Marzo",
+    "april": "Abril",
+    "may": "Mayo",
+    "june": "Junio",
+    "july": "Julio",
+    "august": "Agosto",
+    "september": "Septiembre",
+    "october": "Octubre",
+    "november": "Noviembre",
+    "december": "Diciembre"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Exportar Datos",
+    "exporting": "Exportando..."
+  },
+  "messages": {
+    "successTitle": "Datos de {type} exportados exitosamente",
+    "successDescription": "Archivo: {filename}",
+    "errorAccessDenied": "Acceso denegado",
+    "errorAccessDeniedDescription": "Esta función requiere una suscripción de nivel Wealth",
+    "errorFailed": "Error al exportar",
+    "errorFailedDescription": "No se pudieron exportar los datos. Por favor, intenta de nuevo."
+  },
+  "info": {
+    "title": "Acerca de la Exportación de Datos",
+    "point1": "Las exportaciones incluyen todos los registros del mes y año seleccionados",
+    "point2": "Los archivos CSV se pueden abrir en Excel, Google Sheets o cualquier aplicación de hojas de cálculo",
+    "point3": "Esta función está disponible exclusivamente para suscriptores del nivel Wealth",
+    "point4": "Se pueden agregar formatos de exportación adicionales en futuras actualizaciones"
+  }
+}

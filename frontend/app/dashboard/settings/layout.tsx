@@ -6,28 +6,31 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { User, CreditCard, Palette, Bell, Shield, Lock, LayoutGrid } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-
-const SETTINGS_TABS = [
-  { value: 'account', label: 'Account', icon: User, href: '/dashboard/settings/account' },
-  { value: 'subscription', label: 'Subscription', icon: CreditCard, href: '/dashboard/settings/subscription' },
-  { value: 'appearance', label: 'Appearance', icon: Palette, href: '/dashboard/settings/appearance' },
-  { value: 'dashboard-layouts', label: 'Dashboard', icon: LayoutGrid, href: '/dashboard/settings/dashboard-layouts' },
-  { value: 'notifications', label: 'Notifications', icon: Bell, href: '/dashboard/settings/notifications' },
-  { value: 'privacy', label: 'Privacy', icon: Shield, href: '/dashboard/settings/privacy' },
-  { value: 'security', label: 'Security', icon: Lock, href: '/dashboard/settings/security' },
-];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const tPage = useTranslations('settings.page');
+  const tTabs = useTranslations('settings.tabs');
+
+  const SETTINGS_TABS = [
+    { value: 'account', label: tTabs('account'), icon: User, href: '/dashboard/settings/account' },
+    { value: 'subscription', label: tTabs('subscription'), icon: CreditCard, href: '/dashboard/settings/subscription' },
+    { value: 'appearance', label: tTabs('appearance'), icon: Palette, href: '/dashboard/settings/appearance' },
+    { value: 'dashboard-layouts', label: tTabs('dashboard'), icon: LayoutGrid, href: '/dashboard/settings/dashboard-layouts' },
+    { value: 'notifications', label: tTabs('notifications'), icon: Bell, href: '/dashboard/settings/notifications' },
+    { value: 'privacy', label: tTabs('privacy'), icon: Shield, href: '/dashboard/settings/privacy' },
+    { value: 'security', label: tTabs('security'), icon: Lock, href: '/dashboard/settings/security' },
+  ];
 
   return (
     <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{tPage('title')}</h1>
         <p className="text-muted-foreground">
-          Manage your account settings and preferences
+          {tPage('description')}
         </p>
       </div>
 

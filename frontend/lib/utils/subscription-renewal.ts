@@ -94,12 +94,19 @@ export function getRenewalUrgency(daysUntilRenewal: number): 'high' | 'medium' |
 
 /**
  * Format renewal date for display
+ * @param dateStr - Date string to format
+ * @param noUpcomingRenewalLabel - Optional label for when there's no upcoming renewal
+ * @param locale - Locale for date formatting (defaults to 'en-US')
  */
-export function formatRenewalDate(dateStr: string | null): string {
-  if (!dateStr) return 'No upcoming renewal';
+export function formatRenewalDate(
+  dateStr: string | null,
+  noUpcomingRenewalLabel?: string,
+  locale: string = 'en-US'
+): string {
+  if (!dateStr) return noUpcomingRenewalLabel || 'No upcoming renewal';
 
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -108,12 +115,25 @@ export function formatRenewalDate(dateStr: string | null): string {
 
 /**
  * Get human-readable renewal message
+ * @param daysUntilRenewal - Number of days until renewal
+ * @param isEnded - Whether the subscription has ended
+ * @param translations - Optional translation object with renewal messages
  */
-export function getRenewalMessage(daysUntilRenewal: number, isEnded: boolean): string {
-  if (isEnded) return 'Ended';
-  if (daysUntilRenewal < 0) return 'No renewal scheduled';
-  if (daysUntilRenewal === 0) return 'Renews today';
-  if (daysUntilRenewal === 1) return 'Renews tomorrow';
-  if (daysUntilRenewal <= 7) return `Renews in ${daysUntilRenewal} days`;
-  return `Renews in ${daysUntilRenewal} days`;
+export function getRenewalMessage(
+  daysUntilRenewal: number,
+  isEnded: boolean,
+  translations?: {
+    ended: string;
+    noRenewalScheduled: string;
+    renewsToday: string;
+    renewsTomorrow: string;
+    renewsInDays: string;
+    renewsIn1Day: string;
+  }
+): string {
+  if (isEnded) return translations?.ended || 'Ended';
+  if (daysUntilRenewal < 0) return translations?.noRenewalScheduled || 'No renewal scheduled';
+  if (daysUntilRenewal === 0) return translations?.renewsToday || 'Renews today';
+  if (daysUntilRenewal === 1) return translations?.renewsIn1Day?.replace('{days}', '1') || 'Renews tomorrow';
+  return translations?.renewsInDays?.replace('{days}', String(daysUntilRenewal)) || `Renews in ${daysUntilRenewal} days`;
 }

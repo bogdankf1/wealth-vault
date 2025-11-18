@@ -7,6 +7,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import * as z from 'zod';
 import {
   useCreatePortfolioAssetMutation,
@@ -71,19 +72,24 @@ interface PortfolioFormProps {
   onClose: () => void;
 }
 
-const ASSET_TYPE_OPTIONS = [
-  { value: 'Stocks', label: 'Stocks' },
-  { value: 'Bonds', label: 'Bonds' },
-  { value: 'ETFs', label: 'ETFs' },
-  { value: 'Crypto', label: 'Cryptocurrency' },
-  { value: 'Real Estate', label: 'Real Estate' },
-  { value: 'Commodities', label: 'Commodities' },
-  { value: 'Mutual Funds', label: 'Mutual Funds' },
-  { value: 'Other', label: 'Other' },
-];
-
 export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) {
   const isEditing = Boolean(assetId);
+
+  // Translation hooks
+  const tForm = useTranslations('portfolio.form');
+  const tActions = useTranslations('portfolio.actions');
+  const tAssetTypes = useTranslations('portfolio.assetTypes');
+
+  const ASSET_TYPE_OPTIONS = [
+    { value: 'Stocks', label: tAssetTypes('stocks') },
+    { value: 'Bonds', label: tAssetTypes('bonds') },
+    { value: 'ETFs', label: tAssetTypes('etfs') },
+    { value: 'Crypto', label: tAssetTypes('crypto') },
+    { value: 'Real Estate', label: tAssetTypes('realEstate') },
+    { value: 'Commodities', label: tAssetTypes('commodities') },
+    { value: 'Mutual Funds', label: tAssetTypes('mutualFunds') },
+    { value: 'Other', label: tAssetTypes('other') },
+  ];
 
   // Local state to track the string value of purchase_price while user is typing
   const [purchasePriceInput, setPurchasePriceInput] = React.useState<string>('');
@@ -197,17 +203,17 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
       if (isEditing && assetId) {
         await updateAsset({ id: assetId, data: submitData }).unwrap();
-        toast.success('Portfolio asset updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createAsset(submitData).unwrap();
-        toast.success('Portfolio asset created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save portfolio asset:', error);
-      toast.error(isEditing ? 'Failed to update portfolio asset' : 'Failed to create portfolio asset');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -242,12 +248,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Asset' : 'Add Asset'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the details of your portfolio asset.'
-              : 'Add a new investment asset to track in your portfolio.'}
+            {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -259,10 +263,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="asset_name">Asset Name *</Label>
+                <Label htmlFor="asset_name">{tForm('assetName')} *</Label>
                 <Input
                   id="asset_name"
-                  placeholder="e.g., Apple Inc."
+                  placeholder={tForm('assetNamePlaceholder')}
                   {...register('asset_name')}
                 />
                 {errors.asset_name && (
@@ -271,10 +275,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="symbol">Symbol/Ticker</Label>
+                <Label htmlFor="symbol">{tForm('symbol')}</Label>
                 <Input
                   id="symbol"
-                  placeholder="e.g., AAPL"
+                  placeholder={tForm('symbolPlaceholder')}
                   {...register('symbol')}
                 />
                 {errors.symbol && (
@@ -284,13 +288,13 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="asset_type">Asset Type</Label>
+              <Label htmlFor="asset_type">{tForm('assetType')}</Label>
               <Select
                 value={watch('asset_type') || ''}
                 onValueChange={(value) => setValue('asset_type', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select asset type" />
+                  <SelectValue placeholder={tForm('assetTypePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {ASSET_TYPE_OPTIONS.map((option) => (
@@ -303,10 +307,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this investment"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={2}
                 {...register('description')}
               />
@@ -318,12 +322,12 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity *</Label>
+              <Label htmlFor="quantity">{tForm('quantity')} *</Label>
               <Input
                 id="quantity"
                 type="number"
                 step="0.00000001"
-                placeholder="0.00"
+                placeholder={tForm('quantityPlaceholder')}
                 {...register('quantity', { valueAsNumber: true })}
               />
               {errors.quantity && (
@@ -333,7 +337,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
             <CurrencyInput
               key={`currency-${assetId || 'new'}-${watch('currency')}`}
-              label="Purchase Price (per unit)"
+              label={tForm('purchasePrice')}
               amount={purchasePriceInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
@@ -353,17 +357,17 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
               onCurrencyChange={(value) => setValue('currency', value)}
               required
               error={errors.purchase_price?.message}
-              placeholder="0.00"
+              placeholder={tForm('purchasePricePlaceholder')}
             />
 
             <div className="space-y-2">
-              <Label htmlFor="current_price">Current Price (per unit) *</Label>
+              <Label htmlFor="current_price">{tForm('currentPrice')} *</Label>
               <div className="relative flex-1">
                 <Input
                   id="current_price"
                   type="number"
                   step="0.01"
-                  placeholder="0.00"
+                  placeholder={tForm('currentPricePlaceholder')}
                   {...register('current_price', { valueAsNumber: true })}
                 />
               </div>
@@ -373,7 +377,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="purchase_date">Purchase Date *</Label>
+              <Label htmlFor="purchase_date">{tForm('purchaseDate')} *</Label>
               <Input
                 id="purchase_date"
                 type="date"
@@ -391,10 +395,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             {/* Calculated Metrics Display */}
             {(quantity > 0 && purchasePrice > 0 && currentPrice > 0) && (
               <div className="rounded-lg border bg-muted p-4 space-y-2">
-                <h4 className="text-sm font-semibold">Calculated Metrics</h4>
+                <h4 className="text-sm font-semibold">{tForm('calculatedMetrics')}</h4>
                 <div className="grid gap-2 sm:grid-cols-2 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Total Invested: </span>
+                    <span className="text-muted-foreground">{tForm('totalInvested')}</span>
                     <span className="font-medium">
                       <CurrencyDisplay
                         amount={totalInvested}
@@ -405,7 +409,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Current Value: </span>
+                    <span className="text-muted-foreground">{tForm('totalValue')}</span>
                     <span className="font-medium">
                       <CurrencyDisplay
                         amount={currentValue}
@@ -416,7 +420,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Total Return: </span>
+                    <span className="text-muted-foreground">{tForm('totalReturn')}</span>
                     <span className={`font-medium ${totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       <CurrencyDisplay
                         amount={totalReturn}
@@ -427,7 +431,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Return %: </span>
+                    <span className="text-muted-foreground">{tForm('returnPercentage')}</span>
                     <span className={`font-medium ${returnPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {returnPercentage >= 0 ? '+' : ''}{returnPercentage.toFixed(2)}%
                     </span>
@@ -437,7 +441,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             )}
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">Active Asset</Label>
+              <Label htmlFor="is_active">{tForm('isActive')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -447,14 +451,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading
-                  ? 'Saving...'
-                  : isEditing
-                  ? 'Update Asset'
-                  : 'Add Asset'}
+                {isLoading ? tForm('saving') : isEditing ? tForm('update') : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

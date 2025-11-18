@@ -3,6 +3,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -71,6 +72,11 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
+  // Translation hooks
+  const tForm = useTranslations('budgets.form');
+  const tActions = useTranslations('budgets.actions');
+  const tPeriod = useTranslations('budgets.period');
+
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
 
@@ -131,19 +137,17 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
 
       if (budget) {
         await updateBudget({ id: budget.id, data: payload }).unwrap();
-        toast.success('Budget updated successfully');
-        toast.success('Budget updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createBudget(payload).unwrap();
-        toast.success('Budget created successfully');
-        toast.success('Budget created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       form.reset();
       setAmountInput('');
       onClose();
     } catch {
-      toast.error(budget ? 'Failed to update budget' : 'Failed to create budget');
+      toast.error(budget ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -156,11 +160,11 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{budget ? 'Edit Budget' : 'Create Budget'}</DialogTitle>
+          <DialogTitle>{budget ? tForm('editTitle') : tForm('addTitle')}</DialogTitle>
           <DialogDescription>
             {budget
-              ? 'Update your budget details'
-              : 'Set up a new budget to track your spending'}
+              ? tForm('editDescription')
+              : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -171,9 +175,9 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Budget Name</FormLabel>
+                  <FormLabel>{tForm('name')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Monthly Groceries" {...field} />
+                    <Input placeholder={tForm('namePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -185,11 +189,11 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>{tForm('category')}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder={tForm('categoryPlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -210,10 +214,10 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel>{tForm('description')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Additional details about this budget"
+                      placeholder={tForm('descriptionPlaceholder')}
                       {...field}
                     />
                   </FormControl>
@@ -224,7 +228,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
 
             <CurrencyInput
               key={`currency-${budget?.id || 'new'}-${form.watch('currency')}`}
-              label="Budget Amount"
+              label={tForm('amount')}
               amount={amountInput}
               currency={form.watch('currency')}
               onAmountChange={(value) => {
@@ -251,7 +255,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               name="period"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Budget Period</FormLabel>
+                  <FormLabel>{tForm('period')}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
@@ -259,9 +263,9 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="quarterly">Quarterly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
+                      <SelectItem value="monthly">{tPeriod('monthly')}</SelectItem>
+                      <SelectItem value="quarterly">{tPeriod('quarterly')}</SelectItem>
+                      <SelectItem value="yearly">{tPeriod('yearly')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -275,7 +279,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
                 name="start_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Date</FormLabel>
+                    <FormLabel>{tForm('startDate')}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -292,12 +296,12 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
                 name="end_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>End Date (Optional)</FormLabel>
+                    <FormLabel>{tForm('endDate')}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Leave empty for recurring budget
+                      {tForm('endDateDescription')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -310,7 +314,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               name="alert_threshold"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Alert Threshold: {field.value}%</FormLabel>
+                  <FormLabel>{tForm('alertThreshold')}: {field.value}%</FormLabel>
                   <FormControl>
                     <Slider
                       min={0}
@@ -321,7 +325,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
                     />
                   </FormControl>
                   <FormDescription>
-                    Get notified when spending reaches this percentage
+                    {tForm('alertThresholdDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -334,9 +338,9 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Active</FormLabel>
+                    <FormLabel className="text-base">{tForm('isActive')}</FormLabel>
                     <FormDescription>
-                      Track spending against this budget
+                      {tForm('isActiveDescription')}
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -352,9 +356,9 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Rollover Unused</FormLabel>
+                    <FormLabel className="text-base">{tForm('rollover')}</FormLabel>
                     <FormDescription>
-                      Carry unused budget to the next period
+                      {tForm('rolloverDescription')}
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -366,16 +370,14 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isCreating || isUpdating}>
                 {isCreating || isUpdating
-                  ? budget
-                    ? 'Updating...'
-                    : 'Creating...'
+                  ? tForm('saving')
                   : budget
-                  ? 'Update Budget'
-                  : 'Create Budget'}
+                  ? tForm('update')
+                  : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

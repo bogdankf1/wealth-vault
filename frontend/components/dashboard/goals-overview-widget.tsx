@@ -13,8 +13,11 @@ import { Target, TrendingUp, AlertCircle, CheckCircle2, Trophy } from 'lucide-re
 import Link from 'next/link';
 import { useGetGoalStatsQuery, useListGoalsQuery, type Goal } from '@/lib/api/goalsApi';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
+import { useTranslations } from 'next-intl';
 
 export function GoalsOverviewWidget() {
+  const t = useTranslations('dashboard.widgets.goalsOverview');
+  const tCommon = useTranslations('dashboard.widgets.common');
   const { data: stats, isLoading, error } = useGetGoalStatsQuery();
   const { data: goalsData } = useListGoalsQuery({ is_active: true, page_size: 10 });
   const { data: currencyData } = useGetCurrencyQuery(stats?.currency || 'USD');
@@ -41,7 +44,7 @@ export function GoalsOverviewWidget() {
       <Card className="p-4 md:p-6">
         <div className="flex items-center gap-2 text-destructive">
           <AlertCircle className="h-5 w-5" />
-          <span className="text-sm">Failed to load goal statistics</span>
+          <span className="text-sm">{t('error')}</span>
         </div>
       </Card>
     );
@@ -102,11 +105,11 @@ export function GoalsOverviewWidget() {
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div className="flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
-          <h3 className="text-base md:text-lg font-semibold">Goals Overview</h3>
+          <h3 className="text-base md:text-lg font-semibold">{t('title')}</h3>
         </div>
         <Link href="/dashboard/goals">
           <Button variant="ghost" size="sm" className="text-xs md:text-sm">
-            View All
+            {tCommon('viewAll')}
           </Button>
         </Link>
       </div>
@@ -115,30 +118,30 @@ export function GoalsOverviewWidget() {
       <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
         {/* Total Goals */}
         <div className="bg-muted/50 rounded-lg p-2 md:p-3">
-          <p className="text-xs text-muted-foreground mb-1">Total Goals</p>
+          <p className="text-xs text-muted-foreground mb-1">{t('stats.totalGoals')}</p>
           <p className="text-lg md:text-2xl font-bold">{stats.total_goals}</p>
           <div className="flex gap-1 mt-1">
             <Badge variant="outline" className="text-xs px-1">
-              {stats.active_goals} active
+              {stats.active_goals} {t('stats.active')}
             </Badge>
           </div>
         </div>
 
         {/* Total Saved */}
         <div className="bg-muted/50 rounded-lg p-2 md:p-3">
-          <p className="text-xs text-muted-foreground mb-1">Total Saved</p>
+          <p className="text-xs text-muted-foreground mb-1">{t('stats.totalSaved')}</p>
           <p className="text-lg md:text-2xl font-bold">{formatCurrency(stats.total_saved)}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {averageProgress.toFixed(0)}% avg
+            {t('stats.avgProgress', { percent: averageProgress.toFixed(0) })}
           </p>
         </div>
 
         {/* Remaining */}
         <div className="bg-muted/50 rounded-lg p-2 md:p-3">
-          <p className="text-xs text-muted-foreground mb-1">Remaining</p>
+          <p className="text-xs text-muted-foreground mb-1">{t('stats.remaining')}</p>
           <p className="text-lg md:text-2xl font-bold">{formatCurrency(stats.total_remaining)}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            of {formatCurrency(stats.total_target_amount)}
+            {t('stats.of')} {formatCurrency(stats.total_target_amount)}
           </p>
         </div>
       </div>
@@ -146,7 +149,7 @@ export function GoalsOverviewWidget() {
       {/* Overall Progress */}
       <div className="mb-4 md:mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Overall Progress</span>
+          <span className="text-sm font-medium">{t('overallProgress')}</span>
           <span className="text-sm font-semibold">{savingsRate.toFixed(1)}%</span>
         </div>
         <Progress value={savingsRate} className="h-2" />
@@ -194,7 +197,10 @@ export function GoalsOverviewWidget() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {formatCurrency(targetAmount - currentAmount)} remaining of {formatCurrency(targetAmount)}
+                    {t('remainingOf', {
+                      remaining: formatCurrency(targetAmount - currentAmount),
+                      total: formatCurrency(targetAmount)
+                    })}
                   </p>
                 </div>
               );
@@ -208,13 +214,13 @@ export function GoalsOverviewWidget() {
           {stats.goals_on_track > 0 && (
             <div className="flex items-center gap-2 text-xs md:text-sm text-green-600 dark:text-green-400">
               <CheckCircle2 className="h-4 w-4" />
-              <span>{stats.goals_on_track} on track</span>
+              <span>{t('status.onTrack', { count: stats.goals_on_track })}</span>
             </div>
           )}
           {stats.goals_behind > 0 && (
             <div className="flex items-center gap-2 text-xs md:text-sm text-amber-600 dark:text-amber-400">
               <AlertCircle className="h-4 w-4" />
-              <span>{stats.goals_behind} behind</span>
+              <span>{t('status.behind', { count: stats.goals_behind })}</span>
             </div>
           )}
         </div>
@@ -223,7 +229,7 @@ export function GoalsOverviewWidget() {
       {/* Top Categories */}
       {topCategories.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-muted-foreground">Top Categories</h4>
+          <h4 className="text-sm font-medium text-muted-foreground">{t('topCategories')}</h4>
           {topCategories.map((category) => {
             const categoryTarget = category.total_target;
             const categorySaved = category.total_saved;
@@ -251,7 +257,10 @@ export function GoalsOverviewWidget() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {formatCurrency(categoryRemaining)} remaining of {formatCurrency(categoryTarget)}
+                  {t('remainingOf', {
+                    remaining: formatCurrency(categoryRemaining),
+                    total: formatCurrency(categoryTarget)
+                  })}
                 </p>
               </div>
             );
@@ -263,9 +272,9 @@ export function GoalsOverviewWidget() {
       {stats.total_goals === 0 && (
         <div className="text-center py-8">
           <Target className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
-          <p className="text-sm text-muted-foreground mb-3">No goals created yet</p>
+          <p className="text-sm text-muted-foreground mb-3">{t('emptyState.title')}</p>
           <Link href="/dashboard/goals">
-            <Button size="sm">Create Your First Goal</Button>
+            <Button size="sm">{t('emptyState.button')}</Button>
           </Link>
         </div>
       )}
@@ -277,10 +286,13 @@ export function GoalsOverviewWidget() {
             <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-amber-900 dark:text-amber-100">
-                {stats.goals_behind} {stats.goals_behind === 1 ? 'goal is' : 'goals are'} behind schedule
+                {t('status.behindAlert', {
+                  count: stats.goals_behind,
+                  goalText: stats.goals_behind === 1 ? t('status.goal') : t('status.goals')
+                })}
               </p>
               <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                Review your goals and consider adjusting contributions
+                {t('status.reviewGoals')}
               </p>
             </div>
           </div>

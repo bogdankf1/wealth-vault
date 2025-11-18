@@ -1,0 +1,310 @@
+{
+  "title": "Panel de Control",
+  "description": "Tu panorama financiero completo",
+  "header": {
+    "title": "Panel de Control",
+    "description": "Tu panorama financiero completo",
+    "periodLabel": "Período:",
+    "clearButton": "Borrar"
+  },
+  "quickActions": {
+    "title": "Acciones Rápidas",
+    "description": "Añade nuevas entradas financieras rápidamente",
+    "addIncome": {
+      "label": "Añadir Ingreso",
+      "description": "Registrar fuente de ingreso"
+    },
+    "addExpense": {
+      "label": "Añadir Gasto",
+      "description": "Rastrear gasto"
+    },
+    "addBudget": {
+      "label": "Añadir Presupuesto",
+      "description": "Establecer límite de gasto"
+    },
+    "subscription": {
+      "label": "Suscripción",
+      "description": "Pago recurrente"
+    },
+    "installment": {
+      "label": "Cuota",
+      "description": "Plan de pago"
+    },
+    "createGoal": {
+      "label": "Crear Meta",
+      "description": "Establecer objetivo"
+    }
+  },
+  "insightsAlerts": {
+    "title": "Perspectivas y Alertas",
+    "description": "Notificaciones financieras importantes"
+  },
+  "netWorth": {
+    "title": "Patrimonio Neto",
+    "totalLabel": "Patrimonio neto total",
+    "assets": {
+      "label": "Activos",
+      "portfolio": "Cartera",
+      "savings": "Ahorros"
+    },
+    "liabilities": {
+      "label": "Pasivos",
+      "debt": "Deuda"
+    }
+  },
+  "financialHealth": {
+    "title": "Salud Financiera",
+    "scoreLabel": "de 100",
+    "components": {
+      "emergencyFund": "Fondo de Emergencia",
+      "debtToIncome": "Deuda-Ingreso",
+      "savingsRate": "Tasa de Ahorro",
+      "investments": "Inversiones",
+      "goalsProgress": "Progreso de Metas"
+    },
+    "ratings": {
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "fair": "Regular",
+      "poor": "Pobre"
+    }
+  },
+  "cashFlow": {
+    "income": {
+      "label": "Ingresos",
+      "period": "Mensual"
+    },
+    "expenses": {
+      "label": "Gastos"
+    },
+    "subscriptions": {
+      "label": "Suscripciones",
+      "period": "Mensual"
+    },
+    "installments": {
+      "label": "Cuotas",
+      "period": "Mensual"
+    },
+    "taxes": {
+      "label": "Impuestos",
+      "active": "activos"
+    },
+    "debtsOwed": {
+      "label": "Deudas a Cobrar",
+      "active": "activas"
+    },
+    "netCashFlow": {
+      "label": "Flujo de Caja Neto",
+      "savingsRateLabel": "Tasa de Ahorro"
+    }
+  },
+  "recentActivity": {
+    "title": "Actividad Reciente",
+    "emptyState": "No hay actividad reciente"
+  },
+  "analytics": {
+    "title": "Análisis Financiero",
+    "description": "Visualiza tus tendencias y patrones financieros"
+  },
+  "tooltips": {
+    "netWorth": {
+      "heading": "Cómo se calcula:",
+      "formula": "Patrimonio Neto = Activos - Pasivos",
+      "assets": "Activos = Valor de Cartera + Saldo de Ahorros",
+      "liabilities": "Pasivos = Deuda Total de Cuotas"
+    },
+    "financialHealth": {
+      "heading": "Cómo se calcula:",
+      "formula": "Puntuación = 5 componentes × 20 puntos cada uno (0-100)",
+      "emergencyFund": "1. Fondo de Emergencia: Ahorros ≥ 3 meses de gastos",
+      "debtToIncome": "2. Deuda-Ingreso: Deuda total / ingreso < 36%",
+      "savingsRate": "3. Tasa de Ahorro: % de ingreso ahorrado (20%+ excelente)",
+      "investmentDiversity": "4. Diversidad de Inversiones: Múltiples tipos de activos",
+      "goalsProgress": "5. Progreso de Metas: Promedio de finalización de metas"
+    },
+    "income": {
+      "heading": "Cómo se calcula:",
+      "description": "Suma de todas las fuentes de ingresos recurrentes activas (mensual, semanal, quincenal, anual)"
+    },
+    "expenses": {
+      "heading": "Cómo se calcula:",
+      "dateBased": "Cálculo basado en fecha para {period}",
+      "oneTime": "• Gastos únicos: incluidos si la fecha cae en el período",
+      "recurring": "• Gastos recurrentes: incluidos si se superponen con el período (equivalente mensual)"
+    },
+    "subscriptions": {
+      "heading": "Cómo se calcula:",
+      "description": "Suma de todas las suscripciones activas (mensual, trimestral, anual, semestral)"
+    },
+    "installments": {
+      "heading": "Cómo se calcula:",
+      "description": "Suma de todos los pagos de cuotas activas (mensual, quincenal, semanal)"
+    },
+    "taxes": {
+      "heading": "Cómo se calcula:",
+      "description": "Impuestos específicos del período basados en ingresos (solo se calculan cuando existen ingresos en el período seleccionado)"
+    },
+    "debtsOwed": {
+      "heading": "Cómo se calcula:",
+      "description": "Suma de todas las deudas activas (sin pagar) que te deben"
+    },
+    "netCashFlow": {
+      "heading": "Cómo se calcula:",
+      "formula": "Flujo de Caja Neto = Ingresos - Gastos - Suscripciones - Cuotas",
+      "expenses": "• Los gastos se filtran por fecha para {period}",
+      "others": "• Ingresos, Suscripciones, Cuotas muestran todos los activos (equivalente mensual)",
+      "savingsRate": "Tasa de Ahorro = (Flujo de Caja Neto / Ingresos) × 100%"
+    }
+  },
+  "errors": {
+    "loadFailed": "Error al cargar los datos del panel. Por favor, inténtalo de nuevo."
+  },
+  "widgets": {
+    "aiInsights": {
+      "title": "Perspectivas IA",
+      "badge": "Impulsado por IA",
+      "description": "Recomendaciones financieras personalizadas",
+      "refreshTitle": "Actualizar perspectivas",
+      "tooltip": {
+        "heading": "Cómo funciona:",
+        "description": "La IA analiza tus datos financieros para proporcionar recomendaciones personalizadas:",
+        "spendingPatterns": "Patrones de gasto y anomalías",
+        "savingsOpportunities": "Oportunidades de ahorro",
+        "budgetOptimization": "Sugerencias de optimización de presupuesto",
+        "financialHealth": "Mejoras de salud financiera"
+      },
+      "sections": {
+        "spendingPatterns": "Patrones de Gasto",
+        "savingsOpportunities": "Oportunidades de Ahorro",
+        "spendingAlerts": "Alertas de Gasto"
+      },
+      "emptyState": {
+        "title": "Aún no hay perspectivas disponibles",
+        "description": "Agrega más gastos y metas de ahorro para obtener perspectivas personalizadas"
+      },
+      "error": "Error al cargar las perspectivas. Por favor, inténtalo de nuevo más tarde.",
+      "cacheNotice": "Las perspectivas se almacenan en caché durante 24 horas. Haz clic en actualizar para generar nuevas perspectivas."
+    },
+    "budgetOverview": {
+      "title": "Resumen de Presupuesto",
+      "description": "Todos los presupuestos activos (cada uno rastreado dentro de su propio período)",
+      "viewAll": "Ver Todo",
+      "tooltip": {
+        "heading": "Cómo funciona:",
+        "description": "Muestra todos los presupuestos actualmente activos agregados juntos.",
+        "periodNote": "Cada presupuesto rastrea gastos dentro de su propio período de tiempo (mensual, trimestral o anual).",
+        "colorGreen": "Verde: Menos del 80% del presupuesto usado",
+        "colorAmber": "Ámbar: 80%+ usado pero no superado",
+        "colorRed": "Rojo: Presupuesto excedido"
+      },
+      "infoNote": {
+        "showing": "Mostrando {count} {budgets} activos. Cada presupuesto rastrea gastos dentro de su propio período de tiempo definido.",
+        "budget": "presupuesto",
+        "budgets": "presupuestos"
+      },
+      "stats": {
+        "budgeted": "Presupuestado",
+        "spent": "Gastado",
+        "remaining": "Restante"
+      },
+      "overallProgress": "Progreso General",
+      "budgetAlerts": "Alertas de Presupuesto",
+      "moreAlerts": "+{count} alertas más",
+      "topCategories": "Principales Categorías",
+      "percentUsed": "{percent}% usado",
+      "left": "restante",
+      "over": "excedido",
+      "emptyState": {
+        "title": "Aún no hay presupuestos configurados",
+        "button": "Crea Tu Primer Presupuesto"
+      },
+      "error": "Error al cargar el resumen de presupuesto"
+    },
+    "goalsOverview": {
+      "title": "Resumen de Metas",
+      "viewAll": "Ver Todo",
+      "stats": {
+        "totalGoals": "Metas Totales",
+        "active": "activas",
+        "totalSaved": "Total Ahorrado",
+        "avgProgress": "{percent}% promedio",
+        "remaining": "Restante",
+        "of": "de"
+      },
+      "overallProgress": "Progreso General",
+      "remainingOf": "{remaining} restante de {total}",
+      "status": {
+        "onTrack": "{count} en curso",
+        "behind": "{count} atrasadas",
+        "behindAlert": "{count} {goalText} atrasada(s) del cronograma",
+        "goal": "meta está",
+        "goals": "metas están",
+        "reviewGoals": "Revisa tus metas y considera ajustar las contribuciones"
+      },
+      "topCategories": "Principales Categorías",
+      "emptyState": {
+        "title": "Aún no hay metas creadas",
+        "button": "Crea Tu Primera Meta"
+      },
+      "error": "Error al cargar las estadísticas de metas"
+    },
+    "plannedSubscriptions": {
+      "title": "Suscripciones Planificadas",
+      "description": "Pagos de suscripciones para el mes seleccionado",
+      "emptyState": "No hay suscripciones planificadas para este mes",
+      "error": "Error al cargar las suscripciones. Por favor, inténtalo de nuevo más tarde."
+    },
+    "plannedExpenses": {
+      "title": "Gastos Planificados",
+      "description": "Pagos de gastos recurrentes para el mes seleccionado",
+      "emptyState": "No hay gastos recurrentes planificados para este mes",
+      "error": "Error al cargar los gastos. Por favor, inténtalo de nuevo más tarde."
+    },
+    "plannedInstallments": {
+      "title": "Cuotas Planificadas",
+      "description": "Pagos de cuotas para el mes seleccionado",
+      "paymentOf": "Pago {current} de {total}",
+      "emptyState": "No hay pagos de cuotas planificados para este mes",
+      "error": "Error al cargar las cuotas. Por favor, inténtalo de nuevo más tarde."
+    },
+    "exchangeRates": {
+      "title": "Tipos de Cambio",
+      "description": "Tipos de cambio de divisas en vivo",
+      "refreshed": "(actualizado {time})",
+      "refreshTitle": "Actualizar tipos de cambio",
+      "tooltip": "Tipos de cambio actuales entre las principales divisas. Las tasas se actualizan cada hora y se almacenan en caché para mejorar el rendimiento.",
+      "currencies": {
+        "USD": "Dólar Estadounidense",
+        "EUR": "Euro",
+        "UAH": "Grivna Ucraniana"
+      },
+      "equalsLabel": "1 {currency} equivale a:",
+      "rateDetails": {
+        "formula": "1 {from} = {rate} {to}",
+        "updated": "Actualizado: {datetime}",
+        "source": "Fuente: {source}"
+      },
+      "footer": {
+        "realTime": "Tasas en tiempo real de exchangerate-api.com",
+        "updateFrequency": "Actualizado cada hora"
+      }
+    },
+    "layoutSwitcher": {
+      "selectLayout": "Seleccionar Diseño",
+      "title": "Diseños de Panel",
+      "widgetsCount": "{count} widgets",
+      "manageLayouts": "Gestionar diseños...",
+      "toast": {
+        "switched": "Diseño cambiado",
+        "switchedDescription": "Cambiado a diseño \"{name}\".",
+        "error": "Error",
+        "errorDescription": "Error al cambiar el diseño."
+      }
+    },
+    "common": {
+      "viewAll": "Ver Todo",
+      "monthly": "Mensual",
+      "active": "activo"
+    }
+  }
+}

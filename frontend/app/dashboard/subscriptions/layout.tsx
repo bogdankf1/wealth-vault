@@ -11,33 +11,7 @@ import { LayoutGrid, History, Archive, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { SubscriptionsActionsContext } from './context';
-
-const SUBSCRIPTIONS_TABS: ModuleTab[] = [
-  {
-    value: 'overview',
-    label: 'Overview',
-    icon: LayoutGrid,
-    href: '/dashboard/subscriptions/overview',
-  },
-  {
-    value: 'analysis',
-    label: 'Analysis',
-    icon: BarChart3,
-    href: '/dashboard/subscriptions/analysis',
-  },
-  {
-    value: 'history',
-    label: 'History',
-    icon: History,
-    href: '/dashboard/subscriptions/history',
-  },
-  {
-    value: 'archive',
-    label: 'Archive',
-    icon: Archive,
-    href: '/dashboard/subscriptions/archive',
-  },
-];
+import { useTranslations } from 'next-intl';
 
 export default function SubscriptionsLayout({
   children,
@@ -46,6 +20,34 @@ export default function SubscriptionsLayout({
 }) {
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
+  const t = useTranslations('subscriptions');
+
+  const SUBSCRIPTIONS_TABS: ModuleTab[] = [
+    {
+      value: 'overview',
+      label: t('navigation.overview'),
+      icon: LayoutGrid,
+      href: '/dashboard/subscriptions/overview',
+    },
+    {
+      value: 'analysis',
+      label: t('navigation.analysis'),
+      icon: BarChart3,
+      href: '/dashboard/subscriptions/analysis',
+    },
+    {
+      value: 'history',
+      label: t('navigation.history'),
+      icon: History,
+      href: '/dashboard/subscriptions/history',
+    },
+    {
+      value: 'archive',
+      label: t('navigation.archive'),
+      icon: Archive,
+      href: '/dashboard/subscriptions/archive',
+    },
+  ];
 
   return (
     <SubscriptionsActionsContext.Provider value={{ setActions }}>
@@ -54,10 +56,10 @@ export default function SubscriptionsLayout({
         <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              Subscriptions
+              {t('layout.title')}
             </h1>
             <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Track and manage your recurring subscriptions
+              {t('layout.description')}
             </p>
           </div>
           {actions && (

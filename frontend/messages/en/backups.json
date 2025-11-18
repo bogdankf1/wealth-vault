@@ -1,0 +1,79 @@
+{
+  "page": {
+    "title": "Data Backups",
+    "description": "Create and restore snapshots of your financial data"
+  },
+  "create": {
+    "title": "Create New Backup",
+    "description": "Select a module and create a backup of all its data",
+    "label": "Module to Backup",
+    "placeholder": "Select module",
+    "button": "Create Backup",
+    "creating": "Creating..."
+  },
+  "list": {
+    "title": "Your Backups",
+    "description": "View and restore your backed up data",
+    "loading": "Loading backups...",
+    "empty": "No backups yet. Create your first backup above.",
+    "table": {
+      "date": "Date",
+      "module": "Module",
+      "items": "Items",
+      "actions": "Actions"
+    },
+    "itemCount": "{count} item(s)",
+    "actions": {
+      "restore": "Restore",
+      "delete": "Delete"
+    }
+  },
+  "modules": {
+    "income": "Income",
+    "expenses": "Expenses",
+    "subscriptions": "Subscriptions",
+    "installments": "Installments",
+    "budgets": "Budgets",
+    "savings": "Savings",
+    "portfolio": "Portfolio",
+    "goals": "Goals",
+    "debts": "Debts",
+    "taxes": "Taxes"
+  },
+  "info": {
+    "title": "Important Information",
+    "point1": "Backups create a snapshot of all data in the selected module at the time of creation",
+    "point2": "Restoring a backup will DELETE all current data and REPLACE it with the backed up data",
+    "point3": "Each backup stores the complete state of your data, including all fields and settings",
+    "point4": "Backups are exclusive to Wealth tier subscribers",
+    "point5": "You can create multiple backups for the same module to track changes over time",
+    "warning": "Warning:"
+  },
+  "dialogs": {
+    "restore": {
+      "title": "Restore Backup?",
+      "description": "This will REPLACE all your current {module} data with the backed up data. All existing items will be deleted and replaced. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Restore",
+      "restoring": "Restoring..."
+    },
+    "delete": {
+      "title": "Delete Backup?",
+      "description": "This will permanently delete this backup. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleting": "Deleting..."
+    }
+  },
+  "messages": {
+    "createSuccess": "Backup created successfully",
+    "createSuccessDescription": "Backed up {count} {module} item(s)",
+    "createError": "Failed to create backup",
+    "restoreSuccess": "Backup restored successfully",
+    "restoreSuccessDescription": "Restored {count} item(s). All existing items were replaced.",
+    "restoreError": "Failed to restore backup",
+    "deleteSuccess": "Backup deleted successfully",
+    "deleteError": "Failed to delete backup",
+    "errorGeneric": "An error occurred"
+  }
+}

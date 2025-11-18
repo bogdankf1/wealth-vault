@@ -11,12 +11,14 @@ interface MonthFilterProps {
   selectedMonth: string | null;
   onMonthChange: (month: string | null) => void;
   label?: string;
+  clearLabel?: string;
 }
 
 export function MonthFilter({
   selectedMonth,
   onMonthChange,
-  label = 'Filter by:'
+  label = 'Filter by:',
+  clearLabel = 'Clear'
 }: MonthFilterProps) {
   return (
     <div className="flex items-center gap-2">
@@ -27,7 +29,7 @@ export function MonthFilter({
         disabled={!selectedMonth}
         className="h-9"
       >
-        Clear
+        {clearLabel}
       </Button>
       <label htmlFor="month-filter" className="text-sm text-muted-foreground">
         {label}

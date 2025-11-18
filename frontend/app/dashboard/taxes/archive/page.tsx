@@ -7,6 +7,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   useListTaxesQuery,
   useUpdateTaxMutation,
@@ -36,13 +37,13 @@ import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { TaxesActionsContext } from '../context';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  annually: 'Annually',
-};
-
 export default function TaxesArchivePage() {
+  const tArchive = useTranslations('taxes.archive');
+  const tCommon = useTranslations('common');
+  const tActions = useTranslations('taxes.actions');
+  const tStatus = useTranslations('taxes.status');
+  const tTypes = useTranslations('taxes.types');
+  const tFrequencies = useTranslations('taxes.frequencies');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingTaxId, setDeletingTaxId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,10 +75,10 @@ export default function TaxesArchivePage() {
   // Get unique categories (tax types)
   const uniqueCategories = React.useMemo(() => {
     const categories = taxes
-      .map((tax) => tax.tax_type === 'fixed' ? 'Fixed' : 'Percentage')
-      .filter((cat): cat is "Fixed" | "Percentage" => !!cat);
+      .map((tax) => tax.tax_type === 'fixed' ? tTypes('fixed') : tTypes('percentage'))
+      .filter((cat): cat is string => !!cat);
     return Array.from(new Set(categories)).sort();
-  }, [taxes]);
+  }, [taxes, tTypes]);
 
   // Filter and sort taxes
   const filteredTaxes = React.useMemo(() => {
@@ -86,7 +87,7 @@ export default function TaxesArchivePage() {
       searchQuery,
       selectedCategory,
       (tax) => tax.name,
-      (tax) => tax.tax_type === 'fixed' ? 'Fixed' : 'Percentage'
+      (tax) => tax.tax_type === 'fixed' ? tTypes('fixed') : tTypes('percentage')
     );
 
     // Apply sorting
@@ -100,12 +101,12 @@ export default function TaxesArchivePage() {
     );
 
     return sorted || [];
-  }, [taxes, searchQuery, selectedCategory, sortField, sortDirection]);
+  }, [taxes, searchQuery, selectedCategory, sortField, sortDirection, tTypes]);
 
   const handleUnarchive = async (id: string) => {
     try {
       await updateTax({ id, data: { is_active: true } }).unwrap();
-      toast.success('Tax record unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedTaxIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -113,7 +114,7 @@ export default function TaxesArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive tax record:', error);
-      toast.error('Failed to unarchive tax record');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -133,14 +134,14 @@ export default function TaxesArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} tax record(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} tax record(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedTaxIds(new Set());
-  }, [selectedTaxIds, updateTax]);
+  }, [selectedTaxIds, updateTax, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingTaxId(id);
@@ -152,7 +153,7 @@ export default function TaxesArchivePage() {
 
     try {
       await deleteTax(deletingTaxId).unwrap();
-      toast.success('Tax record deleted permanently');
+      toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingTaxId(null);
       setSelectedTaxIds((prev) => {
@@ -162,7 +163,7 @@ export default function TaxesArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete tax record:', error);
-      toast.error('Failed to delete tax record');
+      toast.error(tArchive('deleteError'));
     }
   };
 
@@ -199,16 +200,16 @@ export default function TaxesArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} tax record(s)`);
+        toast.error(tArchive('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} tax record(s) permanently`);
+        toast.success(tArchive('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedTaxIds(new Set());
     } catch (error) {
       console.error('Failed to delete tax records:', error);
-      toast.error('Failed to delete tax records');
+      toast.error(tArchive('batchDeleteError', { count: selectedTaxIds.size }));
     }
   };
 
@@ -225,7 +226,7 @@ export default function TaxesArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedTaxIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedTaxIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -234,7 +235,7 @@ export default function TaxesArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedTaxIds.size})</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selectedTaxIds.size })}</span>
             </Button>
           </>
         )}
@@ -242,7 +243,7 @@ export default function TaxesArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedTaxIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedTaxIds.size, setActions, handleBatchUnarchive, tArchive]);
 
   const isLoading = isLoadingTaxes;
   const hasError = taxesError;
@@ -268,8 +269,8 @@ export default function TaxesArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search archived tax records..."
-              categoryPlaceholder="All Types"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tArchive('allStatuses')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -278,6 +279,7 @@ export default function TaxesArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -308,14 +310,14 @@ export default function TaxesArchivePage() {
         ) : !taxes || taxes.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived tax records"
-            description="Archived tax records will appear here"
+            title={tArchive('noTaxes')}
+            description={tArchive('noTaxesDescription')}
           />
         ) : !filteredTaxes || filteredTaxes.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived tax records found"
-            description="Try adjusting your search or filters"
+            title={tArchive('noFilterResults')}
+            description={tArchive('noFilterResultsDescription')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -324,10 +326,10 @@ export default function TaxesArchivePage() {
                 <Checkbox
                   checked={selectedTaxIds.size === filteredTaxes.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all tax records"
+                  aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedTaxIds.size === filteredTaxes.length ? 'Deselect all' : 'Select all'}
+                  {selectedTaxIds.size === filteredTaxes.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -351,7 +353,7 @@ export default function TaxesArchivePage() {
                       </div>
                     </div>
                     <Badge variant="secondary" className="text-xs flex-shrink-0">
-                      Archived
+                      {tArchive('archived')}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -369,12 +371,12 @@ export default function TaxesArchivePage() {
                             />
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {FREQUENCY_LABELS[tax.frequency] || tax.frequency}
+                            {tFrequencies(tax.frequency)}
                           </p>
                           <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
                             {tax.display_currency && tax.display_currency !== tax.currency && (
                               <>
-                                Original: <CurrencyDisplay
+                                {tCommon('common.originalAmount')}: <CurrencyDisplay
                                   amount={tax.fixed_amount}
                                   currency={tax.currency}
                                   showSymbol={true}
@@ -390,16 +392,16 @@ export default function TaxesArchivePage() {
                             {tax.percentage}%
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {FREQUENCY_LABELS[tax.frequency] || tax.frequency}
+                            {tFrequencies(tax.frequency)}
                           </p>
                           {tax.calculated_amount !== undefined && (
                             <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
-                              Estimated: <CurrencyDisplay
+                              {tArchive('estimated')} <CurrencyDisplay
                                 amount={tax.calculated_amount}
                                 currency={tax.display_currency ?? 'USD'}
                                 showSymbol={true}
                                 showCode={false}
-                              /> monthly
+                              /> {tFrequencies('monthly')}
                             </div>
                           )}
                         </>
@@ -410,24 +412,24 @@ export default function TaxesArchivePage() {
                       {tax.notes ? (
                         <p className="text-xs text-muted-foreground line-clamp-2 w-full">{tax.notes}</p>
                       ) : (
-                        <p className="text-[10px] md:text-xs text-muted-foreground">No notes</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground">{tCommon('common.noData')}</p>
                       )}
                     </div>
 
                     <div className="min-h-[24px]">
                       <Badge variant="outline" className="text-xs flex-shrink-0">
-                        {tax.tax_type === 'fixed' ? 'Fixed Amount' : 'Percentage-Based'}
+                        {tax.tax_type === 'fixed' ? tTypes('fixed') : tTypes('percentage')}
                       </Badge>
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleUnarchive(tax.id)}
                       >
                         <ArchiveRestore className="mr-1 h-3 w-3" />
-                        Unarchive
+                        {tActions('unarchive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -436,7 +438,7 @@ export default function TaxesArchivePage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -455,17 +457,17 @@ export default function TaxesArchivePage() {
                       <Checkbox
                         checked={selectedTaxIds.size === filteredTaxes.length && filteredTaxes.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tCommon('common.selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Type</TableHead>
-                    <TableHead className="text-right">Value</TableHead>
-                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
+                    <TableHead className="w-[200px]">{tArchive('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tArchive('description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tArchive('type')}</TableHead>
+                    <TableHead className="text-right">{tCommon('common.amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tArchive('frequency')}</TableHead>
                     <TableHead className="hidden xl:table-cell">Notes</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tArchive('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -493,7 +495,7 @@ export default function TaxesArchivePage() {
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <Badge variant="outline" className="text-xs">
-                          {tax.tax_type === 'fixed' ? 'Fixed' : 'Percentage'}
+                          {tax.tax_type === 'fixed' ? tTypes('fixed') : tTypes('percentage')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold">
@@ -524,7 +526,7 @@ export default function TaxesArchivePage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">
-                          {FREQUENCY_LABELS[tax.frequency] || tax.frequency}
+                          {tFrequencies(tax.frequency)}
                         </span>
                       </TableCell>
                       <TableCell className="hidden xl:table-cell">
@@ -542,12 +544,13 @@ export default function TaxesArchivePage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
+                        <div className="flex gap-1 justify-end flex-wrap">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleUnarchive(tax.id)}
                             className="h-8 w-8 p-0"
+                            aria-label={tActions('unarchive')}
                           >
                             <ArchiveRestore className="h-4 w-4" />
                           </Button>
@@ -557,6 +560,7 @@ export default function TaxesArchivePage() {
                             onClick={() => handleDelete(tax.id)}
                             disabled={isDeleting}
                             className="h-8 w-8 p-0"
+                            aria-label={tActions('delete')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -576,9 +580,9 @@ export default function TaxesArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Tax Record Permanently"
-        description="This will permanently delete this tax record. This action cannot be undone."
-        itemName="tax record"
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
+        itemName={tArchive('tax')}
         isDeleting={isDeleting}
       />
 
@@ -588,7 +592,7 @@ export default function TaxesArchivePage() {
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
         count={selectedTaxIds.size}
-        itemName="tax record"
+        itemName={tArchive('tax')}
         isDeleting={isBatchDeleting}
       />
     </div>

@@ -8,20 +8,22 @@ import Link from 'next/link';
 import { LayoutGrid, History, Upload, Archive, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import type { ModuleTab } from '@/types/module-layout';
 import { ExpenseActionsContext } from './context';
-
-const EXPENSES_TABS: ModuleTab[] = [
-  { value: 'overview', label: 'Overview', icon: LayoutGrid, href: '/dashboard/expenses/overview' },
-  { value: 'analysis', label: 'Analysis', icon: BarChart3, href: '/dashboard/expenses/analysis' },
-  { value: 'history', label: 'History', icon: History, href: '/dashboard/expenses/history' },
-  { value: 'import', label: 'Import', icon: Upload, href: '/dashboard/expenses/import' },
-  { value: 'archive', label: 'Archive', icon: Archive, href: '/dashboard/expenses/archive' },
-];
 
 export default function ExpensesLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
+  const t = useTranslations('expenses');
+
+  const EXPENSES_TABS: ModuleTab[] = [
+    { value: 'overview', label: t('navigation.overview'), icon: LayoutGrid, href: '/dashboard/expenses/overview' },
+    { value: 'analysis', label: t('navigation.analysis'), icon: BarChart3, href: '/dashboard/expenses/analysis' },
+    { value: 'history', label: t('navigation.history'), icon: History, href: '/dashboard/expenses/history' },
+    { value: 'import', label: t('navigation.import'), icon: Upload, href: '/dashboard/expenses/import' },
+    { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/expenses/archive' },
+  ];
 
   return (
     <ExpenseActionsContext.Provider value={{ setActions }}>
@@ -30,10 +32,10 @@ export default function ExpensesLayout({ children }: { children: React.ReactNode
         <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              Expense Tracking
+              {t('layout.title')}
             </h1>
             <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Track and manage your expenses
+              {t('layout.description')}
             </p>
           </div>
           {actions && (

@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListSubscriptionsQuery,
@@ -47,14 +48,22 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  biannually: 'Bi-annually',
-  annually: 'Annually',
-};
-
 export default function SubscriptionsPage() {
+  // Translation hooks
+  const tOverview = useTranslations('subscriptions.overview');
+  const tActions = useTranslations('subscriptions.actions');
+  const tCommon = useTranslations('common');
+  const tFrequencies = useTranslations('subscriptions.frequencies');
+  const tStatus = useTranslations('subscriptions.status');
+  const tRenewal = useTranslations('subscriptions.renewal');
+
+  const FREQUENCY_LABELS: Record<string, string> = {
+    monthly: tFrequencies('monthly'),
+    quarterly: tFrequencies('quarterly'),
+    biannually: tFrequencies('biannually'),
+    annually: tFrequencies('annually'),
+  };
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSubscriptionId, setEditingSubscriptionId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -125,7 +134,7 @@ export default function SubscriptionsPage() {
   const handleArchiveSubscription = async (id: string) => {
     try {
       await updateSubscription({ id, data: { is_active: false } }).unwrap();
-      toast.success('Subscription archived successfully');
+      toast.success(tOverview('archiveSuccess'));
       setSelectedSubscriptionIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -133,7 +142,7 @@ export default function SubscriptionsPage() {
       });
     } catch (error) {
       console.error('Failed to archive subscription:', error);
-      toast.error('Failed to archive subscription');
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -153,26 +162,26 @@ export default function SubscriptionsPage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully archived ${successCount} subscription(s)`);
+      toast.success(tOverview('batchArchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to archive ${failCount} subscription(s)`);
+      toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
     setSelectedSubscriptionIds(new Set());
-  }, [selectedSubscriptionIds, updateSubscription]);
+  }, [selectedSubscriptionIds, updateSubscription, tOverview]);
 
   const confirmDelete = async () => {
     if (!deletingSubscriptionId) return;
 
     try {
       await deleteSubscription(deletingSubscriptionId).unwrap();
-      toast.success('Subscription deleted successfully');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingSubscriptionId(null);
     } catch (error) {
       console.error('Failed to delete subscription:', error);
-      toast.error('Failed to delete subscription');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -215,16 +224,16 @@ export default function SubscriptionsPage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} subscription(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} subscription(s)`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedSubscriptionIds(new Set());
     } catch (error) {
       console.error('Failed to batch delete subscriptions:', error);
-      toast.error('Failed to delete subscriptions');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -271,15 +280,15 @@ export default function SubscriptionsPage() {
   const statsCards: StatCard[] = stats
     ? [
         {
-          title: 'Total Subscriptions',
+          title: tOverview('totalSubscriptions'),
           value: stats.total_subscriptions,
           description: selectedMonth
-            ? `${stats.active_subscriptions} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${stats.active_subscriptions} active`,
+            ? tOverview('activeSubscriptions').replace('{count}', String(stats.active_subscriptions)) + ' ' + new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            : tOverview('activeSubscriptions').replace('{count}', String(stats.active_subscriptions)),
           icon: RefreshCw,
         },
         {
-          title: selectedMonth ? 'Period Cost' : 'Monthly Cost',
+          title: tOverview('monthlyCost'),
           value: (
             <CurrencyDisplay
               amount={stats.monthly_cost}
@@ -288,11 +297,11 @@ export default function SubscriptionsPage() {
               showCode={false}
             />
           ),
-          description: `From ${stats.active_subscriptions} active ${stats.active_subscriptions === 1 ? 'subscription' : 'subscriptions'}`,
+          description: tOverview('totalMonthlySpending'),
           icon: TrendingDown,
         },
         {
-          title: 'Annual Cost',
+          title: tOverview('upcomingRenewals'),
           value: (
             <CurrencyDisplay
               amount={stats.total_annual_cost}
@@ -301,7 +310,7 @@ export default function SubscriptionsPage() {
               showCode={false}
             />
           ),
-          description: selectedMonth ? 'Based on period cost' : 'Projected yearly cost',
+          description: tOverview('subscriptionsDueThisMonth'),
           icon: Calendar,
         },
       ]
@@ -332,7 +341,7 @@ export default function SubscriptionsPage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedSubscriptionIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedSubscriptionIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -341,20 +350,20 @@ export default function SubscriptionsPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedSubscriptionIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedSubscriptionIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddSubscription} size="default" className="w-full sm:w-auto">
           <RefreshCw className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Subscription</span>
+          <span className="truncate">{tOverview('addSubscription')}</span>
         </Button>
       </>
     );
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription]);
+  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription, tOverview, tActions]);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -432,20 +441,36 @@ export default function SubscriptionsPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search subscriptions..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tOverview('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+              label={tCommon('common.filterBy')}
+              clearLabel={tCommon('common.clear')}
             />
             <SortFilter
               sortField={sortField}
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortOptions={[
+                { field: 'name', label: tCommon('common.name') },
+                { field: 'amount', label: tCommon('common.amount') },
+                { field: 'date', label: tCommon('common.date') },
+              ]}
+              sortByLabel={tCommon('common.sortBy')}
+              sortAZLabel={tCommon('common.sortAZ')}
+              sortZALabel={tCommon('common.sortZA')}
+              sortLowToHighLabel={tCommon('common.sortLowToHigh')}
+              sortHighToLowLabel={tCommon('common.sortHighToLow')}
+              sortOldestFirstLabel={tCommon('common.sortOldestFirst')}
+              sortNewestFirstLabel={tCommon('common.sortNewestFirst')}
+              sortAscendingLabel={tCommon('common.sortAscending')}
+              sortDescendingLabel={tCommon('common.sortDescending')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -453,7 +478,7 @@ export default function SubscriptionsPage() {
                 size="sm"
                 onClick={() => setViewMode('card')}
                 className="h-[32px] w-[32px] p-0"
-                title="Card View"
+                title={tCommon('common.cardView')}
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -462,7 +487,7 @@ export default function SubscriptionsPage() {
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="h-[32px] w-[32px] p-0"
-                title="List View"
+                title={tCommon('common.listView')}
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -472,7 +497,7 @@ export default function SubscriptionsPage() {
                   size="sm"
                   onClick={() => setViewMode('calendar')}
                   className="h-[32px] w-[32px] p-0"
-                  title="Calendar View"
+                  title={tCommon('common.calendarView')}
                 >
                   <CalendarDays className="h-4 w-4" />
                 </Button>
@@ -491,9 +516,9 @@ export default function SubscriptionsPage() {
         ) : !subscriptionsData?.items || subscriptionsData.items.length === 0 ? (
           <EmptyState
             icon={RefreshCw}
-            title="No subscriptions yet"
-            description="Start tracking your subscriptions by adding your first one."
-            actionLabel="Add Subscription"
+            title={tOverview('noSubscriptions')}
+            description={tOverview('noSubscriptionsDescription')}
+            actionLabel={tOverview('addSubscription')}
             onAction={handleAddSubscription}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
@@ -521,17 +546,17 @@ export default function SubscriptionsPage() {
           selectedMonth ? (
             <EmptyState
               icon={RefreshCw}
-              title="No subscriptions for this month"
-              description={`No subscriptions active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
-              actionLabel="Clear Filter"
+              title={tOverview('noSubscriptions')}
+              description={`${tOverview('noSubscriptionsDescription')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
+              actionLabel={tCommon('common.clearFilter')}
               onAction={() => setSelectedMonth(null)}
             />
           ) : (
             <EmptyState
               icon={RefreshCw}
-              title="No subscriptions found"
-              description="Try adjusting your search or filter criteria."
-              actionLabel="Clear Filters"
+              title={tOverview('noFilterResults')}
+              description={tOverview('noSubscriptionsDescription')}
+              actionLabel={tCommon('clearFilters')}
               onAction={() => {
                 setSearchQuery('');
                 setSelectedCategory(null);
@@ -548,7 +573,7 @@ export default function SubscriptionsPage() {
                   aria-label="Select all subscriptions"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedSubscriptionIds.size === filteredSubscriptions.length ? 'Deselect all' : 'Select all'}
+                  {selectedSubscriptionIds.size === filteredSubscriptions.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -561,7 +586,20 @@ export default function SubscriptionsPage() {
                 subscription.end_date
               );
               const urgency = getRenewalUrgency(daysUntilRenewal);
-              const renewalMessage = getRenewalMessage(daysUntilRenewal, isEnded);
+
+              // Get renewal message with translations
+              let renewalMessage = '';
+              if (isEnded) {
+                renewalMessage = tRenewal('ended');
+              } else if (daysUntilRenewal < 0) {
+                renewalMessage = tRenewal('noRenewalScheduled');
+              } else if (daysUntilRenewal === 0) {
+                renewalMessage = tRenewal('renewsToday');
+              } else if (daysUntilRenewal === 1) {
+                renewalMessage = tRenewal('renewsIn1Day', { days: 1 });
+              } else {
+                renewalMessage = tRenewal('renewsInDays', { days: daysUntilRenewal });
+              }
 
               return (
                 <Card key={subscription.id} className="relative">
@@ -582,7 +620,7 @@ export default function SubscriptionsPage() {
                         </div>
                       </div>
                       <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                        {subscription.is_active ? 'Active' : 'Inactive'}
+                        {subscription.is_active ? tStatus('active') : tStatus('archived')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -611,9 +649,9 @@ export default function SubscriptionsPage() {
                       <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextRenewal ? (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Next Renewal</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tOverview('nextRenewal')}</p>
                             <p className="text-sm font-semibold">
-                              {formatRenewalDate(nextRenewal)}
+                              {formatRenewalDate(nextRenewal, tRenewal('noUpcomingRenewal'), 'uk-UA')}
                             </p>
                             <Badge
                               variant={getRenewalBadgeVariant(urgency)}
@@ -624,8 +662,8 @@ export default function SubscriptionsPage() {
                           </>
                         ) : (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Status</p>
-                            <p className="text-sm font-semibold">{isEnded ? 'Ended' : 'No upcoming renewal'}</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tOverview('status')}</p>
+                            <p className="text-sm font-semibold">{isEnded ? tStatus('expired') : tOverview('nextRenewal')}</p>
                           </>
                         )}
                       </div>
@@ -636,14 +674,14 @@ export default function SubscriptionsPage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditSubscription(subscription.id)}
                         >
                           <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          {tActions('edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -651,7 +689,7 @@ export default function SubscriptionsPage() {
                           onClick={() => handleArchiveSubscription(subscription.id)}
                         >
                           <Archive className="mr-1 h-3 w-3" />
-                          Archive
+                          {tActions('archive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -660,7 +698,7 @@ export default function SubscriptionsPage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -680,18 +718,18 @@ export default function SubscriptionsPage() {
                       <Checkbox
                         checked={selectedSubscriptionIds.size === filteredSubscriptions.length && filteredSubscriptions.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
-                    <TableHead className="hidden xl:table-cell">Next Renewal</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tCommon('common.description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('frequency')}</TableHead>
+                    <TableHead className="hidden xl:table-cell">{tOverview('nextRenewal')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -702,7 +740,20 @@ export default function SubscriptionsPage() {
                       subscription.end_date
                     );
                     const urgency = getRenewalUrgency(daysUntilRenewal);
-                    const renewalMessage = getRenewalMessage(daysUntilRenewal, isEnded);
+
+                    // Get renewal message with translations
+                    let renewalMessage = '';
+                    if (isEnded) {
+                      renewalMessage = tRenewal('ended');
+                    } else if (daysUntilRenewal < 0) {
+                      renewalMessage = tRenewal('noRenewalScheduled');
+                    } else if (daysUntilRenewal === 0) {
+                      renewalMessage = tRenewal('renewsToday');
+                    } else if (daysUntilRenewal === 1) {
+                      renewalMessage = tRenewal('renewsIn1Day', { days: 1 });
+                    } else {
+                      renewalMessage = tRenewal('renewsInDays', { days: daysUntilRenewal });
+                    }
 
                     return (
                       <TableRow key={subscription.id}>
@@ -750,7 +801,7 @@ export default function SubscriptionsPage() {
                           {nextRenewal ? (
                             <div className="flex flex-col gap-1">
                               <span className="text-sm">
-                                {formatRenewalDate(nextRenewal)}
+                                {formatRenewalDate(nextRenewal, tRenewal('noUpcomingRenewal'), 'uk-UA')}
                               </span>
                               <Badge
                                 variant={getRenewalBadgeVariant(urgency)}
@@ -776,7 +827,7 @@ export default function SubscriptionsPage() {
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
                           <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs">
-                            {subscription.is_active ? 'Active' : 'Inactive'}
+                            {subscription.is_active ? tStatus('active') : tStatus('archived')}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -832,9 +883,12 @@ export default function SubscriptionsPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Subscription"
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
         itemName="subscription"
         isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -845,6 +899,8 @@ export default function SubscriptionsPage() {
         count={selectedSubscriptionIds.size}
         itemName="subscription"
         isDeleting={isBatchDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

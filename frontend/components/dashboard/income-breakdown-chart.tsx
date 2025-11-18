@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import { PieChartIcon, Info } from 'lucide-react';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
+import { useTranslations } from 'next-intl';
 
 interface BreakdownData {
   category: string;
@@ -41,12 +42,13 @@ interface IncomeBreakdownChartProps {
   currency?: string;
 }
 
-// Category-specific colors
+// Category-specific colors (using English keys to match API data)
 const CATEGORY_COLORS: Record<string, string> = {
   'Expenses': '#ef4444',        // red
   'Subscriptions': '#f59e0b',   // amber
   'Installments': '#8b5cf6',    // purple
   'Net Savings': '#10b981',     // green
+  'Taxes': '#6366f1',           // indigo
 };
 
 export function IncomeBreakdownChart({
@@ -55,6 +57,8 @@ export function IncomeBreakdownChart({
   isLoading = false,
   currency = 'USD',
 }: IncomeBreakdownChartProps) {
+  const t = useTranslations('analytics.incomeAllocation');
+
   // Get currency data - must be called before any returns
   const { data: currencyData } = useGetCurrencyQuery(currency);
   const currencySymbol = currencyData?.symbol || '$';
@@ -72,7 +76,7 @@ export function IncomeBreakdownChart({
       <Card className="p-4 md:p-6">
         <div className="flex flex-col items-center justify-center h-[300px] md:h-[400px] text-gray-500">
           <PieChartIcon className="h-12 w-12 mb-4 opacity-50" />
-          <p className="text-sm md:text-base">No income data available for the current month</p>
+          <p className="text-sm md:text-base">{t('emptyState')}</p>
         </div>
       </Card>
     );
@@ -96,10 +100,10 @@ export function IncomeBreakdownChart({
           <p className="font-semibold mb-2">{data.category}</p>
           <div className="space-y-1">
             <p className="text-sm">
-              Amount: <span className="font-semibold">{formatCurrency(data.amount)}</span>
+              {t('chartLabels.amount')}: <span className="font-semibold">{formatCurrency(data.amount)}</span>
             </p>
             <p className="text-sm">
-              Percentage: <span className="font-semibold">{data.percentage.toFixed(1)}%</span>
+              {t('chartLabels.percentage')}: <span className="font-semibold">{data.percentage.toFixed(1)}%</span>
             </p>
           </div>
         </div>
@@ -155,18 +159,18 @@ export function IncomeBreakdownChart({
       <Card className="p-4 md:p-6">
         <div className="mb-4 md:mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-base md:text-lg font-semibold">Income Allocation</h3>
+            <h3 className="text-base md:text-lg font-semibold">{t('title')}</h3>
             <ChartTooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="max-w-xs">Shows how your monthly income is allocated across expenses, subscriptions, installments, and net savings. Helps identify spending patterns and savings potential.</p>
+                <p className="max-w-xs">{t('tooltip')}</p>
               </TooltipContent>
             </ChartTooltip>
           </div>
           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-            How your income is distributed
+            {t('description')}
           </p>
         </div>
 
@@ -200,7 +204,7 @@ export function IncomeBreakdownChart({
 
           {/* Total in center for donut chart */}
           <div className="text-center -mt-48 mb-32 pointer-events-none">
-            <p className="text-xs text-gray-600 dark:text-gray-400">Total Income</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">{t('totalIncome')}</p>
             <p className="text-2xl font-bold">{formatCurrency(totalIncome)}</p>
           </div>
         </div>
@@ -239,7 +243,7 @@ export function IncomeBreakdownChart({
       {/* Summary insights */}
       <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Monthly income allocation summary
+          {t('summary')}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {data.map((item) => (

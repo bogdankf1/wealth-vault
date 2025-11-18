@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Експорт даних",
+    "description": "Експортуйте свої фінансові дані в різних форматах"
+  },
+  "card": {
+    "title": "Налаштування експорту",
+    "description": "Виберіть тип даних, період та формат для експорту"
+  },
+  "labels": {
+    "dataType": "Тип даних",
+    "exportFormat": "Формат експорту",
+    "month": "Місяць",
+    "year": "Рік"
+  },
+  "placeholders": {
+    "selectDataType": "Виберіть тип даних",
+    "selectFormat": "Виберіть формат",
+    "selectMonth": "Виберіть місяць",
+    "selectYear": "Виберіть рік"
+  },
+  "entryTypes": {
+    "income": "Доходи",
+    "expenses": "Витрати",
+    "subscriptions": "Підписки",
+    "installments": "Розстрочки",
+    "budgets": "Бюджети",
+    "savings": "Заощадження",
+    "portfolio": "Портфоліо",
+    "goals": "Цілі",
+    "debts": "Борги",
+    "taxes": "Податки"
+  },
+  "months": {
+    "january": "Січень",
+    "february": "Лютий",
+    "march": "Березень",
+    "april": "Квітень",
+    "may": "Травень",
+    "june": "Червень",
+    "july": "Липень",
+    "august": "Серпень",
+    "september": "Вересень",
+    "october": "Жовтень",
+    "november": "Листопад",
+    "december": "Грудень"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Експортувати дані",
+    "exporting": "Експортуємо..."
+  },
+  "messages": {
+    "successTitle": "Успішно експортовано дані {type}",
+    "successDescription": "Файл: {filename}",
+    "errorAccessDenied": "Доступ заборонено",
+    "errorAccessDeniedDescription": "Ця функція потребує підписки рівня Wealth",
+    "errorFailed": "Помилка експорту",
+    "errorFailedDescription": "Не вдалося експортувати дані. Будь ласка, спробуйте ще раз."
+  },
+  "info": {
+    "title": "Про експорт даних",
+    "point1": "Експорт включає всі записи за вибраний місяць і рік",
+    "point2": "Файли CSV можна відкрити в Excel, Google Sheets або будь-якому додатку для роботи з таблицями",
+    "point3": "Ця функція доступна виключно для передплатників рівня Wealth",
+    "point4": "Додаткові формати експорту можуть бути додані в майбутніх оновленнях"
+  }
+}

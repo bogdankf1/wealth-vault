@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Export Data",
+    "description": "Export your financial data in various formats"
+  },
+  "card": {
+    "title": "Export Configuration",
+    "description": "Select the data type, period, and format you want to export"
+  },
+  "labels": {
+    "dataType": "Data Type",
+    "exportFormat": "Export Format",
+    "month": "Month",
+    "year": "Year"
+  },
+  "placeholders": {
+    "selectDataType": "Select data type",
+    "selectFormat": "Select format",
+    "selectMonth": "Select month",
+    "selectYear": "Select year"
+  },
+  "entryTypes": {
+    "income": "Income",
+    "expenses": "Expenses",
+    "subscriptions": "Subscriptions",
+    "installments": "Installments",
+    "budgets": "Budgets",
+    "savings": "Savings",
+    "portfolio": "Portfolio",
+    "goals": "Goals",
+    "debts": "Debts",
+    "taxes": "Taxes"
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Export Data",
+    "exporting": "Exporting..."
+  },
+  "messages": {
+    "successTitle": "Successfully exported {type} data",
+    "successDescription": "File: {filename}",
+    "errorAccessDenied": "Access denied",
+    "errorAccessDeniedDescription": "This feature requires a Wealth tier subscription",
+    "errorFailed": "Export failed",
+    "errorFailedDescription": "Failed to export data. Please try again."
+  },
+  "info": {
+    "title": "About Data Export",
+    "point1": "Exports include all records for the selected month and year",
+    "point2": "CSV files can be opened in Excel, Google Sheets, or any spreadsheet application",
+    "point3": "This feature is available exclusively for Wealth tier subscribers",
+    "point4": "Additional export formats may be added in future updates"
+  }
+}

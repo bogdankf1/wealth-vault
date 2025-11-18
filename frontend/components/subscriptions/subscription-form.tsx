@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslations } from 'next-intl';
 import {
   useCreateSubscriptionMutation,
   useUpdateSubscriptionMutation,
@@ -70,26 +71,32 @@ interface SubscriptionFormProps {
   onClose: () => void;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'biannually', label: 'Bi-annually' },
-  { value: 'annually', label: 'Annually' },
-];
-
-const CATEGORY_OPTIONS = [
-  { value: 'Cloud Storage', label: 'Cloud Storage' },
-  { value: 'Music', label: 'Music' },
-  { value: 'Video', label: 'Video' },
-  { value: 'Education', label: 'Education' },
-  { value: 'Cell Service', label: 'Cell Service' },
-  { value: 'Side Projects', label: 'Side Projects' },
-  { value: 'AI Tools', label: 'AI Tools' },
-  { value: 'Gaming', label: 'Gaming' },
-  { value: 'Miscellaneous', label: 'Miscellaneous' },
-];
-
 export function SubscriptionForm({ subscriptionId, isOpen, onClose }: SubscriptionFormProps) {
+  // Translation hooks
+  const tForm = useTranslations('subscriptions.form');
+  const tActions = useTranslations('subscriptions.actions');
+  const tCategories = useTranslations('subscriptions.categories');
+  const tFrequencies = useTranslations('subscriptions.frequencies');
+
+  const FREQUENCY_OPTIONS = [
+    { value: 'monthly', label: tFrequencies('monthly') },
+    { value: 'quarterly', label: tFrequencies('quarterly') },
+    { value: 'biannually', label: tFrequencies('biannually') },
+    { value: 'annually', label: tFrequencies('annually') },
+  ];
+
+  const CATEGORY_OPTIONS = [
+    { value: 'Cloud Storage', label: tCategories('cloudStorage') },
+    { value: 'Music', label: tCategories('music') },
+    { value: 'Video', label: tCategories('video') },
+    { value: 'Education', label: tCategories('education') },
+    { value: 'Cell Service', label: tCategories('cellService') },
+    { value: 'Side Projects', label: tCategories('sideProjects') },
+    { value: 'AI Tools', label: tCategories('aiTools') },
+    { value: 'Gaming', label: tCategories('gaming') },
+    { value: 'Miscellaneous', label: tCategories('miscellaneous') },
+  ];
+
   const isEditing = Boolean(subscriptionId);
 
   // Local state to track the string value of amount while user is typing
@@ -175,7 +182,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
       });
       setAmountInput('');
     }
-  }, [isEditing, existingSubscription, isOpen, reset, setValue]);
+  }, [isEditing, existingSubscription, isOpen, reset, setValue, tForm]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -204,17 +211,17 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
 
       if (isEditing && subscriptionId) {
         await updateSubscription({ id: subscriptionId, data: submitData }).unwrap();
-        toast.success('Subscription updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createSubscription(submitData).unwrap();
-        toast.success('Subscription created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save subscription:', error);
-      toast.error(isEditing ? 'Failed to update subscription' : 'Failed to create subscription');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -237,12 +244,10 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Subscription' : 'Add Subscription'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the details of your subscription.'
-              : 'Add a new subscription to track your recurring payments.'}
+            {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -253,10 +258,10 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{tForm('subscriptionName')} *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Netflix Premium"
+                placeholder={tForm('subscriptionNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
@@ -265,10 +270,10 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this subscription"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={3}
                 {...register('description')}
               />
@@ -280,13 +285,13 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={tForm('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -300,7 +305,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
 
             <CurrencyInput
               key={`currency-${existingSubscription?.id || 'new'}-${watch('currency')}`}
-              label="Amount"
+              label={tForm('amount')}
               amount={amountInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
@@ -323,7 +328,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
             />
 
             <div className="space-y-2">
-              <Label htmlFor="frequency">Billing Frequency *</Label>
+              <Label htmlFor="frequency">{tForm('frequency')} *</Label>
               <Select
                 value={watch('frequency')}
                 onValueChange={(value) =>
@@ -331,7 +336,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={tForm('frequencyPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {FREQUENCY_OPTIONS.map((option) => (
@@ -345,7 +350,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="start_date">Start Date *</Label>
+                <Label htmlFor="start_date">{tForm('startDate')} *</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -360,7 +365,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="end_date">End Date (Optional)</Label>
+                <Label htmlFor="end_date">{tForm('endDate')}</Label>
                 <Input
                   id="end_date"
                   type="date"
@@ -368,11 +373,12 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                   className="cursor-pointer"
                   style={{ colorScheme: 'light' }}
                 />
+                <p className="text-xs text-muted-foreground">{tForm('endDateDescription')}</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">Active Subscription</Label>
+              <Label htmlFor="is_active">{tForm('activeSubscription')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -382,14 +388,14 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? 'Saving...'
+                  ? tForm('saving')
                   : isEditing
-                  ? 'Update Subscription'
-                  : 'Add Subscription'}
+                  ? tForm('update')
+                  : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

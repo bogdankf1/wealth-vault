@@ -13,16 +13,19 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { useTranslations } from 'next-intl';
 
 export function BudgetOverviewWidget() {
+  const t = useTranslations('dashboard.widgets.budgetOverview');
+  const tCommon = useTranslations('dashboard.widgets.common');
   const { data: overview, isLoading, error } = useGetBudgetOverviewQuery();
 
   if (isLoading) {
     return (
       <Card className="col-span-full lg:col-span-2">
         <CardHeader>
-          <CardTitle>Budget Overview</CardTitle>
-          <CardDescription>All active budgets (each tracked within its own period)</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -39,12 +42,12 @@ export function BudgetOverviewWidget() {
     return (
       <Card className="col-span-full lg:col-span-2">
         <CardHeader>
-          <CardTitle>Budget Overview</CardTitle>
-          <CardDescription>All active budgets (each tracked within its own period)</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            <p>Failed to load budget overview</p>
+            <p>{t('error')}</p>
           </div>
         </CardContent>
       </Card>
@@ -56,14 +59,14 @@ export function BudgetOverviewWidget() {
     return (
       <Card className="col-span-full lg:col-span-2">
         <CardHeader>
-          <CardTitle>Budget Overview</CardTitle>
-          <CardDescription>All active budgets (each tracked within its own period)</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">No budgets set up yet</p>
+            <p className="text-muted-foreground mb-4">{t('emptyState.title')}</p>
             <Link href="/dashboard/budgets">
-              <Button>Create Your First Budget</Button>
+              <Button>{t('emptyState.button')}</Button>
             </Link>
           </div>
         </CardContent>
@@ -80,41 +83,44 @@ export function BudgetOverviewWidget() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle>Budget Overview</CardTitle>
+              <CardTitle>{t('title')}</CardTitle>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-gray-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">How it works:</p>
-                  <p className="text-sm">Shows all currently active budgets aggregated together.</p>
-                  <p className="text-sm mt-2">Each budget tracks expenses within its own time period (monthly, quarterly, or yearly).</p>
-                  <p className="text-sm mt-2">• Green: Under 80% of budget used</p>
-                  <p className="text-sm">• Amber: 80%+ used but not over</p>
-                  <p className="text-sm">• Red: Budget exceeded</p>
+                  <p className="font-semibold mb-1">{t('tooltip.heading')}</p>
+                  <p className="text-sm">{t('tooltip.description')}</p>
+                  <p className="text-sm mt-2">{t('tooltip.periodNote')}</p>
+                  <p className="text-sm mt-2">• {t('tooltip.colorGreen')}</p>
+                  <p className="text-sm">• {t('tooltip.colorAmber')}</p>
+                  <p className="text-sm">• {t('tooltip.colorRed')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
             <Link href="/dashboard/budgets">
               <Button variant="outline" size="sm">
-                View All
+                {tCommon('viewAll')}
               </Button>
             </Link>
           </div>
-          <CardDescription>All active budgets (each tracked within its own period)</CardDescription>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
       <CardContent className="space-y-4">
         {/* Info Note */}
         <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30">
           <div className="text-xs text-blue-900 dark:text-blue-100">
-            Showing {stats.active_budgets} active {stats.active_budgets === 1 ? 'budget' : 'budgets'}. Each budget tracks expenses within its own defined time period.
+            {t('infoNote.showing', {
+              count: stats.active_budgets,
+              budgets: stats.active_budgets === 1 ? t('infoNote.budget') : t('infoNote.budgets')
+            })}
           </div>
         </div>
 
         {/* Overall Stats */}
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Budgeted</p>
+            <p className="text-xs text-muted-foreground">{t('stats.budgeted')}</p>
             <p className="text-lg font-semibold">
               <CurrencyDisplay
                 amount={stats.total_budgeted}
@@ -125,7 +131,7 @@ export function BudgetOverviewWidget() {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Spent</p>
+            <p className="text-xs text-muted-foreground">{t('stats.spent')}</p>
             <p className="text-lg font-semibold">
               <CurrencyDisplay
                 amount={stats.total_spent}
@@ -136,7 +142,7 @@ export function BudgetOverviewWidget() {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Remaining</p>
+            <p className="text-xs text-muted-foreground">{t('stats.remaining')}</p>
             <p className={`text-lg font-semibold ${stats.total_remaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
               <CurrencyDisplay
                 amount={stats.total_remaining}
@@ -151,7 +157,7 @@ export function BudgetOverviewWidget() {
         {/* Overall Progress Bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Overall Progress</span>
+            <span className="text-muted-foreground">{t('overallProgress')}</span>
             <span className="font-medium">{stats.overall_percentage_used.toFixed(1)}%</span>
           </div>
           <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -175,7 +181,7 @@ export function BudgetOverviewWidget() {
               <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                  Budget Alerts
+                  {t('budgetAlerts')}
                 </p>
                 {alerts.slice(0, 2).map((alert, index) => (
                   <p key={index} className="text-xs text-muted-foreground">
@@ -185,7 +191,7 @@ export function BudgetOverviewWidget() {
                 {alerts.length > 2 && (
                   <Link href="/dashboard/budgets">
                     <p className="text-xs text-amber-600 dark:text-amber-400 hover:underline">
-                      +{alerts.length - 2} more alerts
+                      {t('moreAlerts', { count: alerts.length - 2 })}
                     </p>
                   </Link>
                 )}
@@ -196,7 +202,7 @@ export function BudgetOverviewWidget() {
 
         {/* Top Categories */}
         <div className="space-y-3">
-          <p className="text-sm font-medium">Top Categories</p>
+          <p className="text-sm font-medium">{t('topCategories')}</p>
           {topCategories.map((category) => (
             <div key={category.category} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
@@ -229,7 +235,7 @@ export function BudgetOverviewWidget() {
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">
-                  {category.percentage_used.toFixed(1)}% used
+                  {t('percentUsed', { percent: category.percentage_used.toFixed(1) })}
                 </span>
                 <span className={category.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                   {category.remaining >= 0 ? (
@@ -241,7 +247,7 @@ export function BudgetOverviewWidget() {
                         showSymbol={true}
                         showCode={false}
                       />
-                      <span>left</span>
+                      <span>{t('left')}</span>
                     </span>
                   ) : (
                     <span className="flex items-center gap-1">
@@ -252,7 +258,7 @@ export function BudgetOverviewWidget() {
                         showSymbol={true}
                         showCode={false}
                       />
-                      <span>over</span>
+                      <span>{t('over')}</span>
                     </span>
                   )}
                 </span>

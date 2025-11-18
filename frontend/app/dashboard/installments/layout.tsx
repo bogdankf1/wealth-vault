@@ -8,36 +8,10 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutGrid, History, Archive, BarChart3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { InstallmentsActionsContext } from './context';
-
-const INSTALLMENTS_TABS: ModuleTab[] = [
-  {
-    value: 'overview',
-    label: 'Overview',
-    icon: LayoutGrid,
-    href: '/dashboard/installments/overview',
-  },
-  {
-    value: 'analysis',
-    label: 'Analysis',
-    icon: BarChart3,
-    href: '/dashboard/installments/analysis',
-  },
-  {
-    value: 'history',
-    label: 'History',
-    icon: History,
-    href: '/dashboard/installments/history',
-  },
-  {
-    value: 'archive',
-    label: 'Archive',
-    icon: Archive,
-    href: '/dashboard/installments/archive',
-  },
-];
 
 export default function InstallmentsLayout({
   children,
@@ -47,6 +21,37 @@ export default function InstallmentsLayout({
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
 
+  // Translation hooks
+  const tLayout = useTranslations('installments.layout');
+  const tNav = useTranslations('installments.navigation');
+
+  const INSTALLMENTS_TABS: ModuleTab[] = [
+    {
+      value: 'overview',
+      label: tNav('overview'),
+      icon: LayoutGrid,
+      href: '/dashboard/installments/overview',
+    },
+    {
+      value: 'analysis',
+      label: tNav('analysis'),
+      icon: BarChart3,
+      href: '/dashboard/installments/analysis',
+    },
+    {
+      value: 'history',
+      label: tNav('history'),
+      icon: History,
+      href: '/dashboard/installments/history',
+    },
+    {
+      value: 'archive',
+      label: tNav('archive'),
+      icon: Archive,
+      href: '/dashboard/installments/archive',
+    },
+  ];
+
   return (
     <InstallmentsActionsContext.Provider value={{ setActions }}>
       <div className="container mx-auto p-4 md:p-6">
@@ -54,10 +59,10 @@ export default function InstallmentsLayout({
         <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              Installments
+              {tLayout('title')}
             </h1>
             <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Track and manage your installment payments
+              {tLayout('description')}
             </p>
           </div>
           {actions && (

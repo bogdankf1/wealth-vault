@@ -7,6 +7,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import * as z from 'zod';
 import {
   useCreateGoalMutation,
@@ -70,21 +71,27 @@ interface GoalFormProps {
   onClose: () => void;
 }
 
-const CATEGORY_OPTIONS = [
-  { value: 'Home', label: 'Home/Property' },
-  { value: 'Vehicle', label: 'Vehicle' },
-  { value: 'Education', label: 'Education' },
-  { value: 'Wedding', label: 'Wedding' },
-  { value: 'Travel', label: 'Travel/Vacation' },
-  { value: 'Emergency Fund', label: 'Emergency Fund' },
-  { value: 'Major Purchase', label: 'Major Purchase' },
-  { value: 'General Savings', label: 'General Savings' },
-  { value: 'Retirement', label: 'Retirement' },
-  { value: 'Other', label: 'Other' },
-];
-
 export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
   const isEditing = Boolean(goalId);
+
+  // Translations
+  const tForm = useTranslations('goals.form');
+  const tActions = useTranslations('goals.actions');
+  const tCategories = useTranslations('goals.categories');
+
+  // Category options with translations
+  const CATEGORY_OPTIONS = [
+    { value: 'home_property', label: tCategories('homeProperty') },
+    { value: 'vehicle', label: tCategories('vehicle') },
+    { value: 'education', label: tCategories('education') },
+    { value: 'wedding', label: tCategories('wedding') },
+    { value: 'travel_vacation', label: tCategories('travelVacation') },
+    { value: 'emergency_fund', label: tCategories('emergencyFund') },
+    { value: 'major_purchase', label: tCategories('majorPurchase') },
+    { value: 'general_savings', label: tCategories('generalSavings') },
+    { value: 'retirement', label: tCategories('retirement') },
+    { value: 'other', label: tCategories('other') },
+  ];
 
   // Local state to track the string value of inputs while user is typing
   const [targetAmountInput, setTargetAmountInput] = React.useState<string>('');
@@ -223,17 +230,17 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
       if (isEditing && goalId) {
         await updateGoal({ id: goalId, data: submitData }).unwrap();
-        toast.success('Goal updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createGoal(submitData).unwrap();
-        toast.success('Goal created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save goal:', error);
-      toast.error(isEditing ? 'Failed to update goal' : 'Failed to create goal');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -258,12 +265,12 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Goal' : 'Add Goal'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Update the details of your financial goal.'
-              : 'Add a new financial goal to track your savings progress.'}
+              ? tForm('editDescription')
+              : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -274,10 +281,10 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Goal Name *</Label>
+              <Label htmlFor="name">{tForm('goalName')} *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Hawaii Vacation 2026"
+                placeholder={tForm('goalNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
@@ -286,10 +293,10 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this goal"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={2}
                 {...register('description')}
               />
@@ -301,13 +308,13 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={tForm('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -321,7 +328,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
             <CurrencyInput
               key={`currency-${existingGoal?.id || 'new'}-${watch('currency')}`}
-              label="Target Amount"
+              label={tForm('targetAmount')}
               amount={targetAmountInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
@@ -345,12 +352,12 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="current_amount">Current Amount Saved</Label>
+                <Label htmlFor="current_amount">{tForm('currentAmountSaved')}</Label>
                 <Input
                   id="current_amount"
                   type="text"
                   inputMode="decimal"
-                  placeholder="0.00"
+                  placeholder={tForm('currentAmountPlaceholder')}
                   value={currentAmountInput}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -367,12 +374,12 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="monthly_contribution">Monthly Contribution (Optional)</Label>
+                <Label htmlFor="monthly_contribution">{tForm('monthlyContribution')}</Label>
                 <Input
                   id="monthly_contribution"
                   type="text"
                   inputMode="decimal"
-                  placeholder="0.00"
+                  placeholder={tForm('monthlyContributionPlaceholder')}
                   value={monthlyContributionInput}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -393,7 +400,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="start_date">Start Date *</Label>
+                <Label htmlFor="start_date">{tForm('startDate')} *</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -409,7 +416,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="target_date">Target Date (Optional)</Label>
+                <Label htmlFor="target_date">{tForm('targetDate')}</Label>
                 <Input
                   id="target_date"
                   type="date"
@@ -418,13 +425,13 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   style={{ colorScheme: 'light' }}
                 />
                 <p className="text-xs text-muted-foreground">
-                  When you plan to achieve this goal
+                  {tForm('targetDateDescription')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">Active Goal</Label>
+              <Label htmlFor="is_active">{tForm('activeGoal')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -434,14 +441,14 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? 'Saving...'
+                  ? tForm('saving')
                   : isEditing
-                  ? 'Update Goal'
-                  : 'Add Goal'}
+                  ? tForm('update')
+                  : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

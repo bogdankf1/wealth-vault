@@ -5,6 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { TrendingUp, Calendar, BarChart3, Grid3x3, Rows3 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -36,6 +37,8 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import type { HistoryTimeRange } from '@/types/module-layout';
 
 export default function IncomeHistoryPage() {
+  const tHistory = useTranslations('income.history');
+
   // Default to last 12 months
   const [monthRange, setMonthRange] = useState<HistoryTimeRange>('12');
 
@@ -101,11 +104,11 @@ export default function IncomeHistoryPage() {
         <div className="rounded-lg border bg-background p-2 shadow-sm">
           <p className="font-semibold">{label}</p>
           <p className="text-sm text-muted-foreground">
-            Total: <CurrencyDisplay amount={payload[0].value} currency={historyData?.currency || 'USD'} />
+            {tHistory('totalLabel')} <CurrencyDisplay amount={payload[0].value} currency={historyData?.currency || 'USD'} />
           </p>
           {payload[0].payload.count && (
             <p className="text-xs text-muted-foreground">
-              {payload[0].payload.count} source{payload[0].payload.count !== 1 ? 's' : ''}
+              {payload[0].payload.count} {payload[0].payload.count === 1 ? tHistory('source') : tHistory('sources')}
             </p>
           )}
         </div>
@@ -118,21 +121,23 @@ export default function IncomeHistoryPage() {
   const statsCards: StatCard[] = historyData
     ? [
         {
-          title: 'Total Months',
+          title: tHistory('totalMonths'),
           value: historyData.total_months,
-          description: `${monthRange === 'all' ? 'All time' : `Last ${monthRange} months`}`,
+          description: tHistory('monthsDescription', {
+            range: monthRange === 'all' ? tHistory('allTime') : tHistory(`last${monthRange}Months`)
+          }),
           icon: Calendar,
         },
         {
-          title: 'Monthly Average',
+          title: tHistory('monthlyAverage'),
           value: <CurrencyDisplay amount={historyData.overall_average} currency={historyData.currency} decimals={0} />,
-          description: 'Average income per month',
+          description: tHistory('averageDescription'),
           icon: TrendingUp,
         },
         {
-          title: 'Total Income',
+          title: tHistory('totalIncome'),
           value: <CurrencyDisplay amount={historyData.history.reduce((sum, item) => sum + Number(item.total), 0)} currency={historyData.currency} decimals={0} />,
-          description: 'Total for selected period',
+          description: tHistory('totalDescription'),
           icon: BarChart3,
         },
       ]
@@ -142,7 +147,7 @@ export default function IncomeHistoryPage() {
     <div className="space-y-4 md:space-y-6">
       {/* Time Range Filter */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Show:</span>
+        <span className="text-sm text-muted-foreground">{tHistory('show')}</span>
         <div className="inline-flex rounded-md border">
           <Button
             variant={monthRange === '3' ? 'secondary' : 'ghost'}
@@ -150,7 +155,7 @@ export default function IncomeHistoryPage() {
             onClick={() => setMonthRange('3')}
             className="rounded-r-none"
           >
-            Last 3 months
+            {tHistory('last3Months')}
           </Button>
           <Button
             variant={monthRange === '6' ? 'secondary' : 'ghost'}
@@ -158,7 +163,7 @@ export default function IncomeHistoryPage() {
             onClick={() => setMonthRange('6')}
             className="rounded-none border-x"
           >
-            Last 6 months
+            {tHistory('last6Months')}
           </Button>
           <Button
             variant={monthRange === '12' ? 'secondary' : 'ghost'}
@@ -166,7 +171,7 @@ export default function IncomeHistoryPage() {
             onClick={() => setMonthRange('12')}
             className="rounded-none border-x"
           >
-            Last 12 months
+            {tHistory('last12Months')}
           </Button>
           <Button
             variant={monthRange === '24' ? 'secondary' : 'ghost'}
@@ -174,7 +179,7 @@ export default function IncomeHistoryPage() {
             onClick={() => setMonthRange('24')}
             className="rounded-none border-x"
           >
-            Last 24 months
+            {tHistory('last24Months')}
           </Button>
           <Button
             variant={monthRange === 'all' ? 'secondary' : 'ghost'}
@@ -182,7 +187,7 @@ export default function IncomeHistoryPage() {
             onClick={() => setMonthRange('all')}
             className="rounded-l-none"
           >
-            All time
+            {tHistory('allTime')}
           </Button>
         </div>
       </div>
@@ -194,8 +199,8 @@ export default function IncomeHistoryPage() {
       ) : !historyData?.history || historyData.history.length === 0 ? (
         <EmptyState
           icon={BarChart3}
-          title="No income history"
-          description="Start tracking your income sources to see trends and patterns over time."
+          title={tHistory('noData')}
+          description={tHistory('noDataDescription')}
         />
       ) : (
         <div className="space-y-6">
@@ -208,7 +213,7 @@ export default function IncomeHistoryPage() {
                   size="sm"
                   onClick={() => setStatsViewMode('cards')}
                   className="h-[32px] w-[32px] p-0"
-                  title="Cards View"
+                  title={tHistory('cardsView')}
                 >
                   <Grid3x3 className="h-4 w-4" />
                 </Button>
@@ -217,7 +222,7 @@ export default function IncomeHistoryPage() {
                   size="sm"
                   onClick={() => setStatsViewMode('compact')}
                   className="h-[32px] w-[32px] p-0"
-                  title="Compact View"
+                  title={tHistory('compactView')}
                 >
                   <Rows3 className="h-4 w-4" />
                 </Button>
@@ -254,10 +259,10 @@ export default function IncomeHistoryPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                Monthly Income Trends
+                {tHistory('monthlyTrends')}
               </CardTitle>
               <CardDescription>
-                Total income per month with average reference line
+                {tHistory('monthlyTrendsDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -286,10 +291,10 @@ export default function IncomeHistoryPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Monthly Breakdown
+                {tHistory('monthlyBreakdown')}
               </CardTitle>
               <CardDescription>
-                Detailed monthly income totals
+                {tHistory('monthlyBreakdownDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -298,10 +303,10 @@ export default function IncomeHistoryPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Month</TableHead>
-                        <TableHead className="text-right">Total Income</TableHead>
-                        <TableHead className="text-right">Number of Sources</TableHead>
-                        <TableHead className="text-right">vs. Average</TableHead>
+                        <TableHead>{tHistory('month')}</TableHead>
+                        <TableHead className="text-right">{tHistory('totalIncomeColumn')}</TableHead>
+                        <TableHead className="text-right">{tHistory('numberOfSources')}</TableHead>
+                        <TableHead className="text-right">{tHistory('vsAverage')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

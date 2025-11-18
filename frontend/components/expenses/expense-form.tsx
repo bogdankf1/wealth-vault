@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   useCreateExpenseMutation,
   useUpdateExpenseMutation,
@@ -40,58 +41,50 @@ import { ApiErrorState } from '@/components/ui/error-state';
 import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
 import { CurrencyInput } from '@/components/currency';
 
-// Form validation schema
-const expenseSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  description: z.string().max(500).optional(),
-  category: z.string().max(50).optional(),
-  amount: z.number()
-    .min(0, 'Amount must be positive')
-    .refine(
-      (val) => {
-        // Check if number has more than 2 decimal places
-        // Use toFixed to round to 2 decimals and compare
-        const rounded = Math.round(val * 100) / 100;
-        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
-      },
-      { message: 'Amount can have at most 2 decimal places' }
-    ),
-  currency: z.string().length(3),
-  frequency: z.enum([
-    'one_time',
-    'daily',
-    'weekly',
-    'biweekly',
-    'monthly',
-    'quarterly',
-    'annually',
-  ] as const),
-  is_active: z.boolean(),
-  date: z.string().optional(),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-});
-
-type FormData = z.infer<typeof expenseSchema>;
-
 interface ExpenseFormProps {
   expenseId?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: 'one_time', label: 'One-time' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Bi-weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'annually', label: 'Annually' },
-];
-
 export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
   const isEditing = Boolean(expenseId);
+  const tForm = useTranslations('expenses.form');
+  const tFrequency = useTranslations('expenses.frequency');
+  const tActions = useTranslations('expenses.actions');
+  const tOverview = useTranslations('expenses.overview');
+
+  // Form validation schema with translated messages
+  const expenseSchema = z.object({
+    name: z.string().min(1, tForm('nameRequired')).max(100),
+    description: z.string().max(500).optional(),
+    category: z.string().max(50).optional(),
+    amount: z.number()
+      .min(0, tForm('amountPositive'))
+      .refine(
+        (val) => {
+          const rounded = Math.round(val * 100) / 100;
+          return Math.abs(val - rounded) < 0.00001;
+        },
+        { message: tForm('amountDecimals') }
+      ),
+    currency: z.string().length(3),
+    frequency: z.enum([
+      'one_time',
+      'daily',
+      'weekly',
+      'biweekly',
+      'monthly',
+      'quarterly',
+      'annually',
+    ] as const),
+    is_active: z.boolean(),
+    date: z.string().optional(),
+    start_date: z.string().optional(),
+    end_date: z.string().optional(),
+  });
+
+  type FormData = z.infer<typeof expenseSchema>;
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
@@ -215,17 +208,17 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
       if (isEditing && expenseId) {
         await updateExpense({ id: expenseId, data: submitData }).unwrap();
-        toast.success('Expense updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createExpense(submitData).unwrap();
-        toast.success('Expense created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save expense:', error);
-      toast.error(isEditing ? 'Failed to update expense' : 'Failed to create expense');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -248,12 +241,10 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Expense' : 'Add Expense'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the details of your expense.'
-              : 'Add a new expense to track your spending.'}
+            {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -264,10 +255,10 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{tForm('name')} *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Grocery Shopping"
+                placeholder={tForm('namePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
@@ -276,10 +267,10 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this expense"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={3}
                 {...register('description')}
               />
@@ -291,13 +282,13 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={tForm('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -311,7 +302,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
             <CurrencyInput
               key={`currency-${existingExpense?.id || 'new'}-${watch('currency')}`}
-              label="Amount"
+              label={tForm('amount')}
               amount={amountInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
@@ -334,7 +325,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             />
 
             <div className="space-y-2">
-              <Label htmlFor="frequency">Frequency *</Label>
+              <Label htmlFor="frequency">{tForm('frequency')} *</Label>
               <Select
                 value={watch('frequency')}
                 onValueChange={(value) =>
@@ -345,9 +336,9 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FREQUENCY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                  {(['one_time', 'daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'annually'] as const).map((freq) => (
+                    <SelectItem key={freq} value={freq}>
+                      {tFrequency(freq)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -356,7 +347,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
             {watch('frequency') === 'one_time' ? (
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">{tForm('date')}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -368,7 +359,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">Start Date</Label>
+                  <Label htmlFor="start_date">{tForm('startDate')}</Label>
                   <Input
                     id="start_date"
                     type="date"
@@ -378,7 +369,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date (Optional)</Label>
+                  <Label htmlFor="end_date">{tForm('endDate')} (Optional)</Label>
                   <Input
                     id="end_date"
                     type="date"
@@ -391,7 +382,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             )}
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">Active Expense</Label>
+              <Label htmlFor="is_active">{tForm('isActive')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -401,14 +392,14 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? 'Saving...'
+                  ? tForm('saving')
                   : isEditing
-                  ? 'Update Expense'
-                  : 'Add Expense'}
+                  ? tActions('save')
+                  : tOverview('addExpense')}
               </Button>
             </DialogFooter>
           </form>

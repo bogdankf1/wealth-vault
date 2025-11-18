@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { UserMinus, AlertCircle, Edit, Trash2, Archive, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3, DollarSign } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -39,6 +40,12 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function DebtsPage() {
+  // Translation hooks
+  const tOverview = useTranslations('debts.overview');
+  const tCommon = useTranslations('common');
+  const tActions = useTranslations('debts.actions');
+  const tStatus = useTranslations('debts.status');
+
   // Get context for setting actions
   const { setActions } = React.useContext(DebtsActionsContext);
 
@@ -80,18 +87,18 @@ export default function DebtsPage() {
 
     try {
       await deleteDebt(deletingDebt.id).unwrap();
-      toast.success('Debt deleted successfully');
+      toast.success(tOverview('deleteSuccess'));
       setDeletingDebt(null);
     } catch (error) {
       console.error('Failed to delete debt:', error);
-      toast.error('Failed to delete debt');
+      toast.error(tOverview('deleteError'));
     }
   };
 
   const handleArchiveDebt = async (id: string) => {
     try {
       await updateDebt({ id, data: { is_active: false } }).unwrap();
-      toast.success('Debt archived successfully');
+      toast.success(tOverview('archiveSuccess'));
       setSelectedDebtIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -99,7 +106,7 @@ export default function DebtsPage() {
       });
     } catch (error) {
       console.error('Failed to archive debt:', error);
-      toast.error('Failed to archive debt');
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -119,14 +126,14 @@ export default function DebtsPage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully archived ${successCount} debt(s)`);
+      toast.success(tOverview('batchArchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to archive ${failCount} debt(s)`);
+      toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
     setSelectedDebtIds(new Set());
-  }, [selectedDebtIds, updateDebt]);
+  }, [selectedDebtIds, updateDebt, tOverview]);
 
   const handleToggleSelect = (debtId: string) => {
     const newSelected = new Set(selectedDebtIds);
@@ -169,7 +176,7 @@ export default function DebtsPage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedDebtIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedDebtIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -178,19 +185,19 @@ export default function DebtsPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedDebtIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedDebtIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddDebt} size="default" className="w-full sm:w-auto">
           <DollarSign className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Debt</span>
+          <span className="truncate">{tOverview('addDebt')}</span>
         </Button>
       </>
     );
 
     return () => setActions(null);
-  }, [selectedDebtIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddDebt]);
+  }, [selectedDebtIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddDebt, tOverview]);
 
   const confirmBatchDelete = async () => {
     if (selectedDebtIds.size === 0) return;
@@ -201,15 +208,15 @@ export default function DebtsPage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} debt(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} debt(s)`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
       setBatchDeleteDialogOpen(false);
       setSelectedDebtIds(new Set());
     } catch (error) {
       console.error('Batch delete failed:', error);
-      toast.error('Failed to delete debts');
+      toast.error(tOverview('batchDeleteError', { count: selectedDebtIds.size }));
     }
   };
 
@@ -217,7 +224,7 @@ export default function DebtsPage() {
   const hasDebts = debts.length > 0;
 
   // Status categories
-  const statusCategories = ['Active', 'Paid', 'Overdue'];
+  const statusCategories = [tStatus('active'), tStatus('paid'), tStatus('overdue')];
 
   // Filter debts
   const searchFilteredDebts = debts.filter((debt) => {
@@ -231,9 +238,9 @@ export default function DebtsPage() {
 
     // Status filter
     if (selectedStatus) {
-      if (selectedStatus === 'Active' && (debt.is_paid || debt.is_overdue)) return false;
-      if (selectedStatus === 'Paid' && !debt.is_paid) return false;
-      if (selectedStatus === 'Overdue' && (!debt.is_overdue || debt.is_paid)) return false;
+      if (selectedStatus === tStatus('active') && (debt.is_paid || debt.is_overdue)) return false;
+      if (selectedStatus === tStatus('paid') && !debt.is_paid) return false;
+      if (selectedStatus === tStatus('overdue') && (!debt.is_overdue || debt.is_paid)) return false;
     }
 
     return true;
@@ -253,7 +260,7 @@ export default function DebtsPage() {
   const statsCards = stats
     ? [
         {
-          title: 'Total Owed',
+          title: tOverview('totalOwed'),
           value: (
             <CurrencyDisplay
               amount={stats.total_amount_owed}
@@ -262,11 +269,11 @@ export default function DebtsPage() {
               showCode={false}
             />
           ),
-          description: `${stats.active_debts} active ${stats.active_debts === 1 ? 'debt' : 'debts'}`,
+          description: `${stats.active_debts} ${stats.active_debts === 1 ? tOverview('activeDebtSingular') : tOverview('activeDebtsPlural')}`,
           icon: UserMinus,
         },
         {
-          title: 'Total Paid',
+          title: tOverview('totalPaid'),
           value: (
             <CurrencyDisplay
               amount={stats.total_amount_paid}
@@ -275,13 +282,13 @@ export default function DebtsPage() {
               showCode={false}
             />
           ),
-          description: `${stats.paid_debts} paid ${stats.paid_debts === 1 ? 'debt' : 'debts'}`,
+          description: `${stats.paid_debts} ${stats.paid_debts === 1 ? tOverview('paidDebtSingular') : tOverview('paidDebtsPlural')}`,
           icon: CheckCircle2,
         },
         {
-          title: 'Overdue',
+          title: tOverview('overdue'),
           value: stats.overdue_debts,
-          description: stats.overdue_debts > 0 ? 'Require attention' : 'All on track',
+          description: stats.overdue_debts > 0 ? tOverview('requireAttention') : tOverview('allOnTrack'),
           icon: AlertCircle,
           valueClassName: stats.overdue_debts > 0 ? 'text-red-600 dark:text-red-400' : undefined,
         },
@@ -354,8 +361,8 @@ export default function DebtsPage() {
               selectedCategory={selectedStatus}
               onCategoryChange={(status) => setSelectedStatus(status || '')}
               categories={statusCategories}
-              searchPlaceholder="Search debts..."
-              categoryPlaceholder="All Statuses"
+              searchPlaceholder={tOverview('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allStatuses')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -364,6 +371,7 @@ export default function DebtsPage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -395,14 +403,14 @@ export default function DebtsPage() {
       ) : !hasDebts ? (
         <EmptyState
           icon={UserMinus}
-          title="No debts yet"
-          description="Start tracking money owed to you by adding your first debt record"
-          actionLabel="Add Debt"
+          title={tOverview('noDebts')}
+          description={tOverview('noDebtsDescription')}
+          actionLabel={tOverview('addDebt')}
           onAction={() => setIsFormOpen(true)}
         />
       ) : filteredDebts.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <p>No debts found matching your filters.</p>
+          <p>{tOverview('noFilterResults')}</p>
           <Button
             variant="link"
             onClick={() => {
@@ -411,7 +419,7 @@ export default function DebtsPage() {
             }}
             className="mt-2"
           >
-            Clear Filters
+            {tOverview('clearFilters')}
           </Button>
         </div>
       ) : viewMode === 'card' ? (
@@ -424,7 +432,7 @@ export default function DebtsPage() {
                 aria-label="Select all debts"
               />
               <span className="text-sm text-muted-foreground">
-                {selectedDebtIds.size === filteredDebts.length ? 'Deselect all' : 'Select all'}
+                {selectedDebtIds.size === filteredDebts.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
               </span>
             </div>
           )}
@@ -451,15 +459,15 @@ export default function DebtsPage() {
                   </div>
                   {debt.is_paid ? (
                     <Badge variant="default" className="bg-green-600 text-xs flex-shrink-0">
-                      Paid
+                      {tStatus('paid')}
                     </Badge>
                   ) : debt.is_overdue ? (
                     <Badge variant="destructive" className="text-xs flex-shrink-0">
-                      Overdue
+                      {tStatus('overdue')}
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="text-xs flex-shrink-0">
-                      Active
+                      {tStatus('active')}
                     </Badge>
                   )}
                 </div>
@@ -469,7 +477,7 @@ export default function DebtsPage() {
                   {/* Total and Paid Amounts */}
                   <div className="rounded-lg border bg-muted/50 p-3">
                     <div className="flex items-baseline justify-between mb-1">
-                      <span className="text-xs text-muted-foreground">Paid</span>
+                      <span className="text-xs text-muted-foreground">{tOverview('paid')}</span>
                       <span className="text-2xl font-bold">
                         <CurrencyDisplay
                           amount={debt.display_amount_paid ?? debt.amount_paid}
@@ -481,23 +489,23 @@ export default function DebtsPage() {
                     </div>
                     <div className="flex items-baseline justify-between">
                       <span className="text-xs text-muted-foreground">
-                        of <CurrencyDisplay
+                        {tOverview('of')} <CurrencyDisplay
                           amount={debt.display_amount ?? debt.amount}
                           currency={debt.display_currency ?? debt.currency}
                           showSymbol={true}
                           showCode={false}
-                        /> total
+                        /> {tOverview('total')}
                       </span>
                     </div>
                     <div className="mt-2 text-xs text-muted-foreground min-h-[16px]">
                       {debt.display_currency && debt.display_currency !== debt.currency && (
                         <>
-                          Original: <CurrencyDisplay
+                          {tOverview('original')}: <CurrencyDisplay
                             amount={debt.amount}
                             currency={debt.currency}
                             showSymbol={true}
                             showCode={false}
-                          /> total
+                          /> {tOverview('total')}
                         </>
                       )}
                     </div>
@@ -506,7 +514,7 @@ export default function DebtsPage() {
                   {/* Progress Bar */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{Math.round(debt.progress_percentage || 0)}% paid</span>
+                      <span>{tOverview('percentPaid', { percent: Math.round(debt.progress_percentage || 0) })}</span>
                       {debt.amount_remaining && debt.amount_remaining > 0 && (
                         <span>
                           <CurrencyDisplay
@@ -514,7 +522,7 @@ export default function DebtsPage() {
                             currency={debt.display_currency ?? debt.currency}
                             showSymbol={true}
                             showCode={false}
-                          /> remaining
+                          /> {tOverview('remaining')}
                         </span>
                       )}
                     </div>
@@ -526,13 +534,13 @@ export default function DebtsPage() {
                       {debt.paid_date && (
                         <p className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
                           <CheckCircle2 className="h-3 w-3" />
-                          Paid: {new Date(debt.paid_date).toLocaleDateString()}
+                          {tOverview('paidDate', { date: new Date(debt.paid_date).toLocaleDateString() })}
                         </p>
                       )}
                       {debt.due_date && !debt.is_paid && (
                         <p className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          Due: {new Date(debt.due_date).toLocaleDateString()}
+                          {tOverview('dueDate', { date: new Date(debt.due_date).toLocaleDateString() })}
                         </p>
                       )}
                     </div>
@@ -544,14 +552,14 @@ export default function DebtsPage() {
                     </div>
                   )}
 
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex flex-wrap gap-2 pt-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(debt.id)}
                     >
                       <Edit className="mr-1 h-3 w-3" />
-                      Edit
+                      {tActions('edit')}
                     </Button>
                     <Button
                       variant="outline"
@@ -559,7 +567,7 @@ export default function DebtsPage() {
                       onClick={() => handleArchiveDebt(debt.id)}
                     >
                       <Archive className="mr-1 h-3 w-3" />
-                      Archive
+                      {tActions('archive')}
                     </Button>
                     <Button
                       variant="outline"
@@ -567,7 +575,7 @@ export default function DebtsPage() {
                       onClick={() => handleDeleteClick(debt)}
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
-                      Delete
+                      {tActions('delete')}
                     </Button>
                   </div>
                 </div>
@@ -589,15 +597,15 @@ export default function DebtsPage() {
                       aria-label="Select all debts"
                     />
                   </TableHead>
-                  <TableHead className="w-[200px]">Debtor</TableHead>
-                  <TableHead className="hidden md:table-cell">Description</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="hidden lg:table-cell text-right">Progress</TableHead>
-                  <TableHead className="hidden xl:table-cell">Dates</TableHead>
-                  <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
-                  <TableHead className="hidden sm:table-cell">Status</TableHead>
-                  <TableHead className="text-right w-[180px]">Actions</TableHead>
+                  <TableHead className="w-[200px]">{tOverview('debtor')}</TableHead>
+                  <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                  <TableHead className="text-right">{tOverview('paid')}</TableHead>
+                  <TableHead className="text-right">{tOverview('total')}</TableHead>
+                  <TableHead className="hidden lg:table-cell text-right">{tOverview('progress')}</TableHead>
+                  <TableHead className="hidden xl:table-cell">{tOverview('dates')}</TableHead>
+                  <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTotal')}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                  <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -652,13 +660,13 @@ export default function DebtsPage() {
                         {debt.paid_date && (
                           <span className="flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" />
-                            Paid: {new Date(debt.paid_date).toLocaleDateString()}
+                            {tOverview('paidDate', { date: new Date(debt.paid_date).toLocaleDateString() })}
                           </span>
                         )}
                         {debt.due_date && !debt.is_paid && (
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            Due: {new Date(debt.due_date).toLocaleDateString()}
+                            {tOverview('dueDate', { date: new Date(debt.due_date).toLocaleDateString() })}
                           </span>
                         )}
                         {!debt.paid_date && !debt.due_date && <span>-</span>}
@@ -676,15 +684,15 @@ export default function DebtsPage() {
                     <TableCell className="hidden sm:table-cell">
                       {debt.is_paid ? (
                         <Badge variant="default" className="bg-green-600 text-xs">
-                          Paid
+                          {tStatus('paid')}
                         </Badge>
                       ) : debt.is_overdue ? (
                         <Badge variant="destructive" className="text-xs">
-                          Overdue
+                          {tStatus('overdue')}
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="text-xs">
-                          Active
+                          {tStatus('active')}
                         </Badge>
                       )}
                     </TableCell>
@@ -738,9 +746,11 @@ export default function DebtsPage() {
         open={!!deletingDebt}
         onOpenChange={(open) => !open && setDeletingDebt(null)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Debt"
-        description={`Are you sure you want to delete the debt from "${deletingDebt?.debtor_name}"? This action cannot be undone.`}
-        itemName="debt"
+        title={tCommon('deleteDialog.title')}
+        description={tCommon('deleteDialog.description', { item: tOverview('debt') })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -749,7 +759,11 @@ export default function DebtsPage() {
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
         count={selectedDebtIds.size}
-        itemName="debt"
+        title={tOverview('batchDeleteTitle', { count: selectedDebtIds.size })}
+        description={tOverview('batchDeleteDescription', { count: selectedDebtIds.size })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isBatchDeleting}
       />
     </div>

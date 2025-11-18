@@ -1,0 +1,93 @@
+{
+  "incomeAllocation": {
+    "title": "Income Allocation",
+    "description": "How your income is distributed",
+    "tooltip": "Shows how your monthly income is allocated across expenses, subscriptions, installments, and net savings. Helps identify spending patterns and savings potential.",
+    "totalIncome": "Total Income",
+    "categories": {
+      "expenses": "Expenses",
+      "subscriptions": "Subscriptions",
+      "installments": "Installments",
+      "netSavings": "Net Savings",
+      "taxes": "Taxes"
+    },
+    "chartLabels": {
+      "amount": "Amount",
+      "percentage": "Percentage"
+    },
+    "summary": "Monthly income allocation summary",
+    "emptyState": "No income data available for the current month"
+  },
+  "netWorthTrend": {
+    "title": "Net Worth Trend",
+    "description": "Track your wealth growth over time",
+    "tooltip": "Visualizes net worth changes over time. Net Worth = Assets (portfolio + savings) - Liabilities (debts). Helps track wealth building progress.",
+    "stats": {
+      "current": "Current Net Worth",
+      "periodChange": "Period Change",
+      "peak": "Peak Net Worth",
+      "starting": "Starting Point"
+    },
+    "categories": {
+      "netWorth": "Net Worth",
+      "assets": "Assets",
+      "liabilities": "Liabilities"
+    },
+    "insights": {
+      "title": "Growth Analysis",
+      "trend": "Overall Trend",
+      "growing": "Growing",
+      "declining": "Declining",
+      "avgMonthly": "Average Monthly Change"
+    },
+    "emptyState": "No net worth data available for the selected period"
+  },
+  "subscriptionsByCategory": {
+    "title": "Subscriptions by Category",
+    "description": "Monthly subscription spending by category",
+    "tooltip": "Shows all active subscriptions grouped by category. Amounts are monthly equivalents regardless of billing frequency.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Amount",
+      "percentage": "Percentage"
+    },
+    "topCategories": "Top subscription categories",
+    "emptyState": "No subscription data available"
+  },
+  "installmentsByCategory": {
+    "title": "Installments by Category",
+    "description": "Monthly installment payments by category",
+    "tooltip": "Shows all active installment plans grouped by category. Displays monthly payment amounts.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Amount",
+      "percentage": "Percentage"
+    },
+    "topCategories": "Top installment categories",
+    "emptyState": "No installment data available"
+  },
+  "expensesByCategory": {
+    "title": "Expenses by Category",
+    "description": "Monthly expense distribution by category",
+    "tooltip": "Shows expense breakdown by category for the selected period. Helps identify major spending areas.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Amount",
+      "percentage": "Percentage"
+    },
+    "topCategories": "Top expense categories",
+    "emptyState": "No expense data available"
+  },
+  "budgetsByCategory": {
+    "title": "Budgets by Category",
+    "description": "Monthly budget allocation by category",
+    "tooltip": "Shows all active budgets grouped by category. Each budget tracks expenses within its own time period.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Amount",
+      "percentage": "Percentage"
+    },
+    "topCategories": "Top budget categories",
+    "emptyState": "No budget data available"
+  }
+}

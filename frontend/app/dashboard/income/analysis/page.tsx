@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign, CalendarDays, Wallet, Activity } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetIncomeStatsQuery } from '@/lib/api/incomeApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -20,6 +21,7 @@ const formatPercentage = (value: number): string => {
 };
 
 export default function IncomeAnalysisPage() {
+  const tAnalysis = useTranslations('income.analysis');
   const { data: stats, isLoading, error } = useGetIncomeStatsQuery();
 
   // Loading state
@@ -37,8 +39,8 @@ export default function IncomeAnalysisPage() {
     return (
       <EmptyState
         icon={TrendingUp}
-        title="No income data"
-        description="Start adding income sources to see detailed analysis."
+        title={tAnalysis('noData')}
+        description={tAnalysis('noDataDescription')}
       />
     );
   }
@@ -61,10 +63,10 @@ export default function IncomeAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <CalendarDays className="h-5 w-5" />
-            Monthly Income Trend
+            {tAnalysis('monthlyIncomeTrend')}
           </CardTitle>
           <CardDescription>
-            Compare current month vs last month performance
+            {tAnalysis('compareCurrentVsLast')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -73,7 +75,7 @@ export default function IncomeAnalysisPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <p className="text-sm font-medium text-muted-foreground">Current Month</p>
+                <p className="text-sm font-medium text-muted-foreground">{tAnalysis('currentMonth')}</p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-baseline gap-2">
@@ -93,7 +95,7 @@ export default function IncomeAnalysisPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Activity className="h-4 w-4" />
-                  <span>{stats.transactions_current_month} transactions</span>
+                  <span>{stats.transactions_current_month} {tAnalysis('transactions')}</span>
                   {hasLastMonthData && transactionChangeCount !== 0 && (
                     <span className={`flex items-center gap-1 ${transactionChangeCount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {transactionChangeCount >= 0 ? (
@@ -117,7 +119,7 @@ export default function IncomeAnalysisPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-gray-400" />
-                <p className="text-sm font-medium text-muted-foreground">Last Month</p>
+                <p className="text-sm font-medium text-muted-foreground">{tAnalysis('lastMonth')}</p>
               </div>
               <div className="space-y-2">
                 <p className="text-3xl font-bold text-muted-foreground">
@@ -130,7 +132,7 @@ export default function IncomeAnalysisPage() {
                 </p>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Activity className="h-4 w-4" />
-                  <span>{stats.transactions_last_month} transactions</span>
+                  <span>{stats.transactions_last_month} {tAnalysis('transactions')}</span>
                 </div>
               </div>
             </div>
@@ -146,14 +148,14 @@ export default function IncomeAnalysisPage() {
                   <TrendingDown className="h-4 w-4" />
                 )}
                 <span className="font-medium">
-                  {isPositiveChange ? 'Increased' : 'Decreased'} by{' '}
+                  {isPositiveChange ? tAnalysis('increased') : tAnalysis('decreased')} by{' '}
                   <CurrencyDisplay
                     amount={Math.abs(transactionChangeAmount)}
                     currency={stats.currency}
                     showSymbol={true}
                     showCode={false}
                   />{' '}
-                  from last month
+                  {tAnalysis('fromLastMonth')}
                 </span>
               </div>
             </div>
@@ -168,7 +170,7 @@ export default function IncomeAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-blue-600" />
-              Expected Monthly Income
+              {tAnalysis('expectedMonthlyIncome')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -182,7 +184,7 @@ export default function IncomeAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                From recurring income sources
+                {tAnalysis('fromRecurringSources')}
               </p>
             </div>
           </CardContent>
@@ -193,7 +195,7 @@ export default function IncomeAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
-              Expected Annual Income
+              {tAnalysis('expectedAnnualIncome')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -207,7 +209,7 @@ export default function IncomeAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Projected for the year
+                {tAnalysis('projectedForYear')}
               </p>
             </div>
           </CardContent>
@@ -217,9 +219,9 @@ export default function IncomeAnalysisPage() {
       {/* Transaction Activity - Full Width */}
       <Card>
         <CardHeader>
-          <CardTitle>Transaction Activity</CardTitle>
+          <CardTitle>{tAnalysis('transactionActivity')}</CardTitle>
           <CardDescription>
-            Overview of all income transactions
+            {tAnalysis('transactionActivityDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -229,7 +231,7 @@ export default function IncomeAnalysisPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Activity className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">All Time Total</span>
+                  <span className="font-medium">{tAnalysis('allTimeTotal')}</span>
                 </div>
                 <div className="text-right">
                   <div className="flex items-baseline gap-3">
@@ -242,7 +244,7 @@ export default function IncomeAnalysisPage() {
                       />
                     </span>
                     <Badge variant="secondary">
-                      {stats.total_transactions} transactions
+                      {stats.total_transactions} {tAnalysis('transactions')}
                     </Badge>
                   </div>
                 </div>
@@ -253,7 +255,7 @@ export default function IncomeAnalysisPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">Current Month</span>
+                  <span className="font-medium">{tAnalysis('currentMonth')}</span>
                   <span className="text-muted-foreground">
                     <CurrencyDisplay
                       amount={stats.transactions_current_month_amount}
@@ -278,7 +280,7 @@ export default function IncomeAnalysisPage() {
               {hasLastMonthData && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Last Month</span>
+                    <span className="font-medium">{tAnalysis('lastMonth')}</span>
                     <span className="text-muted-foreground">
                       <CurrencyDisplay
                         amount={stats.transactions_last_month_amount}
@@ -312,7 +314,7 @@ export default function IncomeAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4 text-indigo-600" />
-              Total Income Sources
+              {tAnalysis('totalIncome')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -321,7 +323,7 @@ export default function IncomeAnalysisPage() {
                 <p className="text-5xl font-bold text-indigo-600">{stats.total_sources}</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Sources configured in your account
+                {tAnalysis('sourcesConfigured')}
               </p>
             </div>
           </CardContent>
@@ -332,7 +334,7 @@ export default function IncomeAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
-              Active Income Sources
+              {tAnalysis('activeIncome')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -346,7 +348,7 @@ export default function IncomeAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {stats.active_sources} of {stats.total_sources} sources actively generating income
+                {tAnalysis('sourcesActive', { count: stats.active_sources, total: stats.total_sources })}
               </p>
             </div>
           </CardContent>

@@ -1,0 +1,310 @@
+{
+  "title": "Dashboard",
+  "description": "Your complete financial overview",
+  "header": {
+    "title": "Dashboard",
+    "description": "Your complete financial overview",
+    "periodLabel": "Period:",
+    "clearButton": "Clear"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "description": "Add new financial entries quickly",
+    "addIncome": {
+      "label": "Add Income",
+      "description": "Record income source"
+    },
+    "addExpense": {
+      "label": "Add Expense",
+      "description": "Track expense"
+    },
+    "addBudget": {
+      "label": "Add Budget",
+      "description": "Set spending limit"
+    },
+    "subscription": {
+      "label": "Subscription",
+      "description": "Recurring payment"
+    },
+    "installment": {
+      "label": "Installment",
+      "description": "Payment plan"
+    },
+    "createGoal": {
+      "label": "Create Goal",
+      "description": "Set target"
+    }
+  },
+  "insightsAlerts": {
+    "title": "Insights & Alerts",
+    "description": "Important financial notifications"
+  },
+  "netWorth": {
+    "title": "Net Worth",
+    "totalLabel": "Total net worth",
+    "assets": {
+      "label": "Assets",
+      "portfolio": "Portfolio",
+      "savings": "Savings"
+    },
+    "liabilities": {
+      "label": "Liabilities",
+      "debt": "Debt"
+    }
+  },
+  "financialHealth": {
+    "title": "Financial Health",
+    "scoreLabel": "out of 100",
+    "components": {
+      "emergencyFund": "Emergency Fund",
+      "debtToIncome": "Debt-to-Income",
+      "savingsRate": "Savings Rate",
+      "investments": "Investments",
+      "goalsProgress": "Goals Progress"
+    },
+    "ratings": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Poor"
+    }
+  },
+  "cashFlow": {
+    "income": {
+      "label": "Income",
+      "period": "Monthly"
+    },
+    "expenses": {
+      "label": "Expenses"
+    },
+    "subscriptions": {
+      "label": "Subscriptions",
+      "period": "Monthly"
+    },
+    "installments": {
+      "label": "Installments",
+      "period": "Monthly"
+    },
+    "taxes": {
+      "label": "Taxes",
+      "active": "active"
+    },
+    "debtsOwed": {
+      "label": "Debts Owed",
+      "active": "active"
+    },
+    "netCashFlow": {
+      "label": "Net Cash Flow",
+      "savingsRateLabel": "Savings Rate"
+    }
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "emptyState": "No recent activity"
+  },
+  "analytics": {
+    "title": "Financial Analytics",
+    "description": "Visualize your financial trends and patterns"
+  },
+  "tooltips": {
+    "netWorth": {
+      "heading": "How it is calculated:",
+      "formula": "Net Worth = Assets - Liabilities",
+      "assets": "Assets = Portfolio Value + Savings Balance",
+      "liabilities": "Liabilities = Total Debt from Installments"
+    },
+    "financialHealth": {
+      "heading": "How it is calculated:",
+      "formula": "Score = 5 components × 20 points each (0-100)",
+      "emergencyFund": "1. Emergency Fund: Savings ≥ 3 months expenses",
+      "debtToIncome": "2. Debt-to-Income: Total debt / income < 36%",
+      "savingsRate": "3. Savings Rate: % of income saved (20%+ excellent)",
+      "investmentDiversity": "4. Investment Diversity: Multiple asset types",
+      "goalsProgress": "5. Goals Progress: Average goal completion"
+    },
+    "income": {
+      "heading": "How it is calculated:",
+      "description": "Sum of all active recurring income sources (monthly, weekly, biweekly, annual)"
+    },
+    "expenses": {
+      "heading": "How it is calculated:",
+      "dateBased": "Date-based calculation for {period}",
+      "oneTime": "• One-time expenses: included if date falls in period",
+      "recurring": "• Recurring expenses: included if overlaps with period (monthly equivalent)"
+    },
+    "subscriptions": {
+      "heading": "How it is calculated:",
+      "description": "Sum of all active subscriptions (monthly, quarterly, annually, biannually)"
+    },
+    "installments": {
+      "heading": "How it is calculated:",
+      "description": "Sum of all active installment payments (monthly, biweekly, weekly)"
+    },
+    "taxes": {
+      "heading": "How it is calculated:",
+      "description": "Period-specific taxes based on income (only calculated when income exists in the selected period)"
+    },
+    "debtsOwed": {
+      "heading": "How it is calculated:",
+      "description": "Sum of all active debts (unpaid) owed to you"
+    },
+    "netCashFlow": {
+      "heading": "How it is calculated:",
+      "formula": "Net Cash Flow = Income - Expenses - Subscriptions - Installments",
+      "expenses": "• Expenses are date-filtered for {period}",
+      "others": "• Income, Subscriptions, Installments show all active (monthly equivalent)",
+      "savingsRate": "Savings Rate = (Net Cash Flow / Income) × 100%"
+    }
+  },
+  "errors": {
+    "loadFailed": "Failed to load dashboard data. Please try again."
+  },
+  "widgets": {
+    "aiInsights": {
+      "title": "AI Insights",
+      "badge": "Powered by AI",
+      "description": "Personalized financial recommendations",
+      "refreshTitle": "Refresh insights",
+      "tooltip": {
+        "heading": "How it works:",
+        "description": "AI analyzes your financial data to provide personalized recommendations:",
+        "spendingPatterns": "Spending patterns and anomalies",
+        "savingsOpportunities": "Savings opportunities",
+        "budgetOptimization": "Budget optimization suggestions",
+        "financialHealth": "Financial health improvements"
+      },
+      "sections": {
+        "spendingPatterns": "Spending Patterns",
+        "savingsOpportunities": "Savings Opportunities",
+        "spendingAlerts": "Spending Alerts"
+      },
+      "emptyState": {
+        "title": "No insights available yet",
+        "description": "Add more expenses and savings goals to get personalized insights"
+      },
+      "error": "Failed to load insights. Please try again later.",
+      "cacheNotice": "Insights are cached for 24 hours. Click refresh to generate new insights."
+    },
+    "budgetOverview": {
+      "title": "Budget Overview",
+      "description": "All active budgets (each tracked within its own period)",
+      "viewAll": "View All",
+      "tooltip": {
+        "heading": "How it works:",
+        "description": "Shows all currently active budgets aggregated together.",
+        "periodNote": "Each budget tracks expenses within its own time period (monthly, quarterly, or yearly).",
+        "colorGreen": "Green: Under 80% of budget used",
+        "colorAmber": "Amber: 80%+ used but not over",
+        "colorRed": "Red: Budget exceeded"
+      },
+      "infoNote": {
+        "showing": "Showing {count} active {budgets}. Each budget tracks expenses within its own defined time period.",
+        "budget": "budget",
+        "budgets": "budgets"
+      },
+      "stats": {
+        "budgeted": "Budgeted",
+        "spent": "Spent",
+        "remaining": "Remaining"
+      },
+      "overallProgress": "Overall Progress",
+      "budgetAlerts": "Budget Alerts",
+      "moreAlerts": "+{count} more alerts",
+      "topCategories": "Top Categories",
+      "percentUsed": "{percent}% used",
+      "left": "left",
+      "over": "over",
+      "emptyState": {
+        "title": "No budgets set up yet",
+        "button": "Create Your First Budget"
+      },
+      "error": "Failed to load budget overview"
+    },
+    "goalsOverview": {
+      "title": "Goals Overview",
+      "viewAll": "View All",
+      "stats": {
+        "totalGoals": "Total Goals",
+        "active": "active",
+        "totalSaved": "Total Saved",
+        "avgProgress": "{percent}% avg",
+        "remaining": "Remaining",
+        "of": "of"
+      },
+      "overallProgress": "Overall Progress",
+      "remainingOf": "{remaining} remaining of {total}",
+      "status": {
+        "onTrack": "{count} on track",
+        "behind": "{count} behind",
+        "behindAlert": "{count} {goalText} behind schedule",
+        "goal": "goal is",
+        "goals": "goals are",
+        "reviewGoals": "Review your goals and consider adjusting contributions"
+      },
+      "topCategories": "Top Categories",
+      "emptyState": {
+        "title": "No goals created yet",
+        "button": "Create Your First Goal"
+      },
+      "error": "Failed to load goal statistics"
+    },
+    "plannedSubscriptions": {
+      "title": "Planned Subscriptions",
+      "description": "Subscription payments for selected month",
+      "emptyState": "No subscriptions planned for this month",
+      "error": "Failed to load subscriptions. Please try again later."
+    },
+    "plannedExpenses": {
+      "title": "Planned Expenses",
+      "description": "Recurring expense payments for selected month",
+      "emptyState": "No recurring expenses planned for this month",
+      "error": "Failed to load expenses. Please try again later."
+    },
+    "plannedInstallments": {
+      "title": "Planned Installments",
+      "description": "Installment payments for selected month",
+      "paymentOf": "Payment {current} of {total}",
+      "emptyState": "No installment payments planned for this month",
+      "error": "Failed to load installments. Please try again later."
+    },
+    "exchangeRates": {
+      "title": "Exchange Rates",
+      "description": "Live currency exchange rates",
+      "refreshed": "(refreshed {time})",
+      "refreshTitle": "Refresh exchange rates",
+      "tooltip": "Current exchange rates between major currencies. Rates are updated hourly and cached for performance.",
+      "currencies": {
+        "USD": "US Dollar",
+        "EUR": "Euro",
+        "UAH": "Ukrainian Hryvnia"
+      },
+      "equalsLabel": "1 {currency} equals:",
+      "rateDetails": {
+        "formula": "1 {from} = {rate} {to}",
+        "updated": "Updated: {datetime}",
+        "source": "Source: {source}"
+      },
+      "footer": {
+        "realTime": "Real-time rates from exchangerate-api.com",
+        "updateFrequency": "Updated every hour"
+      }
+    },
+    "layoutSwitcher": {
+      "selectLayout": "Select Layout",
+      "title": "Dashboard Layouts",
+      "widgetsCount": "{count} widgets",
+      "manageLayouts": "Manage layouts...",
+      "toast": {
+        "switched": "Layout switched",
+        "switchedDescription": "Switched to \"{name}\" layout.",
+        "error": "Error",
+        "errorDescription": "Failed to switch layout."
+      }
+    },
+    "common": {
+      "viewAll": "View All",
+      "monthly": "Monthly",
+      "active": "active"
+    }
+  }
+}

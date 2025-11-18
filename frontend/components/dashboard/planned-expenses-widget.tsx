@@ -13,6 +13,7 @@ import { useListExpensesQuery } from '@/lib/api/expensesApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, addDays, addWeeks, addMonths, addQuarters, addYears } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
 interface PlannedExpensesWidgetProps {
   selectedMonth: string; // YYYY-MM format
@@ -66,6 +67,7 @@ function getNextOccurrenceDate(expense: { frequency: string; start_date?: string
 }
 
 export function PlannedExpensesWidget({ selectedMonth }: PlannedExpensesWidgetProps) {
+  const t = useTranslations('dashboard.widgets.plannedExpenses');
   const { data: expensesData, isLoading, error } = useListExpensesQuery({ is_active: true });
   const { data: preferences } = useGetMyPreferencesQuery();
   const displayCurrency = preferences?.display_currency || preferences?.currency;
@@ -90,9 +92,9 @@ export function PlannedExpensesWidget({ selectedMonth }: PlannedExpensesWidgetPr
         <CardHeader>
           <div className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-primary" />
-            <CardTitle>Planned Expenses</CardTitle>
+            <CardTitle>{t('title')}</CardTitle>
           </div>
-          <CardDescription>Recurring expense payments for selected month</CardDescription>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -109,13 +111,13 @@ export function PlannedExpensesWidget({ selectedMonth }: PlannedExpensesWidgetPr
         <CardHeader>
           <div className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-primary" />
-            <CardTitle>Planned Expenses</CardTitle>
+            <CardTitle>{t('title')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
             <AlertDescription>
-              Failed to load expenses. Please try again later.
+              {t('error')}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -129,20 +131,20 @@ export function PlannedExpensesWidget({ selectedMonth }: PlannedExpensesWidgetPr
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-primary" />
-            <CardTitle>Planned Expenses</CardTitle>
+            <CardTitle>{t('title')}</CardTitle>
           </div>
           {upcomingExpenses && upcomingExpenses.length > 0 && (
             <Badge variant="secondary">{upcomingExpenses.length}</Badge>
           )}
         </div>
-        <CardDescription>Recurring expense payments for selected month</CardDescription>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {!upcomingExpenses || upcomingExpenses.length === 0 ? (
           <div className="text-center py-8">
             <Receipt className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
             <p className="text-sm text-muted-foreground">
-              No recurring expenses planned for this month
+              {t('emptyState')}
             </p>
           </div>
         ) : (

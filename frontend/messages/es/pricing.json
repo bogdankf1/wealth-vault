@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Elige Tu Plan",
+    "subtitle": "Comienza gratis y mejora a medida que creces. Todos los planes incluyen garantía de devolución de 14 días.",
+    "recommended": "RECOMENDADO",
+    "perMonth": "/mes",
+    "empty": "No hay planes de precios disponibles en este momento."
+  },
+  "buttons": {
+    "currentPlan": "Plan Actual",
+    "loading": "Cargando...",
+    "getStarted": "Comenzar",
+    "subscribe": "Suscribirse"
+  },
+  "footer": {
+    "text": "Todos los planes se pueden mejorar o cancelar en cualquier momento. ¿Necesitas ayuda para elegir?",
+    "contactLink": "Contáctanos"
+  },
+  "descriptions": {
+    "starter": "Perfecto para comenzar con el seguimiento de finanzas personales",
+    "growth": "Funciones avanzadas para una gestión financiera seria",
+    "wealth": "Funciones premium para una gestión patrimonial integral"
+  },
+  "features": {
+    "starter": {
+      "incomeSources": "Hasta 3 fuentes de ingresos",
+      "expenseTracking": "Seguimiento de gastos",
+      "bankUpload": "Carga de extractos bancarios",
+      "savingsAccounts": "Hasta 3 cuentas de ahorro",
+      "subscriptions": "Hasta 5 suscripciones",
+      "installments": "Hasta 2 cuotas",
+      "portfolioTracking": "Seguimiento de portafolio",
+      "financialGoals": "Objetivos financieros",
+      "debtTracking": "Seguimiento de deudas",
+      "taxTracking": "Seguimiento de impuestos",
+      "aiInsights": "Perspectivas de IA"
+    },
+    "growth": {
+      "incomeSources": "Hasta 10 fuentes de ingresos",
+      "expenseTracking": "Seguimiento de gastos",
+      "aiCategorization": "Categorización por IA",
+      "bankUpload": "Carga de extractos bancarios",
+      "savingsAccounts": "Hasta 10 cuentas de ahorro",
+      "multiCurrency": "Soporte multi-moneda",
+      "portfolioAssets": "Hasta 20 activos de portafolio",
+      "financialGoals": "Objetivos financieros",
+      "subscriptions": "Hasta 20 suscripciones",
+      "installments": "Hasta 10 cuotas",
+      "debtTracking": "Seguimiento de deudas",
+      "taxTracking": "Seguimiento de impuestos",
+      "aiInsights": "Perspectivas de IA"
+    },
+    "wealth": {
+      "incomeSources": "Fuentes de ingresos ilimitadas",
+      "expenses": "Gastos ilimitados",
+      "aiCategorization": "Categorización por IA",
+      "aiInsights": "Perspectivas de IA",
+      "bankUpload": "Carga de extractos bancarios",
+      "savingsAccounts": "Cuentas de ahorro ilimitadas",
+      "multiCurrency": "Soporte multi-moneda",
+      "portfolioAssets": "Activos de portafolio ilimitados",
+      "stockPrices": "Precios de acciones en tiempo real",
+      "financialGoals": "Objetivos financieros",
+      "subscriptions": "Suscripciones ilimitadas",
+      "installments": "Cuotas ilimitadas",
+      "debtTracking": "Seguimiento de deudas",
+      "taxTracking": "Seguimiento de impuestos"
+    }
+  }
+}

@@ -18,6 +18,7 @@ import {
 import { PieChartIcon, Info } from 'lucide-react';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 import { getChartColors } from '@/lib/utils/chart-colors';
+import { useTranslations } from 'next-intl';
 
 interface CategoryData {
   category: string;
@@ -51,6 +52,8 @@ export function BudgetsByCategoryChart({
   chartType = 'donut',
   currency = 'USD',
 }: BudgetsByCategoryChartProps) {
+  const t = useTranslations('analytics.budgetsByCategory');
+
   // Get currency data - must be called before any returns
   const { data: currencyData } = useGetCurrencyQuery(currency);
   const currencySymbol = currencyData?.symbol || '$';
@@ -68,7 +71,7 @@ export function BudgetsByCategoryChart({
       <Card className="p-4 md:p-6">
         <div className="flex flex-col items-center justify-center h-[300px] md:h-[400px] text-gray-500">
           <PieChartIcon className="h-12 w-12 mb-4 opacity-50" />
-          <p className="text-sm md:text-base">No budget data available</p>
+          <p className="text-sm md:text-base">{t('emptyState')}</p>
         </div>
       </Card>
     );
@@ -95,10 +98,10 @@ export function BudgetsByCategoryChart({
           <p className="font-semibold mb-2">{data.category}</p>
           <div className="space-y-1">
             <p className="text-sm">
-              Budget: <span className="font-semibold">{formatCurrency(data.amount)}</span>
+              {t('chartLabels.budget')}: <span className="font-semibold">{formatCurrency(data.amount)}</span>
             </p>
             <p className="text-sm">
-              Percentage: <span className="font-semibold">{data.percentage.toFixed(1)}%</span>
+              {t('chartLabels.percentage')}: <span className="font-semibold">{data.percentage.toFixed(1)}%</span>
             </p>
           </div>
         </div>
@@ -154,18 +157,18 @@ export function BudgetsByCategoryChart({
       <Card className="p-4 md:p-6">
         <div className="mb-4 md:mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-base md:text-lg font-semibold">Budgets by Category</h3>
+            <h3 className="text-base md:text-lg font-semibold">{t('title')}</h3>
             <ChartTooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="max-w-xs">Shows budget allocation by category for the selected month. Amounts are monthly equivalents regardless of budget period.</p>
+                <p className="max-w-xs">{t('tooltip')}</p>
               </TooltipContent>
             </ChartTooltip>
           </div>
           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-            Monthly budget allocation by category
+            {t('description')}
           </p>
         </div>
 
@@ -200,7 +203,7 @@ export function BudgetsByCategoryChart({
           {/* Total in center for donut chart */}
           {chartType === 'donut' && (
             <div className="text-center -mt-48 mb-32 pointer-events-none">
-              <p className="text-xs text-gray-600 dark:text-gray-400">Total</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">{t('total')}</p>
               <p className="text-2xl font-bold">{formatCurrency(total)}</p>
             </div>
           )}
@@ -243,7 +246,7 @@ export function BudgetsByCategoryChart({
       {data.length >= 3 && (
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Top budget categories
+            {t('topCategories')}
           </p>
           <div className="grid grid-cols-3 gap-4">
             {[...data]

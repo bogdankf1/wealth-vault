@@ -7,6 +7,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   useListExpensesQuery,
   useUpdateExpenseMutation,
@@ -36,17 +37,12 @@ import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { ExpenseActionsContext } from '../context';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  one_time: 'One-time',
-  daily: 'Daily',
-  weekly: 'Weekly',
-  biweekly: 'Bi-weekly',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  annually: 'Annually',
-};
-
 export default function ExpensesArchivePage() {
+  const tArchive = useTranslations('expenses.archive');
+  const tOverview = useTranslations('expenses.overview');
+  const tActions = useTranslations('expenses.actions');
+  const tFrequency = useTranslations('expenses.frequency');
+  const tCommon = useTranslations('common');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,7 +105,7 @@ export default function ExpensesArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateExpense({ id, data: { is_active: true } }).unwrap();
-      toast.success('Expense unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedExpenseIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -117,7 +113,7 @@ export default function ExpensesArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive expense:', error);
-      toast.error('Failed to unarchive expense');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -137,14 +133,14 @@ export default function ExpensesArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} expense(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} expense(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedExpenseIds(new Set());
-  }, [selectedExpenseIds, updateExpense]);
+  }, [selectedExpenseIds, updateExpense, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingExpenseId(id);
@@ -156,7 +152,7 @@ export default function ExpensesArchivePage() {
 
     try {
       await deleteExpense(deletingExpenseId).unwrap();
-      toast.success('Expense deleted permanently');
+      toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingExpenseId(null);
       setSelectedExpenseIds((prev) => {
@@ -166,7 +162,7 @@ export default function ExpensesArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete expense:', error);
-      toast.error('Failed to delete expense');
+      toast.error(tArchive('deleteError'));
     }
   };
 
@@ -203,16 +199,16 @@ export default function ExpensesArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} expense(s)`);
+        toast.error(tArchive('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} expense(s) permanently`);
+        toast.success(tArchive('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedExpenseIds(new Set());
     } catch (error) {
       console.error('Failed to delete expenses:', error);
-      toast.error('Failed to delete expenses');
+      toast.error(tArchive('deleteError'));
     }
   };
 
@@ -229,7 +225,7 @@ export default function ExpensesArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedExpenseIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedExpenseIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -238,7 +234,7 @@ export default function ExpensesArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedExpenseIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedExpenseIds.size })}</span>
             </Button>
           </>
         )}
@@ -246,7 +242,7 @@ export default function ExpensesArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedExpenseIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedExpenseIds.size, setActions, handleBatchUnarchive, tArchive, tOverview]);
 
   const isLoading = isLoadingExpenses;
   const hasError = expensesError;
@@ -272,8 +268,8 @@ export default function ExpensesArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search archived expenses..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -282,6 +278,7 @@ export default function ExpensesArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -312,14 +309,14 @@ export default function ExpensesArchivePage() {
         ) : !expenses || expenses.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived expenses"
-            description="Archived expenses will appear here"
+            title={tArchive('noArchived')}
+            description={tArchive('noArchivedDescription')}
           />
         ) : !filteredExpenses || filteredExpenses.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived expenses found"
-            description="Try adjusting your search or filters"
+            title={tArchive('noFound')}
+            description={tArchive('noFoundDescription')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -331,7 +328,7 @@ export default function ExpensesArchivePage() {
                   aria-label="Select all expenses"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedExpenseIds.size === filteredExpenses.length ? 'Deselect all' : 'Select all'}
+                  {selectedExpenseIds.size === filteredExpenses.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -355,7 +352,7 @@ export default function ExpensesArchivePage() {
                       </div>
                     </div>
                     <Badge variant="secondary" className="text-xs flex-shrink-0">
-                      Archived
+                      {tArchive('archived')}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -371,12 +368,12 @@ export default function ExpensesArchivePage() {
                         />
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {FREQUENCY_LABELS[expense.frequency] || expense.frequency}
+                        {tFrequency(expense.frequency as 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'annually' | 'one_time')}
                       </p>
                       <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
                         {expense.display_currency && expense.display_currency !== expense.currency && (
                           <>
-                            Original: <CurrencyDisplay
+                            {tArchive('original')}: <CurrencyDisplay
                               amount={expense.amount}
                               currency={expense.currency}
                               showSymbol={true}
@@ -415,7 +412,7 @@ export default function ExpensesArchivePage() {
                         onClick={() => handleUnarchive(expense.id)}
                       >
                         <ArchiveRestore className="mr-1 h-3 w-3" />
-                        Unarchive
+                        {tArchive('unarchive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -424,7 +421,7 @@ export default function ExpensesArchivePage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -446,14 +443,14 @@ export default function ExpensesArchivePage() {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
-                    <TableHead className="hidden xl:table-cell">Date</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tArchive('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tArchive('description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tArchive('category')}</TableHead>
+                    <TableHead className="text-right">{tArchive('amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tArchive('frequency')}</TableHead>
+                    <TableHead className="hidden xl:table-cell">{tArchive('date')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tArchive('originalAmount')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tArchive('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -496,7 +493,7 @@ export default function ExpensesArchivePage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">
-                          {FREQUENCY_LABELS[expense.frequency] || expense.frequency}
+                          {tFrequency(expense.frequency as 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'annually' | 'one_time')}
                         </span>
                       </TableCell>
                       <TableCell className="hidden xl:table-cell">
@@ -557,9 +554,11 @@ export default function ExpensesArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Expense Permanently"
-        description="This will permanently delete this expense. This action cannot be undone."
-        itemName="expense"
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 

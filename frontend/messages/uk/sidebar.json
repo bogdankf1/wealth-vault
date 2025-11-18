@@ -1,0 +1,33 @@
+{
+  "navigation": {
+    "dashboard": "Панель Управління",
+    "income": "Доходи",
+    "expenses": "Витрати",
+    "budgets": "Бюджети",
+    "savings": "Заощадження",
+    "portfolio": "Портфель",
+    "goals": "Цілі",
+    "subscriptions": "Підписки",
+    "installments": "Розстрочки",
+    "debts": "Борги",
+    "taxes": "Податки"
+  },
+  "bottomNavigation": {
+    "export": "Експорт",
+    "backups": "Резервні Копії",
+    "pricing": "Тарифи",
+    "helpCenter": "Центр Допомоги",
+    "settings": "Налаштування"
+  },
+  "admin": {
+    "panel": "Панель Адміністратора"
+  },
+  "user": {
+    "tier": "рівень",
+    "logout": "Вийти",
+    "openMenu": "Відкрити меню"
+  },
+  "logo": {
+    "title": "Wealth Vault"
+  }
+}

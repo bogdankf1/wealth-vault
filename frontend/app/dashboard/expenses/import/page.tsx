@@ -5,6 +5,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Download, CheckCircle, AlertCircle, Loader2, X, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,8 @@ import { useListInstallmentsQuery } from '@/lib/api/installmentsApi';
 import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
 
 export default function ImportStatementPage() {
+  const t = useTranslations('expenses.import');
+
   const [parseStatement, { isLoading: isParsing }] = useParseStatementMutation();
   const [batchCategorize, { isLoading: isCategorizing }] = useBatchCategorizeTransactionsMutation();
   const [createExpense] = useCreateExpenseMutation();
@@ -273,19 +276,19 @@ export default function ImportStatementPage() {
       {/* Progress Steps */}
       <div className="flex items-center gap-2">
         <Badge variant={currentStep === 'upload' ? 'default' : 'secondary'}>
-          1. Upload
+          1. {t('uploadStep')}
         </Badge>
         <div className="h-px flex-1 bg-border" />
         <Badge variant={currentStep === 'parse' ? 'default' : 'secondary'}>
-          2. Parse
+          2. {t('parseStep')}
         </Badge>
         <div className="h-px flex-1 bg-border" />
         <Badge variant={currentStep === 'review' ? 'default' : 'secondary'}>
-          3. Review
+          3. {t('reviewStep')}
         </Badge>
         <div className="h-px flex-1 bg-border" />
         <Badge variant={currentStep === 'import' ? 'default' : 'secondary'}>
-          4. Import
+          4. {t('importStep')}
         </Badge>
       </div>
 
@@ -301,9 +304,9 @@ export default function ImportStatementPage() {
       {currentStep === 'upload' && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 1: Upload Your Statement</CardTitle>
+            <CardTitle>{t('step1Title')}</CardTitle>
             <CardDescription>
-              Upload a CSV or XLS file from Monobank (Ukraine). Both Ukrainian and English formats are supported.
+              {t('step1Description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -319,25 +322,25 @@ export default function ImportStatementPage() {
       {currentStep === 'parse' && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 2: Parse Statement</CardTitle>
+            <CardTitle>{t('step2Title')}</CardTitle>
             <CardDescription>
-              Extract transactions from your uploaded file
+              {t('step2Description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
               <div>
                 <p className="font-medium">{uploadedFilename}</p>
-                <p className="text-sm text-muted-foreground">Ready to parse</p>
+                <p className="text-sm text-muted-foreground">{t('readyToParse')}</p>
               </div>
               <Button onClick={handleParseStatement} disabled={isParsing}>
                 {isParsing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Parsing...
+                    {t('parsing')}
                   </>
                 ) : (
-                  'Parse Statement'
+                  t('parseButton')
                 )}
               </Button>
             </div>
@@ -349,25 +352,25 @@ export default function ImportStatementPage() {
       {currentStep === 'review' && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 3: Review & Categorize</CardTitle>
+            <CardTitle>{t('step3Title')}</CardTitle>
             <CardDescription>
-              Found {transactions.length} transactions
+              {t('transactionsFound', { count: transactions.length })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {categorizedTransactions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
-                  Click the button below to automatically categorize all transactions using AI
+                  {t('categorizePrompt')}
                 </p>
                 <Button onClick={handleCategorize} disabled={isCategorizing}>
                   {isCategorizing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Categorizing...
+                      {t('categorizing')}
                     </>
                   ) : (
-                    'Categorize with AI'
+                    t('categorizeButton')
                   )}
                 </Button>
               </div>
@@ -382,7 +385,7 @@ export default function ImportStatementPage() {
                     disabled={incomeCount === 0}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Remove Incomes ({incomeCount})
+                    {t('removeIncomes', { count: incomeCount })}
                   </Button>
                   <Button
                     variant="outline"
@@ -391,7 +394,7 @@ export default function ImportStatementPage() {
                     disabled={subscriptionMatchCount === 0}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Remove Subscriptions ({subscriptionMatchCount})
+                    {t('removeSubscriptions', { count: subscriptionMatchCount })}
                   </Button>
                   <Button
                     variant="outline"
@@ -400,26 +403,26 @@ export default function ImportStatementPage() {
                     disabled={installmentMatchCount === 0}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Remove Installments ({installmentMatchCount})
+                    {t('removeInstallments', { count: installmentMatchCount })}
                   </Button>
                 </div>
 
                 <Tabs defaultValue="all">
                   <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all">
-                      All ({categorizedTransactions.length})
+                      {t('tabAll', { count: categorizedTransactions.length })}
                     </TabsTrigger>
                     <TabsTrigger value="expenses">
-                      Expenses ({categorizedTransactions.filter((t) => t.amount < 0).length})
+                      {t('tabExpenses', { count: categorizedTransactions.filter((t) => t.amount < 0).length })}
                     </TabsTrigger>
                     <TabsTrigger value="income">
-                      Income ({categorizedTransactions.filter((t) => t.amount > 0).length})
+                      {t('tabIncome', { count: categorizedTransactions.filter((t) => t.amount > 0).length })}
                     </TabsTrigger>
                     <TabsTrigger value="subscriptions">
-                      Subscriptions ({subscriptionMatchCount})
+                      {t('tabSubscriptions', { count: subscriptionMatchCount })}
                     </TabsTrigger>
                     <TabsTrigger value="installments">
-                      Installments ({installmentMatchCount})
+                      {t('tabInstallments', { count: installmentMatchCount })}
                     </TabsTrigger>
                   </TabsList>
 
@@ -428,10 +431,10 @@ export default function ImportStatementPage() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>{t('date')}</TableHead>
+                            <TableHead>{t('description')}</TableHead>
+                            <TableHead>{t('category')}</TableHead>
+                            <TableHead className="text-right">{t('amount')}</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -486,10 +489,10 @@ export default function ImportStatementPage() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>{t('date')}</TableHead>
+                            <TableHead>{t('description')}</TableHead>
+                            <TableHead>{t('category')}</TableHead>
+                            <TableHead className="text-right">{t('amount')}</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -546,10 +549,10 @@ export default function ImportStatementPage() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>{t('date')}</TableHead>
+                            <TableHead>{t('description')}</TableHead>
+                            <TableHead>{t('category')}</TableHead>
+                            <TableHead className="text-right">{t('amount')}</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -592,10 +595,10 @@ export default function ImportStatementPage() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>{t('date')}</TableHead>
+                            <TableHead>{t('description')}</TableHead>
+                            <TableHead>{t('category')}</TableHead>
+                            <TableHead className="text-right">{t('amount')}</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -660,10 +663,10 @@ export default function ImportStatementPage() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead>{t('date')}</TableHead>
+                            <TableHead>{t('description')}</TableHead>
+                            <TableHead>{t('category')}</TableHead>
+                            <TableHead className="text-right">{t('amount')}</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -728,18 +731,18 @@ export default function ImportStatementPage() {
 
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-muted-foreground">
-                    Note: Only expenses will be imported. Income transactions will be skipped.
+                    {t('noteExpensesOnly')}
                   </p>
                   <Button onClick={handleImport} disabled={importing}>
                     {importing ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Importing...
+                        {t('importing')}
                       </>
                     ) : (
                       <>
                         <Download className="mr-2 h-4 w-4" />
-                        Import Expenses
+                        {t('importExpensesButton')}
                       </>
                     )}
                   </Button>
@@ -754,13 +757,13 @@ export default function ImportStatementPage() {
       {currentStep === 'import' && importResults && (
         <Card>
           <CardHeader>
-            <CardTitle>Import Complete</CardTitle>
+            <CardTitle>{t('step4Title')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
               <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
               <AlertDescription className="text-green-600 dark:text-green-400">
-                Successfully imported {importResults.success} expenses
+                {t('importSuccess', { count: importResults.success })}
               </AlertDescription>
             </Alert>
 
@@ -792,7 +795,7 @@ export default function ImportStatementPage() {
                   setImportResults(null);
                 }}
               >
-                Import Another Statement
+                {t('importAnother')}
               </Button>
             </div>
           </CardContent>

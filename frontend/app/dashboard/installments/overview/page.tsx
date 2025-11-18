@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListInstallmentsQuery,
@@ -49,14 +50,30 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  weekly: 'Weekly',
-  biweekly: 'Bi-weekly',
-  monthly: 'Monthly',
-};
-
 export default function InstallmentsPage() {
+  // Translation hooks
+  const tOverview = useTranslations('installments.overview');
+  const tCommon = useTranslations('common');
+  const tFrequencies = useTranslations('installments.frequencies');
+  const tActions = useTranslations('installments.actions');
+  const tPayment = useTranslations('installments.payment');
+
   const { setActions } = React.useContext(InstallmentsActionsContext);
+
+  const FREQUENCY_LABELS: Record<string, string> = {
+    weekly: tFrequencies('weekly'),
+    biweekly: tFrequencies('biweekly'),
+    monthly: tFrequencies('monthly'),
+  };
+
+  // Helper function to get translated payment message
+  const getTranslatedPaymentMessage = (daysUntilPayment: number, isPaidOff: boolean): string => {
+    if (isPaidOff) return tPayment('paidOff');
+    if (daysUntilPayment < 0) return tPayment('noUpcomingPayment');
+    if (daysUntilPayment === 0) return tPayment('dueToday');
+    if (daysUntilPayment === 1) return tPayment('dueIn1Day', { days: 1 });
+    return tPayment('dueInDays', { days: daysUntilPayment });
+  };
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstallmentId, setEditingInstallmentId] = useState<string | null>(null);
@@ -125,7 +142,7 @@ export default function InstallmentsPage() {
   const handleArchiveInstallment = async (id: string) => {
     try {
       await updateInstallment({ id, data: { is_active: false } }).unwrap();
-      toast.success('Installment archived successfully');
+      toast.success(tOverview('archiveSuccess'));
       setSelectedInstallmentIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -133,7 +150,7 @@ export default function InstallmentsPage() {
       });
     } catch (error) {
       console.error('Failed to archive installment:', error);
-      toast.error('Failed to archive installment');
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -153,10 +170,10 @@ export default function InstallmentsPage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully archived ${successCount} installment(s)`);
+      toast.success(tOverview('batchArchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to archive ${failCount} installment(s)`);
+      toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
     setSelectedInstallmentIds(new Set());
@@ -167,12 +184,12 @@ export default function InstallmentsPage() {
 
     try {
       await deleteInstallment(deletingInstallmentId).unwrap();
-      toast.success('Installment deleted successfully');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingInstallmentId(null);
     } catch (error) {
       console.error('Failed to delete installment:', error);
-      toast.error('Failed to delete installment');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -213,15 +230,15 @@ export default function InstallmentsPage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} installment(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} installment(s)`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
       setBatchDeleteDialogOpen(false);
       setSelectedInstallmentIds(new Set());
     } catch (error) {
       console.error('Batch delete failed:', error);
-      toast.error('Failed to delete installments');
+      toast.error(tOverview('batchDeleteError', { count: selectedInstallmentIds.size }));
     }
   };
 
@@ -267,15 +284,15 @@ export default function InstallmentsPage() {
   const statsCards: StatCard[] = stats
     ? [
         {
-          title: 'Total Installments',
+          title: tOverview('totalInstallments'),
           value: stats.total_installments,
           description: selectedMonth
-            ? `${stats.active_installments} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${stats.active_installments} active`,
+            ? `${stats.active_installments} ${tOverview('activeInMonth')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : `${stats.active_installments} ${tOverview('activeInstallments')}`,
           icon: CreditCard,
         },
         {
-          title: 'Total Debt',
+          title: tOverview('totalDebt'),
           value: (
             <CurrencyDisplay
               amount={stats.total_debt}
@@ -285,12 +302,12 @@ export default function InstallmentsPage() {
             />
           ),
           description: stats.debt_free_date
-            ? `Debt-free by ${new Date(stats.debt_free_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : 'No debt-free date projected',
+            ? `${tOverview('debtFreeBy')} ${new Date(stats.debt_free_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            : tOverview('noDebtFreeDate'),
           icon: TrendingDown,
         },
         {
-          title: selectedMonth ? 'Period Payment' : 'Monthly Payment',
+          title: selectedMonth ? tOverview('periodPayment') : tOverview('monthlyPayment'),
           value: (
             <CurrencyDisplay
               amount={stats.monthly_payment}
@@ -307,7 +324,7 @@ export default function InstallmentsPage() {
                 showSymbol={true}
                 showCode={false}
               />{' '}
-              paid so far
+              {tOverview('paidSoFar')}
             </>
           ),
           icon: DollarSign,
@@ -340,22 +357,22 @@ export default function InstallmentsPage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedInstallmentIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedInstallmentIds.size })}</span>
             </Button>
             <Button onClick={handleBatchDelete} variant="destructive" size="default" className="w-full sm:w-auto">
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedInstallmentIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedInstallmentIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddInstallment} size="default" className="w-full sm:w-auto">
           <CreditCard className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Installment</span>
+          <span className="truncate">{tOverview('addInstallment')}</span>
         </Button>
       </>
     );
     return () => setActions(null);
-  }, [selectedInstallmentIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddInstallment]);
+  }, [selectedInstallmentIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddInstallment, tOverview]);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -433,20 +450,23 @@ export default function InstallmentsPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search installments..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tOverview('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+              label={tCommon('common.filterByMonth')}
+              clearLabel={tCommon('common.clear')}
             />
             <SortFilter
               sortField={sortField}
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -454,7 +474,7 @@ export default function InstallmentsPage() {
                 size="sm"
                 onClick={() => setViewMode('card')}
                 className="h-[32px] w-[32px] p-0"
-                title="Card View"
+                title={tOverview('cardView')}
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -463,7 +483,7 @@ export default function InstallmentsPage() {
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="h-[32px] w-[32px] p-0"
-                title="List View"
+                title={tOverview('listView')}
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -473,7 +493,7 @@ export default function InstallmentsPage() {
                   size="sm"
                   onClick={() => setViewMode('calendar')}
                   className="h-[32px] w-[32px] p-0"
-                  title="Calendar View"
+                  title={tOverview('calendarView')}
                 >
                   <CalendarDays className="h-4 w-4" />
                 </Button>
@@ -492,9 +512,9 @@ export default function InstallmentsPage() {
         ) : !installmentsData?.items || installmentsData.items.length === 0 ? (
           <EmptyState
             icon={CreditCard}
-            title="No installments yet"
-            description="Start tracking your loans and payment plans by adding your first one."
-            actionLabel="Add Installment"
+            title={tOverview('noInstallments')}
+            description={tOverview('noInstallmentsDescription')}
+            actionLabel={tOverview('addInstallment')}
             onAction={handleAddInstallment}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
@@ -522,17 +542,17 @@ export default function InstallmentsPage() {
           selectedMonth ? (
             <EmptyState
               icon={CreditCard}
-              title="No installments for this month"
-              description={`No installments active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
-              actionLabel="Clear Filter"
+              title={tOverview('noInstallmentsForMonth')}
+              description={`${tOverview('noInstallmentsForMonthDescription')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
+              actionLabel={tOverview('clearFilter')}
               onAction={() => setSelectedMonth(null)}
             />
           ) : (
             <EmptyState
               icon={CreditCard}
-              title="No installments found"
-              description="Try adjusting your search or filter criteria."
-              actionLabel="Clear Filters"
+              title={tOverview('noFilterResults')}
+              description={tOverview('noFilterResultsDescription')}
+              actionLabel={tOverview('clearFilters')}
               onAction={() => {
                 setSearchQuery('');
                 setSelectedCategory(null);
@@ -549,7 +569,7 @@ export default function InstallmentsPage() {
                   aria-label="Select all installments"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedInstallmentIds.size === filteredInstallments.length ? 'Deselect all' : 'Select all'}
+                  {selectedInstallmentIds.size === filteredInstallments.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -564,7 +584,7 @@ export default function InstallmentsPage() {
                 installment.end_date
               );
               const urgency = getPaymentUrgency(daysUntilPayment);
-              const paymentMessage = getPaymentMessage(daysUntilPayment, isPaidOff);
+              const paymentMessage = getTranslatedPaymentMessage(daysUntilPayment, isPaidOff);
               const percentPaid = calculatePercentPaid(
                 installment.payments_made,
                 installment.number_of_payments
@@ -589,7 +609,7 @@ export default function InstallmentsPage() {
                         </div>
                       </div>
                       <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                        {installment.is_active ? 'Active' : 'Inactive'}
+                        {installment.is_active ? tOverview('active') : tOverview('inactive')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -598,7 +618,7 @@ export default function InstallmentsPage() {
                       {/* Total and Remaining Balance */}
                       <div className="rounded-lg border bg-muted/50 p-2 md:p-3">
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-[10px] md:text-xs text-muted-foreground">Remaining</span>
+                          <span className="text-[10px] md:text-xs text-muted-foreground">{tOverview('remaining')}</span>
                           <span className="text-xl md:text-2xl font-bold">
                             <CurrencyDisplay
                               amount={installment.display_remaining_balance ?? installment.remaining_balance ?? installment.display_total_amount ?? installment.total_amount}
@@ -610,14 +630,14 @@ export default function InstallmentsPage() {
                         </div>
                         <div className="flex items-baseline justify-between">
                           <span className="text-[10px] md:text-xs text-muted-foreground">
-                            of{' '}
+                            {tOverview('of')}{' '}
                             <CurrencyDisplay
                               amount={installment.display_total_amount ?? installment.total_amount}
                               currency={installment.display_currency ?? installment.currency}
                               showSymbol={true}
                               showCode={false}
                             />{' '}
-                            total
+                            {tOverview('total')}
                           </span>
                           <span className="text-xs md:text-sm text-muted-foreground">
                             <CurrencyDisplay
@@ -632,7 +652,7 @@ export default function InstallmentsPage() {
                         <div className="mt-2 text-[10px] md:text-xs text-muted-foreground min-h-[16px]">
                           {installment.display_currency && installment.display_currency !== installment.currency && (
                             <>
-                              Original: <CurrencyDisplay
+                              {tOverview('original')}: <CurrencyDisplay
                                 amount={installment.total_amount}
                                 currency={installment.currency}
                                 showSymbol={true}
@@ -652,7 +672,7 @@ export default function InstallmentsPage() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>
-                            {installment.payments_made} of {installment.number_of_payments} payments
+                            {installment.payments_made} {tOverview('of')} {installment.number_of_payments} {tOverview('payments')}
                           </span>
                           <span>{percentPaid}%</span>
                         </div>
@@ -663,7 +683,7 @@ export default function InstallmentsPage() {
                       <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextPayment ? (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Next Payment</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tOverview('nextPayment')}</p>
                             <p className="text-xs md:text-sm font-semibold">
                               {formatPaymentDate(nextPayment)}
                             </p>
@@ -676,9 +696,9 @@ export default function InstallmentsPage() {
                           </>
                         ) : (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Status</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tOverview('status')}</p>
                             <p className="text-xs md:text-sm font-semibold">
-                              {isPaidOff ? 'Paid Off' : 'No upcoming payment'}
+                              {isPaidOff ? tOverview('paidOff') : tOverview('noUpcomingPayment')}
                             </p>
                           </>
                         )}
@@ -690,14 +710,14 @@ export default function InstallmentsPage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditInstallment(installment.id)}
                         >
                           <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          {tActions('edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -705,7 +725,7 @@ export default function InstallmentsPage() {
                           onClick={() => handleArchiveInstallment(installment.id)}
                         >
                           <Archive className="mr-1 h-3 w-3" />
-                          Archive
+                          {tActions('archive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -714,7 +734,7 @@ export default function InstallmentsPage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -737,15 +757,15 @@ export default function InstallmentsPage() {
                         aria-label="Select all installments"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Remaining</TableHead>
-                    <TableHead className="hidden sm:table-cell text-right">Payment</TableHead>
-                    <TableHead className="hidden lg:table-cell text-right">Progress</TableHead>
-                    <TableHead className="hidden xl:table-cell">Next Payment</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tOverview('category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('remaining')}</TableHead>
+                    <TableHead className="hidden sm:table-cell text-right">{tOverview('payment')}</TableHead>
+                    <TableHead className="hidden lg:table-cell text-right">{tOverview('progress')}</TableHead>
+                    <TableHead className="hidden xl:table-cell">{tOverview('nextPayment')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTotal')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -758,7 +778,7 @@ export default function InstallmentsPage() {
                       installment.end_date
                     );
                     const urgency = getPaymentUrgency(daysUntilPayment);
-                    const paymentMessage = getPaymentMessage(daysUntilPayment, isPaidOff);
+                    const paymentMessage = getTranslatedPaymentMessage(daysUntilPayment, isPaidOff);
                     const percentPaid = calculatePercentPaid(
                       installment.payments_made,
                       installment.number_of_payments
@@ -833,7 +853,7 @@ export default function InstallmentsPage() {
                             </div>
                           ) : (
                             <span className="text-sm text-muted-foreground">
-                              {isPaidOff ? 'Paid Off' : '-'}
+                              {isPaidOff ? tOverview('paidOff') : '-'}
                             </span>
                           )}
                         </TableCell>
@@ -848,7 +868,7 @@ export default function InstallmentsPage() {
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
                           <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs">
-                            {installment.is_active ? 'Active' : 'Inactive'}
+                            {installment.is_active ? tOverview('active') : tOverview('inactive')}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -904,8 +924,11 @@ export default function InstallmentsPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Installment"
-        itemName="installment"
+        title={tCommon('deleteDialog.title')}
+        description={tCommon('deleteDialog.description', { item: tOverview('installment') })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 
@@ -915,7 +938,11 @@ export default function InstallmentsPage() {
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
         count={selectedInstallmentIds.size}
-        itemName="installment"
+        title={tOverview('batchDeleteTitle', { count: selectedInstallmentIds.size })}
+        description={tOverview('batchDeleteDescription', { count: selectedInstallmentIds.size })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isBatchDeleting}
       />
     </div>

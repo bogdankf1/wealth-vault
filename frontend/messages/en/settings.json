@@ -1,0 +1,531 @@
+{
+  "page": {
+    "title": "Settings",
+    "description": "Manage your account settings and preferences"
+  },
+  "tabs": {
+    "account": "Account",
+    "subscription": "Subscription",
+    "appearance": "Appearance",
+    "dashboard": "Dashboard",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "security": "Security"
+  },
+  "account": {
+    "title": "Account Information",
+    "description": "Your account details and information",
+    "name": "Name",
+    "email": "Email",
+    "memberSince": "Member Since",
+    "notSet": "Not set"
+  },
+  "subscription": {
+    "title": "Subscription Details",
+    "description": "Manage your plan and billing information",
+    "currentPlan": "Your Current Plan",
+    "currentPeriod": "Current Period",
+    "nextBillingDate": "Next Billing Date",
+    "subscriptionEnding": "Subscription Ending",
+    "subscriptionEndingDescription": "Your subscription will be cancelled on",
+    "viewPricingPlans": "View Pricing Plans",
+    "cancelSubscription": "Cancel Subscription",
+    "statuses": {
+      "active": "active",
+      "past_due": "past_due",
+      "cancelled": "cancelled"
+    },
+    "paymentHistory": {
+      "title": "Payment History",
+      "description": "Your recent payment transactions",
+      "subscriptionPayment": "Subscription payment",
+      "statuses": {
+        "succeeded": "succeeded",
+        "failed": "failed",
+        "pending": "pending"
+      }
+    },
+    "cancelDialog": {
+      "title": "Cancel Subscription",
+      "description": "Are you sure you want to cancel your subscription? You will still have access until the end of your current billing period.",
+      "keepSubscription": "Keep Subscription",
+      "confirmCancel": "Cancel Subscription"
+    },
+    "toasts": {
+      "cancelled": {
+        "title": "Subscription Cancelled",
+        "description": "Your subscription will be cancelled at the end of the billing period."
+      },
+      "error": {
+        "title": "Error",
+        "description": "Failed to cancel subscription"
+      }
+    }
+  },
+  "appearance": {
+    "theme": {
+      "title": "Theme",
+      "description": "Choose your preferred color scheme",
+      "options": {
+        "light": {
+          "label": "Light",
+          "description": "Light theme"
+        },
+        "dark": {
+          "label": "Dark",
+          "description": "Dark theme"
+        },
+        "system": {
+          "label": "System",
+          "description": "Follow system preference"
+        }
+      }
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language for the interface",
+      "selectPlaceholder": "Select language"
+    },
+    "accentColor": {
+      "title": "Accent Color",
+      "description": "Choose your preferred accent color",
+      "comingSoon": "Coming Soon",
+      "warningMessage": "Your accent color preference is saved, but custom accent colors are not yet applied throughout the app. This feature will be activated soon.",
+      "colors": {
+        "blue": "Blue",
+        "purple": "Purple",
+        "green": "Green",
+        "orange": "Orange",
+        "red": "Red",
+        "pink": "Pink",
+        "indigo": "Indigo",
+        "teal": "Teal"
+      }
+    },
+    "fontSize": {
+      "title": "Font Size",
+      "description": "Adjust the base font size",
+      "comingSoon": "Coming Soon",
+      "warningMessage": "Your font size preference is saved, but dynamic font sizing is not yet applied throughout the app. This feature will be activated soon.",
+      "selectPlaceholder": "Select font size",
+      "options": {
+        "small": {
+          "label": "Small",
+          "description": "14px base"
+        },
+        "medium": {
+          "label": "Medium",
+          "description": "16px base (default)"
+        },
+        "large": {
+          "label": "Large",
+          "description": "18px base"
+        }
+      }
+    },
+    "currency": {
+      "title": "Currency",
+      "description": "Choose your preferred currency for all transactions and displays",
+      "label": "Currency",
+      "info": "This currency will be used for data entry and displaying all amounts",
+      "selectPlaceholder": "Select currency"
+    },
+    "defaultViews": {
+      "title": "Default View Preferences",
+      "description": "Set your preferred default views for module pages. You can always override these on individual pages.",
+      "contentView": {
+        "title": "Content View",
+        "description": "Choose the default view for displaying content cards (income, expenses, etc.)",
+        "options": {
+          "card": {
+            "label": "Card View",
+            "description": "Grid layout with detailed cards"
+          },
+          "list": {
+            "label": "List View",
+            "description": "Compact table layout"
+          }
+        }
+      },
+      "statsView": {
+        "title": "Statistics View",
+        "description": "Choose the default view for displaying statistics cards at the top of module pages",
+        "options": {
+          "cards": {
+            "label": "Cards View",
+            "description": "Traditional card grid layout"
+          },
+          "compact": {
+            "label": "Compact View",
+            "description": "Space-efficient list layout"
+          }
+        }
+      }
+    },
+    "toasts": {
+      "themeUpdated": {
+        "title": "Theme Updated",
+        "description": "Theme changed to"
+      },
+      "languageUpdated": {
+        "title": "Language Updated",
+        "description": "Language changed to"
+      },
+      "accentColorUpdated": {
+        "title": "Accent Color Updated",
+        "description": "Accent color changed to"
+      },
+      "fontSizeUpdated": {
+        "title": "Font Size Updated",
+        "description": "Font size changed to"
+      },
+      "currencyUpdated": {
+        "title": "Currency Updated",
+        "description": "Currency changed to"
+      },
+      "contentViewUpdated": {
+        "title": "Default Content View Updated",
+        "description": "Default content view changed to"
+      },
+      "statsViewUpdated": {
+        "title": "Default Statistics View Updated",
+        "description": "Default statistics view changed to"
+      },
+      "error": {
+        "title": "Error",
+        "themeDescription": "Failed to save theme preference",
+        "languageDescription": "Failed to save language preference",
+        "accentColorDescription": "Failed to save accent color preference",
+        "fontSizeDescription": "Failed to save font size preference",
+        "currencyDescription": "Failed to save currency preference",
+        "contentViewDescription": "Failed to save default content view preference",
+        "statsViewDescription": "Failed to save default statistics view preference"
+      }
+    }
+  },
+  "dashboardLayouts": {
+    "title": "Dashboard Layouts",
+    "description": "Customize your dashboard by creating and managing different layouts",
+    "wealthTierRequired": "Custom layouts require Wealth tier",
+    "initializePresets": "Initialize Presets",
+    "createLayout": "Create Layout",
+    "upgradeToCreate": "Upgrade to Create",
+    "active": "Active",
+    "preset": "Preset",
+    "widgetsVisible": "widgets visible",
+    "of": "of",
+    "noLayoutsFound": "No layouts found. Create your first layout or initialize presets.",
+    "upgradeToWealth": "Upgrade to Wealth",
+    "customLayoutsInfo": "Custom layouts are available for Wealth tier subscribers.",
+    "viewPricing": "View pricing",
+    "editor": {
+      "createTitle": "Create Layout",
+      "editTitle": "Edit Layout",
+      "description": "Configure which widgets to show and their visibility on your dashboard.",
+      "layoutName": "Layout Name",
+      "layoutNamePlaceholder": "e.g., My Custom Layout",
+      "widgetsLabel": "Widgets",
+      "cancel": "Cancel",
+      "create": "Create",
+      "update": "Update"
+    },
+    "widgets": {
+      "quick-actions": {
+        "label": "Quick Actions",
+        "description": "Quick access buttons"
+      },
+      "ai-insights": {
+        "label": "AI Insights",
+        "description": "AI-powered financial insights"
+      },
+      "exchange-rates": {
+        "label": "Exchange Rates",
+        "description": "Currency exchange rates"
+      },
+      "net-worth": {
+        "label": "Net Worth",
+        "description": "Total net worth overview"
+      },
+      "income-vs-expenses": {
+        "label": "Income vs Expenses",
+        "description": "Comparison chart"
+      },
+      "monthly-spending": {
+        "label": "Monthly Spending",
+        "description": "Spending breakdown"
+      },
+      "recent-transactions": {
+        "label": "Recent Transactions",
+        "description": "Latest transactions"
+      },
+      "upcoming-bills": {
+        "label": "Upcoming Bills",
+        "description": "Bills & subscriptions"
+      },
+      "budget-overview": {
+        "label": "Budget Overview",
+        "description": "Budget progress"
+      },
+      "goals-progress": {
+        "label": "Goals Progress",
+        "description": "Financial goals"
+      },
+      "portfolio-summary": {
+        "label": "Portfolio Summary",
+        "description": "Investment portfolio"
+      },
+      "subscriptions-by-category": {
+        "label": "Subscriptions by Category",
+        "description": "Subscription breakdown"
+      },
+      "installments-by-category": {
+        "label": "Installments by Category",
+        "description": "Installment breakdown"
+      },
+      "expenses-by-category": {
+        "label": "Expenses by Category",
+        "description": "Expense breakdown"
+      },
+      "budgets-by-category": {
+        "label": "Budgets by Category",
+        "description": "Budget breakdown"
+      },
+      "income-allocation": {
+        "label": "Income Allocation",
+        "description": "Income distribution"
+      },
+      "net-worth-trend": {
+        "label": "Net Worth Trend",
+        "description": "Historical net worth"
+      },
+      "taxes": {
+        "label": "Taxes",
+        "description": "Tax summary"
+      },
+      "debts-owed": {
+        "label": "Debts Owed",
+        "description": "Debt tracking"
+      },
+      "planned-subscriptions": {
+        "label": "Planned Subscriptions",
+        "description": "Subscription payments for selected month"
+      },
+      "planned-expenses": {
+        "label": "Planned Expenses",
+        "description": "Recurring expense payments for selected month"
+      },
+      "planned-installments": {
+        "label": "Planned Installments",
+        "description": "Installment payments for selected month"
+      }
+    },
+    "toasts": {
+      "layoutActivated": {
+        "title": "Layout activated",
+        "description": "Dashboard layout has been activated successfully."
+      },
+      "layoutDeleted": {
+        "title": "Layout deleted",
+        "description": "Dashboard layout has been deleted successfully."
+      },
+      "presetsInitialized": {
+        "title": "Presets initialized",
+        "description": "Default layout presets have been created."
+      },
+      "layoutCreated": {
+        "title": "Layout created",
+        "description": "Dashboard layout has been created successfully."
+      },
+      "layoutUpdated": {
+        "title": "Layout updated",
+        "description": "Dashboard layout has been updated successfully."
+      },
+      "error": {
+        "title": "Error",
+        "activateDescription": "Failed to activate layout.",
+        "deleteDescription": "Failed to delete layout.",
+        "initializeDescription": "Failed to initialize presets.",
+        "saveDescription": "Failed to save layout.",
+        "nameRequired": "Please enter a layout name."
+      }
+    },
+    "confirmDelete": "Are you sure you want to delete this layout?"
+  },
+  "notifications": {
+    "email": {
+      "title": "Email Notifications",
+      "description": "Manage which emails you receive from us",
+      "comingSoon": "Coming Soon",
+      "warningMessage": "Your notification preferences are saved, but email notifications are not yet being sent. This feature will be activated soon.",
+      "marketing": {
+        "label": "Marketing Emails",
+        "description": "Receive emails about new features, tips, and special offers"
+      },
+      "productUpdates": {
+        "label": "Product Updates",
+        "description": "Get notified when we release new features or improvements"
+      },
+      "securityAlerts": {
+        "label": "Security Alerts",
+        "description": "Important security notifications about your account"
+      },
+      "billing": {
+        "label": "Billing & Payments",
+        "description": "Invoices, payment confirmations, and billing updates"
+      },
+      "weeklySummary": {
+        "label": "Weekly Summary",
+        "description": "A weekly digest of your financial activity and insights"
+      }
+    },
+    "push": {
+      "title": "Push Notifications",
+      "description": "Manage in-app and browser notifications",
+      "comingSoon": "Coming Soon",
+      "warningMessage": "Your notification preferences are saved, but push notifications are not yet active. This feature will be activated soon.",
+      "budgetAlerts": {
+        "label": "Budget Alerts",
+        "description": "Get notified when you are approaching your budget limits"
+      },
+      "goalMilestones": {
+        "label": "Goal Milestones",
+        "description": "Celebrate when you reach savings goals or milestones"
+      },
+      "subscriptionReminders": {
+        "label": "Subscription Reminders",
+        "description": "Reminders about upcoming subscription renewals"
+      },
+      "incomeNotifications": {
+        "label": "Income Notifications",
+        "description": "Get notified when you receive income or payments"
+      }
+    },
+    "toasts": {
+      "emailUpdated": {
+        "title": "Email Notifications Updated",
+        "description": "Your email notification preferences have been saved."
+      },
+      "pushUpdated": {
+        "title": "Push Notifications Updated",
+        "description": "Your push notification preferences have been saved."
+      },
+      "error": {
+        "title": "Error",
+        "emailDescription": "Failed to update email notification preferences",
+        "pushDescription": "Failed to update push notification preferences"
+      }
+    }
+  },
+  "privacy": {
+    "analytics": {
+      "title": "Analytics & Tracking",
+      "description": "Control what data we collect to improve our service",
+      "usageAnalytics": {
+        "label": "Usage Analytics",
+        "description": "Help us improve by sharing anonymous usage data"
+      },
+      "errorReporting": {
+        "label": "Error Reporting",
+        "description": "Automatically send error reports to help us fix bugs"
+      },
+      "performanceMonitoring": {
+        "label": "Performance Monitoring",
+        "description": "Help us optimize performance by sharing performance metrics"
+      }
+    },
+    "dataVisibility": {
+      "title": "Data Visibility",
+      "description": "Control how your data is used within the platform",
+      "private": {
+        "label": "Private",
+        "description": "Your data is completely private and never shared or used in aggregate statistics"
+      },
+      "anonymous": {
+        "label": "Anonymous",
+        "description": "Your data may be used in anonymous aggregate statistics to improve our service"
+      }
+    },
+    "dataExport": {
+      "title": "Export Your Data",
+      "description": "Download all your data in a portable format (GDPR compliant)",
+      "comingSoon": "Coming Soon",
+      "warningMessage": "Data export functionality is currently in development. Once available, you'll be able to download all your financial data.",
+      "info": "You will be able to request a copy of all your personal data. We'll prepare a downloadable file containing all your information including income sources, expenses, goals, and account details.",
+      "button": "Request Data Export"
+    },
+    "toasts": {
+      "analyticsUpdated": {
+        "title": "Analytics Preferences Updated",
+        "description": "Your privacy preferences have been saved."
+      },
+      "dataVisibilityUpdated": {
+        "title": "Data Visibility Updated",
+        "description": "Your data visibility is now set to"
+      },
+      "dataExportRequested": {
+        "title": "Data Export Requested",
+        "description": "Your data export will be ready shortly. We'll send you an email with the download link."
+      },
+      "error": {
+        "title": "Error",
+        "analyticsDescription": "Failed to update privacy preferences",
+        "dataVisibilityDescription": "Failed to update data visibility"
+      }
+    }
+  },
+  "security": {
+    "authMethod": {
+      "title": "Authentication Method",
+      "description": "Your account authentication is managed by your identity provider",
+      "signedInWith": "Signed in with Google",
+      "securityInfo": "Your password and account security are managed by Google. To update your password or security settings, visit your Google Account.",
+      "manageGoogleAccount": "Manage Google Account Security"
+    },
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra layer of security to your account",
+      "comingSoon": "Coming Soon",
+      "warningMessage": "Two-Factor Authentication is currently in development. Once available, you'll be able to add an extra layer of security to your account.",
+      "enable": "Enable 2FA",
+      "enableDescription": "Require a verification code in addition to your password",
+      "enabled": {
+        "title": "Two-Factor Authentication is Enabled",
+        "description": "Your account is protected with an additional layer of security."
+      }
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "description": "Manage devices that are currently logged into your account",
+      "comingSoon": "Coming Soon",
+      "warningMessage": "Session tracking is currently in development. The sessions shown below are examples of what you'll see once this feature is live.",
+      "current": "Current",
+      "lastActive": "Last active:",
+      "revoke": "Revoke",
+      "revokeAll": "Revoke All Other Sessions"
+    },
+    "toasts": {
+      "twoFactorEnabled": {
+        "title": "2FA Enabled",
+        "description": "Two-factor authentication has been enabled for your account."
+      },
+      "twoFactorDisabled": {
+        "title": "2FA Disabled",
+        "description": "Two-factor authentication has been disabled."
+      },
+      "sessionRevoked": {
+        "title": "Session Revoked",
+        "description": "The session has been terminated successfully."
+      },
+      "sessionsRevoked": {
+        "title": "Sessions Revoked",
+        "description": "All other sessions have been terminated."
+      },
+      "error": {
+        "title": "Error",
+        "twoFactorDescription": "Failed to update 2FA settings",
+        "sessionDescription": "Failed to revoke session",
+        "sessionsDescription": "Failed to revoke sessions"
+      }
+    }
+  }
+}

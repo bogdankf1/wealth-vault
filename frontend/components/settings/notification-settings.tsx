@@ -7,8 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useGetMyPreferencesQuery, useUpdateMyPreferencesMutation, EmailNotifications, PushNotifications } from '@/lib/api/preferencesApi';
+import { useTranslations } from 'next-intl';
 
 export function NotificationSettings() {
+  const t = useTranslations('settings.notifications');
   const { toast } = useToast();
   const { data: preferences, isLoading } = useGetMyPreferencesQuery();
   const [updatePreferences] = useUpdateMyPreferencesMutation();
@@ -45,13 +47,13 @@ export function NotificationSettings() {
     try {
       await updatePreferences({ email_notifications: updated }).unwrap();
       toast({
-        title: 'Email Notifications Updated',
-        description: 'Your email notification preferences have been saved.',
+        title: t('toasts.emailUpdated.title'),
+        description: t('toasts.emailUpdated.description'),
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to update email notification preferences',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.emailDescription'),
         variant: 'destructive',
       });
       // Revert on error
@@ -66,13 +68,13 @@ export function NotificationSettings() {
     try {
       await updatePreferences({ push_notifications: updated }).unwrap();
       toast({
-        title: 'Push Notifications Updated',
-        description: 'Your push notification preferences have been saved.',
+        title: t('toasts.pushUpdated.title'),
+        description: t('toasts.pushUpdated.description'),
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to update push notification preferences',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.pushDescription'),
         variant: 'destructive',
       });
       // Revert on error
@@ -109,26 +111,26 @@ export function NotificationSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Email Notifications
+            {t('email.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              Coming Soon
+              {t('email.comingSoon')}
             </span>
           </CardTitle>
           <CardDescription>
-            Manage which emails you receive from us
+            {t('email.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Your notification preferences are saved, but email notifications are not yet being sent. This feature will be activated soon.
+              {t('email.warningMessage')}
             </p>
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-marketing">Marketing Emails</Label>
+              <Label htmlFor="email-marketing">{t('email.marketing.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Receive emails about new features, tips, and special offers
+                {t('email.marketing.description')}
               </p>
             </div>
             <Switch
@@ -140,9 +142,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-product-updates">Product Updates</Label>
+              <Label htmlFor="email-product-updates">{t('email.productUpdates.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Get notified when we release new features or improvements
+                {t('email.productUpdates.description')}
               </p>
             </div>
             <Switch
@@ -154,9 +156,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-security">Security Alerts</Label>
+              <Label htmlFor="email-security">{t('email.securityAlerts.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Important security notifications about your account
+                {t('email.securityAlerts.description')}
               </p>
             </div>
             <Switch
@@ -168,9 +170,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-billing">Billing & Payments</Label>
+              <Label htmlFor="email-billing">{t('email.billing.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Invoices, payment confirmations, and billing updates
+                {t('email.billing.description')}
               </p>
             </div>
             <Switch
@@ -182,9 +184,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-weekly-summary">Weekly Summary</Label>
+              <Label htmlFor="email-weekly-summary">{t('email.weeklySummary.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                A weekly digest of your financial activity and insights
+                {t('email.weeklySummary.description')}
               </p>
             </div>
             <Switch
@@ -201,26 +203,26 @@ export function NotificationSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5" />
-            Push Notifications
+            {t('push.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              Coming Soon
+              {t('push.comingSoon')}
             </span>
           </CardTitle>
           <CardDescription>
-            Manage in-app and browser notifications
+            {t('push.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Your notification preferences are saved, but push notifications are not yet active. This feature will be activated soon.
+              {t('push.warningMessage')}
             </p>
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-budget-alerts">Budget Alerts</Label>
+              <Label htmlFor="push-budget-alerts">{t('push.budgetAlerts.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Get notified when you are approaching your budget limits
+                {t('push.budgetAlerts.description')}
               </p>
             </div>
             <Switch
@@ -232,9 +234,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-goal-milestones">Goal Milestones</Label>
+              <Label htmlFor="push-goal-milestones">{t('push.goalMilestones.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Celebrate when you reach savings goals or milestones
+                {t('push.goalMilestones.description')}
               </p>
             </div>
             <Switch
@@ -246,9 +248,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-subscription-reminders">Subscription Reminders</Label>
+              <Label htmlFor="push-subscription-reminders">{t('push.subscriptionReminders.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Reminders about upcoming subscription renewals
+                {t('push.subscriptionReminders.description')}
               </p>
             </div>
             <Switch
@@ -260,9 +262,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-income-notifications">Income Notifications</Label>
+              <Label htmlFor="push-income-notifications">{t('push.incomeNotifications.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Get notified when you receive income or payments
+                {t('push.incomeNotifications.description')}
               </p>
             </div>
             <Switch

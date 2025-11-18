@@ -1,0 +1,93 @@
+{
+  "incomeAllocation": {
+    "title": "Asignación de Ingresos",
+    "description": "Cómo se distribuyen tus ingresos",
+    "tooltip": "Muestra cómo se asignan tus ingresos mensuales entre gastos, suscripciones, cuotas y ahorros netos. Ayuda a identificar patrones de gasto y potencial de ahorro.",
+    "totalIncome": "Ingresos Totales",
+    "categories": {
+      "expenses": "Gastos",
+      "subscriptions": "Suscripciones",
+      "installments": "Cuotas",
+      "netSavings": "Ahorros Netos",
+      "taxes": "Impuestos"
+    },
+    "chartLabels": {
+      "amount": "Cantidad",
+      "percentage": "Porcentaje"
+    },
+    "summary": "Resumen de asignación de ingresos mensuales",
+    "emptyState": "No hay datos de ingresos disponibles para el mes actual"
+  },
+  "netWorthTrend": {
+    "title": "Tendencia de Patrimonio Neto",
+    "description": "Rastrea el crecimiento de tu riqueza con el tiempo",
+    "tooltip": "Visualiza los cambios en el patrimonio neto con el tiempo. Patrimonio Neto = Activos (cartera + ahorros) - Pasivos (deudas). Ayuda a rastrear el progreso de creación de riqueza.",
+    "stats": {
+      "current": "Patrimonio Neto Actual",
+      "periodChange": "Cambio del Período",
+      "peak": "Patrimonio Neto Máximo",
+      "starting": "Punto de Partida"
+    },
+    "categories": {
+      "netWorth": "Patrimonio Neto",
+      "assets": "Activos",
+      "liabilities": "Pasivos"
+    },
+    "insights": {
+      "title": "Análisis de Crecimiento",
+      "trend": "Tendencia General",
+      "growing": "Creciendo",
+      "declining": "Decreciendo",
+      "avgMonthly": "Cambio Mensual Promedio"
+    },
+    "emptyState": "No hay datos de patrimonio neto disponibles para el período seleccionado"
+  },
+  "subscriptionsByCategory": {
+    "title": "Suscripciones por Categoría",
+    "description": "Gasto mensual en suscripciones por categoría",
+    "tooltip": "Muestra todas las suscripciones activas agrupadas por categoría. Los montos son equivalentes mensuales independientemente de la frecuencia de facturación.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Cantidad",
+      "percentage": "Porcentaje"
+    },
+    "topCategories": "Principales categorías de suscripción",
+    "emptyState": "No hay datos de suscripciones disponibles"
+  },
+  "installmentsByCategory": {
+    "title": "Cuotas por Categoría",
+    "description": "Pagos de cuotas mensuales por categoría",
+    "tooltip": "Muestra todos los planes de cuotas activos agrupados por categoría. Muestra los montos de pago mensuales.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Cantidad",
+      "percentage": "Porcentaje"
+    },
+    "topCategories": "Principales categorías de cuotas",
+    "emptyState": "No hay datos de cuotas disponibles"
+  },
+  "expensesByCategory": {
+    "title": "Gastos por Categoría",
+    "description": "Distribución de gastos mensuales por categoría",
+    "tooltip": "Muestra el desglose de gastos por categoría para el período seleccionado. Ayuda a identificar las áreas principales de gasto.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Cantidad",
+      "percentage": "Porcentaje"
+    },
+    "topCategories": "Principales categorías de gastos",
+    "emptyState": "No hay datos de gastos disponibles"
+  },
+  "budgetsByCategory": {
+    "title": "Presupuestos por Categoría",
+    "description": "Asignación de presupuesto mensual por categoría",
+    "tooltip": "Muestra todos los presupuestos activos agrupados por categoría. Cada presupuesto rastrea los gastos dentro de su propio período de tiempo.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Cantidad",
+      "percentage": "Porcentaje"
+    },
+    "topCategories": "Principales categorías de presupuesto",
+    "emptyState": "No hay datos de presupuesto disponibles"
+  }
+}

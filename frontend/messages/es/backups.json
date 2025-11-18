@@ -1,0 +1,79 @@
+{
+  "page": {
+    "title": "Copias de Seguridad",
+    "description": "Crea y restaura instantáneas de tus datos financieros"
+  },
+  "create": {
+    "title": "Crear Nueva Copia de Seguridad",
+    "description": "Selecciona un módulo y crea una copia de seguridad de todos sus datos",
+    "label": "Módulo a Respaldar",
+    "placeholder": "Seleccionar módulo",
+    "button": "Crear Copia de Seguridad",
+    "creating": "Creando..."
+  },
+  "list": {
+    "title": "Tus Copias de Seguridad",
+    "description": "Visualiza y restaura tus datos respaldados",
+    "loading": "Cargando copias de seguridad...",
+    "empty": "Aún no hay copias de seguridad. Crea tu primera copia arriba.",
+    "table": {
+      "date": "Fecha",
+      "module": "Módulo",
+      "items": "Elementos",
+      "actions": "Acciones"
+    },
+    "itemCount": "{count} elemento(s)",
+    "actions": {
+      "restore": "Restaurar",
+      "delete": "Eliminar"
+    }
+  },
+  "modules": {
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "subscriptions": "Suscripciones",
+    "installments": "Cuotas",
+    "budgets": "Presupuestos",
+    "savings": "Ahorros",
+    "portfolio": "Portafolio",
+    "goals": "Objetivos",
+    "debts": "Deudas",
+    "taxes": "Impuestos"
+  },
+  "info": {
+    "title": "Información Importante",
+    "point1": "Las copias de seguridad crean una instantánea de todos los datos en el módulo seleccionado en el momento de la creación",
+    "point2": "Restaurar una copia de seguridad ELIMINARÁ todos los datos actuales y los REEMPLAZARÁ con los datos respaldados",
+    "point3": "Cada copia de seguridad almacena el estado completo de tus datos, incluyendo todos los campos y configuraciones",
+    "point4": "Las copias de seguridad son exclusivas para suscriptores del nivel Wealth",
+    "point5": "Puedes crear múltiples copias de seguridad para el mismo módulo para rastrear cambios a lo largo del tiempo",
+    "warning": "Advertencia:"
+  },
+  "dialogs": {
+    "restore": {
+      "title": "¿Restaurar Copia de Seguridad?",
+      "description": "Esto REEMPLAZARÁ todos tus datos actuales de {module} con los datos respaldados. Todos los elementos existentes serán eliminados y reemplazados. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Restaurar",
+      "restoring": "Restaurando..."
+    },
+    "delete": {
+      "title": "¿Eliminar Copia de Seguridad?",
+      "description": "Esto eliminará permanentemente esta copia de seguridad. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar",
+      "deleting": "Eliminando..."
+    }
+  },
+  "messages": {
+    "createSuccess": "Copia de seguridad creada exitosamente",
+    "createSuccessDescription": "Respaldados {count} elemento(s) de {module}",
+    "createError": "Error al crear la copia de seguridad",
+    "restoreSuccess": "Copia de seguridad restaurada exitosamente",
+    "restoreSuccessDescription": "Restaurados {count} elemento(s). Todos los elementos existentes fueron reemplazados.",
+    "restoreError": "Error al restaurar la copia de seguridad",
+    "deleteSuccess": "Copia de seguridad eliminada exitosamente",
+    "deleteError": "Error al eliminar la copia de seguridad",
+    "errorGeneric": "Ocurrió un error"
+  }
+}

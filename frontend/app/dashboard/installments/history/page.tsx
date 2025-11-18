@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { TrendingDown, Calendar, BarChart3, Grid3x3, Rows3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -36,6 +37,11 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import type { HistoryTimeRange } from '@/types/module-layout';
 
 export default function InstallmentsHistoryPage() {
+  // Translation hooks
+  const tHistory = useTranslations('installments.history');
+  const tCommon = useTranslations('common');
+  const tOverview = useTranslations('installments.overview');
+
   // Default to last 12 months
   const [monthRange, setMonthRange] = useState<HistoryTimeRange>('12');
 
@@ -101,11 +107,11 @@ export default function InstallmentsHistoryPage() {
         <div className="rounded-lg border bg-background p-2 shadow-sm">
           <p className="font-semibold">{label}</p>
           <p className="text-sm text-muted-foreground">
-            Total: <CurrencyDisplay amount={payload[0].value} currency={historyData?.currency || 'USD'} />
+            {tCommon('common.total')}: <CurrencyDisplay amount={payload[0].value} currency={historyData?.currency || 'USD'} />
           </p>
           {payload[0].payload.count && (
             <p className="text-xs text-muted-foreground">
-              {payload[0].payload.count} installment{payload[0].payload.count !== 1 ? 's' : ''}
+              {payload[0].payload.count} {payload[0].payload.count === 1 ? tOverview('installment') : tOverview('installments')}
             </p>
           )}
         </div>
@@ -118,21 +124,21 @@ export default function InstallmentsHistoryPage() {
   const statsCards: StatCard[] = historyData
     ? [
         {
-          title: 'Total Months',
+          title: tHistory('totalMonths'),
           value: historyData.total_months,
-          description: `${monthRange === 'all' ? 'All time' : `Last ${monthRange} months`}`,
+          description: `${monthRange === 'all' ? tCommon('common.allTime') : tCommon('common.lastMonths', { count: monthRange })}`,
           icon: Calendar,
         },
         {
-          title: 'Monthly Average',
+          title: tHistory('monthlyAverage'),
           value: <CurrencyDisplay amount={historyData.overall_average} currency={historyData.currency} decimals={0} />,
-          description: 'Average payment per month',
+          description: tHistory('averagePaymentPerMonth'),
           icon: TrendingDown,
         },
         {
-          title: 'Total Payments',
+          title: tHistory('totalPayments'),
           value: <CurrencyDisplay amount={historyData.history.reduce((sum, item) => sum + Number(item.total), 0)} currency={historyData.currency} decimals={0} />,
-          description: 'Total for selected period',
+          description: tHistory('totalForPeriod'),
           icon: BarChart3,
         },
       ]
@@ -142,7 +148,7 @@ export default function InstallmentsHistoryPage() {
     <div className="space-y-4 md:space-y-6">
       {/* Time Range Filter */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Show:</span>
+        <span className="text-sm text-muted-foreground">{tCommon('common.show')}:</span>
         <div className="inline-flex rounded-md border">
           <Button
             variant={monthRange === '3' ? 'secondary' : 'ghost'}
@@ -150,7 +156,7 @@ export default function InstallmentsHistoryPage() {
             onClick={() => setMonthRange('3')}
             className="rounded-r-none"
           >
-            Last 3 months
+            {tCommon('common.last3Months')}
           </Button>
           <Button
             variant={monthRange === '6' ? 'secondary' : 'ghost'}
@@ -158,7 +164,7 @@ export default function InstallmentsHistoryPage() {
             onClick={() => setMonthRange('6')}
             className="rounded-none border-x"
           >
-            Last 6 months
+            {tCommon('common.last6Months')}
           </Button>
           <Button
             variant={monthRange === '12' ? 'secondary' : 'ghost'}
@@ -166,7 +172,7 @@ export default function InstallmentsHistoryPage() {
             onClick={() => setMonthRange('12')}
             className="rounded-none border-x"
           >
-            Last 12 months
+            {tCommon('common.last12Months')}
           </Button>
           <Button
             variant={monthRange === '24' ? 'secondary' : 'ghost'}
@@ -174,7 +180,7 @@ export default function InstallmentsHistoryPage() {
             onClick={() => setMonthRange('24')}
             className="rounded-none border-x"
           >
-            Last 24 months
+            {tCommon('common.last24Months')}
           </Button>
           <Button
             variant={monthRange === 'all' ? 'secondary' : 'ghost'}
@@ -182,7 +188,7 @@ export default function InstallmentsHistoryPage() {
             onClick={() => setMonthRange('all')}
             className="rounded-l-none"
           >
-            All time
+            {tCommon('common.allTime')}
           </Button>
         </div>
       </div>
@@ -194,8 +200,8 @@ export default function InstallmentsHistoryPage() {
       ) : !historyData?.history || historyData.history.length === 0 ? (
         <EmptyState
           icon={BarChart3}
-          title="No installment history"
-          description="Start tracking your installments to see payment trends over time."
+          title={tHistory('noHistory')}
+          description={tHistory('noHistoryDescription')}
         />
       ) : (
         <div className="space-y-6">
@@ -208,7 +214,7 @@ export default function InstallmentsHistoryPage() {
                   size="sm"
                   onClick={() => setStatsViewMode('cards')}
                   className="h-[32px] w-[32px] p-0"
-                  title="Cards View"
+                  title={tCommon('common.cardsView')}
                 >
                   <Grid3x3 className="h-4 w-4" />
                 </Button>
@@ -217,7 +223,7 @@ export default function InstallmentsHistoryPage() {
                   size="sm"
                   onClick={() => setStatsViewMode('compact')}
                   className="h-[32px] w-[32px] p-0"
-                  title="Compact View"
+                  title={tCommon('common.compactView')}
                 >
                   <Rows3 className="h-4 w-4" />
                 </Button>
@@ -254,10 +260,10 @@ export default function InstallmentsHistoryPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingDown className="h-5 w-5" />
-                Monthly Installment Payments
+                {tHistory('monthlyInstallmentPayments')}
               </CardTitle>
               <CardDescription>
-                Total installment payment costs per month
+                {tHistory('totalCostsPerMonth')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -286,10 +292,10 @@ export default function InstallmentsHistoryPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Monthly Breakdown
+                {tHistory('monthlyBreakdown')}
               </CardTitle>
               <CardDescription>
-                Detailed monthly installment payment costs
+                {tHistory('detailedMonthlyCosts')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -298,10 +304,10 @@ export default function InstallmentsHistoryPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Month</TableHead>
-                        <TableHead className="text-right">Total Payments</TableHead>
-                        <TableHead className="text-right">Number of Installments</TableHead>
-                        <TableHead className="text-right">vs. Average</TableHead>
+                        <TableHead>{tHistory('month')}</TableHead>
+                        <TableHead className="text-right">{tHistory('totalPaymentsColumn')}</TableHead>
+                        <TableHead className="text-right">{tHistory('numberOfInstallments')}</TableHead>
+                        <TableHead className="text-right">{tHistory('vsAverage')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

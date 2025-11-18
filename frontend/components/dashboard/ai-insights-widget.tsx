@@ -17,8 +17,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useGetFinancialInsightsQuery } from '@/lib/api/aiApi';
+import { useTranslations } from 'next-intl';
 
 export function AIInsightsWidget() {
+  const t = useTranslations('dashboard.widgets.aiInsights');
   const [forceRefresh, setForceRefresh] = useState(false);
   const { data: insights, isLoading, error, refetch } = useGetFinancialInsightsQuery({ forceRefresh });
 
@@ -35,11 +37,11 @@ export function AIInsightsWidget() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <CardTitle>AI Insights</CardTitle>
+              <CardTitle>{t('title')}</CardTitle>
             </div>
-            <Badge variant="secondary">Powered by AI</Badge>
+            <Badge variant="secondary">{t('badge')}</Badge>
           </div>
-          <CardDescription>Personalized financial recommendations</CardDescription>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -60,16 +62,16 @@ export function AIInsightsWidget() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <CardTitle>AI Insights</CardTitle>
+              <CardTitle>{t('title')}</CardTitle>
             </div>
-            <Badge variant="secondary">Powered by AI</Badge>
+            <Badge variant="secondary">{t('badge')}</Badge>
           </div>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Failed to load insights. Please try again later.
+              {t('error')}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -90,43 +92,43 @@ export function AIInsightsWidget() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <CardTitle>AI Insights</CardTitle>
+              <CardTitle>{t('title')}</CardTitle>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-gray-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">How it works:</p>
-                  <p className="text-sm">AI analyzes your financial data to provide personalized recommendations:</p>
-                  <p className="text-sm mt-2">• Spending patterns and anomalies</p>
-                  <p className="text-sm">• Savings opportunities</p>
-                  <p className="text-sm">• Budget optimization suggestions</p>
-                  <p className="text-sm">• Financial health improvements</p>
+                  <p className="font-semibold mb-1">{t('tooltip.heading')}</p>
+                  <p className="text-sm">{t('tooltip.description')}</p>
+                  <p className="text-sm mt-2">• {t('tooltip.spendingPatterns')}</p>
+                  <p className="text-sm">• {t('tooltip.savingsOpportunities')}</p>
+                  <p className="text-sm">• {t('tooltip.budgetOptimization')}</p>
+                  <p className="text-sm">• {t('tooltip.financialHealth')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">Powered by AI</Badge>
+              <Badge variant="secondary">{t('badge')}</Badge>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleRefresh}
                 disabled={isLoading}
-                title="Refresh insights"
+                title={t('refreshTitle')}
               >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
             </div>
           </div>
-          <CardDescription>Personalized financial recommendations</CardDescription>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
       <CardContent>
         {!hasInsights ? (
           <div className="text-center py-8">
             <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-2">No insights available yet</p>
+            <p className="text-muted-foreground mb-2">{t('emptyState.title')}</p>
             <p className="text-sm text-muted-foreground">
-              Add more expenses and savings goals to get personalized insights
+              {t('emptyState.description')}
             </p>
           </div>
         ) : (
@@ -136,7 +138,7 @@ export function AIInsightsWidget() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="h-4 w-4 text-blue-500" />
-                  <h4 className="font-semibold text-sm">Spending Patterns</h4>
+                  <h4 className="font-semibold text-sm">{t('sections.spendingPatterns')}</h4>
                 </div>
                 {insights.spending.map((insight, index) => (
                   <div
@@ -154,7 +156,7 @@ export function AIInsightsWidget() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-2">
                   <PiggyBank className="h-4 w-4 text-green-500" />
-                  <h4 className="font-semibold text-sm">Savings Opportunities</h4>
+                  <h4 className="font-semibold text-sm">{t('sections.savingsOpportunities')}</h4>
                 </div>
                 {insights.savings.map((insight, index) => (
                   <div
@@ -172,7 +174,7 @@ export function AIInsightsWidget() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  <h4 className="font-semibold text-sm">Spending Alerts</h4>
+                  <h4 className="font-semibold text-sm">{t('sections.spendingAlerts')}</h4>
                 </div>
                 {insights.anomalies.map((insight, index) => (
                   <div
@@ -187,7 +189,7 @@ export function AIInsightsWidget() {
 
             <div className="pt-2 border-t">
               <p className="text-xs text-muted-foreground text-center">
-                Insights are cached for 24 hours. Click refresh to generate new insights.
+                {t('cacheNotice')}
               </p>
             </div>
           </div>

@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Info, RefreshCw } from 'lucide-react';
 import { useGetExchangeRateQuery, useRefreshExchangeRatesMutation } from '@/lib/api/currenciesApi';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface ExchangeRatePair {
   from: string;
@@ -28,7 +29,7 @@ interface CurrencyColumn {
 const CURRENCY_COLUMNS: CurrencyColumn[] = [
   {
     base: 'USD',
-    baseName: 'US Dollar',
+    baseName: 'USD',
     pairs: [
       { from: 'USD', to: 'EUR', label: 'EUR' },
       { from: 'USD', to: 'UAH', label: 'UAH' },
@@ -36,7 +37,7 @@ const CURRENCY_COLUMNS: CurrencyColumn[] = [
   },
   {
     base: 'EUR',
-    baseName: 'Euro',
+    baseName: 'EUR',
     pairs: [
       { from: 'EUR', to: 'USD', label: 'USD' },
       { from: 'EUR', to: 'UAH', label: 'UAH' },
@@ -44,7 +45,7 @@ const CURRENCY_COLUMNS: CurrencyColumn[] = [
   },
   {
     base: 'UAH',
-    baseName: 'Ukrainian Hryvnia',
+    baseName: 'UAH',
     pairs: [
       { from: 'UAH', to: 'USD', label: 'USD' },
       { from: 'UAH', to: 'EUR', label: 'EUR' },
@@ -60,6 +61,7 @@ interface ExchangeRateItemProps {
 }
 
 function ExchangeRateItem({ from, to, label, refetchKey }: ExchangeRateItemProps) {
+  const t = useTranslations('dashboard.widgets.exchangeRates');
   const { data, isLoading, refetch } = useGetExchangeRateQuery(
     { from, to, force_refresh: false },
     { refetchOnMountOrArgChange: true }
@@ -109,13 +111,13 @@ function ExchangeRateItem({ from, to, label, refetchKey }: ExchangeRateItemProps
         <TooltipContent>
           <div className="space-y-1">
             <p className="text-xs">
-              1 {from} = {rate.toFixed(4)} {to}
+              {t('rateDetails.formula', { from, rate: rate.toFixed(4), to })}
             </p>
             <p className="text-xs text-muted-foreground">
-              Updated: {fetchedDate.toLocaleString()}
+              {t('rateDetails.updated', { datetime: fetchedDate.toLocaleString() })}
             </p>
             <p className="text-xs text-muted-foreground">
-              Source: {data.source}
+              {t('rateDetails.source', { source: data.source })}
             </p>
           </div>
         </TooltipContent>
@@ -125,6 +127,7 @@ function ExchangeRateItem({ from, to, label, refetchKey }: ExchangeRateItemProps
 }
 
 export function ExchangeRatesWidget() {
+  const t = useTranslations('dashboard.widgets.exchangeRates');
   const [refreshExchangeRates, { isLoading: isRefreshing }] = useRefreshExchangeRatesMutation();
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [refetchKey, setRefetchKey] = useState(Date.now());
@@ -144,7 +147,7 @@ export function ExchangeRatesWidget() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold">Exchange Rates</h3>
+            <h3 className="text-lg font-semibold">{t('title')}</h3>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -152,7 +155,7 @@ export function ExchangeRatesWidget() {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
-                    Current exchange rates between major currencies. Rates are updated hourly and cached for performance.
+                    {t('tooltip')}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -163,16 +166,16 @@ export function ExchangeRatesWidget() {
             size="icon"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            title="Refresh exchange rates"
+            title={t('refreshTitle')}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Live currency exchange rates
+          {t('description')}
           {lastRefreshed && (
             <span className="ml-2 text-xs text-muted-foreground">
-              (refreshed {lastRefreshed.toLocaleTimeString()})
+              {t('refreshed', { time: lastRefreshed.toLocaleTimeString() })}
             </span>
           )}
         </p>
@@ -185,8 +188,8 @@ export function ExchangeRatesWidget() {
             {/* Column Header */}
             <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h4 className="text-sm font-semibold">{column.baseName}</h4>
-                <p className="text-xs text-muted-foreground">1 {column.base} equals:</p>
+                <h4 className="text-sm font-semibold">{t(`currencies.${column.base}`)}</h4>
+                <p className="text-xs text-muted-foreground">{t('equalsLabel', { currency: column.base })}</p>
               </div>
             </div>
 
@@ -211,9 +214,9 @@ export function ExchangeRatesWidget() {
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1">
             <div className="h-2 w-2 rounded-full bg-green-500" />
-            <span>Real-time rates from exchangerate-api.com</span>
+            <span>{t('footer.realTime')}</span>
           </div>
-          <span>Updated every hour</span>
+          <span>{t('footer.updateFrequency')}</span>
         </div>
       </div>
     </Card>

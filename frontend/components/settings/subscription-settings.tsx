@@ -24,8 +24,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
+import { useTranslations } from 'next-intl';
 
 export function SubscriptionSettings() {
+  const t = useTranslations('settings.subscription');
   const { toast } = useToast();
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: subscriptionStatus, isLoading } = useGetSubscriptionStatusQuery();
@@ -39,13 +41,13 @@ export function SubscriptionSettings() {
       await cancelSubscription({ at_period_end: true }).unwrap();
       setShowCancelDialog(false);
       toast({
-        title: 'Subscription Cancelled',
-        description: 'Your subscription will be cancelled at the end of the billing period.',
+        title: t('toasts.cancelled.title'),
+        description: t('toasts.cancelled.description'),
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to cancel subscription',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.description'),
         variant: 'destructive',
       });
     }
@@ -90,15 +92,15 @@ export function SubscriptionSettings() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Subscription Details
+                {t('title')}
               </CardTitle>
               <CardDescription>
-                Manage your plan and billing information
+                {t('description')}
               </CardDescription>
             </div>
             {subscription && (
               <Badge className={statusColor}>
-                {subscription.status}
+                {t(`statuses.${subscription.status}` as 'statuses.active')}
               </Badge>
             )}
           </div>
@@ -106,7 +108,7 @@ export function SubscriptionSettings() {
         <CardContent className="space-y-4">
           {/* Show tier info for everyone */}
           <div className="p-4 bg-muted/50 rounded-lg">
-            <p className="text-sm font-medium mb-1">Your Current Plan</p>
+            <p className="text-sm font-medium mb-1">{t('currentPlan')}</p>
             <p className="text-2xl font-bold">{currentTierName}</p>
           </div>
 
@@ -117,7 +119,7 @@ export function SubscriptionSettings() {
                 <div className="flex items-start gap-3">
                   <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Current Period</p>
+                    <p className="text-sm font-medium">{t('currentPeriod')}</p>
                     <p className="text-sm text-muted-foreground">
                       {format(new Date(subscription.current_period_start), 'MMM d, yyyy')} -{' '}
                       {format(new Date(subscription.current_period_end), 'MMM d, yyyy')}
@@ -128,7 +130,7 @@ export function SubscriptionSettings() {
                 <div className="flex items-start gap-3">
                   <CreditCard className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Next Billing Date</p>
+                    <p className="text-sm font-medium">{t('nextBillingDate')}</p>
                     <p className="text-sm text-muted-foreground">
                       {format(new Date(subscription.current_period_end), 'MMM d, yyyy')}
                     </p>
@@ -140,9 +142,9 @@ export function SubscriptionSettings() {
                 <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Subscription Ending</p>
+                    <p className="text-sm font-medium">{t('subscriptionEnding')}</p>
                     <p className="text-sm text-muted-foreground">
-                      Your subscription will be cancelled on{' '}
+                      {t('subscriptionEndingDescription')}{' '}
                       {format(new Date(subscription.current_period_end), 'MMM d, yyyy')}
                     </p>
                   </div>
@@ -155,7 +157,7 @@ export function SubscriptionSettings() {
           <div className="flex gap-2 pt-2">
             <Link href="/dashboard/pricing">
               <Button variant="outline">
-                View Pricing Plans
+                {t('viewPricingPlans')}
               </Button>
             </Link>
             {subscription && !subscription.cancel_at_period_end && (
@@ -163,7 +165,7 @@ export function SubscriptionSettings() {
                 onClick={() => setShowCancelDialog(true)}
                 variant="destructive"
               >
-                Cancel Subscription
+                {t('cancelSubscription')}
               </Button>
             )}
           </div>
@@ -176,9 +178,9 @@ export function SubscriptionSettings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Payment History
+              {t('paymentHistory.title')}
             </CardTitle>
-            <CardDescription>Your recent payment transactions</CardDescription>
+            <CardDescription>{t('paymentHistory.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -194,7 +196,7 @@ export function SubscriptionSettings() {
                     )}
                     <div>
                       <p className="text-sm font-medium">
-                        {payment.description || 'Subscription payment'}
+                        {payment.description || t('paymentHistory.subscriptionPayment')}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {payment.paid_at
@@ -209,7 +211,7 @@ export function SubscriptionSettings() {
                     <p className="text-sm font-medium">
                       ${(payment.amount / 100).toFixed(2)} {payment.currency.toUpperCase()}
                     </p>
-                    <p className="text-xs text-muted-foreground capitalize">{payment.status}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{t(`paymentHistory.statuses.${payment.status}` as 'paymentHistory.statuses.succeeded')}</p>
                   </div>
                 </div>
               ))}
@@ -222,16 +224,15 @@ export function SubscriptionSettings() {
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
+            <AlertDialogTitle>{t('cancelDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cancel your subscription? You will still have access until the end
-              of your current billing period.
+              {t('cancelDialog.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancelDialog.keepSubscription')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleCancelSubscription} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Cancel Subscription
+              {t('cancelDialog.confirmCancel')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

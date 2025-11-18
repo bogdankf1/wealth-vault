@@ -7,6 +7,7 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -19,6 +20,7 @@ interface FileUploadProps {
 }
 
 export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) {
+  const t = useTranslations('expenses.import');
   const [uploadFile, { isLoading }] = useUploadFileMutation();
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -113,16 +115,16 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
           <input {...getInputProps()} />
           <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-lg font-medium mb-2">
-            {isDragActive ? 'Drop your file here' : 'Drag & drop your bank statement'}
+            {isDragActive ? t('dropHere') : t('dragDrop')}
           </p>
           <p className="text-sm text-muted-foreground mb-4">
-            or click to browse
+            {t('clickToBrowse')}
           </p>
           <p className="text-xs text-muted-foreground">
-            Supported: CSV, XLS, and PDF files from Monobank (Ukraine only)
+            {t('supportedFiles')}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Both Ukrainian and English formats accepted
+            {t('formatsAccepted')}
           </p>
         </div>
       )}
@@ -167,7 +169,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
               <div className="space-y-2">
                 <Progress value={uploadProgress} className="h-2" />
                 <p className="text-xs text-muted-foreground text-center">
-                  Uploading... {uploadProgress}%
+                  {t('uploading', { progress: uploadProgress })}
                 </p>
               </div>
             )}
@@ -176,7 +178,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
             {!isLoading && uploadProgress === 0 && (
               <Button onClick={handleUpload} className="w-full">
                 <Upload className="mr-2 h-4 w-4" />
-                Upload File
+                {t('uploadFile')}
               </Button>
             )}
           </CardContent>
@@ -188,7 +190,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
         <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
           <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
           <AlertDescription className="text-green-600 dark:text-green-400">
-            File uploaded successfully! You can now parse the statement.
+            {t('uploadSuccess')}
           </AlertDescription>
         </Alert>
       )}

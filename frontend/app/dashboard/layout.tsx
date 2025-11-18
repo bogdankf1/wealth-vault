@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import {
   TrendingUp,
   DollarSign,
@@ -38,28 +39,6 @@ import { NAVIGATION_FEATURES } from '@/lib/constants/feature-map';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Income', href: '/dashboard/income', icon: TrendingUp },
-  { name: 'Expenses', href: '/dashboard/expenses', icon: DollarSign },
-  { name: 'Budgets', href: '/dashboard/budgets', icon: Wallet },
-  { name: 'Savings', href: '/dashboard/savings', icon: PiggyBank },
-  { name: 'Portfolio', href: '/dashboard/portfolio', icon: LineChart },
-  { name: 'Goals', href: '/dashboard/goals', icon: Target },
-  { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: CreditCard },
-  { name: 'Installments', href: '/dashboard/installments', icon: Receipt },
-  { name: 'Debts', href: '/dashboard/debts', icon: UserMinus },
-  { name: 'Taxes', href: '/dashboard/taxes', icon: FileText },
-];
-
-const bottomNavigation = [
-  { name: 'Export', href: '/dashboard/export', icon: Download },
-  { name: 'Backups', href: '/dashboard/backups', icon: Database },
-  { name: 'Pricing', href: '/dashboard/pricing', icon: Sparkles },
-  { name: 'Help Center', href: '/dashboard/help', icon: HelpCircle },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-];
-
 export default function DashboardLayout({
   children,
 }: {
@@ -70,9 +49,32 @@ export default function DashboardLayout({
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: userFeatures } = useGetUserFeaturesQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const t = useTranslations('sidebar');
 
   // Preload currencies to ensure they're available when editing entries
   useGetCurrenciesQuery({ active_only: true });
+
+  const navigation = [
+    { name: t('navigation.dashboard'), href: '/dashboard', icon: LayoutDashboard },
+    { name: t('navigation.income'), href: '/dashboard/income', icon: TrendingUp },
+    { name: t('navigation.expenses'), href: '/dashboard/expenses', icon: DollarSign },
+    { name: t('navigation.budgets'), href: '/dashboard/budgets', icon: Wallet },
+    { name: t('navigation.savings'), href: '/dashboard/savings', icon: PiggyBank },
+    { name: t('navigation.portfolio'), href: '/dashboard/portfolio', icon: LineChart },
+    { name: t('navigation.goals'), href: '/dashboard/goals', icon: Target },
+    { name: t('navigation.subscriptions'), href: '/dashboard/subscriptions', icon: CreditCard },
+    { name: t('navigation.installments'), href: '/dashboard/installments', icon: Receipt },
+    { name: t('navigation.debts'), href: '/dashboard/debts', icon: UserMinus },
+    { name: t('navigation.taxes'), href: '/dashboard/taxes', icon: FileText },
+  ];
+
+  const bottomNavigation = [
+    { name: t('bottomNavigation.export'), href: '/dashboard/export', icon: Download },
+    { name: t('bottomNavigation.backups'), href: '/dashboard/backups', icon: Database },
+    { name: t('bottomNavigation.pricing'), href: '/dashboard/pricing', icon: Sparkles },
+    { name: t('bottomNavigation.helpCenter'), href: '/dashboard/help', icon: HelpCircle },
+    { name: t('bottomNavigation.settings'), href: '/dashboard/settings', icon: Settings },
+  ];
 
   /**
    * Check if user has access to a feature
@@ -140,7 +142,7 @@ export default function DashboardLayout({
             <Link href="/dashboard" className="flex items-center space-x-3">
               <WealthVaultLogo size={32} className="flex-shrink-0" />
               <span className="text-xl font-bold text-gray-900 dark:text-white">
-                Wealth Vault
+                {t('logo.title')}
               </span>
             </Link>
             <button
@@ -216,7 +218,7 @@ export default function DashboardLayout({
                 )}
               >
                 <Shield className="mr-3 h-5 w-5 flex-shrink-0" />
-                Admin Panel
+                {t('admin.panel')}
               </Link>
             )}
           </nav>
@@ -245,14 +247,14 @@ export default function DashboardLayout({
                     {session?.user?.name || 'User'}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                    {currentUser?.tier?.name || session?.user?.tier || 'starter'} tier
+                    {currentUser?.tier?.name || session?.user?.tier || 'starter'} {t('user.tier')}
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleLogout}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                title="Logout"
+                title={t('user.logout')}
               >
                 <LogOut className="h-5 w-5" />
               </button>
@@ -268,14 +270,14 @@ export default function DashboardLayout({
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 touch-manipulation"
-            aria-label="Open menu"
+            aria-label={t('user.openMenu')}
           >
             <Menu className="h-6 w-6" />
           </button>
           <Link href="/dashboard" className="flex items-center space-x-2">
             <WealthVaultLogo size={28} className="flex-shrink-0" />
             <span className="text-lg font-bold text-gray-900 dark:text-white">
-              Wealth Vault
+              {t('logo.title')}
             </span>
           </Link>
           <div className="w-10" /> {/* Spacer for centering */}

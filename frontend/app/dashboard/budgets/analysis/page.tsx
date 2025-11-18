@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useGetBudgetOverviewQuery } from '@/lib/api/budgetsApi';
@@ -9,6 +10,10 @@ import { BudgetProgressChart } from '@/components/budgets/budget-progress-chart'
 import { MonthFilter } from '@/components/ui/month-filter';
 
 export default function BudgetsAnalysisPage() {
+  // Translation hooks
+  const tAnalysis = useTranslations('budgets.analysis');
+  const tCommon = useTranslations('common');
+
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   // Calculate date range from selectedMonth for overview stats
@@ -33,7 +38,7 @@ export default function BudgetsAnalysisPage() {
         <div className="flex justify-end">
           <div className="h-9 w-40 animate-pulse rounded bg-muted" />
         </div>
-        <div className="text-center py-8 text-muted-foreground">Loading analysis...</div>
+        <div className="text-center py-8 text-muted-foreground">{tAnalysis('loading')}</div>
       </div>
     );
   }
@@ -45,10 +50,12 @@ export default function BudgetsAnalysisPage() {
           <MonthFilter
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
+            label={tCommon('common.filterBy')}
+            clearLabel={tCommon('common.clear')}
           />
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          <p>No budget data available. Select a month to view analysis.</p>
+          <p>{tAnalysis('noData')}</p>
         </div>
       </div>
     );
@@ -61,6 +68,8 @@ export default function BudgetsAnalysisPage() {
         <MonthFilter
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
+          label={tCommon('common.filterBy')}
+          clearLabel={tCommon('common.clear')}
         />
       </div>
 
@@ -70,7 +79,7 @@ export default function BudgetsAnalysisPage() {
           <CardHeader>
             <CardTitle className="flex items-center text-amber-600 dark:text-amber-400">
               <AlertCircle className="mr-2 h-5 w-5" />
-              Budget Alerts
+              {tAnalysis('budgetAlerts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -96,8 +105,8 @@ export default function BudgetsAnalysisPage() {
       {/* Budget by Category */}
       <Card>
         <CardHeader>
-          <CardTitle>Budget by Category</CardTitle>
-          <CardDescription>Your spending by category</CardDescription>
+          <CardTitle>{tAnalysis('budgetByCategory')}</CardTitle>
+          <CardDescription>{tAnalysis('spendingByCategory')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -108,7 +117,7 @@ export default function BudgetsAnalysisPage() {
                     <span className="font-medium">{category.category}</span>
                     {category.is_overspent && (
                       <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
-                        Overspent
+                        {tAnalysis('overspent')}
                       </span>
                     )}
                   </div>
@@ -140,7 +149,7 @@ export default function BudgetsAnalysisPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {Number(category.percentage_used).toFixed(1)}% used
+                    {Number(category.percentage_used).toFixed(1)}% {tAnalysis('used')}
                   </span>
                   <span className={Number(category.remaining) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                     {Number(category.remaining) >= 0 ? (
@@ -152,7 +161,7 @@ export default function BudgetsAnalysisPage() {
                           showSymbol={false}
                           showCode={false}
                         />
-                        <span>left</span>
+                        <span>{tAnalysis('left')}</span>
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
@@ -163,7 +172,7 @@ export default function BudgetsAnalysisPage() {
                           showSymbol={false}
                           showCode={false}
                         />
-                        <span>over</span>
+                        <span>{tAnalysis('over')}</span>
                       </span>
                     )}
                   </span>

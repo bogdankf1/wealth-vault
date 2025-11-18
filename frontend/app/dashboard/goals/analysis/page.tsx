@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { Target, TrendingUp, CheckCircle2, Clock, DollarSign, TrendingDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetGoalStatsQuery } from '@/lib/api/goalsApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -15,6 +16,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
 
 export default function GoalsAnalysisPage() {
+  const tAnalysis = useTranslations('goals.analysis');
+
   const { data: stats, isLoading, error } = useGetGoalStatsQuery();
 
   // Loading state
@@ -32,8 +35,8 @@ export default function GoalsAnalysisPage() {
     return (
       <EmptyState
         icon={Target}
-        title="No goals data"
-        description="Start adding financial goals to see detailed analysis."
+        title={tAnalysis('title')}
+        description={tAnalysis('noData')}
       />
     );
   }
@@ -55,14 +58,14 @@ export default function GoalsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-blue-600" />
-              Total Goals
+              {tAnalysis('totalGoals')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <p className="text-5xl font-bold text-blue-600">{stats.total_goals}</p>
               <p className="text-sm text-muted-foreground">
-                Goals in your portfolio
+                {tAnalysis('goalsInPortfolio')}
               </p>
             </div>
           </CardContent>
@@ -73,14 +76,14 @@ export default function GoalsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-600" />
-              In Progress
+              {tAnalysis('inProgress')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <p className="text-5xl font-bold text-orange-600">{inProgressGoals}</p>
               <p className="text-sm text-muted-foreground">
-                Goals actively being pursued
+                {tAnalysis('goalsBeingPursued')}
               </p>
             </div>
           </CardContent>
@@ -91,7 +94,7 @@ export default function GoalsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
-              Completed
+              {tAnalysis('completed')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -105,7 +108,7 @@ export default function GoalsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Goals successfully achieved
+                {tAnalysis('goalsSuccessfullyAchieved')}
               </p>
             </div>
           </CardContent>
@@ -119,7 +122,7 @@ export default function GoalsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
-              Total Target
+              {tAnalysis('totalTarget')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -133,7 +136,7 @@ export default function GoalsAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Combined target for all goals
+                {tAnalysis('combinedTarget')}
               </p>
             </div>
           </CardContent>
@@ -144,7 +147,7 @@ export default function GoalsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-indigo-600" />
-              Total Saved
+              {tAnalysis('totalSaved')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -158,7 +161,7 @@ export default function GoalsAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Amount saved towards goals
+                {tAnalysis('amountSavedTowards')}
               </p>
             </div>
           </CardContent>
@@ -170,10 +173,10 @@ export default function GoalsAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Overall Progress
+            {tAnalysis('overallProgress')}
           </CardTitle>
           <CardDescription>
-            Average completion rate across all active goals
+            {tAnalysis('averageCompletionRate')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -183,12 +186,12 @@ export default function GoalsAnalysisPage() {
                 {progressPercentage.toFixed(1)}%
               </p>
               <Badge variant={progressPercentage >= 50 ? 'default' : 'secondary'}>
-                {progressPercentage >= 50 ? 'On Track' : 'Keep Going'}
+                {progressPercentage >= 50 ? tAnalysis('onTrack') : tAnalysis('keepGoing')}
               </Badge>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Saved</span>
+                <span className="font-medium">{tAnalysis('saved')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
                     amount={stats.total_saved}
@@ -205,7 +208,7 @@ export default function GoalsAnalysisPage() {
                 />
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Remaining</span>
+                <span className="font-medium">{tAnalysis('remaining')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
                     amount={stats.total_remaining}
@@ -227,7 +230,7 @@ export default function GoalsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
-              Goals On Track
+              {tAnalysis('goalsOnTrack')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -241,7 +244,7 @@ export default function GoalsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Goals progressing well
+                {tAnalysis('goalsProgressingWell')}
               </p>
             </div>
           </CardContent>
@@ -252,7 +255,7 @@ export default function GoalsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-red-600" />
-              Behind Schedule
+              {tAnalysis('behindSchedule')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -266,7 +269,7 @@ export default function GoalsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Goals needing attention
+                {tAnalysis('goalsNeedingAttention')}
               </p>
             </div>
           </CardContent>
@@ -277,9 +280,9 @@ export default function GoalsAnalysisPage() {
       {goalsByCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Goals by Category</CardTitle>
+            <CardTitle>{tAnalysis('goalsByCategory')}</CardTitle>
             <CardDescription>
-              Target amounts across different goal categories
+              {tAnalysis('targetAcrossCategories')}
             </CardDescription>
           </CardHeader>
           <CardContent>

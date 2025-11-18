@@ -41,42 +41,50 @@ import {
   type ModuleType,
 } from '@/lib/api/backupsApi';
 import { format } from 'date-fns';
-
-const MODULE_OPTIONS: { value: ModuleType; label: string }[] = [
-  { value: 'income', label: 'Income' },
-  { value: 'expenses', label: 'Expenses' },
-  { value: 'subscriptions', label: 'Subscriptions' },
-  { value: 'installments', label: 'Installments' },
-  { value: 'budgets', label: 'Budgets' },
-  { value: 'savings', label: 'Savings' },
-  { value: 'portfolio', label: 'Portfolio' },
-  { value: 'goals', label: 'Goals' },
-  { value: 'debts', label: 'Debts' },
-  { value: 'taxes', label: 'Taxes' },
-];
+import { useTranslations } from 'next-intl';
 
 interface RestoreBackupState {
   id: string;
   moduleType: ModuleType;
 }
 
-/**
- * Extract error message from RTK Query error
- */
-function getErrorMessage(error: FetchBaseQueryError | SerializedError): string {
-  if ('status' in error) {
-    // FetchBaseQueryError
-    if ('data' in error && typeof error.data === 'object' && error.data !== null) {
-      const data = error.data as { detail?: string };
-      return data.detail || 'An error occurred';
-    }
-    return 'An error occurred';
-  }
-  // SerializedError
-  return error.message || 'An error occurred';
-}
-
 export default function BackupsPage() {
+  const tPage = useTranslations('backups.page');
+  const tCreate = useTranslations('backups.create');
+  const tList = useTranslations('backups.list');
+  const tModules = useTranslations('backups.modules');
+  const tInfo = useTranslations('backups.info');
+  const tDialogs = useTranslations('backups.dialogs');
+  const tMessages = useTranslations('backups.messages');
+
+  const MODULE_OPTIONS: { value: ModuleType; label: string }[] = [
+    { value: 'income', label: tModules('income') },
+    { value: 'expenses', label: tModules('expenses') },
+    { value: 'subscriptions', label: tModules('subscriptions') },
+    { value: 'installments', label: tModules('installments') },
+    { value: 'budgets', label: tModules('budgets') },
+    { value: 'savings', label: tModules('savings') },
+    { value: 'portfolio', label: tModules('portfolio') },
+    { value: 'goals', label: tModules('goals') },
+    { value: 'debts', label: tModules('debts') },
+    { value: 'taxes', label: tModules('taxes') },
+  ];
+
+  /**
+   * Extract error message from RTK Query error
+   */
+  const getErrorMessage = (error: FetchBaseQueryError | SerializedError): string => {
+    if ('status' in error) {
+      // FetchBaseQueryError
+      if ('data' in error && typeof error.data === 'object' && error.data !== null) {
+        const data = error.data as { detail?: string };
+        return data.detail || tMessages('errorGeneric');
+      }
+      return tMessages('errorGeneric');
+    }
+    // SerializedError
+    return error.message || tMessages('errorGeneric');
+  };
   const [selectedModule, setSelectedModule] = useState<ModuleType>('income');
   const [restoreBackup, setRestoreBackup] = useState<RestoreBackupState | null>(null);
   const [deleteBackupId, setDeleteBackupId] = useState<string | null>(null);
@@ -92,12 +100,12 @@ export default function BackupsPage() {
         module_type: selectedModule,
       }).unwrap();
 
-      toast.success('Backup created successfully', {
-        description: `Backed up ${result.item_count} ${selectedModule} item(s)`,
+      toast.success(tMessages('createSuccess'), {
+        description: tMessages('createSuccessDescription', { count: result.item_count, module: selectedModule }),
       });
     } catch (error) {
       console.error('Create backup error:', error);
-      toast.error('Failed to create backup', {
+      toast.error(tMessages('createError'), {
         description: getErrorMessage(error as FetchBaseQueryError | SerializedError),
       });
     }
@@ -112,14 +120,14 @@ export default function BackupsPage() {
         moduleType: restoreBackup.moduleType,
       }).unwrap();
 
-      toast.success('Backup restored successfully', {
-        description: `Restored ${result.restored_count} item(s). All existing items were replaced.`,
+      toast.success(tMessages('restoreSuccess'), {
+        description: tMessages('restoreSuccessDescription', { count: result.restored_count }),
       });
 
       setRestoreBackup(null);
     } catch (error) {
       console.error('Restore backup error:', error);
-      toast.error('Failed to restore backup', {
+      toast.error(tMessages('restoreError'), {
         description: getErrorMessage(error as FetchBaseQueryError | SerializedError),
       });
     }
@@ -131,11 +139,11 @@ export default function BackupsPage() {
     try {
       await deleteBackup(deleteBackupId).unwrap();
 
-      toast.success('Backup deleted successfully');
+      toast.success(tMessages('deleteSuccess'));
       setDeleteBackupId(null);
     } catch (error) {
       console.error('Delete backup error:', error);
-      toast.error('Failed to delete backup', {
+      toast.error(tMessages('deleteError'), {
         description: getErrorMessage(error as FetchBaseQueryError | SerializedError),
       });
     }
@@ -148,9 +156,9 @@ export default function BackupsPage() {
   return (
     <div className="container mx-auto space-y-6 p-4 md:p-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Data Backups</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{tPage('title')}</h1>
         <p className="text-muted-foreground mt-2">
-          Create and restore snapshots of your financial data
+          {tPage('description')}
         </p>
       </div>
 
@@ -159,23 +167,23 @@ export default function BackupsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Create New Backup
+            {tCreate('title')}
           </CardTitle>
           <CardDescription>
-            Select a module and create a backup of all its data
+            {tCreate('description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             {/* Module Selector */}
             <div className="space-y-2">
-              <Label htmlFor="module">Module to Backup</Label>
+              <Label htmlFor="module">{tCreate('label')}</Label>
               <Select
                 value={selectedModule}
                 onValueChange={(value) => setSelectedModule(value as ModuleType)}
               >
                 <SelectTrigger id="module">
-                  <SelectValue placeholder="Select module" />
+                  <SelectValue placeholder={tCreate('placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {MODULE_OPTIONS.map((module) => (
@@ -195,7 +203,7 @@ export default function BackupsPage() {
                 className="w-full gap-2"
               >
                 <Database className="h-4 w-4" />
-                {creating ? 'Creating...' : 'Create Backup'}
+                {creating ? tCreate('creating') : tCreate('button')}
               </Button>
             </div>
           </div>
@@ -207,30 +215,30 @@ export default function BackupsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="h-5 w-5" />
-            Your Backups
+            {tList('title')}
           </CardTitle>
           <CardDescription>
-            View and restore your backed up data
+            {tList('description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {backupsLoading ? (
             <div className="text-center py-8 text-muted-foreground">
-              Loading backups...
+              {tList('loading')}
             </div>
           ) : !backups || backups.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No backups yet. Create your first backup above.
+              {tList('empty')}
             </div>
           ) : (
             <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Module</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{tList('table.date')}</TableHead>
+                    <TableHead>{tList('table.module')}</TableHead>
+                    <TableHead>{tList('table.items')}</TableHead>
+                    <TableHead className="text-right">{tList('table.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -240,7 +248,7 @@ export default function BackupsPage() {
                         {format(new Date(backup.created_at), 'PPpp')}
                       </TableCell>
                       <TableCell>{getModuleLabel(backup.module_type)}</TableCell>
-                      <TableCell>{backup.item_count} item(s)</TableCell>
+                      <TableCell>{tList('itemCount', { count: backup.item_count })}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
@@ -251,7 +259,7 @@ export default function BackupsPage() {
                             className="gap-1"
                           >
                             <RefreshCcw className="h-3 w-3" />
-                            Restore
+                            {tList('actions.restore')}
                           </Button>
                           <Button
                             size="sm"
@@ -261,7 +269,7 @@ export default function BackupsPage() {
                             className="gap-1 text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-3 w-3" />
-                            Delete
+                            {tList('actions.delete')}
                           </Button>
                         </div>
                       </TableCell>
@@ -279,15 +287,15 @@ export default function BackupsPage() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
-            Important Information
+            {tInfo('title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>• Backups create a snapshot of all data in the selected module at the time of creation</p>
-          <p>• <strong>Warning:</strong> Restoring a backup will DELETE all current data and REPLACE it with the backed up data</p>
-          <p>• Each backup stores the complete state of your data, including all fields and settings</p>
-          <p>• Backups are exclusive to Wealth tier subscribers</p>
-          <p>• You can create multiple backups for the same module to track changes over time</p>
+          <p>• {tInfo('point1')}</p>
+          <p>• <strong>{tInfo('warning')}</strong> {tInfo('point2')}</p>
+          <p>• {tInfo('point3')}</p>
+          <p>• {tInfo('point4')}</p>
+          <p>• {tInfo('point5')}</p>
         </CardContent>
       </Card>
 
@@ -295,16 +303,15 @@ export default function BackupsPage() {
       <AlertDialog open={!!restoreBackup} onOpenChange={() => setRestoreBackup(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Restore Backup?</AlertDialogTitle>
+            <AlertDialogTitle>{tDialogs('restore.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will REPLACE all your current {restoreBackup ? getModuleLabel(restoreBackup.moduleType) : ''} data with the backed up data.
-              All existing items will be deleted and replaced. This action cannot be undone.
+              {tDialogs('restore.description', { module: restoreBackup ? getModuleLabel(restoreBackup.moduleType) : '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{tDialogs('restore.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRestoreBackup} disabled={restoring}>
-              {restoring ? 'Restoring...' : 'Restore'}
+              {restoring ? tDialogs('restore.restoring') : tDialogs('restore.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -314,19 +321,19 @@ export default function BackupsPage() {
       <AlertDialog open={!!deleteBackupId} onOpenChange={() => setDeleteBackupId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Backup?</AlertDialogTitle>
+            <AlertDialogTitle>{tDialogs('delete.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this backup. This action cannot be undone.
+              {tDialogs('delete.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{tDialogs('delete.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteBackup}
               disabled={deleting}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
-              {deleting ? 'Deleting...' : 'Delete'}
+              {deleting ? tDialogs('delete.deleting') : tDialogs('delete.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

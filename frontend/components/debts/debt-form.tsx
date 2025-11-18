@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -31,37 +32,6 @@ import {
   useGetDebtQuery,
 } from '@/lib/api/debtsApi';
 
-// Form validation schema
-const debtSchema = z.object({
-  debtor_name: z.string().min(1, 'Debtor name is required').max(100),
-  description: z.string().max(500).optional(),
-  amount: z.number()
-    .min(0.01, 'Amount must be greater than 0')
-    .refine(
-      (val) => {
-        const rounded = Math.round(val * 100) / 100;
-        return Math.abs(val - rounded) < 0.00001;
-      },
-      { message: 'Amount can have at most 2 decimal places' }
-    ),
-  amount_paid: z.number()
-    .min(0, 'Amount paid cannot be negative')
-    .refine(
-      (val) => {
-        const rounded = Math.round(val * 100) / 100;
-        return Math.abs(val - rounded) < 0.00001;
-      },
-      { message: 'Amount can have at most 2 decimal places' }
-    ),
-  currency: z.string().length(3),
-  is_paid: z.boolean(),
-  due_date: z.string().optional(),
-  paid_date: z.string().optional(),
-  notes: z.string().max(500).optional(),
-});
-
-type FormData = z.infer<typeof debtSchema>;
-
 interface DebtFormProps {
   debtId?: string | null;
   isOpen: boolean;
@@ -72,6 +42,41 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
   const isEditing = Boolean(debtId);
   const [amountInput, setAmountInput] = React.useState<string>('');
   const [amountPaidInput, setAmountPaidInput] = React.useState<string>('');
+
+  // Translation hooks
+  const tForm = useTranslations('debts.form');
+  const tActions = useTranslations('debts.actions');
+
+  // Form validation schema with translated error messages
+  const debtSchema = z.object({
+    debtor_name: z.string().min(1, tForm('debtorNameRequired')).max(100),
+    description: z.string().max(500).optional(),
+    amount: z.number()
+      .min(0.01, tForm('amountPositive'))
+      .refine(
+        (val) => {
+          const rounded = Math.round(val * 100) / 100;
+          return Math.abs(val - rounded) < 0.00001;
+        },
+        { message: tForm('amountDecimalPlaces') }
+      ),
+    amount_paid: z.number()
+      .min(0, tForm('amountPaidNonNegative'))
+      .refine(
+        (val) => {
+          const rounded = Math.round(val * 100) / 100;
+          return Math.abs(val - rounded) < 0.00001;
+        },
+        { message: tForm('amountDecimalPlaces') }
+      ),
+    currency: z.string().length(3),
+    is_paid: z.boolean(),
+    due_date: z.string().optional(),
+    paid_date: z.string().optional(),
+    notes: z.string().max(500).optional(),
+  });
+
+  type FormData = z.infer<typeof debtSchema>;
 
   const {
     data: existingDebt,
@@ -186,17 +191,17 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
       if (isEditing && debtId) {
         await updateDebt({ id: debtId, data: submitData }).unwrap();
-        toast.success('Debt updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createDebt(submitData).unwrap();
-        toast.success('Debt created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save debt:', error);
-      toast.error(isEditing ? 'Failed to update debt' : 'Failed to create debt');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -219,12 +224,10 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Debt' : 'Add Debt'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the debt details.'
-              : 'Add a new debt record for money owed to you.'}
+            {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -235,10 +238,10 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="debtor_name">Debtor Name *</Label>
+              <Label htmlFor="debtor_name">{tForm('debtorName')} *</Label>
               <Input
                 id="debtor_name"
-                placeholder="e.g., John Doe"
+                placeholder={tForm('debtorNamePlaceholder')}
                 {...register('debtor_name')}
               />
               {errors.debtor_name && (
@@ -247,10 +250,10 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of the debt"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={3}
                 {...register('description')}
               />
@@ -263,7 +266,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
             <CurrencyInput
               key={`currency-${existingDebt?.id || 'new'}-${watch('currency')}`}
-              label="Total Amount"
+              label={tForm('totalAmount')}
               amount={amountInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
@@ -283,7 +286,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
             />
 
             <div className="space-y-2">
-              <Label htmlFor="amount_paid">Amount Paid So Far</Label>
+              <Label htmlFor="amount_paid">{tForm('amountPaid')}</Label>
               <Input
                 id="amount_paid"
                 type="number"
@@ -312,7 +315,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="due_date">Due Date (Optional)</Label>
+                <Label htmlFor="due_date">{tForm('dueDate')}</Label>
                 <Input
                   id="due_date"
                   type="date"
@@ -322,7 +325,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="paid_date">Paid Date (Optional)</Label>
+                <Label htmlFor="paid_date">{tForm('paidDate')}</Label>
                 <Input
                   id="paid_date"
                   type="date"
@@ -334,10 +337,10 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{tForm('notes')}</Label>
               <Textarea
                 id="notes"
-                placeholder="Additional notes about this debt..."
+                placeholder={tForm('notesPlaceholder')}
                 rows={3}
                 {...register('notes')}
               />
@@ -349,7 +352,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_paid">Marked as Paid</Label>
+              <Label htmlFor="is_paid">{tForm('markedAsPaid')}</Label>
               <Switch
                 id="is_paid"
                 checked={watch('is_paid')}
@@ -359,14 +362,14 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? 'Saving...'
+                  ? tForm('saving')
                   : isEditing
-                  ? 'Update Debt'
-                  : 'Add Debt'}
+                  ? tForm('update')
+                  : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

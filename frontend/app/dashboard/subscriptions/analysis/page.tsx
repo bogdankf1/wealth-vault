@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { Repeat, DollarSign, CalendarDays, TrendingUp, Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetSubscriptionStatsQuery } from '@/lib/api/subscriptionsApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -16,6 +17,11 @@ import { Badge } from '@/components/ui/badge';
 import { MonthFilter } from '@/components/ui/month-filter';
 
 export default function SubscriptionsAnalysisPage() {
+  // Translation hooks
+  const tAnalysis = useTranslations('subscriptions.analysis');
+  const tFrequencies = useTranslations('subscriptions.frequencies');
+  const tCommon = useTranslations('common');
+
   const [selectedMonth, setSelectedMonth] = React.useState<string | null>(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -68,7 +74,8 @@ export default function SubscriptionsAnalysisPage() {
         <MonthFilter
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
-          label="Filter by month:"
+          label={tCommon('common.filterByMonth')}
+          clearLabel={tCommon('common.clear')}
         />
       </div>
 
@@ -76,8 +83,8 @@ export default function SubscriptionsAnalysisPage() {
       {isEmpty && (
         <EmptyState
           icon={Repeat}
-          title="No subscription data"
-          description="Start adding subscriptions to see detailed analysis or select a different month."
+          title={tAnalysis('noData')}
+          description={tAnalysis('noData')}
         />
       )}
 
@@ -90,14 +97,14 @@ export default function SubscriptionsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Repeat className="h-4 w-4 text-blue-600" />
-              Total Subscriptions
+              {tAnalysis('totalSubscriptions')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <p className="text-5xl font-bold text-blue-600">{stats.total_subscriptions}</p>
               <p className="text-sm text-muted-foreground">
-                Subscriptions in your account
+                {tAnalysis('activeServices')}
               </p>
             </div>
           </CardContent>
@@ -108,7 +115,7 @@ export default function SubscriptionsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
-              Active Subscriptions
+              {tAnalysis('totalSubscriptions')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -122,7 +129,7 @@ export default function SubscriptionsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Currently active subscriptions
+                {tAnalysis('activeServices')}
               </p>
             </div>
           </CardContent>
@@ -134,10 +141,10 @@ export default function SubscriptionsAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Subscription Costs
+            {tAnalysis('monthlySpending')}
           </CardTitle>
           <CardDescription>
-            Your recurring subscription expenses breakdown
+            {tAnalysis('averageMonthlyCost')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -146,7 +153,7 @@ export default function SubscriptionsAnalysisPage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-purple-600" />
-                <p className="text-sm font-medium text-muted-foreground">Daily</p>
+                <p className="text-sm font-medium text-muted-foreground">{tAnalysis('monthlySpending')}</p>
               </div>
               <p className="text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
@@ -162,7 +169,7 @@ export default function SubscriptionsAnalysisPage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-purple-600" />
-                <p className="text-sm font-medium text-muted-foreground">Monthly</p>
+                <p className="text-sm font-medium text-muted-foreground">{tAnalysis('monthlySpending')}</p>
               </div>
               <p className="text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
@@ -178,7 +185,7 @@ export default function SubscriptionsAnalysisPage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-purple-600" />
-                <p className="text-sm font-medium text-muted-foreground">Annual</p>
+                <p className="text-sm font-medium text-muted-foreground">{tAnalysis('annualProjection')}</p>
               </div>
               <p className="text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
@@ -197,9 +204,9 @@ export default function SubscriptionsAnalysisPage() {
       {subscriptionsByCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Cost by Category</CardTitle>
+            <CardTitle>{tAnalysis('subscriptionsByCategory')}</CardTitle>
             <CardDescription>
-              Monthly subscription costs across different categories
+              {tAnalysis('spendingAcrossCategories')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -247,9 +254,9 @@ export default function SubscriptionsAnalysisPage() {
       {subscriptionsByFrequency.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Subscriptions by Frequency</CardTitle>
+            <CardTitle>{tAnalysis('subscriptionsByFrequency')}</CardTitle>
             <CardDescription>
-              Distribution of subscriptions by billing cycle
+              {tAnalysis('distributionByBillingCycle')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -259,8 +266,8 @@ export default function SubscriptionsAnalysisPage() {
                   ? (count / stats.total_subscriptions) * 100
                   : 0;
 
-                // Format frequency label
-                const frequencyLabel = frequency.charAt(0).toUpperCase() + frequency.slice(1);
+                // Use translations for frequency labels
+                const frequencyLabel = tFrequencies(frequency as 'monthly' | 'quarterly' | 'biannually' | 'annually');
 
                 return (
                   <div key={frequency} className="space-y-2">
@@ -271,7 +278,7 @@ export default function SubscriptionsAnalysisPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-muted-foreground">
-                          {count} subscription{count !== 1 ? 's' : ''}
+                          {count} {count === 1 ? tAnalysis('subscription') : tAnalysis('subscriptions')}
                         </span>
                         <Badge variant="secondary">{percentage.toFixed(1)}%</Badge>
                       </div>
@@ -295,10 +302,10 @@ export default function SubscriptionsAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Calendar className="h-5 w-5 text-orange-600" />
-            Annual Impact
+            {tAnalysis('annualProjection')}
           </CardTitle>
           <CardDescription>
-            Total yearly cost of all active subscriptions
+            {tAnalysis('estimatedYearlyCost')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -312,7 +319,7 @@ export default function SubscriptionsAnalysisPage() {
               />
             </p>
             <p className="text-sm text-muted-foreground">
-              Your total annual subscription spending
+              {tAnalysis('estimatedYearlyCost')}
             </p>
           </div>
         </CardContent>

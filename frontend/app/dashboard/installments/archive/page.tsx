@@ -7,6 +7,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   useListInstallmentsQuery,
   useUpdateInstallmentMutation,
@@ -44,13 +45,30 @@ import {
   calculatePercentPaid,
 } from '@/lib/utils/installment-payment';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  weekly: 'Weekly',
-  biweekly: 'Bi-weekly',
-  monthly: 'Monthly',
-};
-
 export default function InstallmentsArchivePage() {
+  // Translation hooks
+  const tArchive = useTranslations('installments.archive');
+  const tCommon = useTranslations('common');
+  const tFrequencies = useTranslations('installments.frequencies');
+  const tOverview = useTranslations('installments.overview');
+  const tActions = useTranslations('installments.actions');
+  const tPayment = useTranslations('installments.payment');
+
+  const FREQUENCY_LABELS: Record<string, string> = {
+    weekly: tFrequencies('weekly'),
+    biweekly: tFrequencies('biweekly'),
+    monthly: tFrequencies('monthly'),
+  };
+
+  // Helper function to get translated payment message
+  const getTranslatedPaymentMessage = (daysUntilPayment: number, isPaidOff: boolean): string => {
+    if (isPaidOff) return tPayment('paidOff');
+    if (daysUntilPayment < 0) return tPayment('noUpcomingPayment');
+    if (daysUntilPayment === 0) return tPayment('dueToday');
+    if (daysUntilPayment === 1) return tPayment('dueIn1Day', { days: 1 });
+    return tPayment('dueInDays', { days: daysUntilPayment });
+  };
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingInstallmentId, setDeletingInstallmentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,7 +131,7 @@ export default function InstallmentsArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateInstallment({ id, data: { is_active: true } }).unwrap();
-      toast.success('Installment unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedInstallmentIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -121,7 +139,7 @@ export default function InstallmentsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive installment:', error);
-      toast.error('Failed to unarchive installment');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -141,14 +159,14 @@ export default function InstallmentsArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} installment(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} installment(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedInstallmentIds(new Set());
-  }, [selectedInstallmentIds, updateInstallment]);
+  }, [selectedInstallmentIds, updateInstallment, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingInstallmentId(id);
@@ -160,7 +178,7 @@ export default function InstallmentsArchivePage() {
 
     try {
       await deleteInstallment(deletingInstallmentId).unwrap();
-      toast.success('Installment deleted permanently');
+      toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingInstallmentId(null);
       setSelectedInstallmentIds((prev) => {
@@ -170,7 +188,7 @@ export default function InstallmentsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete installment:', error);
-      toast.error('Failed to delete installment');
+      toast.error(tArchive('deleteError'));
     }
   };
 
@@ -207,16 +225,16 @@ export default function InstallmentsArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} installment(s)`);
+        toast.error(tArchive('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} installment(s) permanently`);
+        toast.success(tArchive('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedInstallmentIds(new Set());
     } catch (error) {
       console.error('Failed to delete installments:', error);
-      toast.error('Failed to delete installments');
+      toast.error(tArchive('batchDeleteError'));
     }
   };
 
@@ -233,7 +251,7 @@ export default function InstallmentsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedInstallmentIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedInstallmentIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -242,7 +260,7 @@ export default function InstallmentsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedInstallmentIds.size})</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selectedInstallmentIds.size })}</span>
             </Button>
           </>
         )}
@@ -250,7 +268,7 @@ export default function InstallmentsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedInstallmentIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedInstallmentIds.size, setActions, handleBatchUnarchive, tArchive]);
 
   const isLoading = isLoadingInstallments;
   const hasError = installmentsError;
@@ -276,8 +294,8 @@ export default function InstallmentsArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search archived installments..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tCommon('common.allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -286,6 +304,7 @@ export default function InstallmentsArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -316,14 +335,14 @@ export default function InstallmentsArchivePage() {
         ) : !installments || installments.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived installments"
-            description="Archived installments will appear here"
+            title={tArchive('noInstallments')}
+            description={tArchive('noInstallmentsDescription')}
           />
         ) : !filteredInstallments || filteredInstallments.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived installments found"
-            description="Try adjusting your search or filters"
+            title={tArchive('noFilterResults')}
+            description={tArchive('noFilterResultsDescription')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -332,10 +351,10 @@ export default function InstallmentsArchivePage() {
                 <Checkbox
                   checked={selectedInstallmentIds.size === filteredInstallments.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all installments"
+                  aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedInstallmentIds.size === filteredInstallments.length ? 'Deselect all' : 'Select all'}
+                  {selectedInstallmentIds.size === filteredInstallments.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -356,7 +375,7 @@ export default function InstallmentsArchivePage() {
                 installment.end_date
               );
               const urgency = getPaymentUrgency(daysUntilPayment);
-              const paymentMessage = getPaymentMessage(daysUntilPayment, isPaidOff);
+              const paymentMessage = getTranslatedPaymentMessage(daysUntilPayment, isPaidOff);
 
               // Get payment badge variant based on urgency
               const getPaymentBadgeVariant = (urgency: string): 'default' | 'secondary' | 'destructive' => {
@@ -389,7 +408,7 @@ export default function InstallmentsArchivePage() {
                         </div>
                       </div>
                       <Badge variant="secondary" className="text-xs flex-shrink-0">
-                        Archived
+                        {tArchive('archived')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -398,7 +417,7 @@ export default function InstallmentsArchivePage() {
                       {/* Total and Remaining Balance */}
                       <div className="rounded-lg border bg-muted/50 p-2 md:p-3">
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-[10px] md:text-xs text-muted-foreground">Remaining</span>
+                          <span className="text-[10px] md:text-xs text-muted-foreground">{tOverview('remaining')}</span>
                           <span className="text-xl md:text-2xl font-bold">
                             <CurrencyDisplay
                               amount={installment.display_remaining_balance ?? installment.remaining_balance ?? installment.display_total_amount ?? installment.total_amount}
@@ -410,14 +429,14 @@ export default function InstallmentsArchivePage() {
                         </div>
                         <div className="flex items-baseline justify-between">
                           <span className="text-[10px] md:text-xs text-muted-foreground">
-                            of{' '}
+                            {tOverview('of')}{' '}
                             <CurrencyDisplay
                               amount={installment.display_total_amount ?? installment.total_amount}
                               currency={installment.display_currency ?? installment.currency}
                               showSymbol={true}
                               showCode={false}
                             />{' '}
-                            total
+                            {tOverview('total')}
                           </span>
                           <span className="text-xs md:text-sm text-muted-foreground">
                             <CurrencyDisplay
@@ -432,12 +451,12 @@ export default function InstallmentsArchivePage() {
                         <div className="mt-2 text-[10px] md:text-xs text-muted-foreground min-h-[16px]">
                           {installment.display_currency && installment.display_currency !== installment.currency && (
                             <>
-                              Original: <CurrencyDisplay
+                              {tOverview('original')}: <CurrencyDisplay
                                 amount={installment.total_amount}
                                 currency={installment.currency}
                                 showSymbol={true}
                                 showCode={false}
-                              /> total, <CurrencyDisplay
+                              /> {tOverview('total')}, <CurrencyDisplay
                                 amount={installment.amount_per_payment}
                                 currency={installment.currency}
                                 showSymbol={true}
@@ -452,7 +471,7 @@ export default function InstallmentsArchivePage() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>
-                            {installment.payments_made} of {installment.number_of_payments} payments
+                            {installment.payments_made} {tOverview('of')} {installment.number_of_payments} {tOverview('payments')}
                           </span>
                           <span>{percentPaid}%</span>
                         </div>
@@ -463,7 +482,7 @@ export default function InstallmentsArchivePage() {
                       <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px]">
                         {nextPayment ? (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Next Payment</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tOverview('nextPayment')}</p>
                             <p className="text-xs md:text-sm font-semibold">
                               {formatPaymentDate(nextPayment)}
                             </p>
@@ -476,9 +495,9 @@ export default function InstallmentsArchivePage() {
                           </>
                         ) : (
                           <>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">Status</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">{tOverview('status')}</p>
                             <p className="text-xs md:text-sm font-semibold">
-                              {isPaidOff ? 'Paid Off' : 'No upcoming payment'}
+                              {isPaidOff ? tOverview('paidOff') : tOverview('noUpcomingPayment')}
                             </p>
                           </>
                         )}
@@ -490,14 +509,14 @@ export default function InstallmentsArchivePage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleUnarchive(installment.id)}
                         >
                           <ArchiveRestore className="mr-1 h-3 w-3" />
-                          Unarchive
+                          {tActions('unarchive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -506,7 +525,7 @@ export default function InstallmentsArchivePage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -526,17 +545,17 @@ export default function InstallmentsArchivePage() {
                       <Checkbox
                         checked={selectedInstallmentIds.size === filteredInstallments.length && filteredInstallments.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tCommon('common.selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Remaining</TableHead>
-                    <TableHead className="hidden sm:table-cell text-right">Payment</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Progress</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tCommon('common.name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tCommon('common.description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tCommon('common.category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('remaining')}</TableHead>
+                    <TableHead className="hidden sm:table-cell text-right">{tOverview('payment')}</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">{tOverview('progress')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tArchive('originalTotal')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tCommon('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -650,9 +669,11 @@ export default function InstallmentsArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Installment Permanently"
-        description="This will permanently delete this installment. This action cannot be undone."
-        itemName="installment"
+        title={tCommon('deleteDialog.title')}
+        description={tCommon('deleteDialog.description', { item: tOverview('installment') })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 
@@ -662,7 +683,11 @@ export default function InstallmentsArchivePage() {
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
         count={selectedInstallmentIds.size}
-        itemName="installment"
+        title={tArchive('batchDeleteTitle', { count: selectedInstallmentIds.size })}
+        description={tArchive('batchDeleteDescription', { count: selectedInstallmentIds.size })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isBatchDeleting}
       />
     </div>

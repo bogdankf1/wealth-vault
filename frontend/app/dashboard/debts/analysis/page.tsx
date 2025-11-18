@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { HandCoins, DollarSign, CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetDebtStatsQuery } from '@/lib/api/debtsApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -15,6 +16,11 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
 
 export default function DebtsAnalysisPage() {
+  // Translation hooks
+  const tAnalysis = useTranslations('debts.analysis');
+  const tCommon = useTranslations('common');
+  const tStatus = useTranslations('debts.status');
+
   const { data: stats, isLoading, error } = useGetDebtStatsQuery();
 
   // Loading state
@@ -32,8 +38,8 @@ export default function DebtsAnalysisPage() {
     return (
       <EmptyState
         icon={HandCoins}
-        title="No debt data"
-        description="Start tracking money owed to you to see detailed analysis."
+        title={tAnalysis('noData')}
+        description={tAnalysis('noDataDescription')}
       />
     );
   }
@@ -54,14 +60,14 @@ export default function DebtsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <HandCoins className="h-4 w-4 text-blue-600" />
-              Total Debts
+              {tAnalysis('totalDebts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <p className="text-5xl font-bold text-blue-600">{stats.total_debts}</p>
               <p className="text-sm text-muted-foreground">
-                Debts being tracked
+                {tAnalysis('debtsBeingTracked')}
               </p>
             </div>
           </CardContent>
@@ -72,7 +78,7 @@ export default function DebtsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-600" />
-              Active Debts
+              {tAnalysis('activeDebts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -86,7 +92,7 @@ export default function DebtsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Outstanding debts
+                {tAnalysis('outstandingDebts')}
               </p>
             </div>
           </CardContent>
@@ -97,7 +103,7 @@ export default function DebtsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
-              Paid Debts
+              {tAnalysis('paidDebts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -111,7 +117,7 @@ export default function DebtsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Fully collected debts
+                {tAnalysis('fullyCollectedDebts')}
               </p>
             </div>
           </CardContent>
@@ -123,10 +129,10 @@ export default function DebtsAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Total Debt Overview
+            {tAnalysis('totalDebtOverview')}
           </CardTitle>
           <CardDescription>
-            Total amount owed to you and collection progress
+            {tAnalysis('totalAmountOwedToYou')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -141,13 +147,13 @@ export default function DebtsAnalysisPage() {
                 />
               </p>
               <Badge variant={progressPercentage >= 50 ? 'default' : 'secondary'}>
-                {progressPercentage.toFixed(1)}% collected
+                {progressPercentage.toFixed(1)}% {tAnalysis('collected')}
               </Badge>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Collected</span>
+                <span className="font-medium">{tAnalysis('collected')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
                     amount={stats.total_amount_paid}
@@ -164,7 +170,7 @@ export default function DebtsAnalysisPage() {
                 />
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Outstanding</span>
+                <span className="font-medium">{tAnalysis('outstanding')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
                     amount={remainingAmount}
@@ -186,7 +192,7 @@ export default function DebtsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-indigo-600" />
-              Total Amount Owed
+              {tAnalysis('totalAmountOwed')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -200,7 +206,7 @@ export default function DebtsAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Total amount to be collected
+                {tAnalysis('totalAmountToBeCollected')}
               </p>
             </div>
           </CardContent>
@@ -211,7 +217,7 @@ export default function DebtsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
-              Total Collected
+              {tAnalysis('totalCollected')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -225,7 +231,7 @@ export default function DebtsAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Amount successfully collected
+                {tAnalysis('amountSuccessfullyCollected')}
               </p>
             </div>
           </CardContent>
@@ -238,10 +244,10 @@ export default function DebtsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-600" />
-              Overdue Debts
+              {tAnalysis('overdueDebts')}
             </CardTitle>
             <CardDescription>
-              Debts that have passed their due date
+              {tAnalysis('overdueDebtsDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -249,11 +255,11 @@ export default function DebtsAnalysisPage() {
               <div className="flex items-baseline gap-3">
                 <p className="text-4xl font-bold text-red-600">{stats.overdue_debts}</p>
                 <Badge variant="destructive">
-                  Require attention
+                  {tAnalysis('requireAttention')}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {stats.overdue_debts} debt{stats.overdue_debts !== 1 ? 's' : ''} past due date
+                {tAnalysis('debtsPastDueDate', { count: stats.overdue_debts })}
               </p>
             </div>
           </CardContent>
@@ -263,9 +269,9 @@ export default function DebtsAnalysisPage() {
       {/* Collection Progress Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Collection Progress</CardTitle>
+          <CardTitle>{tAnalysis('collectionProgress')}</CardTitle>
           <CardDescription>
-            Overview of debt collection status
+            {tAnalysis('collectionProgressDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -275,11 +281,11 @@ export default function DebtsAnalysisPage() {
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Active Debts</span>
+                  <span className="font-medium">{tAnalysis('activeDebts')}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground">
-                    {stats.active_debts} debt{stats.active_debts !== 1 ? 's' : ''}
+                    {tAnalysis('debtsCount', { count: stats.active_debts })}
                   </span>
                   <Badge variant="secondary">
                     {stats.total_debts > 0
@@ -305,11 +311,11 @@ export default function DebtsAnalysisPage() {
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Paid Debts</span>
+                  <span className="font-medium">{tAnalysis('paidDebts')}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground">
-                    {stats.paid_debts} debt{stats.paid_debts !== 1 ? 's' : ''}
+                    {tAnalysis('debtsCount', { count: stats.paid_debts })}
                   </span>
                   <Badge variant="secondary">
                     {stats.total_debts > 0
@@ -336,11 +342,11 @@ export default function DebtsAnalysisPage() {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Overdue Debts</span>
+                    <span className="font-medium">{tAnalysis('overdueDebts')}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-muted-foreground">
-                      {stats.overdue_debts} debt{stats.overdue_debts !== 1 ? 's' : ''}
+                      {tAnalysis('debtsCount', { count: stats.overdue_debts })}
                     </span>
                     <Badge variant="destructive">
                       {stats.total_debts > 0

@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslations } from 'next-intl';
 import {
   useCreateIncomeSourceMutation,
   useUpdateIncomeSourceMutation,
@@ -101,6 +102,9 @@ const CATEGORY_OPTIONS = [
 
 export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceFormProps) {
   const isEditing = Boolean(sourceId);
+  const tForm = useTranslations('income.form');
+  const tActions = useTranslations('income.actions');
+  const tFrequency = useTranslations('income.frequency');
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
@@ -269,12 +273,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Income Source' : 'Add Income Source'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the details of your income source.'
-              : 'Add a new income source to track your earnings.'}
+            {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -286,10 +288,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{tForm('name')} *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Full-time Salary"
+                placeholder={tForm('namePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
@@ -299,10 +301,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this income source"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={3}
                 {...register('description')}
               />
@@ -315,13 +317,13 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             {/* Category */}
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={tForm('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -336,7 +338,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             {/* Amount and Currency */}
             <CurrencyInput
               key={`currency-${existingSource?.id || 'new'}-${watch('currency')}`}
-              label="Amount"
+              label={tForm('amount')}
               amount={amountInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
@@ -361,7 +363,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             {/* Frequency */}
             <div className="space-y-2">
-              <Label htmlFor="frequency">Frequency *</Label>
+              <Label htmlFor="frequency">{tForm('frequency')} *</Label>
               <Select
                 value={watch('frequency')}
                 onValueChange={(value) =>
@@ -374,7 +376,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                 <SelectContent>
                   {FREQUENCY_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {tFrequency(option.value)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -384,7 +386,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             {/* Date Fields - Conditional based on frequency */}
             {watch('frequency') === 'one_time' ? (
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">{tForm('date')}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -396,7 +398,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">Start Date</Label>
+                  <Label htmlFor="start_date">{tForm('startDate')}</Label>
                   <Input
                     id="start_date"
                     type="date"
@@ -406,7 +408,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date (Optional)</Label>
+                  <Label htmlFor="end_date">{tForm('endDate')}</Label>
                   <Input
                     id="end_date"
                     type="date"
@@ -420,7 +422,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             {/* Active Status */}
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">Active Income Source</Label>
+              <Label htmlFor="is_active">{tForm('isActive')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -430,14 +432,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading
-                  ? 'Saving...'
-                  : isEditing
-                  ? 'Update Source'
-                  : 'Add Source'}
+                {isLoading ? tForm('saving') : tActions('save')}
               </Button>
             </DialogFooter>
           </form>

@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import * as z from 'zod';
 import {
   Dialog,
@@ -62,17 +63,22 @@ interface SavingsAccountFormProps {
   onClose: () => void;
 }
 
-const ACCOUNT_TYPE_OPTIONS = [
-  { value: 'crypto', label: 'Cryptocurrency' },
-  { value: 'cash', label: 'Cash' },
-  { value: 'business', label: 'Business Account' },
-  { value: 'personal', label: 'Personal Account' },
-  { value: 'fixed_deposit', label: 'Fixed Deposits' },
-  { value: 'other', label: 'Other' },
-];
-
 export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccountFormProps) {
   const isEditing = Boolean(accountId);
+
+  // Translation hooks
+  const tForm = useTranslations('savings.form');
+  const tActions = useTranslations('savings.actions');
+  const tAccountTypes = useTranslations('savings.accountTypes');
+
+  const ACCOUNT_TYPE_OPTIONS = [
+    { value: 'crypto', label: tAccountTypes('other') },
+    { value: 'cash', label: tAccountTypes('other') },
+    { value: 'business', label: tAccountTypes('other') },
+    { value: 'personal', label: tAccountTypes('other') },
+    { value: 'fixed_deposit', label: tAccountTypes('cd') },
+    { value: 'other', label: tAccountTypes('other') },
+  ];
 
   // Local state to track the string value of current_balance while user is typing
   const [currentBalanceInput, setCurrentBalanceInput] = React.useState<string>('');
@@ -155,17 +161,17 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
       if (isEditing && accountId) {
         await updateAccount({ id: accountId, data: submitData }).unwrap();
-        toast.success('Savings account updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createAccount(submitData).unwrap();
-        toast.success('Savings account created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save account:', error);
-      toast.error(isEditing ? 'Failed to update savings account' : 'Failed to create savings account');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -181,20 +187,20 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Account' : 'Add New Account'}</DialogTitle>
+          <DialogTitle>{isEditing ? tForm('editTitle') : tForm('addTitle')}</DialogTitle>
           <DialogDescription>
-            {isEditing ? 'Update your savings account details' : 'Create a new savings account to track'}
+            {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
           {/* Account Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Account Name *</Label>
+            <Label htmlFor="name">{tForm('name')}</Label>
             <Input
               id="name"
               {...register('name')}
-              placeholder="e.g., Emergency Fund"
+              placeholder={tForm('namePlaceholder')}
               autoComplete="off"
             />
             {errors.name && (
@@ -204,13 +210,13 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
           {/* Account Type */}
           <div className="space-y-2">
-            <Label htmlFor="account_type">Account Type *</Label>
+            <Label htmlFor="account_type">{tForm('accountType')}</Label>
             <Select
               value={accountType}
               onValueChange={(value) => setValue('account_type', value as AccountType)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select account type" />
+                <SelectValue placeholder={tForm('accountTypePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {ACCOUNT_TYPE_OPTIONS.map((option) => (
@@ -227,17 +233,17 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
           {/* Institution */}
           <div className="space-y-2">
-            <Label htmlFor="institution">Bank/Institution</Label>
+            <Label htmlFor="institution">{tForm('description')}</Label>
             <Input
               id="institution"
               {...register('institution')}
-              placeholder="e.g., Chase Bank"
+              placeholder={tForm('descriptionPlaceholder')}
             />
           </div>
 
           {/* Last 4 Digits */}
           <div className="space-y-2">
-            <Label htmlFor="account_number_last4">Last 4 Digits</Label>
+            <Label htmlFor="account_number_last4">{tForm('description')}</Label>
             <Input
               id="account_number_last4"
               {...register('account_number_last4')}
@@ -252,7 +258,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           {/* Current Balance with Currency */}
           <CurrencyInput
             key={`currency-${existingAccount?.id || 'new'}-${watch('currency')}`}
-            label="Current Balance"
+            label={tForm('balance')}
             amount={currentBalanceInput}
             currency={watch('currency')}
             onAmountChange={(value) => {
@@ -276,18 +282,18 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{tForm('description')}</Label>
             <Textarea
               id="notes"
               {...register('notes')}
-              placeholder="Optional notes about this account..."
+              placeholder={tForm('descriptionPlaceholder')}
               rows={3}
             />
           </div>
 
           {/* Active Status */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="is_active">Account Active</Label>
+            <Label htmlFor="is_active">{tForm('isActive')}</Label>
             <Switch
               id="is_active"
               checked={isActive}
@@ -297,13 +303,13 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={isCreating || isUpdating || isLoadingAccount}
               >
-                {isCreating || isUpdating ? 'Saving...' : isEditing ? 'Update Account' : 'Add Account'}
+                {isCreating || isUpdating ? tForm('saving') : isEditing ? tForm('update') : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

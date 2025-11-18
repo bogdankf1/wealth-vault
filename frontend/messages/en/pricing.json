@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Choose Your Plan",
+    "subtitle": "Start free and upgrade as you grow. All plans include a 14-day money-back guarantee.",
+    "recommended": "RECOMMENDED",
+    "perMonth": "/month",
+    "empty": "No pricing tiers available at this time."
+  },
+  "buttons": {
+    "currentPlan": "Current Plan",
+    "loading": "Loading...",
+    "getStarted": "Get Started",
+    "subscribe": "Subscribe"
+  },
+  "footer": {
+    "text": "All plans can be upgraded or cancelled at any time. Need help choosing?",
+    "contactLink": "Contact us"
+  },
+  "descriptions": {
+    "starter": "Perfect for getting started with personal finance tracking",
+    "growth": "Advanced features for serious finance management",
+    "wealth": "Premium features for comprehensive wealth management"
+  },
+  "features": {
+    "starter": {
+      "incomeSources": "Up to 3 income sources",
+      "expenseTracking": "Expense tracking",
+      "bankUpload": "Bank statement upload",
+      "savingsAccounts": "Up to 3 savings accounts",
+      "subscriptions": "Up to 5 subscriptions",
+      "installments": "Up to 2 installments",
+      "portfolioTracking": "Portfolio tracking",
+      "financialGoals": "Financial goals",
+      "debtTracking": "Debt tracking",
+      "taxTracking": "Tax tracking",
+      "aiInsights": "AI insights"
+    },
+    "growth": {
+      "incomeSources": "Up to 10 income sources",
+      "expenseTracking": "Expense tracking",
+      "aiCategorization": "AI categorization",
+      "bankUpload": "Bank statement upload",
+      "savingsAccounts": "Up to 10 savings accounts",
+      "multiCurrency": "Multi-currency support",
+      "portfolioAssets": "Up to 20 portfolio assets",
+      "financialGoals": "Financial goals",
+      "subscriptions": "Up to 20 subscriptions",
+      "installments": "Up to 10 installments",
+      "debtTracking": "Debt tracking",
+      "taxTracking": "Tax tracking",
+      "aiInsights": "AI insights"
+    },
+    "wealth": {
+      "incomeSources": "Unlimited income sources",
+      "expenses": "Unlimited expenses",
+      "aiCategorization": "AI categorization",
+      "aiInsights": "AI insights",
+      "bankUpload": "Bank statement upload",
+      "savingsAccounts": "Unlimited savings accounts",
+      "multiCurrency": "Multi-currency support",
+      "portfolioAssets": "Unlimited portfolio assets",
+      "stockPrices": "Real-time stock prices",
+      "financialGoals": "Financial goals",
+      "subscriptions": "Unlimited subscriptions",
+      "installments": "Unlimited installments",
+      "debtTracking": "Debt tracking",
+      "taxTracking": "Tax tracking"
+    }
+  }
+}

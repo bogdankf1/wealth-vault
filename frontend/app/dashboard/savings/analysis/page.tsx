@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { Wallet, TrendingUp, Coins, PiggyBank, DollarSign } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetSavingsStatsQuery } from '@/lib/api/savingsApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -15,6 +16,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
 
 export default function SavingsAnalysisPage() {
+  const tAnalysis = useTranslations('savings.analysis');
+  const tOverview = useTranslations('savings.overview');
+
   const { data: stats, isLoading, error } = useGetSavingsStatsQuery();
 
   // Loading state
@@ -32,8 +36,8 @@ export default function SavingsAnalysisPage() {
     return (
       <EmptyState
         icon={PiggyBank}
-        title="No savings data"
-        description="Start adding savings accounts to see detailed analysis."
+        title={tAnalysis('noData')}
+        description={tAnalysis('noData')}
       />
     );
   }
@@ -55,7 +59,7 @@ export default function SavingsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4 text-blue-600" />
-              Total Accounts
+              {tOverview('totalAccounts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -64,7 +68,7 @@ export default function SavingsAnalysisPage() {
                 <p className="text-5xl font-bold text-blue-600">{stats.total_accounts}</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Savings accounts in your portfolio
+                {tOverview('totalAccounts').toLowerCase()}
               </p>
             </div>
           </CardContent>
@@ -75,7 +79,7 @@ export default function SavingsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
-              Active Accounts
+              {tOverview('activeAccounts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -89,7 +93,7 @@ export default function SavingsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {stats.active_accounts} of {stats.total_accounts} accounts actively tracked
+                {stats.active_accounts} {tOverview('activeAccounts').toLowerCase()}
               </p>
             </div>
           </CardContent>
@@ -101,10 +105,10 @@ export default function SavingsAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Total Balance
+            {tAnalysis('totalBalance')}
           </CardTitle>
           <CardDescription>
-            Combined value of all your savings accounts
+            {tOverview('totalSavings')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -118,7 +122,7 @@ export default function SavingsAnalysisPage() {
               />
             </p>
             <p className="text-sm text-muted-foreground">
-              Your total net worth in savings
+              {tAnalysis('totalBalance')}
             </p>
           </div>
         </CardContent>
@@ -128,9 +132,9 @@ export default function SavingsAnalysisPage() {
       {balanceByType.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Balance by Account Type</CardTitle>
+            <CardTitle>{tAnalysis('accountDistribution')} - {tAnalysis('byAccountType')}</CardTitle>
             <CardDescription>
-              Distribution of your savings across different account types
+              {tAnalysis('byAccountType')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -183,9 +187,9 @@ export default function SavingsAnalysisPage() {
       {balanceByCurrency.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Balance by Currency</CardTitle>
+            <CardTitle>{tAnalysis('totalBalance')}</CardTitle>
             <CardDescription>
-              Your savings across different currencies
+              {tOverview('totalSavings')}
             </CardDescription>
           </CardHeader>
           <CardContent>

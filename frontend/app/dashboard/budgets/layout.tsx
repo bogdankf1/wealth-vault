@@ -6,32 +6,12 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { LayoutGrid, Archive, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { BudgetsActionsContext } from './context';
-
-const BUDGETS_TABS: ModuleTab[] = [
-  {
-    value: 'overview',
-    label: 'Overview',
-    icon: LayoutGrid,
-    href: '/dashboard/budgets/overview',
-  },
-  {
-    value: 'analysis',
-    label: 'Analysis',
-    icon: BarChart3,
-    href: '/dashboard/budgets/analysis',
-  },
-  {
-    value: 'archive',
-    label: 'Archive',
-    icon: Archive,
-    href: '/dashboard/budgets/archive',
-  },
-];
 
 export default function BudgetsLayout({
   children,
@@ -40,6 +20,13 @@ export default function BudgetsLayout({
 }) {
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
+  const t = useTranslations('budgets');
+
+  const BUDGETS_TABS: ModuleTab[] = [
+    { value: 'overview', label: t('navigation.overview'), icon: LayoutGrid, href: '/dashboard/budgets/overview' },
+    { value: 'analysis', label: t('navigation.analysis'), icon: BarChart3, href: '/dashboard/budgets/analysis' },
+    { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/budgets/archive' },
+  ];
 
   return (
     <BudgetsActionsContext.Provider value={{ setActions }}>
@@ -48,10 +35,10 @@ export default function BudgetsLayout({
         <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              Budget Management
+              {t('layout.title')}
             </h1>
             <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Track and manage your spending budgets
+              {t('layout.description')}
             </p>
           </div>
           {actions && (

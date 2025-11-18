@@ -29,34 +29,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-
-// All available widgets
-const AVAILABLE_WIDGETS: { id: string; label: string; description: string }[] = [
-  { id: 'quick-actions', label: 'Quick Actions', description: 'Quick access buttons' },
-  { id: 'ai-insights', label: 'AI Insights', description: 'AI-powered financial insights' },
-  { id: 'exchange-rates', label: 'Exchange Rates', description: 'Currency exchange rates' },
-  { id: 'net-worth', label: 'Net Worth', description: 'Total net worth overview' },
-  { id: 'income-vs-expenses', label: 'Income vs Expenses', description: 'Comparison chart' },
-  { id: 'monthly-spending', label: 'Monthly Spending', description: 'Spending breakdown' },
-  { id: 'recent-transactions', label: 'Recent Transactions', description: 'Latest transactions' },
-  { id: 'upcoming-bills', label: 'Upcoming Bills', description: 'Bills & subscriptions' },
-  { id: 'budget-overview', label: 'Budget Overview', description: 'Budget progress' },
-  { id: 'goals-progress', label: 'Goals Progress', description: 'Financial goals' },
-  { id: 'portfolio-summary', label: 'Portfolio Summary', description: 'Investment portfolio' },
-  { id: 'subscriptions-by-category', label: 'Subscriptions by Category', description: 'Subscription breakdown' },
-  { id: 'installments-by-category', label: 'Installments by Category', description: 'Installment breakdown' },
-  { id: 'expenses-by-category', label: 'Expenses by Category', description: 'Expense breakdown' },
-  { id: 'budgets-by-category', label: 'Budgets by Category', description: 'Budget breakdown' },
-  { id: 'income-allocation', label: 'Income Allocation', description: 'Income distribution' },
-  { id: 'net-worth-trend', label: 'Net Worth Trend', description: 'Historical net worth' },
-  { id: 'taxes', label: 'Taxes', description: 'Tax summary' },
-  { id: 'debts-owed', label: 'Debts Owed', description: 'Debt tracking' },
-  { id: 'planned-subscriptions', label: 'Planned Subscriptions', description: 'Subscription payments for selected month' },
-  { id: 'planned-expenses', label: 'Planned Expenses', description: 'Recurring expense payments for selected month' },
-  { id: 'planned-installments', label: 'Planned Installments', description: 'Installment payments for selected month' },
-];
+import { useTranslations } from 'next-intl';
 
 export function DashboardLayoutsSettings() {
+  const t = useTranslations('settings.dashboardLayouts');
   const { toast } = useToast();
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: layoutsData, isLoading } = useListLayoutsQuery();
@@ -74,34 +50,34 @@ export function DashboardLayoutsSettings() {
     try {
       await activateLayout(layoutId).unwrap();
       toast({
-        title: 'Layout activated',
-        description: 'Dashboard layout has been activated successfully.',
+        title: t('toasts.layoutActivated.title'),
+        description: t('toasts.layoutActivated.description'),
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to activate layout.',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.activateDescription'),
         variant: 'destructive',
       });
     }
   };
 
   const handleDelete = async (layoutId: string) => {
-    if (!confirm('Are you sure you want to delete this layout?')) return;
+    if (!confirm(t('confirmDelete'))) return;
 
     try {
       await deleteLayout(layoutId).unwrap();
       toast({
-        title: 'Layout deleted',
-        description: 'Dashboard layout has been deleted successfully.',
+        title: t('toasts.layoutDeleted.title'),
+        description: t('toasts.layoutDeleted.description'),
       });
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'data' in error
         && typeof error.data === 'object' && error.data && 'detail' in error.data
         ? String(error.data.detail)
-        : 'Failed to delete layout.';
+        : t('toasts.error.deleteDescription');
       toast({
-        title: 'Error',
+        title: t('toasts.error.title'),
         description: errorMessage,
         variant: 'destructive',
       });
@@ -112,13 +88,13 @@ export function DashboardLayoutsSettings() {
     try {
       await initializePresets().unwrap();
       toast({
-        title: 'Presets initialized',
-        description: 'Default layout presets have been created.',
+        title: t('toasts.presetsInitialized.title'),
+        description: t('toasts.presetsInitialized.description'),
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to initialize presets.',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.initializeDescription'),
         variant: 'destructive',
       });
     }
@@ -158,14 +134,14 @@ export function DashboardLayoutsSettings() {
             <div className="space-y-1.5">
               <CardTitle className="flex items-center gap-2">
                 <LayoutGrid className="h-5 w-5" />
-                Dashboard Layouts
+                {t('title')}
               </CardTitle>
               <CardDescription>
-                Customize your dashboard by creating and managing different layouts
+                {t('description')}
                 {!isWealthTier && (
                   <span className="block mt-1 text-amber-600 dark:text-amber-400 flex items-center gap-1">
                     <Crown className="h-3 w-3" />
-                    Custom layouts require Wealth tier
+                    {t('wealthTierRequired')}
                   </span>
                 )}
               </CardDescription>
@@ -174,19 +150,19 @@ export function DashboardLayoutsSettings() {
               {!layoutsData?.items?.length && (
                 <Button onClick={handleInitializePresets} variant="outline" size="sm">
                   <LayoutGrid className="mr-2 h-4 w-4" />
-                  Initialize Presets
+                  {t('initializePresets')}
                 </Button>
               )}
               {isWealthTier ? (
                 <Button onClick={handleCreate} size="sm">
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Layout
+                  {t('createLayout')}
                 </Button>
               ) : (
                 <Link href="/dashboard/pricing">
                   <Button variant="outline" size="sm">
                     <Crown className="mr-2 h-4 w-4" />
-                    Upgrade to Create
+                    {t('upgradeToCreate')}
                   </Button>
                 </Link>
               )}
@@ -206,18 +182,18 @@ export function DashboardLayoutsSettings() {
                       <h4 className="font-medium">{layout.name}</h4>
                       {layout.is_active && (
                         <Badge variant="default" className="text-xs">
-                          Active
+                          {t('active')}
                         </Badge>
                       )}
                       {layout.is_preset && (
                         <Badge variant="secondary" className="text-xs">
-                          Preset
+                          {t('preset')}
                         </Badge>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {layout.configuration.widgets.filter((w) => w.visible).length} of{' '}
-                      {layout.configuration.widgets.length} widgets visible
+                      {layout.configuration.widgets.filter((w) => w.visible).length} {t('of')}{' '}
+                      {layout.configuration.widgets.length} {t('widgetsVisible')}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -251,27 +227,27 @@ export function DashboardLayoutsSettings() {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <LayoutGrid className="mx-auto h-12 w-12 mb-4" />
-              <p className="mb-4">No layouts found. Create your first layout or initialize presets.</p>
+              <p className="mb-4">{t('noLayoutsFound')}</p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={handleInitializePresets} variant="outline">
-                  Initialize Presets
+                  {t('initializePresets')}
                 </Button>
                 {isWealthTier ? (
-                  <Button onClick={handleCreate}>Create Layout</Button>
+                  <Button onClick={handleCreate}>{t('createLayout')}</Button>
                 ) : (
                   <Link href="/dashboard/pricing">
                     <Button variant="outline">
                       <Crown className="mr-2 h-4 w-4" />
-                      Upgrade to Wealth
+                      {t('upgradeToWealth')}
                     </Button>
                   </Link>
                 )}
               </div>
               {!isWealthTier && (
                 <p className="mt-4 text-sm text-muted-foreground">
-                  Custom layouts are available for Wealth tier subscribers.{' '}
+                  {t('customLayoutsInfo')}{' '}
                   <Link href="/dashboard/pricing" className="text-primary hover:underline">
-                    View pricing
+                    {t('viewPricing')}
                   </Link>
                 </p>
               )}
@@ -302,9 +278,36 @@ function LayoutEditorDialog({
   onClose: () => void;
   layout: DashboardLayout | null;
 }) {
+  const t = useTranslations('settings.dashboardLayouts');
   const { toast } = useToast();
   const [createLayout] = useCreateLayoutMutation();
   const [updateLayout] = useUpdateLayoutMutation();
+
+  // Define widgets inside component for translation
+  const AVAILABLE_WIDGETS: { id: string; label: string; description: string }[] = [
+    { id: 'quick-actions', label: t('widgets.quick-actions.label'), description: t('widgets.quick-actions.description') },
+    { id: 'ai-insights', label: t('widgets.ai-insights.label'), description: t('widgets.ai-insights.description') },
+    { id: 'exchange-rates', label: t('widgets.exchange-rates.label'), description: t('widgets.exchange-rates.description') },
+    { id: 'net-worth', label: t('widgets.net-worth.label'), description: t('widgets.net-worth.description') },
+    { id: 'income-vs-expenses', label: t('widgets.income-vs-expenses.label'), description: t('widgets.income-vs-expenses.description') },
+    { id: 'monthly-spending', label: t('widgets.monthly-spending.label'), description: t('widgets.monthly-spending.description') },
+    { id: 'recent-transactions', label: t('widgets.recent-transactions.label'), description: t('widgets.recent-transactions.description') },
+    { id: 'upcoming-bills', label: t('widgets.upcoming-bills.label'), description: t('widgets.upcoming-bills.description') },
+    { id: 'budget-overview', label: t('widgets.budget-overview.label'), description: t('widgets.budget-overview.description') },
+    { id: 'goals-progress', label: t('widgets.goals-progress.label'), description: t('widgets.goals-progress.description') },
+    { id: 'portfolio-summary', label: t('widgets.portfolio-summary.label'), description: t('widgets.portfolio-summary.description') },
+    { id: 'subscriptions-by-category', label: t('widgets.subscriptions-by-category.label'), description: t('widgets.subscriptions-by-category.description') },
+    { id: 'installments-by-category', label: t('widgets.installments-by-category.label'), description: t('widgets.installments-by-category.description') },
+    { id: 'expenses-by-category', label: t('widgets.expenses-by-category.label'), description: t('widgets.expenses-by-category.description') },
+    { id: 'budgets-by-category', label: t('widgets.budgets-by-category.label'), description: t('widgets.budgets-by-category.description') },
+    { id: 'income-allocation', label: t('widgets.income-allocation.label'), description: t('widgets.income-allocation.description') },
+    { id: 'net-worth-trend', label: t('widgets.net-worth-trend.label'), description: t('widgets.net-worth-trend.description') },
+    { id: 'taxes', label: t('widgets.taxes.label'), description: t('widgets.taxes.description') },
+    { id: 'debts-owed', label: t('widgets.debts-owed.label'), description: t('widgets.debts-owed.description') },
+    { id: 'planned-subscriptions', label: t('widgets.planned-subscriptions.label'), description: t('widgets.planned-subscriptions.description') },
+    { id: 'planned-expenses', label: t('widgets.planned-expenses.label'), description: t('widgets.planned-expenses.description') },
+    { id: 'planned-installments', label: t('widgets.planned-installments.label'), description: t('widgets.planned-installments.description') },
+  ];
 
   const [name, setName] = useState(layout?.name || '');
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
@@ -337,8 +340,8 @@ function LayoutEditorDialog({
   const handleSave = async () => {
     if (!name.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter a layout name.',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.nameRequired'),
         variant: 'destructive',
       });
       return;
@@ -350,14 +353,14 @@ function LayoutEditorDialog({
       if (layout) {
         await updateLayout({ id: layout.id, data: { name, configuration } }).unwrap();
         toast({
-          title: 'Layout updated',
-          description: 'Dashboard layout has been updated successfully.',
+          title: t('toasts.layoutUpdated.title'),
+          description: t('toasts.layoutUpdated.description'),
         });
       } else {
         await createLayout({ name, configuration }).unwrap();
         toast({
-          title: 'Layout created',
-          description: 'Dashboard layout has been created successfully.',
+          title: t('toasts.layoutCreated.title'),
+          description: t('toasts.layoutCreated.description'),
         });
       }
 
@@ -366,9 +369,9 @@ function LayoutEditorDialog({
       const errorMessage = error && typeof error === 'object' && 'data' in error
         && typeof error.data === 'object' && error.data && 'detail' in error.data
         ? String(error.data.detail)
-        : 'Failed to save layout.';
+        : t('toasts.error.saveDescription');
       toast({
-        title: 'Error',
+        title: t('toasts.error.title'),
         description: errorMessage,
         variant: 'destructive',
       });
@@ -385,25 +388,25 @@ function LayoutEditorDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{layout ? 'Edit Layout' : 'Create Layout'}</DialogTitle>
+          <DialogTitle>{layout ? t('editor.editTitle') : t('editor.createTitle')}</DialogTitle>
           <DialogDescription>
-            Configure which widgets to show and their visibility on your dashboard.
+            {t('editor.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="layout-name">Layout Name</Label>
+            <Label htmlFor="layout-name">{t('editor.layoutName')}</Label>
             <Input
               id="layout-name"
-              placeholder="e.g., My Custom Layout"
+              placeholder={t('editor.layoutNamePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Widgets</Label>
+            <Label>{t('editor.widgetsLabel')}</Label>
             <div className="border rounded-lg divide-y">
               {AVAILABLE_WIDGETS.map((widget) => {
                 const widgetConfig = widgets.find((w) => w.id === widget.id);
@@ -432,9 +435,9 @@ function LayoutEditorDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t('editor.cancel')}
           </Button>
-          <Button onClick={handleSave}>{layout ? 'Update' : 'Create'}</Button>
+          <Button onClick={handleSave}>{layout ? t('editor.update') : t('editor.create')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

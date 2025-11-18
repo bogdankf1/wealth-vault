@@ -5,8 +5,10 @@ import { User, Mail, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
 export function AccountSettings() {
+  const t = useTranslations('settings.account');
   const { data: session } = useSession();
   const { data: currentUser, isLoading } = useGetCurrentUserQuery();
 
@@ -32,17 +34,17 @@ export function AccountSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Account Information
+            {t('title')}
           </CardTitle>
-          <CardDescription>Your account details and information</CardDescription>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start gap-3">
             <User className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Name</p>
+              <p className="text-sm font-medium">{t('name')}</p>
               <p className="text-sm text-muted-foreground">
-                {session?.user?.name || currentUser?.name || 'Not set'}
+                {session?.user?.name || currentUser?.name || t('notSet')}
               </p>
             </div>
           </div>
@@ -50,9 +52,9 @@ export function AccountSettings() {
           <div className="flex items-start gap-3">
             <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Email</p>
+              <p className="text-sm font-medium">{t('email')}</p>
               <p className="text-sm text-muted-foreground">
-                {session?.user?.email || currentUser?.email || 'Not set'}
+                {session?.user?.email || currentUser?.email || t('notSet')}
               </p>
             </div>
           </div>
@@ -61,7 +63,7 @@ export function AccountSettings() {
             <div className="flex items-start gap-3">
               <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium">Member Since</p>
+                <p className="text-sm font-medium">{t('memberSince')}</p>
                 <p className="text-sm text-muted-foreground">
                   {format(new Date(currentUser.created_at), 'MMMM d, yyyy')}
                 </p>

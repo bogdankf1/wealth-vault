@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 
 interface Session {
   id: string;
@@ -19,6 +20,7 @@ interface Session {
 }
 
 export function SecuritySettings() {
+  const t = useTranslations('settings.security');
   const { toast } = useToast();
   const { data: session } = useSession();
 
@@ -55,15 +57,15 @@ export function SecuritySettings() {
 
       setIs2FAEnabled(enabled);
       toast({
-        title: enabled ? '2FA Enabled' : '2FA Disabled',
+        title: enabled ? t('toasts.twoFactorEnabled.title') : t('toasts.twoFactorDisabled.title'),
         description: enabled
-          ? 'Two-factor authentication has been enabled for your account.'
-          : 'Two-factor authentication has been disabled.',
+          ? t('toasts.twoFactorEnabled.description')
+          : t('toasts.twoFactorDisabled.description'),
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to update 2FA settings',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.twoFactorDescription'),
         variant: 'destructive',
       });
     } finally {
@@ -78,13 +80,13 @@ export function SecuritySettings() {
 
       setSessions(sessions.filter((s) => s.id !== sessionId));
       toast({
-        title: 'Session Revoked',
-        description: 'The session has been terminated successfully.',
+        title: t('toasts.sessionRevoked.title'),
+        description: t('toasts.sessionRevoked.description'),
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to revoke session',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.sessionDescription'),
         variant: 'destructive',
       });
     }
@@ -97,13 +99,13 @@ export function SecuritySettings() {
 
       setSessions(sessions.filter((s) => s.current));
       toast({
-        title: 'Sessions Revoked',
-        description: 'All other sessions have been terminated.',
+        title: t('toasts.sessionsRevoked.title'),
+        description: t('toasts.sessionsRevoked.description'),
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to revoke sessions',
+        title: t('toasts.error.title'),
+        description: t('toasts.error.sessionsDescription'),
         variant: 'destructive',
       });
     }
@@ -116,10 +118,10 @@ export function SecuritySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Authentication Method
+            {t('authMethod.title')}
           </CardTitle>
           <CardDescription>
-            Your account authentication is managed by your identity provider
+            {t('authMethod.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -145,20 +147,20 @@ export function SecuritySettings() {
               </svg>
               <div className="flex-1">
                 <h4 className="font-medium text-blue-900 dark:text-blue-100">
-                  Signed in with Google
+                  {t('authMethod.signedInWith')}
                 </h4>
                 <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                   {session?.user?.email || 'Loading...'}
                 </p>
                 <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
-                  Your password and account security are managed by Google. To update your password or security settings, visit your Google Account.
+                  {t('authMethod.securityInfo')}
                 </p>
                 <Button
                   variant="link"
                   className="h-auto p-0 text-blue-700 dark:text-blue-300 mt-2"
                   onClick={() => window.open('https://myaccount.google.com/security', '_blank')}
                 >
-                  Manage Google Account Security
+                  {t('authMethod.manageGoogleAccount')}
                   <ExternalLink className="h-3 w-3 ml-1" />
                 </Button>
               </div>
@@ -172,26 +174,26 @@ export function SecuritySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5" />
-            Two-Factor Authentication
+            {t('twoFactor.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              Coming Soon
+              {t('twoFactor.comingSoon')}
             </span>
           </CardTitle>
           <CardDescription>
-            Add an extra layer of security to your account
+            {t('twoFactor.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Two-Factor Authentication is currently in development. Once available, you&apos;ll be able to add an extra layer of security to your account.
+              {t('twoFactor.warningMessage')}
             </p>
           </div>
           <div className="flex items-center justify-between opacity-50">
             <div className="space-y-0.5">
-              <Label htmlFor="2fa-toggle">Enable 2FA</Label>
+              <Label htmlFor="2fa-toggle">{t('twoFactor.enable')}</Label>
               <p className="text-sm text-muted-foreground">
-                Require a verification code in addition to your password
+                {t('twoFactor.enableDescription')}
               </p>
             </div>
             <Switch
@@ -208,10 +210,10 @@ export function SecuritySettings() {
                 <Shield className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
                 <div>
                   <h4 className="font-medium text-green-900 dark:text-green-100">
-                    Two-Factor Authentication is Enabled
+                    {t('twoFactor.enabled.title')}
                   </h4>
                   <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                    Your account is protected with an additional layer of security.
+                    {t('twoFactor.enabled.description')}
                   </p>
                 </div>
               </div>
@@ -225,19 +227,19 @@ export function SecuritySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Active Sessions
+            {t('sessions.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              Coming Soon
+              {t('sessions.comingSoon')}
             </span>
           </CardTitle>
           <CardDescription>
-            Manage devices that are currently logged into your account
+            {t('sessions.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Session tracking is currently in development. The sessions shown below are examples of what you&apos;ll see once this feature is live.
+              {t('sessions.warningMessage')}
             </p>
           </div>
           {sessions.map((session) => (
@@ -250,7 +252,7 @@ export function SecuritySettings() {
                   <p className="font-medium">{session.device}</p>
                   {session.current && (
                     <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
-                      Current
+                      {t('sessions.current')}
                     </span>
                   )}
                 </div>
@@ -258,7 +260,7 @@ export function SecuritySettings() {
                   {session.location} • {session.ip}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Last active: {session.lastActive}
+                  {t('sessions.lastActive')} {session.lastActive}
                 </p>
               </div>
 
@@ -269,7 +271,7 @@ export function SecuritySettings() {
                   disabled
                   className="cursor-not-allowed opacity-50"
                 >
-                  Revoke
+                  {t('sessions.revoke')}
                 </Button>
               )}
             </div>
@@ -283,7 +285,7 @@ export function SecuritySettings() {
                 className="w-full cursor-not-allowed opacity-50"
               >
                 <AlertTriangle className="h-4 w-4 mr-2" />
-                Revoke All Other Sessions
+                {t('sessions.revokeAll')}
               </Button>
             </div>
           )}

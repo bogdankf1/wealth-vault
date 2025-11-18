@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -38,6 +39,14 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function TaxesPage() {
+  // Translation hooks
+  const tOverview = useTranslations('taxes.overview');
+  const tCommon = useTranslations('common');
+  const tActions = useTranslations('taxes.actions');
+  const tStatus = useTranslations('taxes.status');
+  const tTypes = useTranslations('taxes.types');
+  const tFrequencies = useTranslations('taxes.frequencies');
+
   // Get context for setting actions
   const { setActions } = React.useContext(TaxesActionsContext);
 
@@ -79,18 +88,18 @@ export default function TaxesPage() {
 
     try {
       await deleteTax(deletingTax.id).unwrap();
-      toast.success('Tax deleted successfully');
+      toast.success(tOverview('deleteSuccess'));
       setDeletingTax(null);
     } catch (error) {
       console.error('Failed to delete tax:', error);
-      toast.error('Failed to delete tax');
+      toast.error(tOverview('deleteError'));
     }
   };
 
   const handleArchiveTax = async (id: string) => {
     try {
       await updateTax({ id, data: { is_active: false } }).unwrap();
-      toast.success('Tax archived successfully');
+      toast.success(tOverview('archiveSuccess'));
       setSelectedTaxIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -98,7 +107,7 @@ export default function TaxesPage() {
       });
     } catch (error) {
       console.error('Failed to archive tax:', error);
-      toast.error('Failed to archive tax');
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -118,14 +127,14 @@ export default function TaxesPage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully archived ${successCount} tax(es)`);
+      toast.success(tOverview('batchArchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to archive ${failCount} tax(es)`);
+      toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
     setSelectedTaxIds(new Set());
-  }, [selectedTaxIds, updateTax]);
+  }, [selectedTaxIds, updateTax, tOverview]);
 
   const handleToggleSelect = (taxId: string) => {
     const newSelected = new Set(selectedTaxIds);
@@ -158,7 +167,7 @@ export default function TaxesPage() {
   // Set action buttons in layout
   React.useEffect(() => {
     setActions(
-      <>
+      <div className="flex gap-2 flex-wrap">
         {selectedTaxIds.size > 0 && (
           <>
             <Button
@@ -168,7 +177,7 @@ export default function TaxesPage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedTaxIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedTaxIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -177,19 +186,19 @@ export default function TaxesPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedTaxIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedTaxIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddTax} size="default" className="w-full sm:w-auto">
           <DollarSign className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Tax</span>
+          <span className="truncate">{tOverview('addTax')}</span>
         </Button>
-      </>
+      </div>
     );
 
     return () => setActions(null);
-  }, [selectedTaxIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddTax]);
+  }, [selectedTaxIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddTax, tOverview]);
 
   const confirmBatchDelete = async () => {
     if (selectedTaxIds.size === 0) return;
@@ -200,15 +209,15 @@ export default function TaxesPage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} tax record(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} tax record(s)`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
       setBatchDeleteDialogOpen(false);
       setSelectedTaxIds(new Set());
     } catch (error) {
       console.error('Batch delete failed:', error);
-      toast.error('Failed to delete tax records');
+      toast.error(tOverview('batchDeleteError', { count: selectedTaxIds.size }));
     }
   };
 
@@ -250,7 +259,7 @@ export default function TaxesPage() {
   const statsCards = stats
     ? [
         {
-          title: 'Total Taxes',
+          title: tOverview('totalTaxes'),
           value: (
             <CurrencyDisplay
               amount={stats.total_tax_amount}
@@ -259,11 +268,11 @@ export default function TaxesPage() {
               showCode={false}
             />
           ),
-          description: `${stats.active_taxes} active ${stats.active_taxes === 1 ? 'tax' : 'taxes'}`,
+          description: `${stats.active_taxes} ${stats.active_taxes === 1 ? tOverview('activeTaxSingular') : tOverview('activeTaxesPlural')}`,
           icon: FileText,
         },
         {
-          title: 'Fixed Taxes',
+          title: tOverview('fixedTaxes'),
           value: (
             <CurrencyDisplay
               amount={stats.total_fixed_taxes}
@@ -272,11 +281,11 @@ export default function TaxesPage() {
               showCode={false}
             />
           ),
-          description: 'Monthly fixed amount',
+          description: tOverview('monthlyFixedAmount'),
           icon: DollarSign,
         },
         {
-          title: 'Percentage-Based',
+          title: tOverview('percentageBased'),
           value: (
             <CurrencyDisplay
               amount={stats.total_percentage_taxes}
@@ -285,7 +294,7 @@ export default function TaxesPage() {
               showCode={false}
             />
           ),
-          description: 'Based on income',
+          description: tOverview('basedOnIncome'),
           icon: Percent,
         },
       ]
@@ -357,8 +366,8 @@ export default function TaxesPage() {
               selectedCategory={selectedType}
               onCategoryChange={(type) => setSelectedType(type || '')}
               categories={typeCategories}
-              searchPlaceholder="Search taxes..."
-              categoryPlaceholder="All Types"
+              searchPlaceholder={tOverview('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allTypes')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -367,6 +376,7 @@ export default function TaxesPage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -398,14 +408,14 @@ export default function TaxesPage() {
       ) : !hasTaxes ? (
         <EmptyState
           icon={FileText}
-          title="No taxes yet"
-          description="Start tracking your tax obligations by adding your first tax record"
-          actionLabel="Add Tax"
+          title={tOverview('noTaxes')}
+          description={tOverview('noTaxesDescription')}
+          actionLabel={tOverview('addTax')}
           onAction={() => setIsFormOpen(true)}
         />
       ) : filteredTaxes.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <p>No taxes found matching your filters.</p>
+          <p>{tOverview('noFilterResults')}</p>
           <Button
             variant="link"
             onClick={() => {
@@ -414,7 +424,7 @@ export default function TaxesPage() {
             }}
             className="mt-2"
           >
-            Clear Filters
+            {tOverview('clearFilters')}
           </Button>
         </div>
       ) : viewMode === 'card' ? (
@@ -427,7 +437,7 @@ export default function TaxesPage() {
                 aria-label="Select all taxes"
               />
               <span className="text-sm text-muted-foreground">
-                {selectedTaxIds.size === filteredTaxes.length ? 'Deselect all' : 'Select all'}
+                {selectedTaxIds.size === filteredTaxes.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
               </span>
             </div>
           )}
@@ -454,11 +464,11 @@ export default function TaxesPage() {
                   </div>
                   {tax.is_active ? (
                     <Badge variant="default" className="bg-green-600 text-xs flex-shrink-0">
-                      Active
+                      {tStatus('active')}
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="text-xs flex-shrink-0">
-                      Inactive
+                      {tStatus('inactive')}
                     </Badge>
                   )}
                 </div>
@@ -470,16 +480,16 @@ export default function TaxesPage() {
                     {tax.tax_type === 'fixed' ? (
                       <Badge variant="outline" className="text-xs">
                         <DollarSign className="h-3 w-3 mr-1" />
-                        Fixed Amount
+                        {tTypes('fixed')}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-xs">
                         <Percent className="h-3 w-3 mr-1" />
-                        Percentage-Based
+                        {tTypes('percentage')}
                       </Badge>
                     )}
                     <Badge variant="secondary" className="text-xs capitalize">
-                      {tax.frequency}
+                      {tFrequencies(tax.frequency as 'monthly' | 'quarterly' | 'annually')}
                     </Badge>
                   </div>
 
@@ -488,7 +498,7 @@ export default function TaxesPage() {
                     {tax.tax_type === 'fixed' && tax.fixed_amount ? (
                       <>
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">Amount</span>
+                          <span className="text-xs text-muted-foreground">{tOverview('amount')}</span>
                           <span className="text-2xl font-bold">
                             <CurrencyDisplay
                               amount={tax.display_fixed_amount ?? tax.fixed_amount}
@@ -500,7 +510,7 @@ export default function TaxesPage() {
                         </div>
                         {tax.display_currency && tax.display_currency !== tax.currency && (
                           <div className="mt-2 text-xs text-muted-foreground">
-                            Original: <CurrencyDisplay
+                            {tCommon('common.originalAmount')}: <CurrencyDisplay
                               amount={tax.fixed_amount}
                               currency={tax.currency}
                               showSymbol={true}
@@ -512,17 +522,17 @@ export default function TaxesPage() {
                     ) : tax.tax_type === 'percentage' && tax.percentage ? (
                       <>
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">Rate</span>
+                          <span className="text-xs text-muted-foreground">{tOverview('type')}</span>
                           <span className="text-2xl font-bold">{tax.percentage}%</span>
                         </div>
                         {tax.calculated_amount !== undefined && (
                           <div className="mt-2 text-xs text-muted-foreground">
-                            Estimated: <CurrencyDisplay
+                            {tFrequencies('monthly')}: <CurrencyDisplay
                               amount={tax.calculated_amount}
                               currency={tax.display_currency ?? 'USD'}
                               showSymbol={true}
                               showCode={false}
-                            /> monthly
+                            />
                           </div>
                         )}
                       </>
@@ -535,14 +545,14 @@ export default function TaxesPage() {
                     </div>
                   )}
 
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-2 flex-wrap">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(tax.id)}
                     >
                       <Edit className="mr-1 h-3 w-3" />
-                      Edit
+                      {tActions('edit')}
                     </Button>
                     <Button
                       variant="outline"
@@ -550,7 +560,7 @@ export default function TaxesPage() {
                       onClick={() => handleArchiveTax(tax.id)}
                     >
                       <Archive className="mr-1 h-3 w-3" />
-                      Archive
+                      {tActions('archive')}
                     </Button>
                     <Button
                       variant="outline"
@@ -558,7 +568,7 @@ export default function TaxesPage() {
                       onClick={() => handleDeleteClick(tax)}
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
-                      Delete
+                      {tActions('delete')}
                     </Button>
                   </div>
                 </div>
@@ -579,15 +589,15 @@ export default function TaxesPage() {
                     aria-label="Select all taxes"
                   />
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Description</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Value</TableHead>
-                <TableHead className="hidden lg:table-cell">Frequency</TableHead>
-                <TableHead className="hidden xl:table-cell">Notes</TableHead>
-                <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                <TableHead className="hidden sm:table-cell">Status</TableHead>
-                <TableHead className="text-right w-[180px]">Actions</TableHead>
+                <TableHead>{tOverview('name')}</TableHead>
+                <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                <TableHead>{tOverview('type')}</TableHead>
+                <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                <TableHead className="hidden lg:table-cell">{tOverview('frequency')}</TableHead>
+                <TableHead className="hidden xl:table-cell">{tCommon('common.description')}</TableHead>
+                <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -615,12 +625,12 @@ export default function TaxesPage() {
                     {tax.tax_type === 'fixed' ? (
                       <Badge variant="outline" className="text-xs">
                         <DollarSign className="h-3 w-3 mr-1" />
-                        Fixed
+                        {tTypes('fixed')}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-xs">
                         <Percent className="h-3 w-3 mr-1" />
-                        Percentage
+                        {tTypes('percentage')}
                       </Badge>
                     )}
                   </TableCell>
@@ -656,7 +666,7 @@ export default function TaxesPage() {
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <Badge variant="secondary" className="text-xs capitalize">
-                      {tax.frequency}
+                      {tFrequencies(tax.frequency as 'monthly' | 'quarterly' | 'annually')}
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden xl:table-cell">
@@ -674,11 +684,11 @@ export default function TaxesPage() {
                   <TableCell className="hidden sm:table-cell">
                     {tax.is_active ? (
                       <Badge variant="default" className="bg-green-600 text-xs">
-                        Active
+                        {tStatus('active')}
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-xs">
-                        Inactive
+                        {tStatus('inactive')}
                       </Badge>
                     )}
                   </TableCell>
@@ -731,9 +741,9 @@ export default function TaxesPage() {
         open={!!deletingTax}
         onOpenChange={(open) => !open && setDeletingTax(null)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Tax"
-        description={`Are you sure you want to delete "${deletingTax?.name}"? This action cannot be undone.`}
-        itemName="tax"
+        title={tOverview('deleteConfirmTitle')}
+        description={`${deletingTax?.name}`}
+        itemName={tOverview('tax')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -742,7 +752,7 @@ export default function TaxesPage() {
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
         count={selectedTaxIds.size}
-        itemName="tax"
+        itemName={tOverview('tax')}
         isDeleting={isBatchDeleting}
       />
     </div>

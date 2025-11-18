@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslations } from 'next-intl';
 import {
   useCreateInstallmentMutation,
   useUpdateInstallmentMutation,
@@ -39,61 +40,65 @@ import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
 import { toast } from 'sonner';
 
-// Form validation schema
-const installmentSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  description: z.string().max(500).optional(),
-  category: z.string().max(50).optional(),
-  total_amount: z.number()
-    .min(0, 'Total amount must be positive')
-    .refine(
-      (val) => {
-        // Check if number has more than 2 decimal places
-        // Use toFixed to round to 2 decimals and compare
-        const rounded = Math.round(val * 100) / 100;
-        return Math.abs(val - rounded) < 0.00001; // Allow for floating point precision
-      },
-      { message: 'Amount can have at most 2 decimal places' }
-    ),
-  amount_per_payment: z.number().min(0, 'Payment amount must be positive'),
-  currency: z.string().length(3),
-  interest_rate: z.number().min(0).max(100).optional(),
-  frequency: z.enum(['weekly', 'biweekly', 'monthly'] as const),
-  number_of_payments: z.number().min(1, 'Must have at least one payment').optional(),
-  is_active: z.boolean(),
-  start_date: z.string().min(1, 'Start date is required'),
-  first_payment_date: z.string().min(1, 'First payment date is required'),
-  end_date: z.string().optional(),
-});
-
-type FormData = z.infer<typeof installmentSchema>;
-
 interface InstallmentFormProps {
   installmentId?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Bi-weekly' },
-  { value: 'monthly', label: 'Monthly' },
-];
-
-const CATEGORY_OPTIONS = [
-  { value: 'Personal Tech', label: 'Personal Tech' },
-  { value: 'Kitchen Appliances', label: 'Kitchen Appliances' },
-  { value: 'Health Tech', label: 'Health Tech' },
-  { value: 'Home Appliances', label: 'Home Appliances' },
-  { value: 'Miscellaneous', label: 'Miscellaneous' },
-  { value: 'Fitness Equipment', label: 'Fitness Equipment' },
-  { value: 'Housing Goods', label: 'Housing Goods' },
-  { value: 'Vehicle', label: 'Vehicle' },
-  { value: 'Property & Real Estate', label: 'Property & Real Estate' },
-];
-
 export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentFormProps) {
   const isEditing = Boolean(installmentId);
+
+  // Translation hooks
+  const tForm = useTranslations('installments.form');
+  const tCategories = useTranslations('installments.categories');
+  const tFrequencies = useTranslations('installments.frequencies');
+  const tActions = useTranslations('installments.actions');
+
+  // Form validation schema with translated error messages
+  const installmentSchema = z.object({
+    name: z.string().min(1, tForm('nameRequired')).max(100),
+    description: z.string().max(500).optional(),
+    category: z.string().max(50).optional(),
+    total_amount: z.number()
+      .min(0, tForm('totalAmountPositive'))
+      .refine(
+        (val) => {
+          const rounded = Math.round(val * 100) / 100;
+          return Math.abs(val - rounded) < 0.00001;
+        },
+        { message: tForm('amountDecimalPlaces') }
+      ),
+    amount_per_payment: z.number().min(0, tForm('paymentAmountPositive')),
+    currency: z.string().length(3),
+    interest_rate: z.number().min(0).max(100).optional(),
+    frequency: z.enum(['weekly', 'biweekly', 'monthly'] as const),
+    number_of_payments: z.number().min(1, tForm('totalPaymentsMin')).optional(),
+    is_active: z.boolean(),
+    start_date: z.string().min(1, tForm('startDateRequired')),
+    first_payment_date: z.string().min(1, tForm('firstPaymentDateRequired')),
+    end_date: z.string().optional(),
+  });
+
+  type FormData = z.infer<typeof installmentSchema>;
+
+  const FREQUENCY_OPTIONS = [
+    { value: 'weekly', label: tFrequencies('weekly') },
+    { value: 'biweekly', label: tFrequencies('biweekly') },
+    { value: 'monthly', label: tFrequencies('monthly') },
+  ];
+
+  const CATEGORY_OPTIONS = [
+    { value: 'Personal Tech', label: tCategories('personalTech') },
+    { value: 'Kitchen Appliances', label: tCategories('kitchenAppliances') },
+    { value: 'Health Tech', label: tCategories('healthTech') },
+    { value: 'Home Appliances', label: tCategories('homeAppliances') },
+    { value: 'Miscellaneous', label: tCategories('miscellaneous') },
+    { value: 'Fitness Equipment', label: tCategories('fitnessEquipment') },
+    { value: 'Housing Goods', label: tCategories('housingGoods') },
+    { value: 'Vehicle', label: tCategories('vehicle') },
+    { value: 'Property & Real Estate', label: tCategories('propertyRealEstate') },
+  ];
 
   // Local state to track the string value of total_amount while user is typing
   const [totalAmountInput, setTotalAmountInput] = React.useState<string>('');
@@ -267,17 +272,17 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
       if (isEditing && installmentId) {
         await updateInstallment({ id: installmentId, data: submitData }).unwrap();
-        toast.success('Installment updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createInstallment(submitData).unwrap();
-        toast.success('Installment created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
     } catch (error) {
       console.error('Failed to save installment:', error);
-      toast.error(isEditing ? 'Failed to update installment' : 'Failed to create installment');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -302,12 +307,10 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Installment' : 'Add Installment'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the details of your installment or loan.'
-              : 'Add a new installment or loan to track your payment plan.'}
+            {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -318,10 +321,10 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{tForm('name')} *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Car Loan"
+                placeholder={tForm('namePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
@@ -330,10 +333,10 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this installment"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={2}
                 {...register('description')}
               />
@@ -345,13 +348,13 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={tForm('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -365,7 +368,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
             <CurrencyInput
               key={`currency-${existingInstallment?.id || 'new'}-${watch('currency')}`}
-              label="Total Loan Amount"
+              label={tForm('totalLoanAmount')}
               amount={totalAmountInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
@@ -389,7 +392,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="amount_per_payment">Payment Amount *</Label>
+                <Label htmlFor="amount_per_payment">{tForm('paymentAmount')} *</Label>
                 <div className="relative">
                   <Input
                     id="amount_per_payment"
@@ -422,7 +425,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="interest_rate">Interest Rate (%) (Optional)</Label>
+                <Label htmlFor="interest_rate">{tForm('interestRate')}</Label>
                 <Input
                   id="interest_rate"
                   type="number"
@@ -440,7 +443,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="frequency">Payment Frequency *</Label>
+                <Label htmlFor="frequency">{tForm('paymentFrequency')} *</Label>
                 <Select
                   value={watch('frequency')}
                   onValueChange={(value) =>
@@ -461,17 +464,17 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="number_of_payments">Total # of Payments</Label>
+                <Label htmlFor="number_of_payments">{tForm('totalPayments')}</Label>
                 <Input
                   id="number_of_payments"
                   type="number"
-                  placeholder="Auto-calculated"
+                  placeholder={tForm('totalPaymentsPlaceholder')}
                   {...register('number_of_payments', { valueAsNumber: true })}
                   disabled
                   className="bg-muted cursor-not-allowed"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Calculated automatically based on loan amount, payment amount, and interest rate
+                  {tForm('totalPaymentsDescription')}
                 </p>
                 {errors.number_of_payments && (
                   <p className="text-sm text-destructive">
@@ -483,7 +486,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
             {isEditing && existingInstallment && (
               <div className="space-y-2">
-                <Label htmlFor="payments_made">Payments Made</Label>
+                <Label htmlFor="payments_made">{tForm('paymentsMade')}</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="payments_made"
@@ -493,7 +496,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                     className="bg-muted cursor-not-allowed"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Calculated automatically based on current date
+                    {tForm('paymentsMadeDescription')}
                   </p>
                 </div>
               </div>
@@ -501,7 +504,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="start_date">Start Date *</Label>
+                <Label htmlFor="start_date">{tForm('startDate')} *</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -517,7 +520,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="first_payment_date">First Payment Date *</Label>
+                <Label htmlFor="first_payment_date">{tForm('firstPaymentDate')} *</Label>
                 <Input
                   id="first_payment_date"
                   type="date"
@@ -534,7 +537,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="end_date">Payoff Date (Optional)</Label>
+              <Label htmlFor="end_date">{tForm('payoffDate')}</Label>
               <Input
                 id="end_date"
                 type="date"
@@ -543,12 +546,12 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                 style={{ colorScheme: 'light' }}
               />
               <p className="text-xs text-muted-foreground">
-                This will be calculated automatically if not provided
+                {tForm('payoffDateDescription')}
               </p>
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">Active Installment</Label>
+              <Label htmlFor="is_active">{tForm('activeInstallment')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -558,14 +561,14 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? 'Saving...'
+                  ? tForm('saving')
                   : isEditing
-                  ? 'Update Installment'
-                  : 'Add Installment'}
+                  ? tForm('update')
+                  : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

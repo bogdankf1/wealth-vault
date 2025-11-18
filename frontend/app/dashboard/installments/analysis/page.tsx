@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { CreditCard, DollarSign, CalendarDays, TrendingUp, Percent, Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetInstallmentStatsQuery } from '@/lib/api/installmentsApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -16,6 +17,10 @@ import { Badge } from '@/components/ui/badge';
 import { MonthFilter } from '@/components/ui/month-filter';
 
 export default function InstallmentsAnalysisPage() {
+  // Translation hooks
+  const tAnalysis = useTranslations('installments.analysis');
+  const tCommon = useTranslations('common');
+
   const [selectedMonth, setSelectedMonth] = React.useState<string | null>(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -72,7 +77,8 @@ export default function InstallmentsAnalysisPage() {
         <MonthFilter
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
-          label="Filter by month:"
+          label={tCommon('common.filterByMonth')}
+          clearLabel={tCommon('common.clear')}
         />
       </div>
 
@@ -80,8 +86,8 @@ export default function InstallmentsAnalysisPage() {
       {isEmpty && (
         <EmptyState
           icon={CreditCard}
-          title="No installment data"
-          description="Start adding installment plans to see detailed analysis or select a different month."
+          title={tAnalysis('noData')}
+          description={tAnalysis('noDataDescription')}
         />
       )}
 
@@ -94,14 +100,14 @@ export default function InstallmentsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-blue-600" />
-              Total Installments
+              {tAnalysis('totalInstallments')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <p className="text-5xl font-bold text-blue-600">{stats.total_installments}</p>
               <p className="text-sm text-muted-foreground">
-                Installment plans in your account
+                {tAnalysis('installmentPlansInAccount')}
               </p>
             </div>
           </CardContent>
@@ -112,7 +118,7 @@ export default function InstallmentsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
-              Active Installments
+              {tAnalysis('activeInstallments')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -126,7 +132,7 @@ export default function InstallmentsAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Currently active payment plans
+                {tAnalysis('currentlyActivePlans')}
               </p>
             </div>
           </CardContent>
@@ -138,10 +144,10 @@ export default function InstallmentsAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Total Debt Overview
+            {tAnalysis('totalDebtOverview')}
           </CardTitle>
           <CardDescription>
-            Your total installment debt and payment progress
+            {tAnalysis('totalDebtDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -156,13 +162,13 @@ export default function InstallmentsAnalysisPage() {
                 />
               </p>
               <Badge variant={progressPercentage >= 50 ? 'default' : 'secondary'}>
-                {progressPercentage.toFixed(1)}% paid
+                {progressPercentage.toFixed(1)}% {tAnalysis('paid')}
               </Badge>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Paid</span>
+                <span className="font-medium">{tAnalysis('paid')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
                     amount={stats.total_paid}
@@ -179,7 +185,7 @@ export default function InstallmentsAnalysisPage() {
                 />
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Remaining</span>
+                <span className="font-medium">{tAnalysis('remaining')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
                     amount={remainingDebt}
@@ -201,7 +207,7 @@ export default function InstallmentsAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-indigo-600" />
-              Monthly Payment
+              {tAnalysis('monthlyPayment')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -215,7 +221,7 @@ export default function InstallmentsAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Total monthly installment payments
+                {tAnalysis('totalMonthlyPayments')}
               </p>
             </div>
           </CardContent>
@@ -227,7 +233,7 @@ export default function InstallmentsAnalysisPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Percent className="h-4 w-4 text-orange-600" />
-                Average Interest Rate
+                {tAnalysis('averageInterestRate')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -236,7 +242,7 @@ export default function InstallmentsAnalysisPage() {
                   {stats.average_interest_rate.toFixed(2)}%
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Across all active installments
+                  {tAnalysis('acrossAllActive')}
                 </p>
               </div>
             </CardContent>
@@ -249,7 +255,7 @@ export default function InstallmentsAnalysisPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-green-600" />
-                Projected Debt-Free Date
+                {tAnalysis('projectedDebtFreeDate')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -262,7 +268,7 @@ export default function InstallmentsAnalysisPage() {
                   })}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Expected completion of all payments
+                  {tAnalysis('expectedCompletion')}
                 </p>
               </div>
             </CardContent>
@@ -274,9 +280,9 @@ export default function InstallmentsAnalysisPage() {
       {installmentsByCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Debt by Category</CardTitle>
+            <CardTitle>{tAnalysis('debtByCategory')}</CardTitle>
             <CardDescription>
-              Total debt amount across different categories
+              {tAnalysis('debtByCategoryDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -323,9 +329,9 @@ export default function InstallmentsAnalysisPage() {
       {installmentsByFrequency.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Installments by Frequency</CardTitle>
+            <CardTitle>{tAnalysis('installmentsByFrequency')}</CardTitle>
             <CardDescription>
-              Distribution of installments by payment frequency
+              {tAnalysis('installmentsByFrequencyDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -347,7 +353,7 @@ export default function InstallmentsAnalysisPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-muted-foreground">
-                          {count} installment{count !== 1 ? 's' : ''}
+                          {count} {count === 1 ? tAnalysis('installment') : tAnalysis('installments')}
                         </span>
                         <Badge variant="secondary">{percentage.toFixed(1)}%</Badge>
                       </div>

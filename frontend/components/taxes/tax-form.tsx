@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -38,34 +39,6 @@ import {
   useGetTaxQuery,
 } from '@/lib/api/taxesApi';
 
-// Form validation schema
-const taxSchema = z.object({
-  name: z.string().min(1, 'Tax name is required').max(100),
-  description: z.string().max(500).optional(),
-  tax_type: z.enum(['fixed', 'percentage']),
-  frequency: z.enum(['monthly', 'quarterly', 'annually']),
-  fixed_amount: z.number().min(0, 'Amount cannot be negative').optional(),
-  currency: z.string().length(3).or(z.literal('')).optional(),
-  percentage: z.number().min(0, 'Percentage cannot be negative').max(100, 'Percentage cannot exceed 100').optional(),
-  is_active: z.boolean(),
-  notes: z.string().max(500).optional(),
-}).refine(
-  (data) => {
-    if (data.tax_type === 'fixed') {
-      return data.fixed_amount !== undefined && data.fixed_amount > 0 && data.currency && data.currency.length === 3;
-    } else if (data.tax_type === 'percentage') {
-      return data.percentage !== undefined && data.percentage > 0;
-    }
-    return true;
-  },
-  {
-    message: 'Please provide either a fixed amount or percentage',
-    path: ['fixed_amount'],
-  }
-);
-
-type FormData = z.infer<typeof taxSchema>;
-
 interface TaxFormProps {
   taxId?: string | null;
   isOpen: boolean;
@@ -73,8 +46,39 @@ interface TaxFormProps {
 }
 
 export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
+  const tForm = useTranslations('taxes.form');
+  const tActions = useTranslations('taxes.actions');
+
   const isEditing = Boolean(taxId);
   const [amountInput, setAmountInput] = React.useState<string>('');
+
+  // Form validation schema (moved inside component to access translations)
+  const taxSchema = z.object({
+    name: z.string().min(1, tForm('taxNameRequired')).max(100),
+    description: z.string().max(500).optional(),
+    tax_type: z.enum(['fixed', 'percentage']),
+    frequency: z.enum(['monthly', 'quarterly', 'annually']),
+    fixed_amount: z.number().min(0, tForm('amountNegativeError')).optional(),
+    currency: z.string().length(3).or(z.literal('')).optional(),
+    percentage: z.number().min(0, tForm('percentageNegativeError')).max(100, tForm('percentageMaxError')).optional(),
+    is_active: z.boolean(),
+    notes: z.string().max(500).optional(),
+  }).refine(
+    (data) => {
+      if (data.tax_type === 'fixed') {
+        return data.fixed_amount !== undefined && data.fixed_amount > 0 && data.currency && data.currency.length === 3;
+      } else if (data.tax_type === 'percentage') {
+        return data.percentage !== undefined && data.percentage > 0;
+      }
+      return true;
+    },
+    {
+      message: tForm('fixedAmountOrPercentageError'),
+      path: ['fixed_amount'],
+    }
+  );
+
+  type FormData = z.infer<typeof taxSchema>;
 
   const {
     data: existingTax,
@@ -195,10 +199,10 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
       if (isEditing && taxId) {
         await updateTax({ id: taxId, data: submitData }).unwrap();
-        toast.success('Tax updated successfully');
+        toast.success(tForm('updateSuccess'));
       } else {
         await createTax(submitData).unwrap();
-        toast.success('Tax created successfully');
+        toast.success(tForm('createSuccess'));
       }
 
       onClose();
@@ -206,7 +210,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
       setAmountInput('');
     } catch (error) {
       console.error('Failed to save tax:', error);
-      toast.error(isEditing ? 'Failed to update tax' : 'Failed to create tax');
+      toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
 
@@ -231,12 +235,12 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Tax' : 'Add Tax'}
+            {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Update the tax details.'
-              : 'Add a new tax obligation or estimate.'}
+              ? tForm('editDescription')
+              : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -247,10 +251,10 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Tax Name *</Label>
+              <Label htmlFor="name">{tForm('taxName')} *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Federal Income Tax, State Tax"
+                placeholder={tForm('taxNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
@@ -259,10 +263,10 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tForm('description')}</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of the tax"
+                placeholder={tForm('descriptionPlaceholder')}
                 rows={3}
                 {...register('description')}
               />
@@ -275,7 +279,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="tax_type">Tax Type *</Label>
+                <Label htmlFor="tax_type">{tForm('taxType')} *</Label>
                 <Select
                   value={watch('tax_type')}
                   onValueChange={(value: 'fixed' | 'percentage') => {
@@ -290,17 +294,17 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select tax type" />
+                    <SelectValue placeholder={tForm('taxTypePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fixed">Fixed Amount</SelectItem>
-                    <SelectItem value="percentage">Percentage of Income</SelectItem>
+                    <SelectItem value="fixed">{tForm('typeFixed')}</SelectItem>
+                    <SelectItem value="percentage">{tForm('typePercentage')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="frequency">Payment Frequency *</Label>
+                <Label htmlFor="frequency">{tForm('frequency')} *</Label>
                 <Select
                   value={watch('frequency')}
                   onValueChange={(value: 'monthly' | 'quarterly' | 'annually') => {
@@ -308,12 +312,12 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
+                    <SelectValue placeholder={tForm('frequencyPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="quarterly">Quarterly</SelectItem>
-                    <SelectItem value="annually">Annually</SelectItem>
+                    <SelectItem value="monthly">{tForm('frequencyMonthly')}</SelectItem>
+                    <SelectItem value="quarterly">{tForm('frequencyQuarterly')}</SelectItem>
+                    <SelectItem value="annually">{tForm('frequencyAnnually')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -322,7 +326,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
             {taxType === 'fixed' ? (
               <CurrencyInput
                 key={`currency-${existingTax?.id || 'new'}-${watch('currency')}`}
-                label="Fixed Amount"
+                label={tForm('fixedAmountLabel')}
                 amount={amountInput}
                 currency={watch('currency')}
                 onAmountChange={(value) => {
@@ -342,7 +346,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
               />
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="percentage">Percentage of Income *</Label>
+                <Label htmlFor="percentage">{tForm('percentageLabel')} *</Label>
                 <div className="relative">
                   <Input
                     id="percentage"
@@ -350,7 +354,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                     step="0.01"
                     min="0"
                     max="100"
-                    placeholder="e.g., 25"
+                    placeholder={tForm('percentagePlaceholder')}
                     {...register('percentage', { valueAsNumber: true })}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -363,16 +367,16 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  This will be calculated as a percentage of your total monthly income
+                  {tForm('percentageHelp')}
                 </p>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{tForm('notes')}</Label>
               <Textarea
                 id="notes"
-                placeholder="Additional notes about this tax..."
+                placeholder={tForm('notesPlaceholder')}
                 rows={3}
                 {...register('notes')}
               />
@@ -385,9 +389,9 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="is_active">Active</Label>
+                <Label htmlFor="is_active">{tForm('isActiveLabel')}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Include this tax in calculations
+                  {tForm('isActiveHelp')}
                 </p>
               </div>
               <Switch
@@ -399,14 +403,14 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {tActions('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? 'Saving...'
+                  ? tForm('saving')
                   : isEditing
-                  ? 'Update Tax'
-                  : 'Add Tax'}
+                  ? tForm('update')
+                  : tForm('create')}
               </Button>
             </DialogFooter>
           </form>

@@ -29,10 +29,20 @@ export interface SortFilterProps {
   onSortFieldChange: (field: SortField) => void;
   onSortDirectionChange: (direction: SortDirection) => void;
   sortOptions?: SortOption[];
+  sortByLabel?: string;
+  // Localization props for sort direction labels
+  sortAZLabel?: string;
+  sortZALabel?: string;
+  sortLowToHighLabel?: string;
+  sortHighToLowLabel?: string;
+  sortOldestFirstLabel?: string;
+  sortNewestFirstLabel?: string;
+  sortAscendingLabel?: string;
+  sortDescendingLabel?: string;
 }
 
 const DEFAULT_SORT_OPTIONS: SortOption[] = [
-  { field: 'name', label: 'Name' },
+  { field: 'name', label: 'Name' }, // Fallback, should be overridden by parent
   { field: 'amount', label: 'Amount' },
   { field: 'date', label: 'Date' },
 ];
@@ -43,6 +53,15 @@ export function SortFilter({
   onSortFieldChange,
   onSortDirectionChange,
   sortOptions = DEFAULT_SORT_OPTIONS,
+  sortByLabel = 'Sort by:',
+  sortAZLabel = 'A-Z',
+  sortZALabel = 'Z-A',
+  sortLowToHighLabel = 'Low to High',
+  sortHighToLowLabel = 'High to Low',
+  sortOldestFirstLabel = 'Oldest First',
+  sortNewestFirstLabel = 'Newest First',
+  sortAscendingLabel = 'Ascending',
+  sortDescendingLabel = 'Descending',
 }: SortFilterProps) {
   const toggleDirection = () => {
     onSortDirectionChange(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -59,18 +78,18 @@ export function SortFilter({
     const fieldLabel = sortOptions.find((opt) => opt.field === sortField)?.label || 'Field';
 
     if (sortField === 'name') {
-      return sortDirection === 'asc' ? 'A-Z' : 'Z-A';
+      return sortDirection === 'asc' ? sortAZLabel : sortZALabel;
     } else if (sortField === 'amount') {
-      return sortDirection === 'asc' ? 'Low to High' : 'High to Low';
+      return sortDirection === 'asc' ? sortLowToHighLabel : sortHighToLowLabel;
     } else if (sortField === 'date') {
-      return sortDirection === 'asc' ? 'Oldest First' : 'Newest First';
+      return sortDirection === 'asc' ? sortOldestFirstLabel : sortNewestFirstLabel;
     }
-    return sortDirection === 'asc' ? 'Ascending' : 'Descending';
+    return sortDirection === 'asc' ? sortAscendingLabel : sortDescendingLabel;
   };
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground whitespace-nowrap">Sort by:</span>
+      <span className="text-sm text-muted-foreground whitespace-nowrap">{sortByLabel}</span>
 
       {/* Sort Field Selector */}
       <Select value={sortField} onValueChange={(value) => onSortFieldChange(value as SortField)}>

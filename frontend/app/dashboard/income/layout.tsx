@@ -6,21 +6,24 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutGrid, BarChart3, History, Archive } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import type { ModuleTab } from '@/types/module-layout';
 import { IncomeActionsContext } from './context';
 
-const INCOME_TABS: ModuleTab[] = [
-  { value: 'overview', label: 'Overview', icon: LayoutGrid, href: '/dashboard/income/overview' },
-  { value: 'analysis', label: 'Analysis', icon: BarChart3, href: '/dashboard/income/analysis' },
-  { value: 'history', label: 'History', icon: History, href: '/dashboard/income/history' },
-  { value: 'archive', label: 'Archive', icon: Archive, href: '/dashboard/income/archive' },
-];
-
 export default function IncomeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
+  const tLayout = useTranslations('income.layout');
+  const tNav = useTranslations('income.navigation');
+
+  const INCOME_TABS: ModuleTab[] = [
+    { value: 'overview', label: tNav('overview'), icon: LayoutGrid, href: '/dashboard/income/overview' },
+    { value: 'analysis', label: tNav('analysis'), icon: BarChart3, href: '/dashboard/income/analysis' },
+    { value: 'history', label: tNav('history'), icon: History, href: '/dashboard/income/history' },
+    { value: 'archive', label: tNav('archive'), icon: Archive, href: '/dashboard/income/archive' },
+  ];
 
   return (
     <IncomeActionsContext.Provider value={{ setActions }}>
@@ -29,10 +32,10 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
         <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              Income Tracking
+              {tLayout('title')}
             </h1>
             <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Track and manage your income sources
+              {tLayout('description')}
             </p>
           </div>
           {actions && (

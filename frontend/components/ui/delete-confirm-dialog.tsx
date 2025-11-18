@@ -23,6 +23,9 @@ interface DeleteConfirmDialogProps {
   description?: string;
   isDeleting?: boolean;
   itemName?: string;
+  cancelLabel?: string;
+  deleteLabel?: string;
+  deletingLabel?: string;
 }
 
 export function DeleteConfirmDialog({
@@ -33,6 +36,9 @@ export function DeleteConfirmDialog({
   description,
   isDeleting = false,
   itemName = 'item',
+  cancelLabel = 'Cancel',
+  deleteLabel = 'Delete',
+  deletingLabel = 'Deleting...',
 }: DeleteConfirmDialogProps) {
   const defaultDescription = `Are you sure you want to delete this ${itemName}? This action cannot be undone.`;
 
@@ -46,13 +52,13 @@ export function DeleteConfirmDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isDeleting}
             className="bg-destructive text-white hover:bg-destructive/90"
           >
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            {isDeleting ? deletingLabel : deleteLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

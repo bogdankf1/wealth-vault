@@ -13,6 +13,7 @@ import { useListInstallmentsQuery } from '@/lib/api/installmentsApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, addWeeks, addMonths } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
 interface PlannedInstallmentsWidgetProps {
   selectedMonth: string; // YYYY-MM format
@@ -67,6 +68,7 @@ function getPaymentInMonth(installment: { is_active: boolean; first_payment_date
 }
 
 export function PlannedInstallmentsWidget({ selectedMonth }: PlannedInstallmentsWidgetProps) {
+  const t = useTranslations('dashboard.widgets.plannedInstallments');
   const { data: installmentsData, isLoading, error } = useListInstallmentsQuery({ is_active: true });
   const { data: preferences } = useGetMyPreferencesQuery();
   const displayCurrency = preferences?.display_currency || preferences?.currency;
@@ -90,9 +92,9 @@ export function PlannedInstallmentsWidget({ selectedMonth }: PlannedInstallments
         <CardHeader>
           <div className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-primary" />
-            <CardTitle>Planned Installments</CardTitle>
+            <CardTitle>{t('title')}</CardTitle>
           </div>
-          <CardDescription>Installment payments for selected month</CardDescription>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -109,13 +111,13 @@ export function PlannedInstallmentsWidget({ selectedMonth }: PlannedInstallments
         <CardHeader>
           <div className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-primary" />
-            <CardTitle>Planned Installments</CardTitle>
+            <CardTitle>{t('title')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
             <AlertDescription>
-              Failed to load installments. Please try again later.
+              {t('error')}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -129,20 +131,20 @@ export function PlannedInstallmentsWidget({ selectedMonth }: PlannedInstallments
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-primary" />
-            <CardTitle>Planned Installments</CardTitle>
+            <CardTitle>{t('title')}</CardTitle>
           </div>
           {upcomingInstallments && upcomingInstallments.length > 0 && (
             <Badge variant="secondary">{upcomingInstallments.length}</Badge>
           )}
         </div>
-        <CardDescription>Installment payments for selected month</CardDescription>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {!upcomingInstallments || upcomingInstallments.length === 0 ? (
           <div className="text-center py-8">
             <Wallet className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
             <p className="text-sm text-muted-foreground">
-              No installment payments planned for this month
+              {t('emptyState')}
             </p>
           </div>
         ) : (
@@ -178,7 +180,10 @@ export function PlannedInstallmentsWidget({ selectedMonth }: PlannedInstallments
                       />
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Payment {installment!.nextPaymentNumber} of {installment!.number_of_payments}
+                      {t('paymentOf', {
+                        current: installment!.nextPaymentNumber,
+                        total: installment!.number_of_payments
+                      })}
                     </div>
                   </div>
                 </div>

@@ -10,61 +10,69 @@ import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useCreateCheckoutSessionMutation, useGetTiersQuery } from '@/lib/api/billingApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { useTranslations } from 'next-intl';
 
 interface TierFeature {
   name: string;
   included: boolean;
 }
 
-// Feature mappings for each tier (since backend doesn't return detailed features)
-const tierFeaturesMap: Record<string, TierFeature[]> = {
-  starter: [
-    { name: 'Up to 3 income sources', included: true },
-    { name: 'Expense tracking', included: true },
-    { name: 'Bank statement upload', included: true },
-    { name: 'Up to 3 savings accounts', included: true },
-    { name: 'Up to 5 subscriptions', included: true },
-    { name: 'Up to 2 installments', included: true },
-    { name: 'Portfolio tracking', included: false },
-    { name: 'Financial goals', included: false },
-    { name: 'Debt tracking', included: false },
-    { name: 'Tax tracking', included: false },
-    { name: 'AI insights', included: false },
-  ],
-  growth: [
-    { name: 'Up to 10 income sources', included: true },
-    { name: 'Expense tracking', included: true },
-    { name: 'AI categorization', included: true },
-    { name: 'Bank statement upload', included: true },
-    { name: 'Up to 10 savings accounts', included: true },
-    { name: 'Multi-currency support', included: true },
-    { name: 'Up to 20 portfolio assets', included: true },
-    { name: 'Financial goals', included: true },
-    { name: 'Up to 20 subscriptions', included: true },
-    { name: 'Up to 10 installments', included: true },
-    { name: 'Debt tracking', included: false },
-    { name: 'Tax tracking', included: false },
-    { name: 'AI insights', included: false },
-  ],
-  wealth: [
-    { name: 'Unlimited income sources', included: true },
-    { name: 'Unlimited expenses', included: true },
-    { name: 'AI categorization', included: true },
-    { name: 'AI insights', included: true },
-    { name: 'Bank statement upload', included: true },
-    { name: 'Unlimited savings accounts', included: true },
-    { name: 'Multi-currency support', included: true },
-    { name: 'Unlimited portfolio assets', included: true },
-    { name: 'Real-time stock prices', included: true },
-    { name: 'Financial goals', included: true },
-    { name: 'Unlimited subscriptions', included: true },
-    { name: 'Unlimited installments', included: true },
-    { name: 'Debt tracking', included: true },
-    { name: 'Tax tracking', included: true },
-  ],
-};
-
 export default function PricingPage() {
+  const tPage = useTranslations('pricing.page');
+  const tButtons = useTranslations('pricing.buttons');
+  const tFooter = useTranslations('pricing.footer');
+  const tDescriptions = useTranslations('pricing.descriptions');
+  const tFeaturesStarter = useTranslations('pricing.features.starter');
+  const tFeaturesGrowth = useTranslations('pricing.features.growth');
+  const tFeaturesWealth = useTranslations('pricing.features.wealth');
+
+  // Feature mappings for each tier (since backend doesn't return detailed features)
+  const tierFeaturesMap: Record<string, TierFeature[]> = {
+    starter: [
+      { name: tFeaturesStarter('incomeSources'), included: true },
+      { name: tFeaturesStarter('expenseTracking'), included: true },
+      { name: tFeaturesStarter('bankUpload'), included: true },
+      { name: tFeaturesStarter('savingsAccounts'), included: true },
+      { name: tFeaturesStarter('subscriptions'), included: true },
+      { name: tFeaturesStarter('installments'), included: true },
+      { name: tFeaturesStarter('portfolioTracking'), included: false },
+      { name: tFeaturesStarter('financialGoals'), included: false },
+      { name: tFeaturesStarter('debtTracking'), included: false },
+      { name: tFeaturesStarter('taxTracking'), included: false },
+      { name: tFeaturesStarter('aiInsights'), included: false },
+    ],
+    growth: [
+      { name: tFeaturesGrowth('incomeSources'), included: true },
+      { name: tFeaturesGrowth('expenseTracking'), included: true },
+      { name: tFeaturesGrowth('aiCategorization'), included: true },
+      { name: tFeaturesGrowth('bankUpload'), included: true },
+      { name: tFeaturesGrowth('savingsAccounts'), included: true },
+      { name: tFeaturesGrowth('multiCurrency'), included: true },
+      { name: tFeaturesGrowth('portfolioAssets'), included: true },
+      { name: tFeaturesGrowth('financialGoals'), included: true },
+      { name: tFeaturesGrowth('subscriptions'), included: true },
+      { name: tFeaturesGrowth('installments'), included: true },
+      { name: tFeaturesGrowth('debtTracking'), included: false },
+      { name: tFeaturesGrowth('taxTracking'), included: false },
+      { name: tFeaturesGrowth('aiInsights'), included: false },
+    ],
+    wealth: [
+      { name: tFeaturesWealth('incomeSources'), included: true },
+      { name: tFeaturesWealth('expenses'), included: true },
+      { name: tFeaturesWealth('aiCategorization'), included: true },
+      { name: tFeaturesWealth('aiInsights'), included: true },
+      { name: tFeaturesWealth('bankUpload'), included: true },
+      { name: tFeaturesWealth('savingsAccounts'), included: true },
+      { name: tFeaturesWealth('multiCurrency'), included: true },
+      { name: tFeaturesWealth('portfolioAssets'), included: true },
+      { name: tFeaturesWealth('stockPrices'), included: true },
+      { name: tFeaturesWealth('financialGoals'), included: true },
+      { name: tFeaturesWealth('subscriptions'), included: true },
+      { name: tFeaturesWealth('installments'), included: true },
+      { name: tFeaturesWealth('debtTracking'), included: true },
+      { name: tFeaturesWealth('taxTracking'), included: true },
+    ],
+  };
   const router = useRouter();
   const { data: user } = useGetCurrentUserQuery();
   const { data: tiers, isLoading: tiersLoading } = useGetTiersQuery();
@@ -118,10 +126,10 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Choose Your Plan
+            {tPage('title')}
           </h1>
           <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
-            Start free and upgrade as you grow. All plans include a 14-day money-back guarantee.
+            {tPage('subtitle')}
           </p>
         </div>
 
@@ -169,13 +177,15 @@ export default function PricingPage() {
                   >
                     {isRecommended && (
                       <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold rounded-bl-lg rounded-tr-lg">
-                        RECOMMENDED
+                        {tPage('recommended')}
                       </div>
                     )}
 
                     <CardHeader className="pb-4">
                       <CardTitle className="text-2xl">{tier.display_name}</CardTitle>
-                      <CardDescription className="mt-2">{tier.description}</CardDescription>
+                      <CardDescription className="mt-2">
+                        {tDescriptions(tier.name as 'starter' | 'growth' | 'wealth')}
+                      </CardDescription>
                       <div className="mt-4">
                         <span className="text-4xl font-bold tracking-tight text-foreground">
                           <CurrencyDisplay
@@ -186,7 +196,7 @@ export default function PricingPage() {
                             showCode={false}
                           />
                         </span>
-                        <span className="text-muted-foreground">/month</span>
+                        <span className="text-muted-foreground">{tPage('perMonth')}</span>
                       </div>
                     </CardHeader>
 
@@ -222,12 +232,12 @@ export default function PricingPage() {
                         disabled={isCurrentTier || (isLoading && loadingTier === tier.name)}
                       >
                         {isCurrentTier
-                          ? 'Current Plan'
+                          ? tButtons('currentPlan')
                           : isLoading && loadingTier === tier.name
-                          ? 'Loading...'
+                          ? tButtons('loading')
                           : tier.price_monthly === 0
-                          ? 'Get Started'
-                          : 'Subscribe'}
+                          ? tButtons('getStarted')
+                          : tButtons('subscribe')}
                       </Button>
                     </CardFooter>
                   </Card>
@@ -235,7 +245,7 @@ export default function PricingPage() {
               })
           ) : (
             <div className="col-span-3 text-center py-12">
-              <p className="text-muted-foreground">No pricing tiers available at this time.</p>
+              <p className="text-muted-foreground">{tPage('empty')}</p>
             </div>
           )}
         </div>
@@ -243,9 +253,9 @@ export default function PricingPage() {
         {/* FAQ or Additional Info */}
         <div className="mt-16 text-center">
           <p className="text-muted-foreground">
-            All plans can be upgraded or cancelled at any time. Need help choosing?{' '}
+            {tFooter('text')}{' '}
             <a href="mailto:support@wealthvault.com" className="text-primary hover:underline">
-              Contact us
+              {tFooter('contactLink')}
             </a>
           </p>
         </div>

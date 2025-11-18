@@ -7,31 +7,11 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { LayoutGrid, Archive, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { DebtsActionsContext } from './context';
-
-const DEBTS_TABS: ModuleTab[] = [
-  {
-    value: 'overview',
-    label: 'Overview',
-    icon: LayoutGrid,
-    href: '/dashboard/debts/overview',
-  },
-  {
-    value: 'analysis',
-    label: 'Analysis',
-    icon: BarChart3,
-    href: '/dashboard/debts/analysis',
-  },
-  {
-    value: 'archive',
-    label: 'Archive',
-    icon: Archive,
-    href: '/dashboard/debts/archive',
-  },
-];
 
 export default function DebtsLayout({
   children,
@@ -41,6 +21,31 @@ export default function DebtsLayout({
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
 
+  // Translation hooks
+  const tLayout = useTranslations('debts.layout');
+  const tNav = useTranslations('debts.navigation');
+
+  const DEBTS_TABS: ModuleTab[] = [
+    {
+      value: 'overview',
+      label: tNav('overview'),
+      icon: LayoutGrid,
+      href: '/dashboard/debts/overview',
+    },
+    {
+      value: 'analysis',
+      label: tNav('analysis'),
+      icon: BarChart3,
+      href: '/dashboard/debts/analysis',
+    },
+    {
+      value: 'archive',
+      label: tNav('archive'),
+      icon: Archive,
+      href: '/dashboard/debts/archive',
+    },
+  ];
+
   return (
     <DebtsActionsContext.Provider value={{ setActions }}>
       <div className="container mx-auto p-4 md:p-6">
@@ -48,10 +53,10 @@ export default function DebtsLayout({
         <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              Debts
+              {tLayout('title')}
             </h1>
             <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Track money owed to you
+              {tLayout('description')}
             </p>
           </div>
           {actions && (

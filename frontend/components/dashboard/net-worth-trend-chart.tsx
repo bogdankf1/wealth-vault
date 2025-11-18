@@ -23,6 +23,7 @@ import {
 import { TrendingUp, TrendingDown, Wallet, Info } from 'lucide-react';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 import { getChartColor, INCOME_COLOR, EXPENSE_COLOR } from '@/lib/utils/chart-colors';
+import { useTranslations } from 'next-intl';
 
 interface NetWorthDataPoint {
   month: string;
@@ -54,6 +55,8 @@ export function NetWorthTrendChart({
   chartType = 'area',
   currency = 'USD',
 }: NetWorthTrendChartProps) {
+  const t = useTranslations('analytics.netWorthTrend');
+
   // Get currency data - must be called before any returns
   const { data: currencyData } = useGetCurrencyQuery(currency);
   const currencySymbol = currencyData?.symbol || '$';
@@ -71,7 +74,7 @@ export function NetWorthTrendChart({
       <Card className="p-6">
         <div className="flex flex-col items-center justify-center h-[400px] text-gray-500">
           <Wallet className="h-12 w-12 mb-4 opacity-50" />
-          <p>No net worth data available for the selected period</p>
+          <p>{t('emptyState')}</p>
         </div>
       </Card>
     );
@@ -106,21 +109,21 @@ export function NetWorthTrendChart({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getChartColor(1) }} />
-              <span className="text-sm">Net Worth:</span>
+              <span className="text-sm">{t('categories.netWorth')}:</span>
               <span className="font-semibold text-blue-600 dark:text-blue-400">
                 {formatCurrency(payload[0]?.value || 0)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: INCOME_COLOR }} />
-              <span className="text-sm">Assets:</span>
+              <span className="text-sm">{t('categories.assets')}:</span>
               <span className="font-semibold text-green-600 dark:text-green-400">
                 {formatCurrency(payload[1]?.value || 0)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: EXPENSE_COLOR }} />
-              <span className="text-sm">Liabilities:</span>
+              <span className="text-sm">{t('categories.liabilities')}:</span>
               <span className="font-semibold text-red-600 dark:text-red-400">
                 {formatCurrency(payload[2]?.value || 0)}
               </span>
@@ -137,18 +140,18 @@ export function NetWorthTrendChart({
       <Card className="p-6">
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold">Net Worth Trend</h3>
+            <h3 className="text-lg font-semibold">{t('title')}</h3>
             <ChartTooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="max-w-xs">Visualizes net worth changes over time. Net Worth = Assets (portfolio + savings) - Liabilities (debts). Helps track wealth building progress.</p>
+                <p className="max-w-xs">{t('tooltip')}</p>
               </TooltipContent>
             </ChartTooltip>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Track your wealth growth over time
+            {t('description')}
           </p>
         </div>
 
@@ -156,7 +159,7 @@ export function NetWorthTrendChart({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10">
           <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
-            Current Net Worth
+            {t('stats.current')}
           </p>
           <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
             {formatCurrency(currentNetWorth)}
@@ -178,7 +181,7 @@ export function NetWorthTrendChart({
             ) : (
               <TrendingDown className="h-3 w-3" />
             )}
-            <p className="text-xs font-medium">Period Change</p>
+            <p className="text-xs font-medium">{t('stats.periodChange')}</p>
           </div>
           <p className={`text-lg font-bold ${
             isPositive
@@ -194,7 +197,7 @@ export function NetWorthTrendChart({
 
         <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
           <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
-            Peak Net Worth
+            {t('stats.peak')}
           </p>
           <p className="text-lg font-bold">
             {formatCurrency(highestNetWorth)}
@@ -203,7 +206,7 @@ export function NetWorthTrendChart({
 
         <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
           <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
-            Starting Point
+            {t('stats.starting')}
           </p>
           <p className="text-lg font-bold">
             {formatCurrency(startingNetWorth)}
@@ -260,7 +263,7 @@ export function NetWorthTrendChart({
               stroke={getChartColor(1)}
               strokeWidth={3}
               fill="url(#netWorthGradient)"
-              name="Net Worth"
+              name={t('categories.netWorth')}
             />
             <Line
               type="monotone"
@@ -269,7 +272,7 @@ export function NetWorthTrendChart({
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}
-              name="Assets"
+              name={t('categories.assets')}
             />
             <Line
               type="monotone"
@@ -278,7 +281,7 @@ export function NetWorthTrendChart({
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}
-              name="Liabilities"
+              name={t('categories.liabilities')}
             />
           </AreaChart>
         ) : (
@@ -323,7 +326,7 @@ export function NetWorthTrendChart({
               strokeWidth={3}
               dot={{ fill: getChartColor(1), r: 4 }}
               activeDot={{ r: 6 }}
-              name="Net Worth"
+              name={t('categories.netWorth')}
             />
             <Line
               type="monotone"
@@ -332,7 +335,7 @@ export function NetWorthTrendChart({
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}
-              name="Assets"
+              name={t('categories.assets')}
             />
             <Line
               type="monotone"
@@ -341,7 +344,7 @@ export function NetWorthTrendChart({
               strokeWidth={1.5}
               strokeDasharray="5 5"
               dot={false}
-              name="Liabilities"
+              name={t('categories.liabilities')}
             />
           </LineChart>
         )}
@@ -350,7 +353,7 @@ export function NetWorthTrendChart({
       {/* Growth Insights */}
       <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Growth Analysis
+          {t('insights.title')}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -367,10 +370,10 @@ export function NetWorthTrendChart({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Overall Trend
+                {t('insights.trend')}
               </p>
               <p className="text-sm font-semibold">
-                {isPositive ? 'Growing' : 'Declining'} ({changePercentage.toFixed(1)}%)
+                {isPositive ? t('insights.growing') : t('insights.declining')} ({changePercentage.toFixed(1)}%)
               </p>
             </div>
           </div>
@@ -381,7 +384,7 @@ export function NetWorthTrendChart({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Average Monthly Change
+                {t('insights.avgMonthly')}
               </p>
               <p className="text-sm font-semibold">
                 {formatCurrency(data.length > 1 ? change / (data.length - 1) : 0)}/mo

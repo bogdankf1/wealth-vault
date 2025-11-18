@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -27,13 +28,14 @@ import { SortFilter, sortItems, type SortField, type SortDirection } from '@/com
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
-const PERIOD_LABELS: Record<string, string> = {
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  yearly: 'Yearly',
-};
-
 export default function BudgetsPage() {
+  // Translation hooks
+  const tOverview = useTranslations('budgets.overview');
+  const tActions = useTranslations('budgets.actions');
+  const tCommon = useTranslations('common');
+  const tPeriod = useTranslations('budgets.period');
+  const tStatus = useTranslations('budgets.status');
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -51,6 +53,13 @@ export default function BudgetsPage() {
 
   // Get context for setting actions
   const { setActions } = React.useContext(BudgetsActionsContext);
+
+  // Period labels with translations
+  const PERIOD_LABELS: Record<string, string> = {
+    monthly: tPeriod('monthly'),
+    quarterly: tPeriod('quarterly'),
+    yearly: tPeriod('yearly'),
+  };
 
   const { data: budgets, isLoading: budgetsLoading } = useListBudgetsQuery({ is_active: true });
 
@@ -154,19 +163,19 @@ export default function BudgetsPage() {
 
     try {
       await deleteBudget(deletingBudgetId).unwrap();
-      toast.success('Budget deleted successfully');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingBudgetId(null);
     } catch (error) {
       console.error('Failed to delete budget:', error);
-      toast.error('Failed to delete budget');
+      toast.error(tOverview('deleteError'));
     }
   };
 
   const handleArchiveBudget = async (id: string) => {
     try {
       await updateBudget({ id, data: { is_active: false } }).unwrap();
-      toast.success('Budget archived successfully');
+      toast.success(tOverview('archiveSuccess'));
       setSelectedBudgetIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -174,7 +183,7 @@ export default function BudgetsPage() {
       });
     } catch (error) {
       console.error('Failed to archive budget:', error);
-      toast.error('Failed to archive budget');
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -194,14 +203,14 @@ export default function BudgetsPage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully archived ${successCount} budget(s)`);
+      toast.success(tOverview('batchArchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to archive ${failCount} budget(s)`);
+      toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
     setSelectedBudgetIds(new Set());
-  }, [selectedBudgetIds, updateBudget]);
+  }, [selectedBudgetIds, updateBudget, tOverview]);
 
   const handleFormClose = () => {
     setShowCreateModal(false);
@@ -241,15 +250,15 @@ export default function BudgetsPage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} budget(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} budget(s)`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedBudgetIds(new Set());
     } catch {
-      toast.error('Failed to delete budgets');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -266,7 +275,7 @@ export default function BudgetsPage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedBudgetIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedBudgetIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -275,19 +284,19 @@ export default function BudgetsPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedBudgetIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedBudgetIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddBudget} size="default" className="w-full sm:w-auto">
           <Wallet className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Budget</span>
+          <span className="truncate">{tOverview('addBudget')}</span>
         </Button>
       </>
     );
 
     return () => setActions(null);
-  }, [selectedBudgetIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddBudget]);
+  }, [selectedBudgetIds.size, setActions, tOverview]);
 
   // Prepare stats cards data from overview
   const statsCards: StatCard[] = overview?.stats
@@ -411,20 +420,23 @@ export default function BudgetsPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search budgets..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tOverview('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+              label={tCommon('common.filterBy')}
+              clearLabel={tCommon('common.clear')}
             />
             <SortFilter
               sortField={sortField}
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -452,14 +464,15 @@ export default function BudgetsPage() {
       <div>
 
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading budgets...</div>
+          <div className="text-center py-8 text-muted-foreground">{tOverview('loading')}</div>
         ) : !budgets || budgets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No budgets yet. Create your first budget to get started!</p>
+            <p>{tOverview('noBudgets')}</p>
+            <p className="text-sm mt-1">{tOverview('noBudgetsDescription')}</p>
           </div>
         ) : !filteredBudgets || filteredBudgets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No budgets found matching your filters.</p>
+            <p>{tOverview('noFilterResults')}</p>
             <Button
               variant="link"
               onClick={() => {
@@ -469,7 +482,7 @@ export default function BudgetsPage() {
               }}
               className="mt-2"
             >
-              Clear Filters
+              {tCommon('common.clear')} {tCommon('common.filterBy').replace(':', '')}
             </Button>
           </div>
         ) : viewMode === 'card' ? (
@@ -479,10 +492,10 @@ export default function BudgetsPage() {
                 <Checkbox
                   checked={selectedBudgetIds.size === filteredBudgets.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all budgets"
+                  aria-label={tOverview('selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedBudgetIds.size === filteredBudgets.length ? 'Deselect all' : 'Select all'}
+                  {selectedBudgetIds.size === filteredBudgets.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -506,7 +519,7 @@ export default function BudgetsPage() {
                       </div>
                     </div>
                     <Badge variant={budget.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {budget.is_active ? 'Active' : 'Inactive'}
+                      {budget.is_active ? tStatus('active') : tStatus('inactive')}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -551,14 +564,14 @@ export default function BudgetsPage() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditBudget(budget.id)}
                       >
                         <Edit className="mr-1 h-3 w-3" />
-                        Edit
+                        {tActions('edit')}
                       </Button>
                       <Button
                         variant="outline"
@@ -566,7 +579,7 @@ export default function BudgetsPage() {
                         onClick={() => handleArchiveBudget(budget.id)}
                       >
                         <Archive className="mr-1 h-3 w-3" />
-                        Archive
+                        {tActions('archive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -575,7 +588,7 @@ export default function BudgetsPage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -594,18 +607,18 @@ export default function BudgetsPage() {
                       <Checkbox
                         checked={selectedBudgetIds.size === filteredBudgets.length && filteredBudgets.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Period</TableHead>
-                    <TableHead className="hidden xl:table-cell">Date Range</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('period')}</TableHead>
+                    <TableHead className="hidden xl:table-cell">{tOverview('dateRange')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -668,7 +681,7 @@ export default function BudgetsPage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <Badge variant={budget.is_active ? 'default' : 'secondary'} className="text-xs">
-                          {budget.is_active ? 'Active' : 'Inactive'}
+                          {budget.is_active ? tStatus('active') : tStatus('inactive')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -723,8 +736,11 @@ export default function BudgetsPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Budget"
-        itemName="budget"
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 

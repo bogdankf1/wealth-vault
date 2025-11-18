@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   useListExpensesQuery,
   useGetExpenseStatsQuery,
@@ -41,17 +42,12 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { ExpenseActionsContext } from '../context';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  one_time: 'One-time',
-  daily: 'Daily',
-  weekly: 'Weekly',
-  biweekly: 'Bi-weekly',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  annually: 'Annually',
-};
-
 export default function ExpensesPage() {
+  const tOverview = useTranslations('expenses.overview');
+  const tActions = useTranslations('expenses.actions');
+  const tStatus = useTranslations('expenses.status');
+  const tFrequency = useTranslations('expenses.frequency');
+  const tCommon = useTranslations('common');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -275,7 +271,7 @@ export default function ExpensesPage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedExpenseIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedExpenseIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -284,44 +280,47 @@ export default function ExpensesPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedExpenseIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedExpenseIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddExpense} size="default" className="w-full sm:w-auto">
           <DollarSign className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Expense</span>
+          <span className="truncate">{tOverview('addExpense')}</span>
         </Button>
       </>
     );
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense]);
+  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, tOverview]);
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
     ? [
         {
-          title: 'Total Expenses',
+          title: tOverview('totalExpenses'),
           value: stats.total_expenses,
           description: selectedMonth
-            ? `${stats.active_expenses} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${stats.active_expenses} active`,
+            ? tOverview('activeIn', {
+                count: stats.active_expenses,
+                month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+              })
+            : `${stats.active_expenses} ${tOverview('active')}`,
           icon: DollarSign,
         },
         {
-          title: selectedMonth ? 'Period Spending' : 'Monthly Spending',
+          title: selectedMonth ? tOverview('periodSpending') : tOverview('monthlyExpense'),
           value: <CurrencyDisplay amount={stats.total_monthly_expense} currency={stats.currency} decimals={0} />,
           description: selectedMonth
-            ? `Total for ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `From ${stats.active_expenses} active ${stats.active_expenses === 1 ? 'expense' : 'expenses'}`,
+            ? tOverview('totalFor', { month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) })
+            : `${stats.active_expenses} ${tOverview('active')}`,
           icon: TrendingDown,
         },
         {
-          title: 'Annual Spending',
+          title: tOverview('annualSpending'),
           value: <CurrencyDisplay amount={stats.total_annual_expense} currency={stats.currency} decimals={0} />,
-          description: 'Projected yearly expenses',
+          description: tOverview('projectedYearlyExpenses'),
           icon: Calendar,
         },
       ]
@@ -417,20 +416,23 @@ export default function ExpensesPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search expenses..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tOverview('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={setSelectedMonth}
+              label={tCommon('common.filterBy')}
+              clearLabel={tCommon('common.clear')}
             />
             <SortFilter
               sortField={sortField}
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -476,9 +478,9 @@ export default function ExpensesPage() {
         ) : !expensesData?.items || expensesData.items.length === 0 ? (
           <EmptyState
             icon={DollarSign}
-            title="No expenses yet"
-            description="Start tracking your expenses by adding your first expense."
-            actionLabel="Add Expense"
+            title={tOverview('noExpenses')}
+            description={tOverview('noExpensesDescription')}
+            actionLabel={tOverview('addExpense')}
             onAction={handleAddExpense}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
@@ -506,17 +508,17 @@ export default function ExpensesPage() {
           selectedMonth ? (
             <EmptyState
               icon={DollarSign}
-              title="No expenses for this month"
-              description={`No expenses found for ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
-              actionLabel="Clear Filter"
+              title={tOverview('noExpensesForMonth')}
+              description={tOverview('noExpensesForMonthDescription', { month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) })}
+              actionLabel={tOverview('clearFilter')}
               onAction={() => setSelectedMonth(null)}
             />
           ) : (
             <EmptyState
               icon={DollarSign}
-              title="No expenses yet"
-              description="Start tracking your expenses by adding your first expense."
-              actionLabel="Add Expense"
+              title={tOverview('noExpenses')}
+              description={tOverview('noExpensesDescription')}
+              actionLabel={tOverview('addExpense')}
               onAction={handleAddExpense}
             />
           )
@@ -530,7 +532,7 @@ export default function ExpensesPage() {
                   aria-label="Select all expenses"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedExpenseIds.size === filteredExpenses.length ? 'Deselect all' : 'Select all'}
+                  {selectedExpenseIds.size === filteredExpenses.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -549,12 +551,16 @@ export default function ExpensesPage() {
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-base md:text-lg truncate">{expense.name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
-                          {expense.description || <>&nbsp;</>}
+                          {expense.description ? (
+                            expense.description.startsWith('Imported from ')
+                              ? tOverview('importedFrom', { source: expense.description.replace('Imported from ', '') })
+                              : expense.description
+                          ) : <>&nbsp;</>}
                         </CardDescription>
                       </div>
                     </div>
                     <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {expense.is_active ? 'Active' : 'Inactive'}
+                      {expense.is_active ? tStatus('active') : tStatus('inactive')}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -570,10 +576,10 @@ export default function ExpensesPage() {
                         />
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {FREQUENCY_LABELS[expense.frequency] || expense.frequency}
+                        {tFrequency(expense.frequency)}
                         {expense.display_currency && expense.display_currency !== expense.currency && (
                           <span className="ml-1 text-xs">
-                            (orig: {expense.amount} {expense.currency})
+                            ({tOverview('orig')}: {expense.amount} {expense.currency})
                           </span>
                         )}
                       </p>
@@ -583,7 +589,7 @@ export default function ExpensesPage() {
                       {(expense.display_monthly_equivalent ?? expense.monthly_equivalent) ? (
                         <>
                           <p className="text-[10px] md:text-xs text-muted-foreground">
-                            Monthly equivalent
+                            {tOverview('monthlyEquivalent')}
                           </p>
                           <p className="text-sm font-semibold">
                             <CurrencyDisplay
@@ -601,7 +607,7 @@ export default function ExpensesPage() {
 
                     <div className="rounded-lg bg-muted/50 p-2 md:p-3 min-h-[48px]">
                       <p className="text-[10px] md:text-xs text-muted-foreground">
-                        {expense.frequency === 'one_time' ? 'Date' : 'Start Date'}
+                        {expense.frequency === 'one_time' ? tOverview('date') : tOverview('startDate')}
                       </p>
                       <p className="text-xs md:text-sm font-semibold">
                         {(() => {
@@ -623,14 +629,14 @@ export default function ExpensesPage() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-wrap gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditExpense(expense.id)}
                       >
                         <Edit className="mr-1 h-3 w-3" />
-                        Edit
+                        {tActions('edit')}
                       </Button>
                       <Button
                         variant="outline"
@@ -638,7 +644,7 @@ export default function ExpensesPage() {
                         onClick={() => handleArchiveExpense(expense.id)}
                       >
                         <Archive className="mr-1 h-3 w-3" />
-                        Archive
+                        {tActions('archive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -647,7 +653,7 @@ export default function ExpensesPage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -721,7 +727,7 @@ export default function ExpensesPage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">
-                          {FREQUENCY_LABELS[expense.frequency] || expense.frequency}
+                          {tFrequency(expense.frequency)}
                         </span>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
@@ -763,7 +769,7 @@ export default function ExpensesPage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs">
-                          {expense.is_active ? 'Active' : 'Inactive'}
+                          {expense.is_active ? tStatus('active') : tStatus('inactive')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -818,8 +824,11 @@ export default function ExpensesPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Expense"
-        itemName="expense"
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 

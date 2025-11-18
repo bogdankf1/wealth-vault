@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { DollarSign, TrendingDown, Calendar, CalendarDays, Wallet, Activity } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetExpenseStatsQuery } from '@/lib/api/expensesApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -16,6 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import { MonthFilter } from '@/components/ui/month-filter';
 
 export default function ExpensesAnalysisPage() {
+  const t = useTranslations('expenses.analysis');
+  const tOverview = useTranslations('expenses.overview');
+  const tCommon = useTranslations('common');
   const [selectedMonth, setSelectedMonth] = React.useState<string | null>(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -52,8 +56,8 @@ export default function ExpensesAnalysisPage() {
     return (
       <EmptyState
         icon={TrendingDown}
-        title="No expense data"
-        description="Start adding expenses to see detailed analysis."
+        title={t('noData')}
+        description={t('noDataDescription')}
       />
     );
   }
@@ -86,7 +90,8 @@ export default function ExpensesAnalysisPage() {
         <MonthFilter
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
-          label="Filter by month:"
+          label={tCommon('common.filterBy')}
+          clearLabel={tCommon('common.clear')}
         />
       </div>
 
@@ -97,7 +102,7 @@ export default function ExpensesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-teal-600" />
-              Daily Expense
+              {t('dailyExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -111,7 +116,7 @@ export default function ExpensesAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Per day spending
+                {t('perDay')}
               </p>
             </div>
           </CardContent>
@@ -122,7 +127,7 @@ export default function ExpensesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Calendar className="h-4 w-4 text-blue-600" />
-              Weekly Expense
+              {t('weeklyExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -136,7 +141,7 @@ export default function ExpensesAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Per week spending
+                {t('perWeek')}
               </p>
             </div>
           </CardContent>
@@ -147,7 +152,7 @@ export default function ExpensesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
-              Monthly Expense
+              {t('monthlyExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -161,7 +166,7 @@ export default function ExpensesAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Per month spending
+                {t('perMonth')}
               </p>
             </div>
           </CardContent>
@@ -172,7 +177,7 @@ export default function ExpensesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-indigo-600" />
-              Annual Expense
+              {t('annualExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -186,7 +191,7 @@ export default function ExpensesAnalysisPage() {
                 />
               </p>
               <p className="text-sm text-muted-foreground">
-                Per year spending
+                {t('perYear')}
               </p>
             </div>
           </CardContent>
@@ -197,7 +202,7 @@ export default function ExpensesAnalysisPage() {
       {categoryEntries.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Category Breakdown</CardTitle>
+            <CardTitle>{t('categoryBreakdown')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -245,7 +250,7 @@ export default function ExpensesAnalysisPage() {
             {/* Summary */}
             <div className="mt-6 pt-4 border-t">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Total Expenses</span>
+                <span className="font-medium">{t('totalExpenses')}</span>
                 <span className="font-bold text-lg">
                   <CurrencyDisplay
                     amount={totalCategoryExpenses}
@@ -267,7 +272,7 @@ export default function ExpensesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4 text-gray-600" />
-              Total Expense Sources
+              {t('totalExpenses')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -276,7 +281,7 @@ export default function ExpensesAnalysisPage() {
                 <p className="text-5xl font-bold text-gray-600">{stats.total_expenses}</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Sources configured in your account
+                {t('sourcesConfigured')}
               </p>
             </div>
           </CardContent>
@@ -287,7 +292,7 @@ export default function ExpensesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Activity className="h-4 w-4 text-green-600" />
-              Active Expense Sources
+              {t('activeExpenses')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -301,7 +306,7 @@ export default function ExpensesAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {stats.active_expenses} of {stats.total_expenses} sources actively incurring expenses
+                {t('sourcesActive', { count: stats.active_expenses, total: stats.total_expenses })}
               </p>
             </div>
           </CardContent>

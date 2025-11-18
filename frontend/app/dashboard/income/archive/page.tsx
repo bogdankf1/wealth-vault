@@ -7,6 +7,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   useListIncomeSourcesQuery,
   useUpdateIncomeSourceMutation,
@@ -36,16 +37,12 @@ import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { IncomeActionsContext } from '../context';
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  one_time: 'One-time',
-  weekly: 'Weekly',
-  biweekly: 'Bi-weekly',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  annually: 'Annually',
-};
-
 export default function IncomeArchivePage() {
+  const tArchive = useTranslations('income.archive');
+  const tActions = useTranslations('income.actions');
+  const tFrequency = useTranslations('income.frequency');
+  const tCommon = useTranslations('common');
+  const tOverview = useTranslations('income.overview');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingSourceId, setDeletingSourceId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,7 +105,7 @@ export default function IncomeArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateSource({ id, data: { is_active: true } }).unwrap();
-      toast.success('Income source unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedSourceIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -116,7 +113,7 @@ export default function IncomeArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive income source:', error);
-      toast.error('Failed to unarchive income source');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -136,14 +133,14 @@ export default function IncomeArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} income source(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} income source(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedSourceIds(new Set());
-  }, [selectedSourceIds, updateSource]);
+  }, [selectedSourceIds, updateSource, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingSourceId(id);
@@ -155,7 +152,7 @@ export default function IncomeArchivePage() {
 
     try {
       await deleteSource(deletingSourceId).unwrap();
-      toast.success('Income source deleted permanently');
+      toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingSourceId(null);
       setSelectedSourceIds((prev) => {
@@ -165,7 +162,7 @@ export default function IncomeArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete income source:', error);
-      toast.error('Failed to delete income source');
+      toast.error(tArchive('deleteError'));
     }
   };
 
@@ -189,9 +186,9 @@ export default function IncomeArchivePage() {
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = React.useCallback(() => {
     setBatchDeleteDialogOpen(true);
-  };
+  }, []);
 
   const confirmBatchDelete = async () => {
     if (selectedSourceIds.size === 0) return;
@@ -202,16 +199,16 @@ export default function IncomeArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} income source(s)`);
+        toast.error(tArchive('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} income source(s) permanently`);
+        toast.success(tArchive('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedSourceIds(new Set());
     } catch (error) {
       console.error('Failed to delete income sources:', error);
-      toast.error('Failed to delete income sources');
+      toast.error(tArchive('deleteError'));
     }
   };
 
@@ -228,7 +225,7 @@ export default function IncomeArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedSourceIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedSourceIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -237,7 +234,7 @@ export default function IncomeArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedSourceIds.size})</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selectedSourceIds.size })}</span>
             </Button>
           </>
         )}
@@ -245,7 +242,7 @@ export default function IncomeArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedSourceIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedSourceIds.size, setActions, tArchive]);
 
   const isLoading = isLoadingSources;
   const hasError = sourcesError;
@@ -271,8 +268,8 @@ export default function IncomeArchivePage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search archived income sources..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -281,6 +278,7 @@ export default function IncomeArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -311,14 +309,14 @@ export default function IncomeArchivePage() {
         ) : !sources || sources.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived income sources"
-            description="Archived income sources will appear here"
+            title={tArchive('noArchived')}
+            description={tArchive('noArchivedDescription')}
           />
         ) : !filteredSources || filteredSources.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived income sources found"
-            description="Try adjusting your search or filters"
+            title={tArchive('noFound')}
+            description={tArchive('noFoundDescription')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -330,7 +328,7 @@ export default function IncomeArchivePage() {
                   aria-label="Select all income sources"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedSourceIds.size === filteredSources.length ? 'Deselect all' : 'Select all'}
+                  {selectedSourceIds.size === filteredSources.length ? tArchive('deselectAll') : tArchive('selectAll')}
                 </span>
               </div>
             )}
@@ -354,7 +352,7 @@ export default function IncomeArchivePage() {
                       </div>
                     </div>
                     <Badge variant="secondary" className="text-xs flex-shrink-0">
-                      Archived
+                      {tArchive('archived')}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -370,7 +368,7 @@ export default function IncomeArchivePage() {
                         />
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {FREQUENCY_LABELS[source.frequency] || source.frequency}
+                        {tFrequency('' + source.frequency)}
                       </p>
                       <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
                         {source.display_currency && source.display_currency !== source.currency && (
@@ -391,7 +389,7 @@ export default function IncomeArchivePage() {
                         {(source.display_monthly_equivalent ?? source.monthly_equivalent) ? (
                           <div className="text-center w-full">
                             <p className="text-[10px] md:text-xs text-muted-foreground">
-                              Monthly equivalent
+                              {tOverview('monthlyEquivalent')}
                             </p>
                             <p className="text-sm font-semibold">
                               <CurrencyDisplay
@@ -414,14 +412,14 @@ export default function IncomeArchivePage() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-wrap gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleUnarchive(source.id)}
                       >
                         <ArchiveRestore className="mr-1 h-3 w-3" />
-                        Unarchive
+                        {tArchive('unarchive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -430,7 +428,7 @@ export default function IncomeArchivePage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -452,14 +450,14 @@ export default function IncomeArchivePage() {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Monthly Equiv.</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tArchive('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tArchive('description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tArchive('category')}</TableHead>
+                    <TableHead className="text-right">{tArchive('amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tArchive('frequency')}</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyEquivalent')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tArchive('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -502,7 +500,7 @@ export default function IncomeArchivePage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">
-                          {FREQUENCY_LABELS[source.frequency] || source.frequency}
+                          {tFrequency('' + source.frequency)}
                         </span>
                       </TableCell>
                       <TableCell className="hidden xl:table-cell text-right">
@@ -563,9 +561,11 @@ export default function IncomeArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Income Source Permanently"
-        description="This will permanently delete this income source. This action cannot be undone."
-        itemName="income source"
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 

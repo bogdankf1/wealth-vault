@@ -6,6 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Target, TrendingUp, DollarSign, Edit, Trash2, Archive, CheckCircle2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
   useListGoalsQuery,
@@ -42,6 +43,13 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function GoalsPage() {
+  // Translations
+  const tOverview = useTranslations('goals.overview');
+  const tActions = useTranslations('goals.actions');
+  const tCommon = useTranslations('common');
+  const tCategories = useTranslations('goals.categories');
+  const tStatus = useTranslations('goals.status');
+
   // Get context for setting actions
   const { setActions } = React.useContext(GoalsActionsContext);
 
@@ -94,7 +102,7 @@ export default function GoalsPage() {
   const handleArchiveGoal = async (id: string) => {
     try {
       await updateGoal({ id, data: { is_active: false } }).unwrap();
-      toast.success('Goal archived successfully');
+      toast.success(tOverview('archiveSuccess'));
       setSelectedGoalIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -102,7 +110,7 @@ export default function GoalsPage() {
       });
     } catch (error) {
       console.error('Failed to archive goal:', error);
-      toast.error('Failed to archive goal');
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -122,26 +130,26 @@ export default function GoalsPage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully archived ${successCount} goal(s)`);
+      toast.success(tOverview('batchArchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to archive ${failCount} goal(s)`);
+      toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
     setSelectedGoalIds(new Set());
-  }, [selectedGoalIds, updateGoal]);
+  }, [selectedGoalIds, updateGoal, tOverview]);
 
   const confirmDelete = async () => {
     if (!deletingGoalId) return;
 
     try {
       await deleteGoal(deletingGoalId).unwrap();
-      toast.success('Goal deleted successfully');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingGoalId(null);
     } catch (error) {
       console.error('Failed to delete goal:', error);
-      toast.error('Failed to delete goal');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -186,7 +194,7 @@ export default function GoalsPage() {
               className="w-full sm:w-auto"
             >
               <Archive className="mr-2 h-4 w-4" />
-              <span className="truncate">Archive Selected ({selectedGoalIds.size})</span>
+              <span className="truncate">{tOverview('archiveSelected', { count: selectedGoalIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -195,19 +203,19 @@ export default function GoalsPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedGoalIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedGoalIds.size })}</span>
             </Button>
           </>
         )}
         <Button onClick={handleAddGoal} size="default" className="w-full sm:w-auto">
           <Target className="mr-2 h-4 w-4" />
-          <span className="truncate">Add Goal</span>
+          <span className="truncate">{tOverview('addGoal')}</span>
         </Button>
       </>
     );
 
     return () => setActions(null);
-  }, [selectedGoalIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddGoal]);
+  }, [selectedGoalIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddGoal, tOverview]);
 
   const confirmBatchDelete = async () => {
     if (selectedGoalIds.size === 0) return;
@@ -218,15 +226,15 @@ export default function GoalsPage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} goal(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} goal(s)`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
       setBatchDeleteDialogOpen(false);
       setSelectedGoalIds(new Set());
     } catch (error) {
       console.error('Batch delete failed:', error);
-      toast.error('Failed to delete goals');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -262,13 +270,13 @@ export default function GoalsPage() {
   const statsCards: StatCard[] = stats
     ? [
         {
-          title: 'Total Goals',
+          title: tOverview('totalGoals'),
           value: stats.total_goals,
-          description: `${stats.completed_goals} completed, ${stats.active_goals} active`,
+          description: tOverview('completedGoals', { count: stats.completed_goals, activeCount: stats.active_goals }),
           icon: Target,
         },
         {
-          title: 'Total Target',
+          title: tOverview('totalTarget'),
           value: (
             <CurrencyDisplay
               amount={stats.total_target_amount}
@@ -285,13 +293,13 @@ export default function GoalsPage() {
                 showSymbol={true}
                 showCode={false}
               />{' '}
-              saved so far
+              {tOverview('savedSoFar')}
             </>
           ),
           icon: DollarSign,
         },
         {
-          title: 'Average Progress',
+          title: tOverview('averageProgress'),
           value: `${Math.round(stats.average_progress)}%`,
           description: (
             <>
@@ -301,7 +309,7 @@ export default function GoalsPage() {
                 showSymbol={true}
                 showCode={false}
               />{' '}
-              remaining
+              {tOverview('remaining')}
             </>
           ),
           icon: TrendingUp,
@@ -384,8 +392,8 @@ export default function GoalsPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={uniqueCategories}
-              searchPlaceholder="Search goals..."
-              categoryPlaceholder="All Categories"
+              searchPlaceholder={tOverview('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allCategories')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -394,6 +402,7 @@ export default function GoalsPage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -427,17 +436,17 @@ export default function GoalsPage() {
         ) : !goalsData?.items || goalsData.items.length === 0 ? (
           <EmptyState
             icon={Target}
-            title="No goals yet"
-            description="Start tracking your financial goals by adding your first one."
-            actionLabel="Add Goal"
+            title={tOverview('noGoals')}
+            description={tOverview('noGoalsDescription')}
+            actionLabel={tOverview('addGoal')}
             onAction={handleAddGoal}
           />
         ) : !filteredGoals || filteredGoals.length === 0 ? (
           <EmptyState
             icon={Target}
-            title="No goals found"
-            description="Try adjusting your search or filter criteria."
-            actionLabel="Clear Filters"
+            title={tCommon('noResults')}
+            description={tOverview('noFilterResults')}
+            actionLabel={tCommon('clearFilters')}
             onAction={() => {
               setSearchQuery('');
               setSelectedCategory(null);
@@ -450,10 +459,10 @@ export default function GoalsPage() {
                 <Checkbox
                   checked={selectedGoalIds.size === filteredGoals.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all goals"
+                  aria-label={tOverview('selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedGoalIds.size === filteredGoals.length ? 'Deselect all' : 'Select all'}
+                  {selectedGoalIds.size === filteredGoals.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -487,9 +496,9 @@ export default function GoalsPage() {
                         {goal.is_completed ? (
                           <span className="flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" />
-                            Completed
+                            {tStatus('completed')}
                           </span>
-                        ) : goal.is_active ? 'Active' : 'Paused'}
+                        ) : goal.is_active ? tStatus('active') : tStatus('paused')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -498,7 +507,7 @@ export default function GoalsPage() {
                       {/* Target and Current Amounts */}
                       <div className="rounded-lg border bg-muted/50 p-3">
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">Saved</span>
+                          <span className="text-xs text-muted-foreground">{tOverview('saved')}</span>
                           <span className="text-2xl font-bold">
                             <CurrencyDisplay
                               amount={displayCurrent}
@@ -510,12 +519,12 @@ export default function GoalsPage() {
                         </div>
                         <div className="flex items-baseline justify-between">
                           <span className="text-xs text-muted-foreground">
-                            of <CurrencyDisplay
+                            {tOverview('of')} <CurrencyDisplay
                               amount={displayTarget}
                               currency={displayCurrency}
                               showSymbol={true}
                               showCode={false}
-                            /> target
+                            /> {tOverview('target').toLowerCase()}
                           </span>
                           {goal.monthly_contribution && goal.monthly_contribution > 0 && (
                             <span className="text-sm text-muted-foreground">
@@ -524,25 +533,25 @@ export default function GoalsPage() {
                                 currency={displayCurrency}
                                 showSymbol={true}
                                 showCode={false}
-                              />/mo
+                              />{tOverview('monthlyRate')}
                             </span>
                           )}
                         </div>
                         <div className="mt-2 text-xs text-muted-foreground min-h-[16px]">
                           {goal.display_currency && goal.display_currency !== goal.currency && (
                             <>
-                              Original: <CurrencyDisplay
+                              {tOverview('original')} <CurrencyDisplay
                                 amount={goal.target_amount}
                                 currency={goal.currency}
                                 showSymbol={true}
                                 showCode={false}
-                              /> target{goal.monthly_contribution && goal.monthly_contribution > 0 && (
+                              /> {tOverview('target').toLowerCase()}{goal.monthly_contribution && goal.monthly_contribution > 0 && (
                                 <>, <CurrencyDisplay
                                   amount={goal.monthly_contribution}
                                   currency={goal.currency}
                                   showSymbol={true}
                                   showCode={false}
-                                />/mo</>
+                                />{tOverview('monthlyRate')}</>
                               )}
                             </>
                           )}
@@ -552,7 +561,7 @@ export default function GoalsPage() {
                       {/* Progress Bar */}
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{Math.round(progress)}% complete</span>
+                          <span>{Math.round(progress)}{tOverview('complete')}</span>
                           {remaining > 0 && (
                             <span>
                               <CurrencyDisplay
@@ -560,7 +569,7 @@ export default function GoalsPage() {
                                 currency={displayCurrency}
                                 showSymbol={true}
                                 showCode={false}
-                              /> remaining
+                              /> {tOverview('remaining')}
                             </span>
                           )}
                         </div>
@@ -571,7 +580,7 @@ export default function GoalsPage() {
                       <div className="rounded-lg bg-muted p-3 min-h-[60px]">
                         {goal.target_date ? (
                           <>
-                            <p className="text-xs text-muted-foreground">Target Date</p>
+                            <p className="text-xs text-muted-foreground">{tOverview('targetDate')}</p>
                             <p className="text-sm font-semibold">
                               {new Date(goal.target_date).toLocaleDateString('en-US', {
                                 month: 'short',
@@ -591,14 +600,14 @@ export default function GoalsPage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditGoal(goal.id)}
                         >
                           <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          {tActions('edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -606,7 +615,7 @@ export default function GoalsPage() {
                           onClick={() => handleArchiveGoal(goal.id)}
                         >
                           <Archive className="mr-1 h-3 w-3" />
-                          Archive
+                          {tActions('archive')}
                         </Button>
                         <Button
                           variant="outline"
@@ -615,7 +624,7 @@ export default function GoalsPage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tActions('delete')}
                         </Button>
                       </div>
                     </div>
@@ -635,19 +644,19 @@ export default function GoalsPage() {
                       <Checkbox
                         checked={selectedGoalIds.size === filteredGoals.length}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all goals"
+                        aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Saved</TableHead>
-                    <TableHead className="text-right">Target</TableHead>
-                    <TableHead className="hidden sm:table-cell text-right">Progress</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Monthly Contrib.</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Target</TableHead>
-                    <TableHead className="hidden lg:table-cell">Target Date</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tOverview('category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('saved')}</TableHead>
+                    <TableHead className="text-right">{tOverview('target')}</TableHead>
+                    <TableHead className="hidden sm:table-cell text-right">{tOverview('progress')}</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyContribution')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTarget')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('targetDate')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -746,9 +755,9 @@ export default function GoalsPage() {
                             {goal.is_completed ? (
                               <span className="flex items-center gap-1">
                                 <CheckCircle2 className="h-3 w-3" />
-                                Done
+                                {tStatus('done')}
                               </span>
-                            ) : goal.is_active ? 'Active' : 'Paused'}
+                            ) : goal.is_active ? tStatus('active') : tStatus('paused')}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -804,9 +813,12 @@ export default function GoalsPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Goal"
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
         itemName="goal"
         isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -817,6 +829,8 @@ export default function GoalsPage() {
         count={selectedGoalIds.size}
         itemName="goal"
         isDeleting={isBatchDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

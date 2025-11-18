@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { Receipt, DollarSign, TrendingUp, Percent } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGetTaxStatsQuery } from '@/lib/api/taxesApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LoadingCards } from '@/components/ui/loading-state';
@@ -15,6 +16,11 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
 
 export default function TaxesAnalysisPage() {
+  const tAnalysis = useTranslations('taxes.analysis');
+  const tCommon = useTranslations('common');
+  const tTypes = useTranslations('taxes.types');
+  const tFrequencies = useTranslations('taxes.frequencies');
+
   const { data: stats, isLoading, error } = useGetTaxStatsQuery();
 
   // Loading state
@@ -32,8 +38,8 @@ export default function TaxesAnalysisPage() {
     return (
       <EmptyState
         icon={Receipt}
-        title="No tax data"
-        description="Start adding tax obligations to see detailed analysis."
+        title={tAnalysis('noData')}
+        description={tAnalysis('noDataDescription')}
       />
     );
   }
@@ -50,14 +56,14 @@ export default function TaxesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Receipt className="h-4 w-4 text-blue-600" />
-              Total Tax Obligations
+              {tAnalysis('totalTaxes')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <p className="text-5xl font-bold text-blue-600">{stats.total_taxes}</p>
               <p className="text-sm text-muted-foreground">
-                Tax items configured
+                {tAnalysis('taxesBeingTracked')}
               </p>
             </div>
           </CardContent>
@@ -68,7 +74,7 @@ export default function TaxesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
-              Active Taxes
+              {tAnalysis('activeTaxes')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -82,7 +88,7 @@ export default function TaxesAnalysisPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Currently active tax obligations
+                {tAnalysis('activeTaxObligations')}
               </p>
             </div>
           </CardContent>
@@ -94,10 +100,10 @@ export default function TaxesAnalysisPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Total Tax Liability
+            {tAnalysis('totalEstimatedAnnual')}
           </CardTitle>
           <CardDescription>
-            Combined amount of all your tax obligations
+            {tAnalysis('totalAnnualTaxLiability')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,7 +117,7 @@ export default function TaxesAnalysisPage() {
               />
             </p>
             <p className="text-sm text-muted-foreground">
-              Total estimated tax amount
+              {tAnalysis('totalAnnualTaxLiability')}
             </p>
           </div>
         </CardContent>
@@ -124,7 +130,7 @@ export default function TaxesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-indigo-600" />
-              Fixed Amount Taxes
+              {tAnalysis('fixedTaxes')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -140,11 +146,11 @@ export default function TaxesAnalysisPage() {
                 </p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Total amount of fixed taxes
+                {tAnalysis('fixedAmountTaxes')}
               </p>
               <div className="pt-2 border-t">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Percentage of Total</span>
+                  <span className="text-sm font-medium">{tCommon('common.total')}</span>
                   <Badge variant="secondary">
                     {totalTaxAmount > 0
                       ? ((Number(stats.total_fixed_taxes) / totalTaxAmount) * 100).toFixed(2)
@@ -161,7 +167,7 @@ export default function TaxesAnalysisPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Percent className="h-4 w-4 text-orange-600" />
-              Percentage-Based Taxes
+              {tAnalysis('percentageTaxes')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -177,11 +183,11 @@ export default function TaxesAnalysisPage() {
                 </p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Total amount of percentage-based taxes
+                {tAnalysis('incomeBasedTaxes')}
               </p>
               <div className="pt-2 border-t">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Percentage of Total</span>
+                  <span className="text-sm font-medium">{tCommon('common.total')}</span>
                   <Badge variant="secondary">
                     {totalTaxAmount > 0
                       ? ((Number(stats.total_percentage_taxes) / totalTaxAmount) * 100).toFixed(2)
@@ -197,9 +203,9 @@ export default function TaxesAnalysisPage() {
       {/* Tax Distribution Overview */}
       <Card>
         <CardHeader>
-          <CardTitle>Tax Type Distribution</CardTitle>
+          <CardTitle>{tAnalysis('taxesByType')}</CardTitle>
           <CardDescription>
-            Breakdown of your tax obligations by type
+            {tAnalysis('taxesByTypeDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -209,7 +215,7 @@ export default function TaxesAnalysisPage() {
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Fixed Amount Taxes</span>
+                  <span className="font-medium">{tAnalysis('fixedTaxes')}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground">
@@ -244,7 +250,7 @@ export default function TaxesAnalysisPage() {
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Percent className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Percentage-Based Taxes</span>
+                  <span className="font-medium">{tAnalysis('percentageTaxes')}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground">
@@ -280,15 +286,15 @@ export default function TaxesAnalysisPage() {
       {/* Summary Card */}
       <Card className="border-blue-200 bg-blue-50/30">
         <CardHeader>
-          <CardTitle>Tax Summary</CardTitle>
+          <CardTitle>{tAnalysis('title')}</CardTitle>
           <CardDescription>
-            Quick overview of your tax situation
+            {tAnalysis('description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Obligations</p>
+              <p className="text-sm font-medium text-muted-foreground">{tAnalysis('totalEstimatedAnnual')}</p>
               <p className="text-2xl font-bold">
                 <CurrencyDisplay
                   amount={stats.total_tax_amount}
@@ -299,10 +305,10 @@ export default function TaxesAnalysisPage() {
               </p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Active Items</p>
+              <p className="text-sm font-medium text-muted-foreground">{tAnalysis('activeTaxes')}</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold">{stats.active_taxes}</p>
-                <p className="text-sm text-muted-foreground">of {stats.total_taxes}</p>
+                <p className="text-sm text-muted-foreground">{tCommon('common.total')} {stats.total_taxes}</p>
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   useListAccountsQuery,
@@ -37,16 +38,22 @@ import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { SavingsActionsContext } from '../context';
 
-const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-  crypto: 'Cryptocurrency',
-  cash: 'Cash',
-  business: 'Business Account',
-  personal: 'Personal Account',
-  fixed_deposit: 'Fixed Deposits',
-  other: 'Other',
-};
-
 export default function SavingsArchivePage() {
+  // Translation hooks
+  const tArchive = useTranslations('savings.archive');
+  const tOverview = useTranslations('savings.overview');
+  const tActions = useTranslations('savings.actions');
+  const tCommon = useTranslations('common');
+  const tAccountTypes = useTranslations('savings.accountTypes');
+
+  const ACCOUNT_TYPE_LABELS: Record<string, string> = {
+    crypto: tAccountTypes('other'),
+    cash: tAccountTypes('other'),
+    business: tAccountTypes('other'),
+    personal: tAccountTypes('other'),
+    fixed_deposit: tAccountTypes('cd'),
+    other: tAccountTypes('other'),
+  };
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAccountId, setDeletingAccountId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,7 +116,7 @@ export default function SavingsArchivePage() {
   const handleUnarchive = async (id: string) => {
     try {
       await updateAccount({ id, data: { is_active: true } }).unwrap();
-      toast.success('Savings account unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedAccountIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -117,7 +124,7 @@ export default function SavingsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive savings account:', error);
-      toast.error('Failed to unarchive savings account');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -137,14 +144,14 @@ export default function SavingsArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} savings account(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} savings account(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedAccountIds(new Set());
-  }, [selectedAccountIds, updateAccount]);
+  }, [selectedAccountIds, updateAccount, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingAccountId(id);
@@ -156,7 +163,7 @@ export default function SavingsArchivePage() {
 
     try {
       await deleteAccount(deletingAccountId).unwrap();
-      toast.success('Savings account deleted permanently');
+      toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingAccountId(null);
       setSelectedAccountIds((prev) => {
@@ -166,7 +173,7 @@ export default function SavingsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete savings account:', error);
-      toast.error('Failed to delete savings account');
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -203,16 +210,16 @@ export default function SavingsArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} savings account(s)`);
+        toast.error(tOverview('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} savings account(s) permanently`);
+        toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedAccountIds(new Set());
     } catch (error) {
       console.error('Failed to delete savings accounts:', error);
-      toast.error('Failed to delete savings accounts');
+      toast.error(tOverview('batchDeleteError', { count: selectedAccountIds.size }));
     }
   };
 
@@ -229,7 +236,7 @@ export default function SavingsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedAccountIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedAccountIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -238,7 +245,7 @@ export default function SavingsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedAccountIds.size})</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selectedAccountIds.size })}</span>
             </Button>
           </>
         )}
@@ -246,7 +253,7 @@ export default function SavingsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedAccountIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedAccountIds.size, setActions, handleBatchUnarchive, tArchive, tOverview]);
 
   const isLoading = isLoadingAccounts;
   const hasError = accountsError;
@@ -272,8 +279,8 @@ export default function SavingsArchivePage() {
               selectedCategory={selectedType}
               onCategoryChange={setSelectedType}
               categories={uniqueAccountTypes}
-              searchPlaceholder="Search archived savings accounts..."
-              categoryPlaceholder="All Types"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tOverview('allAccountTypes')}
               categoryLabels={ACCOUNT_TYPE_LABELS}
             />
           </div>
@@ -283,6 +290,7 @@ export default function SavingsArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -313,14 +321,14 @@ export default function SavingsArchivePage() {
         ) : !accounts || accounts.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived savings accounts"
-            description="Archived savings accounts will appear here"
+            title={tArchive('noAccounts')}
+            description={tArchive('noAccountsDescription')}
           />
         ) : !filteredAccounts || filteredAccounts.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived savings accounts found"
-            description="Try adjusting your search or filters"
+            title={tCommon('common.noResults')}
+            description={tOverview('noFilterResults')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -332,7 +340,7 @@ export default function SavingsArchivePage() {
                   aria-label="Select all savings accounts"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedAccountIds.size === filteredAccounts.length ? 'Deselect all' : 'Select all'}
+                  {selectedAccountIds.size === filteredAccounts.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -356,7 +364,7 @@ export default function SavingsArchivePage() {
                       </div>
                     </div>
                     <Badge variant="secondary" className="text-xs flex-shrink-0">
-                      Archived
+                      {tArchive('archived')}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -409,14 +417,14 @@ export default function SavingsArchivePage() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-wrap gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleUnarchive(account.id)}
                       >
                         <ArchiveRestore className="mr-1 h-3 w-3" />
-                        Unarchive
+                        {tArchive('unarchive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -425,7 +433,7 @@ export default function SavingsArchivePage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -447,13 +455,13 @@ export default function SavingsArchivePage() {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Institution</TableHead>
-                    <TableHead className="hidden lg:table-cell">Account Type</TableHead>
-                    <TableHead className="text-right">Current Balance</TableHead>
-                    <TableHead className="hidden sm:table-cell">Account #</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tCommon('common.institution')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('accountType')}</TableHead>
+                    <TableHead className="text-right">{tOverview('currentBalance')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tCommon('common.accountNumber')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -545,10 +553,12 @@ export default function SavingsArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Savings Account Permanently"
-        description="This will permanently delete this savings account. This action cannot be undone."
+        title={tArchive('deleteConfirmTitle')}
+        description={tArchive('deleteConfirmDescription')}
         itemName="savings account"
         isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
 
       {/* Batch Delete Confirmation Dialog */}
@@ -559,6 +569,8 @@ export default function SavingsArchivePage() {
         count={selectedAccountIds.size}
         itemName="savings account"
         isDeleting={isBatchDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

@@ -8,30 +8,10 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutGrid, Archive, BarChart3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { TaxesActionsContext } from './context';
-
-const TAXES_TABS: ModuleTab[] = [
-  {
-    value: 'overview',
-    label: 'Overview',
-    icon: LayoutGrid,
-    href: '/dashboard/taxes/overview',
-  },
-  {
-    value: 'analysis',
-    label: 'Analysis',
-    icon: BarChart3,
-    href: '/dashboard/taxes/analysis',
-  },
-  {
-    value: 'archive',
-    label: 'Archive',
-    icon: Archive,
-    href: '/dashboard/taxes/archive',
-  },
-];
 
 export default function TaxesLayout({
   children,
@@ -41,6 +21,31 @@ export default function TaxesLayout({
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
 
+  // Translation hooks
+  const tLayout = useTranslations('taxes.layout');
+  const tNav = useTranslations('taxes.navigation');
+
+  const TAXES_TABS: ModuleTab[] = [
+    {
+      value: 'overview',
+      label: tNav('overview'),
+      icon: LayoutGrid,
+      href: '/dashboard/taxes/overview',
+    },
+    {
+      value: 'analysis',
+      label: tNav('analysis'),
+      icon: BarChart3,
+      href: '/dashboard/taxes/analysis',
+    },
+    {
+      value: 'archive',
+      label: tNav('archive'),
+      icon: Archive,
+      href: '/dashboard/taxes/archive',
+    },
+  ];
+
   return (
     <TaxesActionsContext.Provider value={{ setActions }}>
       <div className="container mx-auto p-4 md:p-6">
@@ -48,10 +53,10 @@ export default function TaxesLayout({
         <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              Taxes
+              {tLayout('title')}
             </h1>
             <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Manage your tax obligations and estimates
+              {tLayout('description')}
             </p>
           </div>
           {actions && (

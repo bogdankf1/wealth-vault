@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   useGetDashboardOverviewQuery,
   useGetIncomeVsExpensesChartQuery,
@@ -81,6 +82,16 @@ import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
 import { WIDGET_FEATURES } from '@/lib/constants/feature-map';
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard');
+  const tQuickActions = useTranslations('dashboard.quickActions');
+  const tNetWorth = useTranslations('dashboard.netWorth');
+  const tFinancialHealth = useTranslations('dashboard.financialHealth');
+  const tCashFlow = useTranslations('dashboard.cashFlow');
+  const tRecentActivity = useTranslations('dashboard.recentActivity');
+  const tAnalytics = useTranslations('dashboard.analytics');
+  const tTooltips = useTranslations('dashboard.tooltips');
+  const tErrors = useTranslations('dashboard.errors');
+
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: preferences } = useGetMyPreferencesQuery();
   const { data: activeLayout } = useGetActiveLayoutQuery();
@@ -187,7 +198,7 @@ export default function DashboardPage() {
       <div className="container mx-auto space-y-6 p-6">
         <Card className="p-6 border-red-200 bg-red-50 dark:bg-red-900/10">
           <p className="text-red-600 dark:text-red-400">
-            Failed to load dashboard data. Please try again.
+            {tErrors('loadFailed')}
           </p>
         </Card>
       </div>
@@ -226,15 +237,17 @@ export default function DashboardPage() {
 
   // Get health rating color
   const getHealthColor = (rating: string) => {
-    switch (rating) {
-      case 'Excellent':
-        return 'text-green-600 dark:text-green-400';
-      case 'Good':
-        return 'text-blue-600 dark:text-blue-400';
-      case 'Fair':
-        return 'text-yellow-600 dark:text-yellow-400';
-      default:
-        return 'text-red-600 dark:text-red-400';
+    // Normalize rating to lowercase for comparison
+    const normalizedRating = rating.toLowerCase();
+
+    if (normalizedRating === 'excellent' || normalizedRating === tFinancialHealth('ratings.excellent').toLowerCase()) {
+      return 'text-green-600 dark:text-green-400';
+    } else if (normalizedRating === 'good' || normalizedRating === tFinancialHealth('ratings.good').toLowerCase()) {
+      return 'text-blue-600 dark:text-blue-400';
+    } else if (normalizedRating === 'fair' || normalizedRating === tFinancialHealth('ratings.fair').toLowerCase()) {
+      return 'text-yellow-600 dark:text-yellow-400';
+    } else {
+      return 'text-red-600 dark:text-red-400';
     }
   };
 
@@ -274,9 +287,9 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{t('title')}</h1>
             <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 md:mt-2">
-              Your complete financial overview
+              {t('description')}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -286,7 +299,8 @@ export default function DashboardPage() {
             <MonthFilter
               selectedMonth={selectedMonth}
               onMonthChange={(month) => setSelectedMonth(month || currentMonth)}
-              label="Period:"
+              label={t('header.periodLabel')}
+              clearLabel={t('header.clearButton')}
             />
           </div>
         </div>
@@ -296,9 +310,9 @@ export default function DashboardPage() {
           <Card className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <div>
-                <h2 className="text-base md:text-lg font-semibold">Quick Actions</h2>
+                <h2 className="text-base md:text-lg font-semibold">{tQuickActions('title')}</h2>
                 <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                  Add new financial entries quickly
+                  {tQuickActions('description')}
                 </p>
               </div>
             </div>
@@ -310,10 +324,10 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-1 md:gap-2">
                 <Plus className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
-                <span className="text-xs md:text-sm font-medium">Add Income</span>
+                <span className="text-xs md:text-sm font-medium">{tQuickActions('addIncome.label')}</span>
               </div>
               <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                Record income source
+                {tQuickActions('addIncome.description')}
               </span>
             </Button>
 
@@ -324,10 +338,10 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-1 md:gap-2">
                 <Minus className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
-                <span className="text-xs md:text-sm font-medium">Add Expense</span>
+                <span className="text-xs md:text-sm font-medium">{tQuickActions('addExpense.label')}</span>
               </div>
               <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                Track expense
+                {tQuickActions('addExpense.description')}
               </span>
             </Button>
 
@@ -338,10 +352,10 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-1 md:gap-2">
                 <Wallet className="h-4 w-4 md:h-5 md:w-5 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-xs md:text-sm font-medium">Add Budget</span>
+                <span className="text-xs md:text-sm font-medium">{tQuickActions('addBudget.label')}</span>
               </div>
               <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                Set spending limit
+                {tQuickActions('addBudget.description')}
               </span>
             </Button>
 
@@ -352,10 +366,10 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-1 md:gap-2">
                 <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-600 dark:text-purple-400" />
-                <span className="text-xs md:text-sm font-medium">Subscription</span>
+                <span className="text-xs md:text-sm font-medium">{tQuickActions('subscription.label')}</span>
               </div>
               <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                Recurring payment
+                {tQuickActions('subscription.description')}
               </span>
             </Button>
 
@@ -366,10 +380,10 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-1 md:gap-2">
                 <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-orange-600 dark:text-orange-400" />
-                <span className="text-xs md:text-sm font-medium">Installment</span>
+                <span className="text-xs md:text-sm font-medium">{tQuickActions('installment.label')}</span>
               </div>
               <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                Payment plan
+                {tQuickActions('installment.description')}
               </span>
             </Button>
 
@@ -380,10 +394,10 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-1 md:gap-2">
                 <Target className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
-                <span className="text-xs md:text-sm font-medium">Create Goal</span>
+                <span className="text-xs md:text-sm font-medium">{tQuickActions('createGoal.label')}</span>
               </div>
               <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                Set target
+                {tQuickActions('createGoal.description')}
               </span>
             </Button>
           </div>
@@ -418,9 +432,9 @@ export default function DashboardPage() {
         {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (
           <Card className="p-4 md:p-6">
             <div className="mb-3 md:mb-4">
-              <h2 className="text-base md:text-lg font-semibold">Insights & Alerts</h2>
+              <h2 className="text-base md:text-lg font-semibold">{t('insightsAlerts.title')}</h2>
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                Important financial notifications
+                {t('insightsAlerts.description')}
               </p>
             </div>
             <div className="space-y-3">
@@ -466,16 +480,16 @@ export default function DashboardPage() {
         <Card className="p-4 md:p-6 col-span-1 md:col-span-2 xl:col-span-2">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base md:text-lg font-semibold">Net Worth</h2>
+              <h2 className="text-base md:text-lg font-semibold">{tNetWorth('title')}</h2>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-gray-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">How it is calculated:</p>
-                  <p className="text-sm">Net Worth = Assets - Liabilities</p>
-                  <p className="text-sm mt-2">Assets = Portfolio Value + Savings Balance</p>
-                  <p className="text-sm">Liabilities = Total Debt from Installments</p>
+                  <p className="font-semibold mb-1">{tTooltips('netWorth.heading')}</p>
+                  <p className="text-sm">{tTooltips('netWorth.formula')}</p>
+                  <p className="text-sm mt-2">{tTooltips('netWorth.assets')}</p>
+                  <p className="text-sm">{tTooltips('netWorth.liabilities')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -494,14 +508,14 @@ export default function DashboardPage() {
                 />
               </p>
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Total net worth
+                {tNetWorth('totalLabel')}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 md:gap-4 pt-3 md:pt-4 border-t">
               <div>
                 <div className="flex items-center gap-1 md:gap-2 text-green-600 dark:text-green-400">
                   <ArrowUpRight className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="text-xs md:text-sm font-medium">Assets</span>
+                  <span className="text-xs md:text-sm font-medium">{tNetWorth('assets.label')}</span>
                 </div>
                 <p className="text-lg md:text-xl font-semibold mt-1">
                   <CurrencyDisplay
@@ -509,33 +523,33 @@ export default function DashboardPage() {
                     currency={net_worth.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   />
                 </p>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-1">
-                  <div>Portfolio: <CurrencyDisplay
+                  <div>{tNetWorth('assets.portfolio')}: <CurrencyDisplay
                     amount={parseFloat(net_worth.portfolio_value)}
                     currency={net_worth.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   /></div>
-                  <div>Savings: <CurrencyDisplay
+                  <div>{tNetWorth('assets.savings')}: <CurrencyDisplay
                     amount={parseFloat(net_worth.savings_balance)}
                     currency={net_worth.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   /></div>
                 </div>
               </div>
               <div>
                 <div className="flex items-center gap-1 md:gap-2 text-red-600 dark:text-red-400">
                   <ArrowDownRight className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="text-xs md:text-sm font-medium">Liabilities</span>
+                  <span className="text-xs md:text-sm font-medium">{tNetWorth('liabilities.label')}</span>
                 </div>
                 <p className="text-lg md:text-xl font-semibold mt-1">
                   <CurrencyDisplay
@@ -543,18 +557,18 @@ export default function DashboardPage() {
                     currency={net_worth.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   />
                 </p>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                  <div>Debt: <CurrencyDisplay
+                  <div>{tNetWorth('liabilities.debt')}: <CurrencyDisplay
                     amount={parseFloat(net_worth.total_debt)}
                     currency={net_worth.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   /></div>
                 </div>
               </div>
@@ -568,19 +582,19 @@ export default function DashboardPage() {
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base md:text-lg font-semibold">Financial Health</h2>
+              <h2 className="text-base md:text-lg font-semibold">{tFinancialHealth('title')}</h2>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-gray-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">How it is calculated:</p>
-                  <p className="text-sm">Score = 5 components × 20 points each (0-100)</p>
-                  <p className="text-sm mt-2">1. Emergency Fund: Savings ≥ 3 months expenses</p>
-                  <p className="text-sm">2. Debt-to-Income: Total debt / income &lt; 36%</p>
-                  <p className="text-sm">3. Savings Rate: % of income saved (20%+ excellent)</p>
-                  <p className="text-sm">4. Investment Diversity: Multiple asset types</p>
-                  <p className="text-sm">5. Goals Progress: Average goal completion</p>
+                  <p className="font-semibold mb-1">{tTooltips('financialHealth.heading')}</p>
+                  <p className="text-sm">{tTooltips('financialHealth.formula')}</p>
+                  <p className="text-sm mt-2">{tTooltips('financialHealth.emergencyFund')}</p>
+                  <p className="text-sm">{tTooltips('financialHealth.debtToIncome')}</p>
+                  <p className="text-sm">{tTooltips('financialHealth.savingsRate')}</p>
+                  <p className="text-sm">{tTooltips('financialHealth.investmentDiversity')}</p>
+                  <p className="text-sm">{tTooltips('financialHealth.goalsProgress')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -594,28 +608,28 @@ export default function DashboardPage() {
               {financial_health.rating}
             </div>
             <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mt-1">
-              out of 100
+              {tFinancialHealth('scoreLabel')}
             </div>
           </div>
           <div className="mt-4 md:mt-6 space-y-2 text-xs md:text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Emergency Fund</span>
+              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.emergencyFund')}</span>
               <span className="font-medium">{financial_health.emergency_fund_score}/20</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Debt-to-Income</span>
+              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.debtToIncome')}</span>
               <span className="font-medium">{financial_health.debt_to_income_score}/20</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Savings Rate</span>
+              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.savingsRate')}</span>
               <span className="font-medium">{financial_health.savings_rate_score}/20</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Investments</span>
+              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.investments')}</span>
               <span className="font-medium">{financial_health.investment_diversity_score}/20</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Goals Progress</span>
+              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.goalsProgress')}</span>
               <span className="font-medium">{financial_health.goals_progress_score}/20</span>
             </div>
           </div>
@@ -635,15 +649,15 @@ export default function DashboardPage() {
                 <TrendingUpIcon className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Income</p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('income.label')}</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_income)}
                     currency={cash_flow.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   />
                 </p>
               </div>
@@ -653,12 +667,12 @@ export default function DashboardPage() {
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Sum of all active recurring income sources (monthly, weekly, biweekly, annual)</p>
+                <p className="font-semibold mb-1">{tTooltips('income.heading')}</p>
+                <p className="text-sm">{tTooltips('income.description')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
+          <p className="text-[10px] md:text-xs text-gray-500">{tCashFlow('income.period')}</p>
         </Card>
         )}
 
@@ -670,7 +684,7 @@ export default function DashboardPage() {
                 <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Expenses</p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('expenses.label')}</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_expenses)}
@@ -688,10 +702,10 @@ export default function DashboardPage() {
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Date-based calculation for {getPeriodLabel()}</p>
-                <p className="text-sm mt-1">• One-time expenses: included if date falls in period</p>
-                <p className="text-sm">• Recurring expenses: included if overlaps with period (monthly equivalent)</p>
+                <p className="font-semibold mb-1">{tTooltips('expenses.heading')}</p>
+                <p className="text-sm">{tTooltips('expenses.dateBased', { period: getPeriodLabel() })}</p>
+                <p className="text-sm mt-1">{tTooltips('expenses.oneTime')}</p>
+                <p className="text-sm">{tTooltips('expenses.recurring')}</p>
                 <p className="text-xs text-gray-400 mt-2">{getPeriodDescription()}</p>
               </TooltipContent>
             </Tooltip>
@@ -708,7 +722,7 @@ export default function DashboardPage() {
                 <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Subscriptions</p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('subscriptions.label')}</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_subscriptions)}
@@ -726,12 +740,12 @@ export default function DashboardPage() {
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Sum of all active subscriptions (monthly, quarterly, annually, biannually)</p>
+                <p className="font-semibold mb-1">{tTooltips('subscriptions.heading')}</p>
+                <p className="text-sm">{tTooltips('subscriptions.description')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
+          <p className="text-[10px] md:text-xs text-gray-500">{tCashFlow('subscriptions.period')}</p>
         </Card>
         )}
 
@@ -743,7 +757,7 @@ export default function DashboardPage() {
                 <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Installments</p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('installments.label')}</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_installments)}
@@ -761,12 +775,12 @@ export default function DashboardPage() {
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Sum of all active installment payments (monthly, biweekly, weekly)</p>
+                <p className="font-semibold mb-1">{tTooltips('installments.heading')}</p>
+                <p className="text-sm">{tTooltips('installments.description')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">Monthly</p>
+          <p className="text-[10px] md:text-xs text-gray-500">{tCashFlow('installments.period')}</p>
         </Card>
         )}
 
@@ -778,7 +792,7 @@ export default function DashboardPage() {
                 <FileText className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Taxes</p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('taxes.label')}</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.monthly_taxes) || 0}
@@ -794,12 +808,12 @@ export default function DashboardPage() {
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Period-specific taxes based on income (only calculated when income exists in the selected period)</p>
+                <p className="font-semibold mb-1">{tTooltips('taxes.heading')}</p>
+                <p className="text-sm">{tTooltips('taxes.description')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{taxStats?.active_taxes || 0} active</p>
+          <p className="text-[10px] md:text-xs text-gray-500">{taxStats?.active_taxes || 0} {tCashFlow('taxes.active')}</p>
         </Card>
         )}
 
@@ -811,7 +825,7 @@ export default function DashboardPage() {
                 <UserMinus className="h-4 w-4 md:h-5 md:w-5 text-teal-600 dark:text-teal-400" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Debts Owed</p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('debtsOwed.label')}</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={debtStats?.total_amount_owed || 0}
@@ -827,12 +841,12 @@ export default function DashboardPage() {
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Sum of all active debts (unpaid) owed to you</p>
+                <p className="font-semibold mb-1">{tTooltips('debtsOwed.heading')}</p>
+                <p className="text-sm">{tTooltips('debtsOwed.description')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{debtStats?.active_debts || 0} active</p>
+          <p className="text-[10px] md:text-xs text-gray-500">{debtStats?.active_debts || 0} {tCashFlow('debtsOwed.active')}</p>
         </Card>
         )}
 
@@ -844,15 +858,15 @@ export default function DashboardPage() {
                 <PiggyBank className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Net Cash Flow</p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('netCashFlow.label')}</p>
                 <p className="text-base md:text-xl font-bold">
                   <CurrencyDisplay
                     amount={parseFloat(cash_flow.net_cash_flow)}
                     currency={cash_flow.currency}
                     showSymbol={true}
                     showCode={false}
-                    
-                    
+
+
                   />
                 </p>
               </div>
@@ -862,16 +876,16 @@ export default function DashboardPage() {
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">How it is calculated:</p>
-                <p className="text-sm">Net Cash Flow = Income - Expenses - Subscriptions - Installments</p>
-                <p className="text-sm mt-2">• Expenses are date-filtered for {getPeriodLabel()}</p>
-                <p className="text-sm">• Income, Subscriptions, Installments show all active (monthly equivalent)</p>
-                <p className="text-sm mt-2">Savings Rate = (Net Cash Flow / Income) × 100%</p>
+                <p className="font-semibold mb-1">{tTooltips('netCashFlow.heading')}</p>
+                <p className="text-sm">{tTooltips('netCashFlow.formula')}</p>
+                <p className="text-sm mt-2">{tTooltips('netCashFlow.expenses', { period: getPeriodLabel() })}</p>
+                <p className="text-sm">{tTooltips('netCashFlow.others')}</p>
+                <p className="text-sm mt-2">{tTooltips('netCashFlow.savingsRate')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <p className="text-[10px] md:text-xs text-gray-500">
-            Savings Rate: {formatPercentage(cash_flow.savings_rate)}
+            {tCashFlow('netCashFlow.savingsRateLabel')}: {formatPercentage(cash_flow.savings_rate)}
           </p>
         </Card>
         )}
@@ -881,10 +895,10 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       {isWidgetVisible('recent-transactions') && (
       <Card className="p-4 md:p-6">
-        <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Recent Activity</h2>
+        <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">{tRecentActivity('title')}</h2>
         {recent_activity.length === 0 ? (
           <p className="text-center text-gray-500 py-8">
-            No recent activity
+            {tRecentActivity('emptyState')}
           </p>
         ) : (
           <div className="space-y-3">
@@ -940,9 +954,9 @@ export default function DashboardPage() {
       <div className="space-y-4 md:space-y-6">
         {hasVisibleCharts() && (
           <div>
-            <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">Financial Analytics</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">{tAnalytics('title')}</h2>
             <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-              Visualize your financial trends and patterns
+              {tAnalytics('description')}
             </p>
           </div>
         )}

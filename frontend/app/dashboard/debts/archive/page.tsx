@@ -7,6 +7,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, CheckCircle2, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   useListDebtsQuery,
   useUpdateDebtMutation,
@@ -38,6 +39,12 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { DebtsActionsContext } from '../context';
 
 export default function DebtsArchivePage() {
+  // Translation hooks
+  const tArchive = useTranslations('debts.archive');
+  const tCommon = useTranslations('common');
+  const tActions = useTranslations('debts.actions');
+  const tStatus = useTranslations('debts.status');
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingDebtId, setDeletingDebtId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,7 +74,7 @@ export default function DebtsArchivePage() {
   const debts = useMemo(() => debtsData?.items || [], [debtsData?.items]);
 
   // Status categories
-  const statusCategories = ['Paid', 'Unpaid', 'Overdue'];
+  const statusCategories = [tStatus('paid'), tStatus('unpaid'), tStatus('overdue')];
 
   // Filter and sort debts
   const filteredDebts = React.useMemo(() => {
@@ -77,9 +84,9 @@ export default function DebtsArchivePage() {
       selectedStatus,
       (debt) => debt.debtor_name,
       (debt) => {
-        if (debt.is_paid) return 'Paid';
-        if (debt.is_overdue) return 'Overdue';
-        return 'Unpaid';
+        if (debt.is_paid) return tStatus('paid');
+        if (debt.is_overdue) return tStatus('overdue');
+        return tStatus('unpaid');
       }
     );
 
@@ -94,12 +101,12 @@ export default function DebtsArchivePage() {
     );
 
     return sorted || [];
-  }, [debts, searchQuery, selectedStatus, sortField, sortDirection]);
+  }, [debts, searchQuery, selectedStatus, sortField, sortDirection, tStatus]);
 
   const handleUnarchive = async (id: string) => {
     try {
       await updateDebt({ id, data: { is_active: true } }).unwrap();
-      toast.success('Debt unarchived successfully');
+      toast.success(tArchive('unarchiveSuccess'));
       setSelectedDebtIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -107,7 +114,7 @@ export default function DebtsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to unarchive debt:', error);
-      toast.error('Failed to unarchive debt');
+      toast.error(tArchive('unarchiveError'));
     }
   };
 
@@ -127,14 +134,14 @@ export default function DebtsArchivePage() {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully unarchived ${successCount} debt(s)`);
+      toast.success(tArchive('batchUnarchiveSuccess', { count: successCount }));
     }
     if (failCount > 0) {
-      toast.error(`Failed to unarchive ${failCount} debt(s)`);
+      toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
     setSelectedDebtIds(new Set());
-  }, [selectedDebtIds, updateDebt]);
+  }, [selectedDebtIds, updateDebt, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingDebtId(id);
@@ -146,7 +153,7 @@ export default function DebtsArchivePage() {
 
     try {
       await deleteDebt(deletingDebtId).unwrap();
-      toast.success('Debt deleted permanently');
+      toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingDebtId(null);
       setSelectedDebtIds((prev) => {
@@ -156,7 +163,7 @@ export default function DebtsArchivePage() {
       });
     } catch (error) {
       console.error('Failed to delete debt:', error);
-      toast.error('Failed to delete debt');
+      toast.error(tArchive('deleteError'));
     }
   };
 
@@ -193,16 +200,16 @@ export default function DebtsArchivePage() {
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
-        toast.error(`Failed to delete ${result.failed_ids.length} debt(s)`);
+        toast.error(tArchive('batchDeleteError', { count: result.failed_ids.length }));
       } else {
-        toast.success(`Successfully deleted ${result.deleted_count} debt(s) permanently`);
+        toast.success(tArchive('batchDeleteSuccess', { count: result.deleted_count }));
       }
 
       setBatchDeleteDialogOpen(false);
       setSelectedDebtIds(new Set());
     } catch (error) {
       console.error('Failed to delete debts:', error);
-      toast.error('Failed to delete debts');
+      toast.error(tArchive('batchDeleteError'));
     }
   };
 
@@ -219,7 +226,7 @@ export default function DebtsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">Unarchive Selected ({selectedDebtIds.size})</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedDebtIds.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -228,7 +235,7 @@ export default function DebtsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">Delete Selected ({selectedDebtIds.size})</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selectedDebtIds.size })}</span>
             </Button>
           </>
         )}
@@ -236,7 +243,7 @@ export default function DebtsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedDebtIds.size, setActions, handleBatchUnarchive]);
+  }, [selectedDebtIds.size, setActions, handleBatchUnarchive, tArchive]);
 
   const isLoading = isLoadingDebts;
   const hasError = debtsError;
@@ -262,8 +269,8 @@ export default function DebtsArchivePage() {
               selectedCategory={selectedStatus}
               onCategoryChange={setSelectedStatus}
               categories={statusCategories}
-              searchPlaceholder="Search archived debts..."
-              categoryPlaceholder="All Statuses"
+              searchPlaceholder={tArchive('searchPlaceholder')}
+              categoryPlaceholder={tArchive('allStatuses')}
             />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -272,6 +279,7 @@ export default function DebtsArchivePage() {
               sortDirection={sortDirection}
               onSortFieldChange={setSortField}
               onSortDirectionChange={setSortDirection}
+              sortByLabel={tCommon('common.sortBy')}
             />
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
@@ -302,14 +310,14 @@ export default function DebtsArchivePage() {
         ) : !debts || debts.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived debts"
-            description="Archived debts will appear here"
+            title={tArchive('noDebts')}
+            description={tArchive('noDebtsDescription')}
           />
         ) : !filteredDebts || filteredDebts.length === 0 ? (
           <EmptyState
             icon={Archive}
-            title="No archived debts found"
-            description="Try adjusting your search or filters"
+            title={tArchive('noFilterResults')}
+            description={tArchive('noFilterResultsDescription')}
           />
         ) : viewMode === 'card' ? (
           <>
@@ -318,10 +326,10 @@ export default function DebtsArchivePage() {
                 <Checkbox
                   checked={selectedDebtIds.size === filteredDebts.length}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all debts"
+                  aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedDebtIds.size === filteredDebts.length ? 'Deselect all' : 'Select all'}
+                  {selectedDebtIds.size === filteredDebts.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -346,15 +354,15 @@ export default function DebtsArchivePage() {
                     </div>
                     <div className="flex flex-col gap-1 items-end">
                       <Badge variant="secondary" className="text-xs flex-shrink-0">
-                        Archived
+                        {tArchive('archived')}
                       </Badge>
                       {debt.is_paid ? (
                         <Badge variant="default" className="bg-green-600 text-xs flex-shrink-0">
-                          Paid
+                          {tStatus('paid')}
                         </Badge>
                       ) : debt.is_overdue ? (
                         <Badge variant="destructive" className="text-xs flex-shrink-0">
-                          Overdue
+                          {tStatus('overdue')}
                         </Badge>
                       ) : null}
                     </div>
@@ -365,7 +373,7 @@ export default function DebtsArchivePage() {
                     {/* Total and Paid Amounts */}
                     <div className="rounded-lg border bg-muted/50 p-3">
                       <div className="flex items-baseline justify-between mb-1">
-                        <span className="text-xs text-muted-foreground">Paid</span>
+                        <span className="text-xs text-muted-foreground">{tArchive('paid')}</span>
                         <span className="text-2xl font-bold">
                           <CurrencyDisplay
                             amount={debt.display_amount_paid ?? debt.amount_paid}
@@ -377,23 +385,23 @@ export default function DebtsArchivePage() {
                       </div>
                       <div className="flex items-baseline justify-between">
                         <span className="text-xs text-muted-foreground">
-                          of <CurrencyDisplay
+                          {tArchive('of')} <CurrencyDisplay
                             amount={debt.display_amount ?? debt.amount}
                             currency={debt.display_currency ?? debt.currency}
                             showSymbol={true}
                             showCode={false}
-                          /> total
+                          /> {tArchive('total')}
                         </span>
                       </div>
                       <div className="mt-2 text-xs text-muted-foreground min-h-[16px]">
                         {debt.display_currency && debt.display_currency !== debt.currency && (
                           <>
-                            Original: <CurrencyDisplay
+                            {tArchive('original')}: <CurrencyDisplay
                               amount={debt.amount}
                               currency={debt.currency}
                               showSymbol={true}
                               showCode={false}
-                            /> total
+                            /> {tArchive('total')}
                           </>
                         )}
                       </div>
@@ -402,7 +410,7 @@ export default function DebtsArchivePage() {
                     {/* Progress Bar */}
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{Math.round(debt.progress_percentage || 0)}% paid</span>
+                        <span>{tArchive('percentPaid', { percent: Math.round(debt.progress_percentage || 0) })}</span>
                         {debt.amount_remaining && debt.amount_remaining > 0 && (
                           <span>
                             <CurrencyDisplay
@@ -410,7 +418,7 @@ export default function DebtsArchivePage() {
                               currency={debt.display_currency ?? debt.currency}
                               showSymbol={true}
                               showCode={false}
-                            /> remaining
+                            /> {tArchive('remaining')}
                           </span>
                         )}
                       </div>
@@ -423,13 +431,13 @@ export default function DebtsArchivePage() {
                         {debt.paid_date && (
                           <p className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" />
-                            Paid: {new Date(debt.paid_date).toLocaleDateString()}
+                            {tArchive('paidDate', { date: new Date(debt.paid_date).toLocaleDateString() })}
                           </p>
                         )}
                         {debt.due_date && !debt.is_paid && (
                           <p className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            Due: {new Date(debt.due_date).toLocaleDateString()}
+                            {tArchive('dueDate', { date: new Date(debt.due_date).toLocaleDateString() })}
                           </p>
                         )}
                       </div>
@@ -442,14 +450,14 @@ export default function DebtsArchivePage() {
                       </div>
                     )}
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-wrap gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleUnarchive(debt.id)}
                       >
                         <ArchiveRestore className="mr-1 h-3 w-3" />
-                        Unarchive
+                        {tActions('unarchive')}
                       </Button>
                       <Button
                         variant="outline"
@@ -458,7 +466,7 @@ export default function DebtsArchivePage() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="mr-1 h-3 w-3" />
-                        Delete
+                        {tActions('delete')}
                       </Button>
                     </div>
                   </div>
@@ -477,18 +485,18 @@ export default function DebtsArchivePage() {
                       <Checkbox
                         checked={selectedDebtIds.size === filteredDebts.length && filteredDebts.length > 0}
                         onCheckedChange={handleSelectAll}
-                        aria-label="Select all"
+                        aria-label={tCommon('common.selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Debtor</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="text-right">Paid</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="hidden lg:table-cell text-right">Progress</TableHead>
-                    <TableHead className="hidden xl:table-cell">Dates</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Total</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tArchive('debtor')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tCommon('common.description')}</TableHead>
+                    <TableHead className="text-right">{tArchive('paid')}</TableHead>
+                    <TableHead className="text-right">{tArchive('total')}</TableHead>
+                    <TableHead className="hidden lg:table-cell text-right">{tArchive('progress')}</TableHead>
+                    <TableHead className="hidden xl:table-cell">{tArchive('dates')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tArchive('originalTotal')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tArchive('status')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tCommon('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -543,13 +551,13 @@ export default function DebtsArchivePage() {
                           {debt.paid_date && (
                             <span className="flex items-center gap-1">
                               <CheckCircle2 className="h-3 w-3" />
-                              Paid: {new Date(debt.paid_date).toLocaleDateString()}
+                              {tArchive('paidDate', { date: new Date(debt.paid_date).toLocaleDateString() })}
                             </span>
                           )}
                           {debt.due_date && !debt.is_paid && (
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              Due: {new Date(debt.due_date).toLocaleDateString()}
+                              {tArchive('dueDate', { date: new Date(debt.due_date).toLocaleDateString() })}
                             </span>
                           )}
                           {!debt.paid_date && !debt.due_date && <span>-</span>}
@@ -567,15 +575,15 @@ export default function DebtsArchivePage() {
                       <TableCell className="hidden sm:table-cell">
                         <div className="flex flex-col gap-1">
                           <Badge variant="secondary" className="text-xs w-fit">
-                            Archived
+                            {tArchive('archived')}
                           </Badge>
                           {debt.is_paid ? (
                             <Badge variant="default" className="bg-green-600 text-xs w-fit">
-                              Paid
+                              {tStatus('paid')}
                             </Badge>
                           ) : debt.is_overdue ? (
                             <Badge variant="destructive" className="text-xs w-fit">
-                              Overdue
+                              {tStatus('overdue')}
                             </Badge>
                           ) : null}
                         </div>
@@ -615,9 +623,11 @@ export default function DebtsArchivePage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Debt Permanently"
-        description="This will permanently delete this debt. This action cannot be undone."
-        itemName="debt"
+        title={tCommon('deleteDialog.title')}
+        description={tCommon('deleteDialog.description', { item: tArchive('debt') })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />
 
@@ -627,7 +637,11 @@ export default function DebtsArchivePage() {
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
         count={selectedDebtIds.size}
-        itemName="debt"
+        title={tArchive('batchDeleteTitle', { count: selectedDebtIds.size })}
+        description={tArchive('batchDeleteDescription', { count: selectedDebtIds.size })}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
+        deletingLabel={tCommon('actions.deleting')}
         isDeleting={isBatchDeleting}
       />
     </div>

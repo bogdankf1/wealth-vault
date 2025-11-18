@@ -18,8 +18,10 @@ import {
 } from '@/lib/api/dashboardLayoutsApi';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export function QuickLayoutSwitcher() {
+  const t = useTranslations('dashboard.widgets.layoutSwitcher');
   const { toast } = useToast();
   const { data: layoutsData, isLoading } = useListLayoutsQuery();
   const { data: activeLayout } = useGetActiveLayoutQuery();
@@ -29,13 +31,13 @@ export function QuickLayoutSwitcher() {
     try {
       await activateLayout(layoutId).unwrap();
       toast({
-        title: 'Layout switched',
-        description: `Switched to "${layoutName}" layout.`,
+        title: t('toast.switched'),
+        description: t('toast.switchedDescription', { name: layoutName }),
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to switch layout.',
+        title: t('toast.error'),
+        description: t('toast.errorDescription'),
         variant: 'destructive',
       });
     }
@@ -55,12 +57,12 @@ export function QuickLayoutSwitcher() {
         <Button variant="outline" size="sm" className="h-9 gap-2">
           <LayoutGrid className="h-4 w-4" />
           <span className="hidden sm:inline">
-            {activeLayout?.name || 'Select Layout'}
+            {activeLayout?.name || t('selectLayout')}
           </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Dashboard Layouts</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('title')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {layoutsData.items.map((layout) => (
           <DropdownMenuItem
@@ -72,7 +74,7 @@ export function QuickLayoutSwitcher() {
               <div className="flex flex-col">
                 <span className="font-medium">{layout.name}</span>
                 <span className="text-xs text-muted-foreground">
-                  {layout.configuration.widgets.filter((w) => w.visible).length} widgets
+                  {t('widgetsCount', { count: layout.configuration.widgets.filter((w) => w.visible).length })}
                 </span>
               </div>
               {layout.is_active && (
@@ -84,7 +86,7 @@ export function QuickLayoutSwitcher() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/dashboard/settings/dashboard-layouts" className="cursor-pointer">
-            <span className="text-sm">Manage layouts...</span>
+            <span className="text-sm">{t('manageLayouts')}</span>
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
