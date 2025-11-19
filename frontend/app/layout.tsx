@@ -6,6 +6,7 @@ import { ReduxProvider } from "@/components/providers/redux-provider";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { getMessages } from "@/lib/i18n/get-messages";
 import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary } from "@/components/error-boundary";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,21 +29,23 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <SessionProvider>
-          <ReduxProvider>
-            <LanguageProvider messages={messages}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                {children}
-                <Toaster />
-              </ThemeProvider>
-            </LanguageProvider>
-          </ReduxProvider>
-        </SessionProvider>
+        <ErrorBoundary>
+          <SessionProvider>
+            <ReduxProvider>
+              <LanguageProvider messages={messages}>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  {children}
+                  <Toaster />
+                </ThemeProvider>
+              </LanguageProvider>
+            </ReduxProvider>
+          </SessionProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -254,9 +255,9 @@ export default function PricingPage() {
         <div className="mt-16 text-center">
           <p className="text-muted-foreground">
             {tFooter('text')}{' '}
-            <a href="mailto:support@wealthvault.com" className="text-primary hover:underline">
+            <Link href="/dashboard/help" className="text-primary hover:underline">
               {tFooter('contactLink')}
-            </a>
+            </Link>
           </p>
         </div>
       </div>
