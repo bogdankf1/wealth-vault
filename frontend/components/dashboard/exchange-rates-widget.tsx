@@ -1,6 +1,7 @@
 /**
  * Exchange Rates Widget
  * Shows current exchange rates between major currencies
+ * Dynamically loads active currencies from API
  */
 'use client';
 
@@ -9,8 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info, RefreshCw } from 'lucide-react';
-import { useGetExchangeRateQuery, useRefreshExchangeRatesMutation } from '@/lib/api/currenciesApi';
-import { useState, useEffect } from 'react';
+import { useGetExchangeRateQuery, useRefreshExchangeRatesMutation, useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 interface ExchangeRatePair {
@@ -24,34 +25,6 @@ interface CurrencyColumn {
   baseName: string;
   pairs: ExchangeRatePair[];
 }
-
-// Organize by base currency - each column shows rates FROM one currency
-const CURRENCY_COLUMNS: CurrencyColumn[] = [
-  {
-    base: 'USD',
-    baseName: 'USD',
-    pairs: [
-      { from: 'USD', to: 'EUR', label: 'EUR' },
-      { from: 'USD', to: 'UAH', label: 'UAH' },
-    ],
-  },
-  {
-    base: 'EUR',
-    baseName: 'EUR',
-    pairs: [
-      { from: 'EUR', to: 'USD', label: 'USD' },
-      { from: 'EUR', to: 'UAH', label: 'UAH' },
-    ],
-  },
-  {
-    base: 'UAH',
-    baseName: 'UAH',
-    pairs: [
-      { from: 'UAH', to: 'USD', label: 'USD' },
-      { from: 'UAH', to: 'EUR', label: 'EUR' },
-    ],
-  },
-];
 
 interface ExchangeRateItemProps {
   from: string;
@@ -132,6 +105,32 @@ export function ExchangeRatesWidget() {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [refetchKey, setRefetchKey] = useState(Date.now());
 
+  // Fetch active currencies dynamically
+  const { data: currencies, isLoading: isLoadingCurrencies } = useGetCurrenciesQuery({ active_only: true });
+
+  // Generate currency columns dynamically based on fetched currencies
+  const currencyColumns = useMemo((): CurrencyColumn[] => {
+    if (!currencies || currencies.length === 0) {
+      return [];
+    }
+
+    // Take top 3-5 currencies (or all if fewer than 3)
+    const topCurrencies = currencies.slice(0, Math.min(5, currencies.length));
+
+    // Generate columns - each currency gets its own column with pairs to other currencies
+    return topCurrencies.map((baseCurrency) => ({
+      base: baseCurrency.code,
+      baseName: baseCurrency.name,
+      pairs: topCurrencies
+        .filter((c) => c.code !== baseCurrency.code)
+        .map((targetCurrency) => ({
+          from: baseCurrency.code,
+          to: targetCurrency.code,
+          label: targetCurrency.code,
+        })),
+    }));
+  }, [currencies]);
+
   const handleRefresh = async () => {
     try {
       await refreshExchangeRates().unwrap();
@@ -141,6 +140,46 @@ export function ExchangeRatesWidget() {
       // Failed to refresh exchange rates
     }
   };
+
+  // Show loading skeleton while currencies are being fetched
+  if (isLoadingCurrencies) {
+    return (
+      <Card className="p-6">
+        <div className="mb-6">
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
+  // Show empty state if no currencies available
+  if (!currencyColumns || currencyColumns.length === 0) {
+    return (
+      <Card className="p-6">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-lg font-semibold">{t('title')}</h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('description')}
+          </p>
+        </div>
+        <div className="text-center py-8 text-muted-foreground">
+          <p className="text-sm">No active currencies available</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6">
@@ -181,14 +220,16 @@ export function ExchangeRatesWidget() {
         </p>
       </div>
 
-      {/* Exchange Rate Columns - 3 columns, each for one base currency */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {CURRENCY_COLUMNS.map((column) => (
+      {/* Exchange Rate Columns - dynamically generated based on active currencies */}
+      <div className={`grid grid-cols-1 gap-6 ${
+        currencyColumns.length >= 3 ? 'md:grid-cols-3' : currencyColumns.length === 2 ? 'md:grid-cols-2' : ''
+      }`}>
+        {currencyColumns.map((column) => (
           <div key={column.base} className="space-y-3">
             {/* Column Header */}
             <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h4 className="text-sm font-semibold">{t(`currencies.${column.base}`)}</h4>
+                <h4 className="text-sm font-semibold">{column.baseName}</h4>
                 <p className="text-xs text-muted-foreground">{t('equalsLabel', { currency: column.base })}</p>
               </div>
             </div>
