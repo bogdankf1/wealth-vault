@@ -66,5 +66,20 @@
       "debtTracking": "Suivi des dettes",
       "taxTracking": "Suivi des impôts"
     }
+  },
+  "paymentModal": {
+    "title": "Choisissez le mode de paiement",
+    "description": "Finalisez votre abonnement à {tier} pour {price} {currency}/mois",
+    "selectMethod": "Sélectionnez le mode de paiement",
+    "comingSoon": "Bientôt disponible",
+    "cancel": "Annuler",
+    "continue": "Continuer vers le paiement",
+    "processing": "Traitement en cours...",
+    "stripe": {
+      "description": "Payez en toute sécurité par carte de crédit ou de débit"
+    },
+    "paypal": {
+      "description": "Payez avec votre compte PayPal"
+    }
   }
 }

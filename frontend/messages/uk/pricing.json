@@ -66,5 +66,20 @@
       "debtTracking": "Відстеження боргів",
       "taxTracking": "Відстеження податків"
     }
+  },
+  "paymentModal": {
+    "title": "Оберіть спосіб оплати",
+    "description": "Завершіть підписку на {tier} за {price} {currency}/місяць",
+    "selectMethod": "Виберіть спосіб оплати",
+    "comingSoon": "Незабаром",
+    "cancel": "Скасувати",
+    "continue": "Продовжити до оплати",
+    "processing": "Обробка...",
+    "stripe": {
+      "description": "Безпечна оплата кредитною або дебетовою карткою"
+    },
+    "paypal": {
+      "description": "Оплата через ваш обліковий запис PayPal"
+    }
   }
 }

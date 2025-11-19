@@ -12,6 +12,7 @@ import { useCreateCheckoutSessionMutation, useGetTiersQuery } from '@/lib/api/bi
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useTranslations } from 'next-intl';
+import { PaymentMethodModal, type PaymentMethod } from '@/components/pricing/payment-method-modal';
 
 interface TierFeature {
   name: string;
@@ -81,6 +82,10 @@ export default function PricingPage() {
   const [createCheckoutSession, { isLoading }] = useCreateCheckoutSessionMutation();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
+  // Payment method modal state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<{ id: string; name: string; price_monthly: number } | null>(null);
+
   const displayCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   // Stripe price ID mapping
@@ -89,31 +94,62 @@ export default function PricingPage() {
     wealth: process.env.NEXT_PUBLIC_STRIPE_WEALTH_PRICE_ID || '',
   };
 
-  const handleSubscribe = async (tier: { id: string; name: string; price_monthly: number }) => {
+  const handleSubscribe = (tier: { id: string; name: string; price_monthly: number }) => {
     if (!user) {
       router.push('/auth/signin?redirect=/dashboard/pricing');
       return;
     }
 
-    const stripePriceId = stripePriceIdMap[tier.name];
-
-    if (!stripePriceId || tier.price_monthly === 0) {
-      // Starter is free, redirect to dashboard
+    // Free tier - redirect to dashboard
+    if (tier.price_monthly === 0) {
       router.push('/dashboard');
       return;
     }
 
-    try {
-      setLoadingTier(tier.name);
-      const result = await createCheckoutSession({
-        price_id: stripePriceId,
-        success_url: `${window.location.origin}/dashboard?subscription=success`,
-        cancel_url: `${window.location.origin}/dashboard/pricing?subscription=cancelled`,
-      }).unwrap();
+    // Show payment method selection modal
+    setSelectedTier(tier);
+    setShowPaymentModal(true);
+  };
 
-      // Redirect to Stripe checkout
-      window.location.href = result.url;
+  const handlePaymentMethodConfirm = async (paymentMethod: PaymentMethod) => {
+    if (!selectedTier) return;
+
+    const stripePriceId = stripePriceIdMap[selectedTier.name];
+
+    if (!stripePriceId) {
+      setShowPaymentModal(false);
+      return;
+    }
+
+    try {
+      setLoadingTier(selectedTier.name);
+
+      if (paymentMethod === 'stripe') {
+        // Stripe checkout flow
+        const result = await createCheckoutSession({
+          price_id: stripePriceId,
+          success_url: `${window.location.origin}/dashboard?subscription=success`,
+          cancel_url: `${window.location.origin}/dashboard/pricing?subscription=cancelled`,
+        }).unwrap();
+
+        // Redirect to Stripe checkout
+        window.location.href = result.url;
+      } else if (paymentMethod === 'paypal') {
+        // PayPal flow - to be implemented later
+        // TODO: Implement PayPal checkout flow
+        setShowPaymentModal(false);
+        setLoadingTier(null);
+      }
     } catch (error) {
+      setShowPaymentModal(false);
+      setLoadingTier(null);
+    }
+  };
+
+  const handlePaymentModalClose = () => {
+    if (!isLoading) {
+      setShowPaymentModal(false);
+      setSelectedTier(null);
       setLoadingTier(null);
     }
   };
@@ -260,6 +296,19 @@ export default function PricingPage() {
           </p>
         </div>
       </div>
+
+      {/* Payment Method Selection Modal */}
+      {selectedTier && (
+        <PaymentMethodModal
+          isOpen={showPaymentModal}
+          onClose={handlePaymentModalClose}
+          onConfirm={handlePaymentMethodConfirm}
+          tierName={selectedTier.name}
+          tierPrice={selectedTier.price_monthly}
+          currency={displayCurrency}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }

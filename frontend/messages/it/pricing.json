@@ -66,5 +66,20 @@
       "debtTracking": "Tracciamento crediti",
       "taxTracking": "Tracciamento tasse"
     }
+  },
+  "paymentModal": {
+    "title": "Scelga il metodo di pagamento",
+    "description": "Completi il Suo abbonamento a {tier} per {price} {currency}/mese",
+    "selectMethod": "Selezioni il metodo di pagamento",
+    "comingSoon": "Prossimamente",
+    "cancel": "Annulla",
+    "continue": "Continua al pagamento",
+    "processing": "Elaborazione in corso...",
+    "stripe": {
+      "description": "Paghi in modo sicuro con carta di credito o debito"
+    },
+    "paypal": {
+      "description": "Paghi con il Suo account PayPal"
+    }
   }
 }

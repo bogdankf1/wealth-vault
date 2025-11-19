@@ -66,5 +66,20 @@
       "debtTracking": "Schuldenverfolgung",
       "taxTracking": "Steuerverfolgung"
     }
+  },
+  "paymentModal": {
+    "title": "Zahlungsmethode wählen",
+    "description": "Schließen Sie Ihr Abonnement für {tier} ab für {price} {currency}/Monat",
+    "selectMethod": "Zahlungsmethode auswählen",
+    "comingSoon": "Demnächst",
+    "cancel": "Abbrechen",
+    "continue": "Weiter zur Zahlung",
+    "processing": "Wird verarbeitet...",
+    "stripe": {
+      "description": "Sicher mit Kredit- oder Debitkarte bezahlen"
+    },
+    "paypal": {
+      "description": "Mit Ihrem PayPal-Konto bezahlen"
+    }
   }
 }
