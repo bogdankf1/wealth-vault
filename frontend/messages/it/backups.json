@@ -1,0 +1,79 @@
+{
+  "page": {
+    "title": "Backup Dati",
+    "description": "Crei e ripristini istantanee dei suoi dati finanziari"
+  },
+  "create": {
+    "title": "Crea Nuovo Backup",
+    "description": "Selezioni un modulo e crei un backup di tutti i suoi dati",
+    "label": "Modulo da Salvare",
+    "placeholder": "Seleziona modulo",
+    "button": "Crea Backup",
+    "creating": "Creazione..."
+  },
+  "list": {
+    "title": "I Suoi Backup",
+    "description": "Visualizzi e ripristini i suoi dati salvati",
+    "loading": "Caricamento backup...",
+    "empty": "Nessun backup ancora. Crei il suo primo backup sopra.",
+    "table": {
+      "date": "Data",
+      "module": "Modulo",
+      "items": "Elementi",
+      "actions": "Azioni"
+    },
+    "itemCount": "{count} elemento/i",
+    "actions": {
+      "restore": "Ripristina",
+      "delete": "Elimina"
+    }
+  },
+  "modules": {
+    "income": "Entrate",
+    "expenses": "Spese",
+    "subscriptions": "Abbonamenti",
+    "installments": "Rate",
+    "budgets": "Budget",
+    "savings": "Risparmi",
+    "portfolio": "Portafoglio",
+    "goals": "Obiettivi",
+    "debts": "Crediti",
+    "taxes": "Tasse"
+  },
+  "info": {
+    "title": "Informazioni Importanti",
+    "point1": "I backup creano un'istantanea di tutti i dati nel modulo selezionato al momento della creazione",
+    "point2": "Il ripristino di un backup ELIMINERÀ tutti i dati attuali e li SOSTITUIRÀ con i dati salvati",
+    "point3": "Ogni backup memorizza lo stato completo dei suoi dati, inclusi tutti i campi e le impostazioni",
+    "point4": "I backup sono esclusivi per gli abbonati al livello Wealth",
+    "point5": "Può creare più backup per lo stesso modulo per tracciare i cambiamenti nel tempo",
+    "warning": "Avviso:"
+  },
+  "dialogs": {
+    "restore": {
+      "title": "Ripristinare Backup?",
+      "description": "Questo SOSTITUIRÀ tutti i suoi dati {module} attuali con i dati salvati. Tutti gli elementi esistenti verranno eliminati e sostituiti. Questa azione non può essere annullata.",
+      "cancel": "Annulla",
+      "confirm": "Ripristina",
+      "restoring": "Ripristino..."
+    },
+    "delete": {
+      "title": "Eliminare Backup?",
+      "description": "Questo eliminerà permanentemente questo backup. Questa azione non può essere annullata.",
+      "cancel": "Annulla",
+      "confirm": "Elimina",
+      "deleting": "Eliminazione..."
+    }
+  },
+  "messages": {
+    "createSuccess": "Backup creato con successo",
+    "createSuccessDescription": "Salvati {count} elemento/i {module}",
+    "createError": "Impossibile creare il backup",
+    "restoreSuccess": "Backup ripristinato con successo",
+    "restoreSuccessDescription": "Ripristinati {count} elemento/i. Tutti gli elementi esistenti sono stati sostituiti.",
+    "restoreError": "Impossibile ripristinare il backup",
+    "deleteSuccess": "Backup eliminato con successo",
+    "deleteError": "Impossibile eliminare il backup",
+    "errorGeneric": "Si è verificato un errore"
+  }
+}

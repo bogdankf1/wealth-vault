@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Scelga il Suo Piano",
+    "subtitle": "Inizi gratis e aggiorni man mano che cresce. Tutti i piani includono una garanzia di rimborso di 14 giorni.",
+    "recommended": "CONSIGLIATO",
+    "perMonth": "/mese",
+    "empty": "Nessun livello di prezzo disponibile al momento."
+  },
+  "buttons": {
+    "currentPlan": "Piano Attuale",
+    "loading": "Caricamento...",
+    "getStarted": "Inizia",
+    "subscribe": "Abbonati"
+  },
+  "footer": {
+    "text": "Tutti i piani possono essere aggiornati o cancellati in qualsiasi momento. Ha bisogno di aiuto per scegliere?",
+    "contactLink": "Ci contatti"
+  },
+  "descriptions": {
+    "starter": "Perfetto per iniziare con il tracciamento delle finanze personali",
+    "growth": "Funzionalità avanzate per una gestione finanziaria seria",
+    "wealth": "Funzionalità premium per una gestione patrimoniale completa"
+  },
+  "features": {
+    "starter": {
+      "incomeSources": "Fino a 3 fonti di reddito",
+      "expenseTracking": "Tracciamento spese",
+      "bankUpload": "Caricamento estratti bancari",
+      "savingsAccounts": "Fino a 3 conti di risparmio",
+      "subscriptions": "Fino a 5 abbonamenti",
+      "installments": "Fino a 2 rate",
+      "portfolioTracking": "Tracciamento portafoglio",
+      "financialGoals": "Obiettivi finanziari",
+      "debtTracking": "Tracciamento crediti",
+      "taxTracking": "Tracciamento tasse",
+      "aiInsights": "Approfondimenti AI"
+    },
+    "growth": {
+      "incomeSources": "Fino a 10 fonti di reddito",
+      "expenseTracking": "Tracciamento spese",
+      "aiCategorization": "Categorizzazione AI",
+      "bankUpload": "Caricamento estratti bancari",
+      "savingsAccounts": "Fino a 10 conti di risparmio",
+      "multiCurrency": "Supporto multi-valuta",
+      "portfolioAssets": "Fino a 20 asset di portafoglio",
+      "financialGoals": "Obiettivi finanziari",
+      "subscriptions": "Fino a 20 abbonamenti",
+      "installments": "Fino a 10 rate",
+      "debtTracking": "Tracciamento crediti",
+      "taxTracking": "Tracciamento tasse",
+      "aiInsights": "Approfondimenti AI"
+    },
+    "wealth": {
+      "incomeSources": "Fonti di reddito illimitate",
+      "expenses": "Spese illimitate",
+      "aiCategorization": "Categorizzazione AI",
+      "aiInsights": "Approfondimenti AI",
+      "bankUpload": "Caricamento estratti bancari",
+      "savingsAccounts": "Conti di risparmio illimitati",
+      "multiCurrency": "Supporto multi-valuta",
+      "portfolioAssets": "Asset di portafoglio illimitati",
+      "stockPrices": "Prezzi azionari in tempo reale",
+      "financialGoals": "Obiettivi finanziari",
+      "subscriptions": "Abbonamenti illimitati",
+      "installments": "Rate illimitate",
+      "debtTracking": "Tracciamento crediti",
+      "taxTracking": "Tracciamento tasse"
+    }
+  }
+}

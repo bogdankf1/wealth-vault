@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Daten exportieren",
+    "description": "Exportieren Sie Ihre Finanzdaten in verschiedenen Formaten"
+  },
+  "card": {
+    "title": "Exportkonfiguration",
+    "description": "Wählen Sie den Datentyp, Zeitraum und das Format aus, das Sie exportieren möchten"
+  },
+  "labels": {
+    "dataType": "Datentyp",
+    "exportFormat": "Exportformat",
+    "month": "Monat",
+    "year": "Jahr"
+  },
+  "placeholders": {
+    "selectDataType": "Datentyp auswählen",
+    "selectFormat": "Format auswählen",
+    "selectMonth": "Monat auswählen",
+    "selectYear": "Jahr auswählen"
+  },
+  "entryTypes": {
+    "income": "Einkommen",
+    "expenses": "Ausgaben",
+    "subscriptions": "Abonnements",
+    "installments": "Ratenzahlungen",
+    "budgets": "Budgets",
+    "savings": "Ersparnisse",
+    "portfolio": "Portfolio",
+    "goals": "Ziele",
+    "debts": "Schulden",
+    "taxes": "Steuern"
+  },
+  "months": {
+    "january": "Januar",
+    "february": "Februar",
+    "march": "März",
+    "april": "April",
+    "may": "Mai",
+    "june": "Juni",
+    "july": "Juli",
+    "august": "August",
+    "september": "September",
+    "october": "Oktober",
+    "november": "November",
+    "december": "Dezember"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Daten exportieren",
+    "exporting": "Wird exportiert..."
+  },
+  "messages": {
+    "successTitle": "{type}-Daten erfolgreich exportiert",
+    "successDescription": "Datei: {filename}",
+    "errorAccessDenied": "Zugriff verweigert",
+    "errorAccessDeniedDescription": "Diese Funktion erfordert ein Wealth-Stufe-Abonnement",
+    "errorFailed": "Export fehlgeschlagen",
+    "errorFailedDescription": "Daten konnten nicht exportiert werden. Bitte versuchen Sie es erneut."
+  },
+  "info": {
+    "title": "Über den Datenexport",
+    "point1": "Exporte enthalten alle Datensätze für den ausgewählten Monat und das Jahr",
+    "point2": "CSV-Dateien können in Excel, Google Sheets oder jeder Tabellenkalkulationsanwendung geöffnet werden",
+    "point3": "Diese Funktion ist exklusiv für Abonnenten der Wealth-Stufe verfügbar",
+    "point4": "Zusätzliche Exportformate können in zukünftigen Updates hinzugefügt werden"
+  }
+}

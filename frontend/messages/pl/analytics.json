@@ -1,0 +1,93 @@
+{
+  "incomeAllocation": {
+    "title": "Alokacja dochodu",
+    "description": "Jak rozkłada się Twój dochód",
+    "tooltip": "Pokazuje, jak Twój miesięczny dochód jest alokowany na wydatki, subskrypcje, raty i oszczędności netto. Pomaga zidentyfikować wzorce wydatków i potencjał oszczędnościowy.",
+    "totalIncome": "Całkowity dochód",
+    "categories": {
+      "expenses": "Wydatki",
+      "subscriptions": "Subskrypcje",
+      "installments": "Raty",
+      "netSavings": "Oszczędności netto",
+      "taxes": "Podatki"
+    },
+    "chartLabels": {
+      "amount": "Kwota",
+      "percentage": "Procent"
+    },
+    "summary": "Podsumowanie miesięcznej alokacji dochodu",
+    "emptyState": "Brak danych o dochodach dla bieżącego miesiąca"
+  },
+  "netWorthTrend": {
+    "title": "Trend wartości netto",
+    "description": "Śledź wzrost swojego majątku w czasie",
+    "tooltip": "Wizualizuje zmiany wartości netto w czasie. Wartość netto = Aktywa (portfel + oszczędności) - Zobowiązania (długi). Pomaga śledzić postęp budowania majątku.",
+    "stats": {
+      "current": "Aktualna wartość netto",
+      "periodChange": "Zmiana w okresie",
+      "peak": "Szczytowa wartość netto",
+      "starting": "Punkt startowy"
+    },
+    "categories": {
+      "netWorth": "Wartość netto",
+      "assets": "Aktywa",
+      "liabilities": "Zobowiązania"
+    },
+    "insights": {
+      "title": "Analiza wzrostu",
+      "trend": "Trend ogólny",
+      "growing": "Rosnący",
+      "declining": "Malejący",
+      "avgMonthly": "Średnia zmiana miesięczna"
+    },
+    "emptyState": "Brak danych o wartości netto dla wybranego okresu"
+  },
+  "subscriptionsByCategory": {
+    "title": "Subskrypcje wg kategorii",
+    "description": "Miesięczne wydatki na subskrypcje według kategorii",
+    "tooltip": "Pokazuje wszystkie aktywne subskrypcje zgrupowane według kategorii. Kwoty to ekwiwalenty miesięczne niezależnie od częstotliwości rozliczania.",
+    "total": "Razem",
+    "chartLabels": {
+      "amount": "Kwota",
+      "percentage": "Procent"
+    },
+    "topCategories": "Najważniejsze kategorie subskrypcji",
+    "emptyState": "Brak danych o subskrypcjach"
+  },
+  "installmentsByCategory": {
+    "title": "Raty wg kategorii",
+    "description": "Miesięczne płatności ratalnych według kategorii",
+    "tooltip": "Pokazuje wszystkie aktywne plany ratalnych zgrupowane według kategorii. Wyświetla miesięczne kwoty płatności.",
+    "total": "Razem",
+    "chartLabels": {
+      "amount": "Kwota",
+      "percentage": "Procent"
+    },
+    "topCategories": "Najważniejsze kategorie rat",
+    "emptyState": "Brak danych o ratach"
+  },
+  "expensesByCategory": {
+    "title": "Wydatki wg kategorii",
+    "description": "Miesięczny rozkład wydatków według kategorii",
+    "tooltip": "Pokazuje podział wydatków według kategorii dla wybranego okresu. Pomaga zidentyfikować główne obszary wydatków.",
+    "total": "Razem",
+    "chartLabels": {
+      "amount": "Kwota",
+      "percentage": "Procent"
+    },
+    "topCategories": "Najważniejsze kategorie wydatków",
+    "emptyState": "Brak danych o wydatkach"
+  },
+  "budgetsByCategory": {
+    "title": "Budżety wg kategorii",
+    "description": "Miesięczna alokacja budżetu według kategorii",
+    "tooltip": "Pokazuje wszystkie aktywne budżety zgrupowane według kategorii. Każdy budżet śledzi wydatki w swoim własnym okresie.",
+    "total": "Razem",
+    "chartLabels": {
+      "amount": "Kwota",
+      "percentage": "Procent"
+    },
+    "topCategories": "Najważniejsze kategorie budżetów",
+    "emptyState": "Brak danych o budżetach"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Wählen Sie Ihren Tarif",
+    "subtitle": "Starten Sie kostenlos und upgraden Sie, während Sie wachsen. Alle Tarife beinhalten eine 14-tägige Geld-zurück-Garantie.",
+    "recommended": "EMPFOHLEN",
+    "perMonth": "/Monat",
+    "empty": "Derzeit sind keine Preistarife verfügbar."
+  },
+  "buttons": {
+    "currentPlan": "Aktueller Tarif",
+    "loading": "Wird geladen...",
+    "getStarted": "Jetzt starten",
+    "subscribe": "Abonnieren"
+  },
+  "footer": {
+    "text": "Alle Tarife können jederzeit aktualisiert oder gekündigt werden. Benötigen Sie Hilfe bei der Auswahl?",
+    "contactLink": "Kontaktieren Sie uns"
+  },
+  "descriptions": {
+    "starter": "Perfekt für den Einstieg in die persönliche Finanzverwaltung",
+    "growth": "Erweiterte Funktionen für seriöse Finanzverwaltung",
+    "wealth": "Premium-Funktionen für umfassende Vermögensverwaltung"
+  },
+  "features": {
+    "starter": {
+      "incomeSources": "Bis zu 3 Einkommensquellen",
+      "expenseTracking": "Ausgabenverfolgung",
+      "bankUpload": "Bankkontoauszug hochladen",
+      "savingsAccounts": "Bis zu 3 Sparkonten",
+      "subscriptions": "Bis zu 5 Abonnements",
+      "installments": "Bis zu 2 Ratenzahlungen",
+      "portfolioTracking": "Portfolio-Verfolgung",
+      "financialGoals": "Finanzziele",
+      "debtTracking": "Schuldenverfolgung",
+      "taxTracking": "Steuerverfolgung",
+      "aiInsights": "KI-Einblicke"
+    },
+    "growth": {
+      "incomeSources": "Bis zu 10 Einkommensquellen",
+      "expenseTracking": "Ausgabenverfolgung",
+      "aiCategorization": "KI-Kategorisierung",
+      "bankUpload": "Bankkontoauszug hochladen",
+      "savingsAccounts": "Bis zu 10 Sparkonten",
+      "multiCurrency": "Mehrwährungsunterstützung",
+      "portfolioAssets": "Bis zu 20 Portfolio-Assets",
+      "financialGoals": "Finanzziele",
+      "subscriptions": "Bis zu 20 Abonnements",
+      "installments": "Bis zu 10 Ratenzahlungen",
+      "debtTracking": "Schuldenverfolgung",
+      "taxTracking": "Steuerverfolgung",
+      "aiInsights": "KI-Einblicke"
+    },
+    "wealth": {
+      "incomeSources": "Unbegrenzte Einkommensquellen",
+      "expenses": "Unbegrenzte Ausgaben",
+      "aiCategorization": "KI-Kategorisierung",
+      "aiInsights": "KI-Einblicke",
+      "bankUpload": "Bankkontoauszug hochladen",
+      "savingsAccounts": "Unbegrenzte Sparkonten",
+      "multiCurrency": "Mehrwährungsunterstützung",
+      "portfolioAssets": "Unbegrenzte Portfolio-Assets",
+      "stockPrices": "Echtzeit-Aktienkurse",
+      "financialGoals": "Finanzziele",
+      "subscriptions": "Unbegrenzte Abonnements",
+      "installments": "Unbegrenzte Ratenzahlungen",
+      "debtTracking": "Schuldenverfolgung",
+      "taxTracking": "Steuerverfolgung"
+    }
+  }
+}

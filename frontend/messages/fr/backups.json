@@ -1,0 +1,79 @@
+{
+  "page": {
+    "title": "Sauvegardes de données",
+    "description": "Créez et restaurez des instantanés de vos données financières"
+  },
+  "create": {
+    "title": "Créer une nouvelle sauvegarde",
+    "description": "Sélectionnez un module et créez une sauvegarde de toutes ses données",
+    "label": "Module à sauvegarder",
+    "placeholder": "Sélectionner un module",
+    "button": "Créer une sauvegarde",
+    "creating": "Création..."
+  },
+  "list": {
+    "title": "Vos sauvegardes",
+    "description": "Consultez et restaurez vos données sauvegardées",
+    "loading": "Chargement des sauvegardes...",
+    "empty": "Aucune sauvegarde pour le moment. Créez votre première sauvegarde ci-dessus.",
+    "table": {
+      "date": "Date",
+      "module": "Module",
+      "items": "Éléments",
+      "actions": "Actions"
+    },
+    "itemCount": "{count} élément(s)",
+    "actions": {
+      "restore": "Restaurer",
+      "delete": "Supprimer"
+    }
+  },
+  "modules": {
+    "income": "Revenus",
+    "expenses": "Dépenses",
+    "subscriptions": "Abonnements",
+    "installments": "Versements",
+    "budgets": "Budgets",
+    "savings": "Épargne",
+    "portfolio": "Portefeuille",
+    "goals": "Objectifs",
+    "debts": "Dettes",
+    "taxes": "Impôts"
+  },
+  "info": {
+    "title": "Informations importantes",
+    "point1": "Les sauvegardes créent un instantané de toutes les données du module sélectionné au moment de la création",
+    "point2": "La restauration d'une sauvegarde SUPPRIMERA toutes les données actuelles et les REMPLACERA par les données sauvegardées",
+    "point3": "Chaque sauvegarde stocke l'état complet de vos données, y compris tous les champs et paramètres",
+    "point4": "Les sauvegardes sont exclusives aux abonnés du niveau Wealth",
+    "point5": "Vous pouvez créer plusieurs sauvegardes pour le même module afin de suivre les changements au fil du temps",
+    "warning": "Attention :"
+  },
+  "dialogs": {
+    "restore": {
+      "title": "Restaurer la sauvegarde ?",
+      "description": "Cela REMPLACERA toutes vos données {module} actuelles par les données sauvegardées. Tous les éléments existants seront supprimés et remplacés. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Restaurer",
+      "restoring": "Restauration..."
+    },
+    "delete": {
+      "title": "Supprimer la sauvegarde ?",
+      "description": "Cela supprimera définitivement cette sauvegarde. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer",
+      "deleting": "Suppression..."
+    }
+  },
+  "messages": {
+    "createSuccess": "Sauvegarde créée avec succès",
+    "createSuccessDescription": "{count} élément(s) {module} sauvegardé(s)",
+    "createError": "Échec de la création de la sauvegarde",
+    "restoreSuccess": "Sauvegarde restaurée avec succès",
+    "restoreSuccessDescription": "{count} élément(s) restauré(s). Tous les éléments existants ont été remplacés.",
+    "restoreError": "Échec de la restauration de la sauvegarde",
+    "deleteSuccess": "Sauvegarde supprimée avec succès",
+    "deleteError": "Échec de la suppression de la sauvegarde",
+    "errorGeneric": "Une erreur s'est produite"
+  }
+}

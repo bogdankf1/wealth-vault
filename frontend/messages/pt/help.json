@@ -1,0 +1,54 @@
+{
+  "page": {
+    "title": "Central de Ajuda",
+    "description": "Obtenha ajuda com suas dúvidas ou relate problemas. Nossa equipe de suporte está aqui para ajudá-lo."
+  },
+  "createTopic": {
+    "title": "Criar Novo Tópico de Suporte",
+    "description": "Tem uma pergunta ou precisa de ajuda? Crie um novo tópico e retornaremos para você.",
+    "titlePlaceholder": "Título do tópico (ex: 'Não consigo adicionar despesa')",
+    "messagePlaceholder": "Descreva seu problema ou pergunta em detalhes...",
+    "button": "Criar Tópico",
+    "creating": "Criando..."
+  },
+  "topicsList": {
+    "title": "Seus Tópicos de Suporte",
+    "empty": "Nenhum tópico de suporte ainda",
+    "emptyDescription": "Crie seu primeiro tópico acima para obter ajuda de nossa equipe de suporte.",
+    "created": "Criado",
+    "lastActivity": "Última atividade",
+    "ago": "atrás",
+    "messages": "mensagens"
+  },
+  "topicDetail": {
+    "backButton": "Voltar aos Tópicos",
+    "refreshButton": "Atualizar",
+    "created": "Criado",
+    "ago": "atrás",
+    "noteTitle": "Nota:",
+    "noteText": "Normalmente respondemos dentro de 24-48 horas. Por favor, atualize esta página para ver novas respostas de nossa equipe de suporte.",
+    "supportTeam": "Equipe de Suporte",
+    "you": "Você",
+    "replyPlaceholder": "Digite sua resposta aqui...",
+    "sendButton": "Enviar Resposta",
+    "sending": "Enviando...",
+    "resolvedMessage": "Este tópico foi marcado como resolvido. Se precisar de mais assistência, por favor crie um novo tópico."
+  },
+  "status": {
+    "open": "Aberto",
+    "inProgress": "Em Andamento",
+    "resolved": "Resolvido"
+  },
+  "toasts": {
+    "createError": "Erro",
+    "createErrorDescription": "Por favor, preencha o título e a mensagem",
+    "createSuccess": "Sucesso",
+    "createSuccessDescription": "Seu tópico de suporte foi criado",
+    "createFailed": "Erro",
+    "createFailedDescription": "Falha ao criar tópico. Por favor, tente novamente.",
+    "replySuccess": "Sucesso",
+    "replySuccessDescription": "Sua resposta foi enviada",
+    "replyFailed": "Erro",
+    "replyFailedDescription": "Falha ao enviar resposta. Por favor, tente novamente."
+  }
+}

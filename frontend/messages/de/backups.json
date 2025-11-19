@@ -1,0 +1,79 @@
+{
+  "page": {
+    "title": "Datensicherungen",
+    "description": "Erstellen und wiederherstellen Sie Snapshots Ihrer Finanzdaten"
+  },
+  "create": {
+    "title": "Neue Sicherung erstellen",
+    "description": "Wählen Sie ein Modul und erstellen Sie eine Sicherung aller Daten",
+    "label": "Zu sicherndes Modul",
+    "placeholder": "Modul auswählen",
+    "button": "Sicherung erstellen",
+    "creating": "Wird erstellt..."
+  },
+  "list": {
+    "title": "Ihre Sicherungen",
+    "description": "Anzeigen und Wiederherstellen Ihrer gesicherten Daten",
+    "loading": "Sicherungen werden geladen...",
+    "empty": "Noch keine Sicherungen. Erstellen Sie oben Ihre erste Sicherung.",
+    "table": {
+      "date": "Datum",
+      "module": "Modul",
+      "items": "Einträge",
+      "actions": "Aktionen"
+    },
+    "itemCount": "{count} Eintrag/Einträge",
+    "actions": {
+      "restore": "Wiederherstellen",
+      "delete": "Löschen"
+    }
+  },
+  "modules": {
+    "income": "Einkommen",
+    "expenses": "Ausgaben",
+    "subscriptions": "Abonnements",
+    "installments": "Ratenzahlungen",
+    "budgets": "Budgets",
+    "savings": "Ersparnisse",
+    "portfolio": "Portfolio",
+    "goals": "Ziele",
+    "debts": "Schulden",
+    "taxes": "Steuern"
+  },
+  "info": {
+    "title": "Wichtige Informationen",
+    "point1": "Sicherungen erstellen einen Snapshot aller Daten im ausgewählten Modul zum Zeitpunkt der Erstellung",
+    "point2": "Die Wiederherstellung einer Sicherung wird alle aktuellen Daten LÖSCHEN und durch die gesicherten Daten ERSETZEN",
+    "point3": "Jede Sicherung speichert den vollständigen Status Ihrer Daten, einschließlich aller Felder und Einstellungen",
+    "point4": "Sicherungen sind exklusiv für Abonnenten der Wealth-Stufe",
+    "point5": "Sie können mehrere Sicherungen für dasselbe Modul erstellen, um Änderungen im Laufe der Zeit zu verfolgen",
+    "warning": "Warnung:"
+  },
+  "dialogs": {
+    "restore": {
+      "title": "Sicherung wiederherstellen?",
+      "description": "Dies wird alle Ihre aktuellen {module}-Daten durch die gesicherten Daten ERSETZEN. Alle vorhandenen Einträge werden gelöscht und ersetzt. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Wiederherstellen",
+      "restoring": "Wird wiederhergestellt..."
+    },
+    "delete": {
+      "title": "Sicherung löschen?",
+      "description": "Dies wird diese Sicherung dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Löschen",
+      "deleting": "Wird gelöscht..."
+    }
+  },
+  "messages": {
+    "createSuccess": "Sicherung erfolgreich erstellt",
+    "createSuccessDescription": "{count} {module}-Einträge gesichert",
+    "createError": "Sicherung konnte nicht erstellt werden",
+    "restoreSuccess": "Sicherung erfolgreich wiederhergestellt",
+    "restoreSuccessDescription": "{count} Einträge wiederhergestellt. Alle vorhandenen Einträge wurden ersetzt.",
+    "restoreError": "Sicherung konnte nicht wiederhergestellt werden",
+    "deleteSuccess": "Sicherung erfolgreich gelöscht",
+    "deleteError": "Sicherung konnte nicht gelöscht werden",
+    "errorGeneric": "Ein Fehler ist aufgetreten"
+  }
+}

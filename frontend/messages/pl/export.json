@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Eksport danych",
+    "description": "Eksportuj swoje dane finansowe w różnych formatach"
+  },
+  "card": {
+    "title": "Konfiguracja eksportu",
+    "description": "Wybierz typ danych, okres i format, który chcesz wyeksportować"
+  },
+  "labels": {
+    "dataType": "Typ danych",
+    "exportFormat": "Format eksportu",
+    "month": "Miesiąc",
+    "year": "Rok"
+  },
+  "placeholders": {
+    "selectDataType": "Wybierz typ danych",
+    "selectFormat": "Wybierz format",
+    "selectMonth": "Wybierz miesiąc",
+    "selectYear": "Wybierz rok"
+  },
+  "entryTypes": {
+    "income": "Dochody",
+    "expenses": "Wydatki",
+    "subscriptions": "Subskrypcje",
+    "installments": "Raty",
+    "budgets": "Budżety",
+    "savings": "Oszczędności",
+    "portfolio": "Portfel",
+    "goals": "Cele",
+    "debts": "Długi",
+    "taxes": "Podatki"
+  },
+  "months": {
+    "january": "Styczeń",
+    "february": "Luty",
+    "march": "Marzec",
+    "april": "Kwiecień",
+    "may": "Maj",
+    "june": "Czerwiec",
+    "july": "Lipiec",
+    "august": "Sierpień",
+    "september": "Wrzesień",
+    "october": "Październik",
+    "november": "Listopad",
+    "december": "Grudzień"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Eksportuj dane",
+    "exporting": "Eksportowanie..."
+  },
+  "messages": {
+    "successTitle": "Pomyślnie wyeksportowano dane {type}",
+    "successDescription": "Plik: {filename}",
+    "errorAccessDenied": "Odmowa dostępu",
+    "errorAccessDeniedDescription": "Ta funkcja wymaga subskrypcji poziomu Wealth",
+    "errorFailed": "Eksport nie powiódł się",
+    "errorFailedDescription": "Nie udało się wyeksportować danych. Spróbuj ponownie."
+  },
+  "info": {
+    "title": "O eksporcie danych",
+    "point1": "Eksporty obejmują wszystkie rekordy dla wybranego miesiąca i roku",
+    "point2": "Pliki CSV można otworzyć w programie Excel, Arkuszach Google lub dowolnej aplikacji do arkuszy kalkulacyjnych",
+    "point3": "Ta funkcja jest dostępna wyłącznie dla subskrybentów poziomu Wealth",
+    "point4": "Dodatkowe formaty eksportu mogą zostać dodane w przyszłych aktualizacjach"
+  }
+}

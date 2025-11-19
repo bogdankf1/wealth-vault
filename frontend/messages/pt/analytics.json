@@ -1,0 +1,93 @@
+{
+  "incomeAllocation": {
+    "title": "Alocação de Receita",
+    "description": "Como sua receita é distribuída",
+    "tooltip": "Mostra como sua receita mensal é alocada entre despesas, assinaturas, parcelamentos e poupança líquida. Ajuda a identificar padrões de gastos e potencial de poupança.",
+    "totalIncome": "Receita Total",
+    "categories": {
+      "expenses": "Despesas",
+      "subscriptions": "Assinaturas",
+      "installments": "Parcelamentos",
+      "netSavings": "Poupança Líquida",
+      "taxes": "Impostos"
+    },
+    "chartLabels": {
+      "amount": "Valor",
+      "percentage": "Porcentagem"
+    },
+    "summary": "Resumo de alocação de receita mensal",
+    "emptyState": "Nenhum dado de receita disponível para o mês atual"
+  },
+  "netWorthTrend": {
+    "title": "Tendência do Patrimônio Líquido",
+    "description": "Acompanhe o crescimento de sua riqueza ao longo do tempo",
+    "tooltip": "Visualiza mudanças no patrimônio líquido ao longo do tempo. Patrimônio Líquido = Ativos (portfólio + poupança) - Passivos (dívidas). Ajuda a acompanhar o progresso de construção de riqueza.",
+    "stats": {
+      "current": "Patrimônio Líquido Atual",
+      "periodChange": "Mudança no Período",
+      "peak": "Patrimônio Líquido Máximo",
+      "starting": "Ponto de Partida"
+    },
+    "categories": {
+      "netWorth": "Patrimônio Líquido",
+      "assets": "Ativos",
+      "liabilities": "Passivos"
+    },
+    "insights": {
+      "title": "Análise de Crescimento",
+      "trend": "Tendência Geral",
+      "growing": "Crescendo",
+      "declining": "Declinando",
+      "avgMonthly": "Mudança Mensal Média"
+    },
+    "emptyState": "Nenhum dado de patrimônio líquido disponível para o período selecionado"
+  },
+  "subscriptionsByCategory": {
+    "title": "Assinaturas por Categoria",
+    "description": "Gastos mensais com assinaturas por categoria",
+    "tooltip": "Mostra todas as assinaturas ativas agrupadas por categoria. Os valores são equivalentes mensais independentemente da frequência de cobrança.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Valor",
+      "percentage": "Porcentagem"
+    },
+    "topCategories": "Principais categorias de assinaturas",
+    "emptyState": "Nenhum dado de assinatura disponível"
+  },
+  "installmentsByCategory": {
+    "title": "Parcelamentos por Categoria",
+    "description": "Pagamentos mensais de parcelamentos por categoria",
+    "tooltip": "Mostra todos os planos de parcelamento ativos agrupados por categoria. Exibe valores de pagamento mensais.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Valor",
+      "percentage": "Porcentagem"
+    },
+    "topCategories": "Principais categorias de parcelamentos",
+    "emptyState": "Nenhum dado de parcelamento disponível"
+  },
+  "expensesByCategory": {
+    "title": "Despesas por Categoria",
+    "description": "Distribuição mensal de despesas por categoria",
+    "tooltip": "Mostra o detalhamento de despesas por categoria para o período selecionado. Ajuda a identificar áreas principais de gastos.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Valor",
+      "percentage": "Porcentagem"
+    },
+    "topCategories": "Principais categorias de despesas",
+    "emptyState": "Nenhum dado de despesa disponível"
+  },
+  "budgetsByCategory": {
+    "title": "Orçamentos por Categoria",
+    "description": "Alocação mensal de orçamento por categoria",
+    "tooltip": "Mostra todos os orçamentos ativos agrupados por categoria. Cada orçamento rastreia despesas dentro de seu próprio período de tempo.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Valor",
+      "percentage": "Porcentagem"
+    },
+    "topCategories": "Principais categorias de orçamento",
+    "emptyState": "Nenhum dado de orçamento disponível"
+  }
+}

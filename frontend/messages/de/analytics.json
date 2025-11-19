@@ -1,0 +1,93 @@
+{
+  "incomeAllocation": {
+    "title": "Einkommensverteilung",
+    "description": "Wie Ihr Einkommen verteilt ist",
+    "tooltip": "Zeigt, wie Ihr monatliches Einkommen auf Ausgaben, Abonnements, Ratenzahlungen und Netto-Ersparnisse verteilt ist. Hilft, Ausgabenmuster und Sparpotenzial zu identifizieren.",
+    "totalIncome": "Gesamteinkommen",
+    "categories": {
+      "expenses": "Ausgaben",
+      "subscriptions": "Abonnements",
+      "installments": "Ratenzahlungen",
+      "netSavings": "Netto-Ersparnisse",
+      "taxes": "Steuern"
+    },
+    "chartLabels": {
+      "amount": "Betrag",
+      "percentage": "Prozentsatz"
+    },
+    "summary": "Monatliche Einkommensverteilungszusammenfassung",
+    "emptyState": "Keine Einkommensdaten für den aktuellen Monat verfügbar"
+  },
+  "netWorthTrend": {
+    "title": "Nettovermögenstrend",
+    "description": "Verfolgen Sie Ihr Vermögenswachstum im Laufe der Zeit",
+    "tooltip": "Visualisiert Nettovermögensänderungen im Laufe der Zeit. Nettovermögen = Vermögenswerte (Portfolio + Ersparnisse) - Verbindlichkeiten (Schulden). Hilft, den Vermögensaufbau zu verfolgen.",
+    "stats": {
+      "current": "Aktuelles Nettovermögen",
+      "periodChange": "Zeitraumänderung",
+      "peak": "Höchstes Nettovermögen",
+      "starting": "Ausgangspunkt"
+    },
+    "categories": {
+      "netWorth": "Nettovermögen",
+      "assets": "Vermögenswerte",
+      "liabilities": "Verbindlichkeiten"
+    },
+    "insights": {
+      "title": "Wachstumsanalyse",
+      "trend": "Gesamttrend",
+      "growing": "Wachsend",
+      "declining": "Abnehmend",
+      "avgMonthly": "Durchschnittliche monatliche Änderung"
+    },
+    "emptyState": "Keine Nettovermögensdaten für den ausgewählten Zeitraum verfügbar"
+  },
+  "subscriptionsByCategory": {
+    "title": "Abonnements nach Kategorie",
+    "description": "Monatliche Abonnementausgaben nach Kategorie",
+    "tooltip": "Zeigt alle aktiven Abonnements gruppiert nach Kategorie. Beträge sind monatliche Äquivalente unabhängig von der Abrechnungsfrequenz.",
+    "total": "Gesamt",
+    "chartLabels": {
+      "amount": "Betrag",
+      "percentage": "Prozentsatz"
+    },
+    "topCategories": "Top-Abonnementkategorien",
+    "emptyState": "Keine Abonnementdaten verfügbar"
+  },
+  "installmentsByCategory": {
+    "title": "Ratenzahlungen nach Kategorie",
+    "description": "Monatliche Ratenzahlungen nach Kategorie",
+    "tooltip": "Zeigt alle aktiven Ratenzahlungspläne gruppiert nach Kategorie. Zeigt monatliche Zahlungsbeträge an.",
+    "total": "Gesamt",
+    "chartLabels": {
+      "amount": "Betrag",
+      "percentage": "Prozentsatz"
+    },
+    "topCategories": "Top-Ratenzahlungskategorien",
+    "emptyState": "Keine Ratenzahlungsdaten verfügbar"
+  },
+  "expensesByCategory": {
+    "title": "Ausgaben nach Kategorie",
+    "description": "Monatliche Ausgabenverteilung nach Kategorie",
+    "tooltip": "Zeigt die Ausgabenaufschlüsselung nach Kategorie für den ausgewählten Zeitraum. Hilft, wichtige Ausgabenbereiche zu identifizieren.",
+    "total": "Gesamt",
+    "chartLabels": {
+      "amount": "Betrag",
+      "percentage": "Prozentsatz"
+    },
+    "topCategories": "Top-Ausgabenkategorien",
+    "emptyState": "Keine Ausgabendaten verfügbar"
+  },
+  "budgetsByCategory": {
+    "title": "Budgets nach Kategorie",
+    "description": "Monatliche Budgetzuteilung nach Kategorie",
+    "tooltip": "Zeigt alle aktiven Budgets gruppiert nach Kategorie. Jedes Budget verfolgt Ausgaben innerhalb seines eigenen Zeitraums.",
+    "total": "Gesamt",
+    "chartLabels": {
+      "amount": "Betrag",
+      "percentage": "Prozentsatz"
+    },
+    "topCategories": "Top-Budgetkategorien",
+    "emptyState": "Keine Budgetdaten verfügbar"
+  }
+}

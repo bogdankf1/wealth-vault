@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Wybierz swój plan",
+    "subtitle": "Zacznij za darmo i uaktualnij w miarę rozwoju. Wszystkie plany obejmują 14-dniową gwarancję zwrotu pieniędzy.",
+    "recommended": "POLECANE",
+    "perMonth": "/miesiąc",
+    "empty": "Brak dostępnych poziomów cenowych w tej chwili."
+  },
+  "buttons": {
+    "currentPlan": "Aktualny plan",
+    "loading": "Ładowanie...",
+    "getStarted": "Rozpocznij",
+    "subscribe": "Subskrybuj"
+  },
+  "footer": {
+    "text": "Wszystkie plany mogą być uaktualnione lub anulowane w dowolnym momencie. Potrzebujesz pomocy w wyborze?",
+    "contactLink": "Skontaktuj się z nami"
+  },
+  "descriptions": {
+    "starter": "Idealny do rozpoczęcia śledzenia finansów osobistych",
+    "growth": "Zaawansowane funkcje do poważnego zarządzania finansami",
+    "wealth": "Funkcje premium do kompleksowego zarządzania majątkiem"
+  },
+  "features": {
+    "starter": {
+      "incomeSources": "Do 3 źródeł dochodu",
+      "expenseTracking": "Śledzenie wydatków",
+      "bankUpload": "Przesyłanie wyciągów bankowych",
+      "savingsAccounts": "Do 3 kont oszczędnościowych",
+      "subscriptions": "Do 5 subskrypcji",
+      "installments": "Do 2 rat",
+      "portfolioTracking": "Śledzenie portfela",
+      "financialGoals": "Cele finansowe",
+      "debtTracking": "Śledzenie długów",
+      "taxTracking": "Śledzenie podatków",
+      "aiInsights": "Spostrzeżenia AI"
+    },
+    "growth": {
+      "incomeSources": "Do 10 źródeł dochodu",
+      "expenseTracking": "Śledzenie wydatków",
+      "aiCategorization": "Kategoryzacja AI",
+      "bankUpload": "Przesyłanie wyciągów bankowych",
+      "savingsAccounts": "Do 10 kont oszczędnościowych",
+      "multiCurrency": "Wsparcie wielu walut",
+      "portfolioAssets": "Do 20 aktywów portfela",
+      "financialGoals": "Cele finansowe",
+      "subscriptions": "Do 20 subskrypcji",
+      "installments": "Do 10 rat",
+      "debtTracking": "Śledzenie długów",
+      "taxTracking": "Śledzenie podatków",
+      "aiInsights": "Spostrzeżenia AI"
+    },
+    "wealth": {
+      "incomeSources": "Nieograniczone źródła dochodu",
+      "expenses": "Nieograniczone wydatki",
+      "aiCategorization": "Kategoryzacja AI",
+      "aiInsights": "Spostrzeżenia AI",
+      "bankUpload": "Przesyłanie wyciągów bankowych",
+      "savingsAccounts": "Nieograniczone konta oszczędnościowe",
+      "multiCurrency": "Wsparcie wielu walut",
+      "portfolioAssets": "Nieograniczone aktywa portfela",
+      "stockPrices": "Ceny akcji w czasie rzeczywistym",
+      "financialGoals": "Cele finansowe",
+      "subscriptions": "Nieograniczone subskrypcje",
+      "installments": "Nieograniczone raty",
+      "debtTracking": "Śledzenie długów",
+      "taxTracking": "Śledzenie podatków"
+    }
+  }
+}

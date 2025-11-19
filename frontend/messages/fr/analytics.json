@@ -1,0 +1,93 @@
+{
+  "incomeAllocation": {
+    "title": "Répartition des revenus",
+    "description": "Comment vos revenus sont distribués",
+    "tooltip": "Montre comment vos revenus mensuels sont répartis entre les dépenses, abonnements, versements et épargne nette. Aide à identifier les modèles de dépenses et le potentiel d'épargne.",
+    "totalIncome": "Revenus totaux",
+    "categories": {
+      "expenses": "Dépenses",
+      "subscriptions": "Abonnements",
+      "installments": "Versements",
+      "netSavings": "Épargne nette",
+      "taxes": "Impôts"
+    },
+    "chartLabels": {
+      "amount": "Montant",
+      "percentage": "Pourcentage"
+    },
+    "summary": "Résumé de la répartition des revenus mensuels",
+    "emptyState": "Aucune donnée de revenus disponible pour le mois en cours"
+  },
+  "netWorthTrend": {
+    "title": "Tendance de la valeur nette",
+    "description": "Suivez la croissance de votre patrimoine au fil du temps",
+    "tooltip": "Visualise les changements de valeur nette au fil du temps. Valeur nette = Actifs (portefeuille + épargne) - Passifs (dettes). Aide à suivre la progression de la construction du patrimoine.",
+    "stats": {
+      "current": "Valeur nette actuelle",
+      "periodChange": "Changement de période",
+      "peak": "Valeur nette maximale",
+      "starting": "Point de départ"
+    },
+    "categories": {
+      "netWorth": "Valeur nette",
+      "assets": "Actifs",
+      "liabilities": "Passifs"
+    },
+    "insights": {
+      "title": "Analyse de croissance",
+      "trend": "Tendance globale",
+      "growing": "En croissance",
+      "declining": "En baisse",
+      "avgMonthly": "Changement mensuel moyen"
+    },
+    "emptyState": "Aucune donnée de valeur nette disponible pour la période sélectionnée"
+  },
+  "subscriptionsByCategory": {
+    "title": "Abonnements par catégorie",
+    "description": "Dépenses d'abonnement mensuelles par catégorie",
+    "tooltip": "Affiche tous les abonnements actifs regroupés par catégorie. Les montants sont des équivalents mensuels quelle que soit la fréquence de facturation.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Montant",
+      "percentage": "Pourcentage"
+    },
+    "topCategories": "Principales catégories d'abonnements",
+    "emptyState": "Aucune donnée d'abonnement disponible"
+  },
+  "installmentsByCategory": {
+    "title": "Versements par catégorie",
+    "description": "Paiements de versements mensuels par catégorie",
+    "tooltip": "Affiche tous les plans de versement actifs regroupés par catégorie. Affiche les montants de paiement mensuels.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Montant",
+      "percentage": "Pourcentage"
+    },
+    "topCategories": "Principales catégories de versements",
+    "emptyState": "Aucune donnée de versement disponible"
+  },
+  "expensesByCategory": {
+    "title": "Dépenses par catégorie",
+    "description": "Distribution mensuelle des dépenses par catégorie",
+    "tooltip": "Affiche la répartition des dépenses par catégorie pour la période sélectionnée. Aide à identifier les principaux domaines de dépenses.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Montant",
+      "percentage": "Pourcentage"
+    },
+    "topCategories": "Principales catégories de dépenses",
+    "emptyState": "Aucune donnée de dépenses disponible"
+  },
+  "budgetsByCategory": {
+    "title": "Budgets par catégorie",
+    "description": "Allocation budgétaire mensuelle par catégorie",
+    "tooltip": "Affiche tous les budgets actifs regroupés par catégorie. Chaque budget suit les dépenses dans sa propre période.",
+    "total": "Total",
+    "chartLabels": {
+      "amount": "Montant",
+      "percentage": "Pourcentage"
+    },
+    "topCategories": "Principales catégories de budgets",
+    "emptyState": "Aucune donnée de budget disponible"
+  }
+}

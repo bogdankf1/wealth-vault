@@ -1,0 +1,54 @@
+{
+  "page": {
+    "title": "Centro Assistenza",
+    "description": "Ottenga aiuto con le sue domande o segnali problemi. Il nostro team di supporto è qui per assisterla."
+  },
+  "createTopic": {
+    "title": "Crea Nuovo Argomento di Supporto",
+    "description": "Ha una domanda o ha bisogno di aiuto? Crei un nuovo argomento e le risponderemo.",
+    "titlePlaceholder": "Titolo argomento (es., 'Impossibile aggiungere spesa')",
+    "messagePlaceholder": "Descriva il suo problema o la sua domanda in dettaglio...",
+    "button": "Crea Argomento",
+    "creating": "Creazione..."
+  },
+  "topicsList": {
+    "title": "I Suoi Argomenti di Supporto",
+    "empty": "Nessun argomento di supporto ancora",
+    "emptyDescription": "Crei il suo primo argomento sopra per ottenere aiuto dal nostro team di supporto.",
+    "created": "Creato",
+    "lastActivity": "Ultima attività",
+    "ago": "fa",
+    "messages": "messaggi"
+  },
+  "topicDetail": {
+    "backButton": "Torna agli Argomenti",
+    "refreshButton": "Aggiorna",
+    "created": "Creato",
+    "ago": "fa",
+    "noteTitle": "Nota:",
+    "noteText": "Di solito rispondiamo entro 24-48 ore. Aggiorni questa pagina per vedere le nuove risposte dal nostro team di supporto.",
+    "supportTeam": "Team di Supporto",
+    "you": "Lei",
+    "replyPlaceholder": "Digiti la sua risposta qui...",
+    "sendButton": "Invia Risposta",
+    "sending": "Invio...",
+    "resolvedMessage": "Questo argomento è stato contrassegnato come risolto. Se ha bisogno di ulteriore assistenza, crei un nuovo argomento."
+  },
+  "status": {
+    "open": "Aperto",
+    "inProgress": "In Corso",
+    "resolved": "Risolto"
+  },
+  "toasts": {
+    "createError": "Errore",
+    "createErrorDescription": "Compili sia il titolo che il messaggio",
+    "createSuccess": "Successo",
+    "createSuccessDescription": "Il suo argomento di supporto è stato creato",
+    "createFailed": "Errore",
+    "createFailedDescription": "Impossibile creare l'argomento. Riprovi.",
+    "replySuccess": "Successo",
+    "replySuccessDescription": "La sua risposta è stata inviata",
+    "replyFailed": "Errore",
+    "replyFailedDescription": "Impossibile inviare la risposta. Riprovi."
+  }
+}

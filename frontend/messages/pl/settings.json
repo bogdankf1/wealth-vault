@@ -1,0 +1,537 @@
+{
+  "page": {
+    "title": "Ustawienia",
+    "description": "Zarządzaj ustawieniami konta i preferencjami"
+  },
+  "tabs": {
+    "account": "Konto",
+    "subscription": "Subskrypcja",
+    "appearance": "Wygląd",
+    "dashboard": "Dashboard",
+    "notifications": "Powiadomienia",
+    "privacy": "Prywatność",
+    "security": "Bezpieczeństwo"
+  },
+  "account": {
+    "title": "Informacje o koncie",
+    "description": "Szczegóły i informacje o Twoim koncie",
+    "name": "Imię",
+    "email": "Email",
+    "memberSince": "Członek od",
+    "notSet": "Nie ustawiono"
+  },
+  "subscription": {
+    "title": "Szczegóły subskrypcji",
+    "description": "Zarządzaj swoim planem i informacjami płatniczymi",
+    "currentPlan": "Twój aktualny plan",
+    "currentPeriod": "Aktualny okres",
+    "nextBillingDate": "Następna data płatności",
+    "subscriptionEnding": "Zakończenie subskrypcji",
+    "subscriptionEndingDescription": "Twoja subskrypcja zostanie anulowana w dniu",
+    "viewPricingPlans": "Wyświetl plany cenowe",
+    "cancelSubscription": "Anuluj subskrypcję",
+    "statuses": {
+      "active": "aktywna",
+      "past_due": "zaległa",
+      "cancelled": "anulowana"
+    },
+    "paymentHistory": {
+      "title": "Historia płatności",
+      "description": "Twoje ostatnie transakcje płatnicze",
+      "subscriptionPayment": "Płatność za subskrypcję",
+      "statuses": {
+        "succeeded": "udana",
+        "failed": "nieudana",
+        "pending": "oczekująca"
+      }
+    },
+    "cancelDialog": {
+      "title": "Anuluj subskrypcję",
+      "description": "Czy na pewno chcesz anulować subskrypcję? Nadal będziesz mieć dostęp do końca obecnego okresu rozliczeniowego.",
+      "keepSubscription": "Zachowaj subskrypcję",
+      "confirmCancel": "Anuluj subskrypcję"
+    },
+    "toasts": {
+      "cancelled": {
+        "title": "Subskrypcja anulowana",
+        "description": "Twoja subskrypcja zostanie anulowana na koniec okresu rozliczeniowego."
+      },
+      "error": {
+        "title": "Błąd",
+        "description": "Nie udało się anulować subskrypcji"
+      }
+    }
+  },
+  "appearance": {
+    "theme": {
+      "title": "Motyw",
+      "description": "Wybierz preferowany schemat kolorów",
+      "options": {
+        "light": {
+          "label": "Jasny",
+          "description": "Jasny motyw"
+        },
+        "dark": {
+          "label": "Ciemny",
+          "description": "Ciemny motyw"
+        },
+        "system": {
+          "label": "Systemowy",
+          "description": "Zgodnie z ustawieniami systemu"
+        }
+      }
+    },
+    "language": {
+      "title": "Język",
+      "description": "Wybierz preferowany język interfejsu",
+      "selectPlaceholder": "Wybierz język"
+    },
+    "accentColor": {
+      "title": "Kolor akcentu",
+      "description": "Wybierz preferowany kolor akcentu",
+      "comingSoon": "Wkrótce",
+      "warningMessage": "Twoja preferencja koloru akcentu jest zapisana, ale niestandardowe kolory akcentu nie są jeszcze stosowane w całej aplikacji. Ta funkcja zostanie wkrótce aktywowana.",
+      "colors": {
+        "blue": "Niebieski",
+        "purple": "Fioletowy",
+        "green": "Zielony",
+        "orange": "Pomarańczowy",
+        "red": "Czerwony",
+        "pink": "Różowy",
+        "indigo": "Indygo",
+        "teal": "Turkusowy"
+      }
+    },
+    "fontSize": {
+      "title": "Rozmiar czcionki",
+      "description": "Dostosuj bazowy rozmiar czcionki",
+      "comingSoon": "Wkrótce",
+      "warningMessage": "Twoja preferencja rozmiaru czcionki jest zapisana, ale dynamiczne skalowanie czcionki nie jest jeszcze stosowane w całej aplikacji. Ta funkcja zostanie wkrótce aktywowana.",
+      "selectPlaceholder": "Wybierz rozmiar czcionki",
+      "options": {
+        "small": {
+          "label": "Mały",
+          "description": "14px bazowy"
+        },
+        "medium": {
+          "label": "Średni",
+          "description": "16px bazowy (domyślny)"
+        },
+        "large": {
+          "label": "Duży",
+          "description": "18px bazowy"
+        }
+      }
+    },
+    "currency": {
+      "title": "Waluta",
+      "description": "Wybierz preferowaną walutę dla wszystkich transakcji i wyświetleń",
+      "label": "Waluta",
+      "info": "Ta waluta będzie używana do wprowadzania danych i wyświetlania wszystkich kwot",
+      "selectPlaceholder": "Wybierz walutę"
+    },
+    "defaultViews": {
+      "title": "Preferencje domyślnych widoków",
+      "description": "Ustaw preferowane domyślne widoki dla stron modułów. Możesz zawsze je nadpisać na poszczególnych stronach.",
+      "contentView": {
+        "title": "Widok treści",
+        "description": "Wybierz domyślny widok do wyświetlania kart treści (dochody, wydatki itp.)",
+        "options": {
+          "card": {
+            "label": "Widok kart",
+            "description": "Układ siatki ze szczegółowymi kartami"
+          },
+          "list": {
+            "label": "Widok listy",
+            "description": "Kompaktowy układ tabeli"
+          }
+        }
+      },
+      "statsView": {
+        "title": "Widok statystyk",
+        "description": "Wybierz domyślny widok do wyświetlania kart statystyk u góry stron modułów",
+        "options": {
+          "cards": {
+            "label": "Widok kart",
+            "description": "Tradycyjny układ siatki kart"
+          },
+          "compact": {
+            "label": "Widok kompaktowy",
+            "description": "Oszczędny układ listy"
+          }
+        }
+      }
+    },
+    "toasts": {
+      "themeUpdated": {
+        "title": "Motyw zaktualizowany",
+        "description": "Motyw zmieniony na"
+      },
+      "languageUpdated": {
+        "title": "Język zaktualizowany",
+        "description": "Język zmieniony na"
+      },
+      "accentColorUpdated": {
+        "title": "Kolor akcentu zaktualizowany",
+        "description": "Kolor akcentu zmieniony na"
+      },
+      "fontSizeUpdated": {
+        "title": "Rozmiar czcionki zaktualizowany",
+        "description": "Rozmiar czcionki zmieniony na"
+      },
+      "currencyUpdated": {
+        "title": "Waluta zaktualizowana",
+        "description": "Waluta zmieniona na"
+      },
+      "contentViewUpdated": {
+        "title": "Domyślny widok treści zaktualizowany",
+        "description": "Domyślny widok treści zmieniony na"
+      },
+      "statsViewUpdated": {
+        "title": "Domyślny widok statystyk zaktualizowany",
+        "description": "Domyślny widok statystyk zmieniony na"
+      },
+      "error": {
+        "title": "Błąd",
+        "themeDescription": "Nie udało się zapisać preferencji motywu",
+        "languageDescription": "Nie udało się zapisać preferencji języka",
+        "accentColorDescription": "Nie udało się zapisać preferencji koloru akcentu",
+        "fontSizeDescription": "Nie udało się zapisać preferencji rozmiaru czcionki",
+        "currencyDescription": "Nie udało się zapisać preferencji waluty",
+        "contentViewDescription": "Nie udało się zapisać preferencji domyślnego widoku treści",
+        "statsViewDescription": "Nie udało się zapisać preferencji domyślnego widoku statystyk"
+      }
+    }
+  },
+  "dashboardLayouts": {
+    "title": "Układy dashboardu",
+    "description": "Dostosuj swój dashboard, tworząc i zarządzając różnymi układami",
+    "wealthTierRequired": "Niestandardowe układy wymagają poziomu Wealth",
+    "initializePresets": "Zainicjuj ustawienia wstępne",
+    "createLayout": "Utwórz układ",
+    "upgradeToCreate": "Uaktualnij, aby tworzyć",
+    "active": "Aktywny",
+    "preset": "Wstępny",
+    "widgetsVisible": "widżetów widocznych",
+    "of": "z",
+    "noLayoutsFound": "Nie znaleziono układów. Utwórz swój pierwszy układ lub zainicjuj ustawienia wstępne.",
+    "upgradeToWealth": "Uaktualnij do Wealth",
+    "customLayoutsInfo": "Niestandardowe układy są dostępne dla subskrybentów poziomu Wealth.",
+    "viewPricing": "Wyświetl cennik",
+    "editor": {
+      "createTitle": "Utwórz układ",
+      "editTitle": "Edytuj układ",
+      "description": "Skonfiguruj, które widżety pokazać i ich widoczność na swoim dashboardzie.",
+      "layoutName": "Nazwa układu",
+      "layoutNamePlaceholder": "np. Mój niestandardowy układ",
+      "widgetsLabel": "Widżety",
+      "cancel": "Anuluj",
+      "create": "Utwórz",
+      "update": "Aktualizuj"
+    },
+    "widgets": {
+      "quick-actions": {
+        "label": "Szybkie akcje",
+        "description": "Przyciski szybkiego dostępu"
+      },
+      "ai-insights": {
+        "label": "Spostrzeżenia AI",
+        "description": "Spostrzeżenia finansowe napędzane przez AI"
+      },
+      "exchange-rates": {
+        "label": "Kursy walut",
+        "description": "Kursy wymiany walut"
+      },
+      "net-worth": {
+        "label": "Wartość netto",
+        "description": "Przegląd całkowitej wartości netto"
+      },
+      "income-vs-expenses": {
+        "label": "Dochód vs Wydatki",
+        "description": "Wykres porównawczy"
+      },
+      "monthly-spending": {
+        "label": "Wydatki miesięczne",
+        "description": "Podział wydatków"
+      },
+      "recent-transactions": {
+        "label": "Ostatnie transakcje",
+        "description": "Najnowsze transakcje"
+      },
+      "upcoming-bills": {
+        "label": "Nadchodzące rachunki",
+        "description": "Rachunki i subskrypcje"
+      },
+      "budget-overview": {
+        "label": "Przegląd budżetu",
+        "description": "Postęp budżetu"
+      },
+      "goals-progress": {
+        "label": "Postęp celów",
+        "description": "Cele finansowe"
+      },
+      "portfolio-summary": {
+        "label": "Podsumowanie portfela",
+        "description": "Portfel inwestycyjny"
+      },
+      "subscriptions-by-category": {
+        "label": "Subskrypcje wg kategorii",
+        "description": "Podział subskrypcji"
+      },
+      "installments-by-category": {
+        "label": "Raty wg kategorii",
+        "description": "Podział rat"
+      },
+      "expenses-by-category": {
+        "label": "Wydatki wg kategorii",
+        "description": "Podział wydatków"
+      },
+      "budgets-by-category": {
+        "label": "Budżety wg kategorii",
+        "description": "Podział budżetów"
+      },
+      "income-allocation": {
+        "label": "Alokacja dochodu",
+        "description": "Rozkład dochodu"
+      },
+      "net-worth-trend": {
+        "label": "Trend wartości netto",
+        "description": "Historyczna wartość netto"
+      },
+      "taxes": {
+        "label": "Podatki",
+        "description": "Podsumowanie podatków"
+      },
+      "debts-owed": {
+        "label": "Długi należne",
+        "description": "Śledzenie długów"
+      },
+      "planned-subscriptions": {
+        "label": "Zaplanowane subskrypcje",
+        "description": "Płatności subskrypcji dla wybranego miesiąca"
+      },
+      "planned-expenses": {
+        "label": "Zaplanowane wydatki",
+        "description": "Cykliczne płatności wydatków dla wybranego miesiąca"
+      },
+      "planned-installments": {
+        "label": "Zaplanowane raty",
+        "description": "Płatności ratalnych dla wybranego miesiąca"
+      }
+    },
+    "toasts": {
+      "layoutActivated": {
+        "title": "Układ aktywowany",
+        "description": "Układ dashboardu został aktywowany pomyślnie."
+      },
+      "layoutDeleted": {
+        "title": "Układ usunięty",
+        "description": "Układ dashboardu został usunięty pomyślnie."
+      },
+      "presetsInitialized": {
+        "title": "Ustawienia wstępne zainicjowane",
+        "description": "Domyślne układy wstępne zostały utworzone."
+      },
+      "layoutCreated": {
+        "title": "Układ utworzony",
+        "description": "Układ dashboardu został utworzony pomyślnie."
+      },
+      "layoutUpdated": {
+        "title": "Układ zaktualizowany",
+        "description": "Układ dashboardu został zaktualizowany pomyślnie."
+      },
+      "error": {
+        "title": "Błąd",
+        "activateDescription": "Nie udało się aktywować układu.",
+        "deleteDescription": "Nie udało się usunąć układu.",
+        "initializeDescription": "Nie udało się zainicjować ustawień wstępnych.",
+        "saveDescription": "Nie udało się zapisać układu.",
+        "nameRequired": "Proszę wprowadzić nazwę układu."
+      }
+    },
+    "deleteDialog": {
+      "title": "Usuń układ",
+      "description": "Czy na pewno chcesz usunąć ten układ? Tej operacji nie można cofnąć.",
+      "cancel": "Anuluj",
+      "delete": "Usuń",
+      "deleting": "Usuwanie..."
+    }
+  },
+  "notifications": {
+    "email": {
+      "title": "Powiadomienia email",
+      "description": "Zarządzaj, które emaile otrzymujesz od nas",
+      "comingSoon": "Wkrótce",
+      "warningMessage": "Twoje preferencje powiadomień są zapisane, ale powiadomienia email nie są jeszcze wysyłane. Ta funkcja zostanie wkrótce aktywowana.",
+      "marketing": {
+        "label": "Emaile marketingowe",
+        "description": "Otrzymuj emaile o nowych funkcjach, poradach i specjalnych ofertach"
+      },
+      "productUpdates": {
+        "label": "Aktualizacje produktu",
+        "description": "Otrzymuj powiadomienia o nowych funkcjach lub ulepszeniach"
+      },
+      "securityAlerts": {
+        "label": "Alerty bezpieczeństwa",
+        "description": "Ważne powiadomienia bezpieczeństwa dotyczące Twojego konta"
+      },
+      "billing": {
+        "label": "Rozliczenia i płatności",
+        "description": "Faktury, potwierdzenia płatności i aktualizacje rozliczeniowe"
+      },
+      "weeklySummary": {
+        "label": "Podsumowanie tygodniowe",
+        "description": "Tygodniowe podsumowanie Twojej aktywności finansowej i spostrzeżeń"
+      }
+    },
+    "push": {
+      "title": "Powiadomienia push",
+      "description": "Zarządzaj powiadomieniami w aplikacji i przeglądarce",
+      "comingSoon": "Wkrótce",
+      "warningMessage": "Twoje preferencje powiadomień są zapisane, ale powiadomienia push nie są jeszcze aktywne. Ta funkcja zostanie wkrótce aktywowana.",
+      "budgetAlerts": {
+        "label": "Alerty budżetowe",
+        "description": "Otrzymuj powiadomienia, gdy zbliżasz się do limitów budżetu"
+      },
+      "goalMilestones": {
+        "label": "Kamienie milowe celów",
+        "description": "Świętuj osiągnięcie celów oszczędnościowych lub kamieni milowych"
+      },
+      "subscriptionReminders": {
+        "label": "Przypomnienia o subskrypcjach",
+        "description": "Przypomnienia o nadchodzących odnowieniach subskrypcji"
+      },
+      "incomeNotifications": {
+        "label": "Powiadomienia o dochodach",
+        "description": "Otrzymuj powiadomienia, gdy otrzymasz dochód lub płatności"
+      }
+    },
+    "toasts": {
+      "emailUpdated": {
+        "title": "Powiadomienia email zaktualizowane",
+        "description": "Twoje preferencje powiadomień email zostały zapisane."
+      },
+      "pushUpdated": {
+        "title": "Powiadomienia push zaktualizowane",
+        "description": "Twoje preferencje powiadomień push zostały zapisane."
+      },
+      "error": {
+        "title": "Błąd",
+        "emailDescription": "Nie udało się zaktualizować preferencji powiadomień email",
+        "pushDescription": "Nie udało się zaktualizować preferencji powiadomień push"
+      }
+    }
+  },
+  "privacy": {
+    "analytics": {
+      "title": "Analityka i śledzenie",
+      "description": "Kontroluj, jakie dane zbieramy w celu poprawy naszej usługi",
+      "usageAnalytics": {
+        "label": "Analityka użytkowania",
+        "description": "Pomóż nam się rozwijać, udostępniając anonimowe dane użytkowania"
+      },
+      "errorReporting": {
+        "label": "Raportowanie błędów",
+        "description": "Automatycznie wysyłaj raporty błędów, aby pomóc nam naprawić błędy"
+      },
+      "performanceMonitoring": {
+        "label": "Monitorowanie wydajności",
+        "description": "Pomóż nam optymalizować wydajność, udostępniając metryki wydajności"
+      }
+    },
+    "dataVisibility": {
+      "title": "Widoczność danych",
+      "description": "Kontroluj, jak Twoje dane są używane w platformie",
+      "private": {
+        "label": "Prywatne",
+        "description": "Twoje dane są całkowicie prywatne i nigdy nie są udostępniane ani używane w zagregowanych statystykach"
+      },
+      "anonymous": {
+        "label": "Anonimowe",
+        "description": "Twoje dane mogą być używane w anonimowych zagregowanych statystykach w celu poprawy naszej usługi"
+      }
+    },
+    "dataExport": {
+      "title": "Eksportuj swoje dane",
+      "description": "Pobierz wszystkie swoje dane w przenośnym formacie (zgodnym z RODO)",
+      "comingSoon": "Wkrótce",
+      "warningMessage": "Funkcja eksportu danych jest obecnie w fazie rozwoju. Po jej uruchomieniu będziesz mógł pobrać wszystkie swoje dane finansowe.",
+      "info": "Będziesz mógł poprosić o kopię wszystkich swoich danych osobowych. Przygotujemy plik do pobrania zawierający wszystkie Twoje informacje, w tym źródła dochodu, wydatki, cele i szczegóły konta.",
+      "button": "Poproś o eksport danych"
+    },
+    "toasts": {
+      "analyticsUpdated": {
+        "title": "Preferencje analityki zaktualizowane",
+        "description": "Twoje preferencje prywatności zostały zapisane."
+      },
+      "dataVisibilityUpdated": {
+        "title": "Widoczność danych zaktualizowana",
+        "description": "Widoczność Twoich danych jest teraz ustawiona na"
+      },
+      "dataExportRequested": {
+        "title": "Zażądano eksportu danych",
+        "description": "Twój eksport danych będzie wkrótce gotowy. Wyślemy Ci email z linkiem do pobrania."
+      },
+      "error": {
+        "title": "Błąd",
+        "analyticsDescription": "Nie udało się zaktualizować preferencji prywatności",
+        "dataVisibilityDescription": "Nie udało się zaktualizować widoczności danych"
+      }
+    }
+  },
+  "security": {
+    "authMethod": {
+      "title": "Metoda uwierzytelniania",
+      "description": "Uwierzytelnianie Twojego konta jest zarządzane przez Twojego dostawcę tożsamości",
+      "signedInWith": "Zalogowano przez Google",
+      "securityInfo": "Twoje hasło i bezpieczeństwo konta są zarządzane przez Google. Aby zaktualizować hasło lub ustawienia bezpieczeństwa, odwiedź swoje konto Google.",
+      "manageGoogleAccount": "Zarządzaj bezpieczeństwem konta Google"
+    },
+    "twoFactor": {
+      "title": "Uwierzytelnianie dwuskładnikowe",
+      "description": "Dodaj dodatkową warstwę bezpieczeństwa do swojego konta",
+      "comingSoon": "Wkrótce",
+      "warningMessage": "Uwierzytelnianie dwuskładnikowe jest obecnie w fazie rozwoju. Po jego uruchomieniu będziesz mógł dodać dodatkową warstwę bezpieczeństwa do swojego konta.",
+      "enable": "Włącz 2FA",
+      "enableDescription": "Wymagaj kodu weryfikacyjnego oprócz hasła",
+      "enabled": {
+        "title": "Uwierzytelnianie dwuskładnikowe jest włączone",
+        "description": "Twoje konto jest chronione dodatkową warstwą bezpieczeństwa."
+      }
+    },
+    "sessions": {
+      "title": "Aktywne sesje",
+      "description": "Zarządzaj urządzeniami aktualnie zalogowanymi na Twoje konto",
+      "comingSoon": "Wkrótce",
+      "warningMessage": "Śledzenie sesji jest obecnie w fazie rozwoju. Sesje pokazane poniżej są przykładami tego, co zobaczysz, gdy ta funkcja zostanie uruchomiona.",
+      "current": "Aktualna",
+      "lastActive": "Ostatnio aktywny:",
+      "revoke": "Unieważnij",
+      "revokeAll": "Unieważnij wszystkie inne sesje"
+    },
+    "toasts": {
+      "twoFactorEnabled": {
+        "title": "2FA włączone",
+        "description": "Uwierzytelnianie dwuskładnikowe zostało włączone dla Twojego konta."
+      },
+      "twoFactorDisabled": {
+        "title": "2FA wyłączone",
+        "description": "Uwierzytelnianie dwuskładnikowe zostało wyłączone."
+      },
+      "sessionRevoked": {
+        "title": "Sesja unieważniona",
+        "description": "Sesja została zakończona pomyślnie."
+      },
+      "sessionsRevoked": {
+        "title": "Sesje unieważnione",
+        "description": "Wszystkie inne sesje zostały zakończone."
+      },
+      "error": {
+        "title": "Błąd",
+        "twoFactorDescription": "Nie udało się zaktualizować ustawień 2FA",
+        "sessionDescription": "Nie udało się unieważnić sesji",
+        "sessionsDescription": "Nie udało się unieważnić sesji"
+      }
+    }
+  }
+}

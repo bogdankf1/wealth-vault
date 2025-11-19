@@ -1,0 +1,33 @@
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "income": "Einkommen",
+    "expenses": "Ausgaben",
+    "budgets": "Budgets",
+    "savings": "Ersparnisse",
+    "portfolio": "Portfolio",
+    "goals": "Ziele",
+    "subscriptions": "Abonnements",
+    "installments": "Ratenzahlungen",
+    "debts": "Schulden",
+    "taxes": "Steuern"
+  },
+  "bottomNavigation": {
+    "export": "Exportieren",
+    "backups": "Sicherungen",
+    "pricing": "Preise",
+    "helpCenter": "Hilfe-Center",
+    "settings": "Einstellungen"
+  },
+  "admin": {
+    "panel": "Admin-Panel"
+  },
+  "user": {
+    "tier": "Stufe",
+    "logout": "Abmelden",
+    "openMenu": "Menü öffnen"
+  },
+  "logo": {
+    "title": "Wealth Vault"
+  }
+}

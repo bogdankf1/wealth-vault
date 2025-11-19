@@ -1,0 +1,54 @@
+{
+  "page": {
+    "title": "Centre d'aide",
+    "description": "Obtenez de l'aide pour vos questions ou signalez des problèmes. Notre équipe d'assistance est là pour vous aider."
+  },
+  "createTopic": {
+    "title": "Créer un nouveau sujet d'assistance",
+    "description": "Vous avez une question ou besoin d'aide ? Créez un nouveau sujet et nous vous répondrons.",
+    "titlePlaceholder": "Titre du sujet (par ex., 'Impossible d'ajouter une dépense')",
+    "messagePlaceholder": "Décrivez votre problème ou question en détail...",
+    "button": "Créer un sujet",
+    "creating": "Création..."
+  },
+  "topicsList": {
+    "title": "Vos sujets d'assistance",
+    "empty": "Aucun sujet d'assistance pour le moment",
+    "emptyDescription": "Créez votre premier sujet ci-dessus pour obtenir de l'aide de notre équipe d'assistance.",
+    "created": "Créé",
+    "lastActivity": "Dernière activité",
+    "ago": "il y a",
+    "messages": "messages"
+  },
+  "topicDetail": {
+    "backButton": "Retour aux sujets",
+    "refreshButton": "Actualiser",
+    "created": "Créé",
+    "ago": "il y a",
+    "noteTitle": "Remarque :",
+    "noteText": "Nous répondons généralement dans les 24 à 48 heures. Veuillez actualiser cette page pour voir les nouvelles réponses de notre équipe d'assistance.",
+    "supportTeam": "Équipe d'assistance",
+    "you": "Vous",
+    "replyPlaceholder": "Tapez votre réponse ici...",
+    "sendButton": "Envoyer la réponse",
+    "sending": "Envoi...",
+    "resolvedMessage": "Ce sujet a été marqué comme résolu. Si vous avez besoin d'aide supplémentaire, veuillez créer un nouveau sujet."
+  },
+  "status": {
+    "open": "Ouvert",
+    "inProgress": "En cours",
+    "resolved": "Résolu"
+  },
+  "toasts": {
+    "createError": "Erreur",
+    "createErrorDescription": "Veuillez remplir le titre et le message",
+    "createSuccess": "Succès",
+    "createSuccessDescription": "Votre sujet d'assistance a été créé",
+    "createFailed": "Erreur",
+    "createFailedDescription": "Échec de la création du sujet. Veuillez réessayer.",
+    "replySuccess": "Succès",
+    "replySuccessDescription": "Votre réponse a été envoyée",
+    "replyFailed": "Erreur",
+    "replyFailedDescription": "Échec de l'envoi de la réponse. Veuillez réessayer."
+  }
+}

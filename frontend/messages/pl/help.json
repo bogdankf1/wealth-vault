@@ -1,0 +1,54 @@
+{
+  "page": {
+    "title": "Centrum pomocy",
+    "description": "Uzyskaj pomoc z pytaniami lub zgłoś problemy. Nasz zespół wsparcia jest tutaj, aby Ci pomóc."
+  },
+  "createTopic": {
+    "title": "Utwórz nowy temat wsparcia",
+    "description": "Masz pytanie lub potrzebujesz pomocy? Utwórz nowy temat, a my się z Tobą skontaktujemy.",
+    "titlePlaceholder": "Tytuł tematu (np. 'Nie mogę dodać wydatku')",
+    "messagePlaceholder": "Opisz szczegółowo swój problem lub pytanie...",
+    "button": "Utwórz temat",
+    "creating": "Tworzenie..."
+  },
+  "topicsList": {
+    "title": "Twoje tematy wsparcia",
+    "empty": "Brak jeszcze tematów wsparcia",
+    "emptyDescription": "Utwórz swój pierwszy temat powyżej, aby uzyskać pomoc od naszego zespołu wsparcia.",
+    "created": "Utworzono",
+    "lastActivity": "Ostatnia aktywność",
+    "ago": "temu",
+    "messages": "wiadomości"
+  },
+  "topicDetail": {
+    "backButton": "Wróć do tematów",
+    "refreshButton": "Odśwież",
+    "created": "Utworzono",
+    "ago": "temu",
+    "noteTitle": "Uwaga:",
+    "noteText": "Zazwyczaj odpowiadamy w ciągu 24-48 godzin. Odśwież tę stronę, aby zobaczyć nowe odpowiedzi od naszego zespołu wsparcia.",
+    "supportTeam": "Zespół wsparcia",
+    "you": "Ty",
+    "replyPlaceholder": "Wpisz swoją odpowiedź tutaj...",
+    "sendButton": "Wyślij odpowiedź",
+    "sending": "Wysyłanie...",
+    "resolvedMessage": "Ten temat został oznaczony jako rozwiązany. Jeśli potrzebujesz dalszej pomocy, utwórz nowy temat."
+  },
+  "status": {
+    "open": "Otwarty",
+    "inProgress": "W trakcie",
+    "resolved": "Rozwiązany"
+  },
+  "toasts": {
+    "createError": "Błąd",
+    "createErrorDescription": "Wypełnij zarówno tytuł, jak i wiadomość",
+    "createSuccess": "Sukces",
+    "createSuccessDescription": "Twój temat wsparcia został utworzony",
+    "createFailed": "Błąd",
+    "createFailedDescription": "Nie udało się utworzyć tematu. Spróbuj ponownie.",
+    "replySuccess": "Sukces",
+    "replySuccessDescription": "Twoja odpowiedź została wysłana",
+    "replyFailed": "Błąd",
+    "replyFailedDescription": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie."
+  }
+}

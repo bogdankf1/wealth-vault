@@ -1,0 +1,79 @@
+{
+  "page": {
+    "title": "Backups de Dados",
+    "description": "Crie e restaure snapshots de seus dados financeiros"
+  },
+  "create": {
+    "title": "Criar Novo Backup",
+    "description": "Selecione um módulo e crie um backup de todos os seus dados",
+    "label": "Módulo para Backup",
+    "placeholder": "Selecionar módulo",
+    "button": "Criar Backup",
+    "creating": "Criando..."
+  },
+  "list": {
+    "title": "Seus Backups",
+    "description": "Visualize e restaure seus dados de backup",
+    "loading": "Carregando backups...",
+    "empty": "Nenhum backup ainda. Crie seu primeiro backup acima.",
+    "table": {
+      "date": "Data",
+      "module": "Módulo",
+      "items": "Itens",
+      "actions": "Ações"
+    },
+    "itemCount": "{count} item(ns)",
+    "actions": {
+      "restore": "Restaurar",
+      "delete": "Excluir"
+    }
+  },
+  "modules": {
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "subscriptions": "Assinaturas",
+    "installments": "Parcelamentos",
+    "budgets": "Orçamentos",
+    "savings": "Poupança",
+    "portfolio": "Portfólio",
+    "goals": "Metas",
+    "debts": "Dívidas",
+    "taxes": "Impostos"
+  },
+  "info": {
+    "title": "Informações Importantes",
+    "point1": "Backups criam um snapshot de todos os dados no módulo selecionado no momento da criação",
+    "point2": "Restaurar um backup EXCLUIRÁ todos os dados atuais e os SUBSTITUIRÁ pelos dados do backup",
+    "point3": "Cada backup armazena o estado completo de seus dados, incluindo todos os campos e configurações",
+    "point4": "Backups são exclusivos para assinantes do plano Wealth",
+    "point5": "Você pode criar múltiplos backups para o mesmo módulo para rastrear mudanças ao longo do tempo",
+    "warning": "Aviso:"
+  },
+  "dialogs": {
+    "restore": {
+      "title": "Restaurar Backup?",
+      "description": "Isto SUBSTITUIRÁ todos os seus dados atuais de {module} pelos dados do backup. Todos os itens existentes serão excluídos e substituídos. Esta ação não pode ser desfeita.",
+      "cancel": "Cancelar",
+      "confirm": "Restaurar",
+      "restoring": "Restaurando..."
+    },
+    "delete": {
+      "title": "Excluir Backup?",
+      "description": "Isto excluirá permanentemente este backup. Esta ação não pode ser desfeita.",
+      "cancel": "Cancelar",
+      "confirm": "Excluir",
+      "deleting": "Excluindo..."
+    }
+  },
+  "messages": {
+    "createSuccess": "Backup criado com sucesso",
+    "createSuccessDescription": "Backup de {count} item(ns) de {module}",
+    "createError": "Falha ao criar backup",
+    "restoreSuccess": "Backup restaurado com sucesso",
+    "restoreSuccessDescription": "Restaurados {count} item(ns). Todos os itens existentes foram substituídos.",
+    "restoreError": "Falha ao restaurar backup",
+    "deleteSuccess": "Backup excluído com sucesso",
+    "deleteError": "Falha ao excluir backup",
+    "errorGeneric": "Ocorreu um erro"
+  }
+}

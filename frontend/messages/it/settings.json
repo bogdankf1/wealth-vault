@@ -1,0 +1,537 @@
+{
+  "page": {
+    "title": "Impostazioni",
+    "description": "Gestisca le impostazioni del suo account e le preferenze"
+  },
+  "tabs": {
+    "account": "Account",
+    "subscription": "Abbonamento",
+    "appearance": "Aspetto",
+    "dashboard": "Dashboard",
+    "notifications": "Notifiche",
+    "privacy": "Privacy",
+    "security": "Sicurezza"
+  },
+  "account": {
+    "title": "Informazioni Account",
+    "description": "I dettagli e le informazioni del suo account",
+    "name": "Nome",
+    "email": "Email",
+    "memberSince": "Membro dal",
+    "notSet": "Non impostato"
+  },
+  "subscription": {
+    "title": "Dettagli Abbonamento",
+    "description": "Gestisca il suo piano e le informazioni di fatturazione",
+    "currentPlan": "Il Suo Piano Attuale",
+    "currentPeriod": "Periodo Attuale",
+    "nextBillingDate": "Prossima Data di Fatturazione",
+    "subscriptionEnding": "Fine Abbonamento",
+    "subscriptionEndingDescription": "Il suo abbonamento verrà cancellato il",
+    "viewPricingPlans": "Visualizza Piani Prezzi",
+    "cancelSubscription": "Cancella Abbonamento",
+    "statuses": {
+      "active": "attivo",
+      "past_due": "scaduto",
+      "cancelled": "cancellato"
+    },
+    "paymentHistory": {
+      "title": "Storico Pagamenti",
+      "description": "Le sue transazioni di pagamento recenti",
+      "subscriptionPayment": "Pagamento abbonamento",
+      "statuses": {
+        "succeeded": "riuscito",
+        "failed": "fallito",
+        "pending": "in attesa"
+      }
+    },
+    "cancelDialog": {
+      "title": "Cancella Abbonamento",
+      "description": "È sicuro di voler cancellare il suo abbonamento? Avrà ancora accesso fino alla fine del periodo di fatturazione corrente.",
+      "keepSubscription": "Mantieni Abbonamento",
+      "confirmCancel": "Cancella Abbonamento"
+    },
+    "toasts": {
+      "cancelled": {
+        "title": "Abbonamento Cancellato",
+        "description": "Il suo abbonamento verrà cancellato alla fine del periodo di fatturazione."
+      },
+      "error": {
+        "title": "Errore",
+        "description": "Impossibile cancellare l'abbonamento"
+      }
+    }
+  },
+  "appearance": {
+    "theme": {
+      "title": "Tema",
+      "description": "Scelga il suo schema di colori preferito",
+      "options": {
+        "light": {
+          "label": "Chiaro",
+          "description": "Tema chiaro"
+        },
+        "dark": {
+          "label": "Scuro",
+          "description": "Tema scuro"
+        },
+        "system": {
+          "label": "Sistema",
+          "description": "Segui preferenza sistema"
+        }
+      }
+    },
+    "language": {
+      "title": "Lingua",
+      "description": "Scelga la sua lingua preferita per l'interfaccia",
+      "selectPlaceholder": "Seleziona lingua"
+    },
+    "accentColor": {
+      "title": "Colore Accento",
+      "description": "Scelga il suo colore accento preferito",
+      "comingSoon": "Prossimamente",
+      "warningMessage": "La sua preferenza del colore accento è salvata, ma i colori accento personalizzati non sono ancora applicati in tutta l'app. Questa funzionalità verrà attivata presto.",
+      "colors": {
+        "blue": "Blu",
+        "purple": "Viola",
+        "green": "Verde",
+        "orange": "Arancione",
+        "red": "Rosso",
+        "pink": "Rosa",
+        "indigo": "Indaco",
+        "teal": "Verde Acqua"
+      }
+    },
+    "fontSize": {
+      "title": "Dimensione Carattere",
+      "description": "Regoli la dimensione base del carattere",
+      "comingSoon": "Prossimamente",
+      "warningMessage": "La sua preferenza della dimensione del carattere è salvata, ma il ridimensionamento dinamico dei caratteri non è ancora applicato in tutta l'app. Questa funzionalità verrà attivata presto.",
+      "selectPlaceholder": "Seleziona dimensione carattere",
+      "options": {
+        "small": {
+          "label": "Piccolo",
+          "description": "14px base"
+        },
+        "medium": {
+          "label": "Medio",
+          "description": "16px base (predefinito)"
+        },
+        "large": {
+          "label": "Grande",
+          "description": "18px base"
+        }
+      }
+    },
+    "currency": {
+      "title": "Valuta",
+      "description": "Scelga la sua valuta preferita per tutte le transazioni e visualizzazioni",
+      "label": "Valuta",
+      "info": "Questa valuta verrà utilizzata per l'inserimento dati e la visualizzazione di tutti gli importi",
+      "selectPlaceholder": "Seleziona valuta"
+    },
+    "defaultViews": {
+      "title": "Preferenze Vista Predefinita",
+      "description": "Imposti le sue viste predefinite preferite per le pagine dei moduli. Può sempre sovrascriverle nelle singole pagine.",
+      "contentView": {
+        "title": "Vista Contenuto",
+        "description": "Scelga la vista predefinita per visualizzare le schede di contenuto (entrate, spese, ecc.)",
+        "options": {
+          "card": {
+            "label": "Vista Schede",
+            "description": "Layout a griglia con schede dettagliate"
+          },
+          "list": {
+            "label": "Vista Elenco",
+            "description": "Layout tabella compatto"
+          }
+        }
+      },
+      "statsView": {
+        "title": "Vista Statistiche",
+        "description": "Scelga la vista predefinita per visualizzare le schede statistiche nella parte superiore delle pagine dei moduli",
+        "options": {
+          "cards": {
+            "label": "Vista Schede",
+            "description": "Layout griglia schede tradizionale"
+          },
+          "compact": {
+            "label": "Vista Compatta",
+            "description": "Layout elenco ottimizzato per lo spazio"
+          }
+        }
+      }
+    },
+    "toasts": {
+      "themeUpdated": {
+        "title": "Tema Aggiornato",
+        "description": "Tema cambiato in"
+      },
+      "languageUpdated": {
+        "title": "Lingua Aggiornata",
+        "description": "Lingua cambiata in"
+      },
+      "accentColorUpdated": {
+        "title": "Colore Accento Aggiornato",
+        "description": "Colore accento cambiato in"
+      },
+      "fontSizeUpdated": {
+        "title": "Dimensione Carattere Aggiornata",
+        "description": "Dimensione carattere cambiata in"
+      },
+      "currencyUpdated": {
+        "title": "Valuta Aggiornata",
+        "description": "Valuta cambiata in"
+      },
+      "contentViewUpdated": {
+        "title": "Vista Contenuto Predefinita Aggiornata",
+        "description": "Vista contenuto predefinita cambiata in"
+      },
+      "statsViewUpdated": {
+        "title": "Vista Statistiche Predefinita Aggiornata",
+        "description": "Vista statistiche predefinita cambiata in"
+      },
+      "error": {
+        "title": "Errore",
+        "themeDescription": "Impossibile salvare la preferenza del tema",
+        "languageDescription": "Impossibile salvare la preferenza della lingua",
+        "accentColorDescription": "Impossibile salvare la preferenza del colore accento",
+        "fontSizeDescription": "Impossibile salvare la preferenza della dimensione carattere",
+        "currencyDescription": "Impossibile salvare la preferenza della valuta",
+        "contentViewDescription": "Impossibile salvare la preferenza della vista contenuto predefinita",
+        "statsViewDescription": "Impossibile salvare la preferenza della vista statistiche predefinita"
+      }
+    }
+  },
+  "dashboardLayouts": {
+    "title": "Layout Dashboard",
+    "description": "Personalizzi la sua dashboard creando e gestendo diversi layout",
+    "wealthTierRequired": "Layout personalizzati richiedono il livello Wealth",
+    "initializePresets": "Inizializza Preset",
+    "createLayout": "Crea Layout",
+    "upgradeToCreate": "Aggiorna per Creare",
+    "active": "Attivo",
+    "preset": "Preset",
+    "widgetsVisible": "widget visibili",
+    "of": "di",
+    "noLayoutsFound": "Nessun layout trovato. Crei il suo primo layout o inizializzi i preset.",
+    "upgradeToWealth": "Aggiorna a Wealth",
+    "customLayoutsInfo": "I layout personalizzati sono disponibili per gli abbonati al livello Wealth.",
+    "viewPricing": "Visualizza prezzi",
+    "editor": {
+      "createTitle": "Crea Layout",
+      "editTitle": "Modifica Layout",
+      "description": "Configuri quali widget mostrare e la loro visibilità sulla sua dashboard.",
+      "layoutName": "Nome Layout",
+      "layoutNamePlaceholder": "es., Il Mio Layout Personalizzato",
+      "widgetsLabel": "Widget",
+      "cancel": "Annulla",
+      "create": "Crea",
+      "update": "Aggiorna"
+    },
+    "widgets": {
+      "quick-actions": {
+        "label": "Azioni Rapide",
+        "description": "Pulsanti di accesso rapido"
+      },
+      "ai-insights": {
+        "label": "Approfondimenti AI",
+        "description": "Approfondimenti finanziari basati sull'AI"
+      },
+      "exchange-rates": {
+        "label": "Tassi di Cambio",
+        "description": "Tassi di cambio valuta"
+      },
+      "net-worth": {
+        "label": "Patrimonio Netto",
+        "description": "Panoramica patrimonio netto totale"
+      },
+      "income-vs-expenses": {
+        "label": "Entrate vs Spese",
+        "description": "Grafico di confronto"
+      },
+      "monthly-spending": {
+        "label": "Spesa Mensile",
+        "description": "Dettaglio spesa"
+      },
+      "recent-transactions": {
+        "label": "Transazioni Recenti",
+        "description": "Ultime transazioni"
+      },
+      "upcoming-bills": {
+        "label": "Fatture in Arrivo",
+        "description": "Fatture e abbonamenti"
+      },
+      "budget-overview": {
+        "label": "Panoramica Budget",
+        "description": "Progresso budget"
+      },
+      "goals-progress": {
+        "label": "Progresso Obiettivi",
+        "description": "Obiettivi finanziari"
+      },
+      "portfolio-summary": {
+        "label": "Riepilogo Portafoglio",
+        "description": "Portafoglio investimenti"
+      },
+      "subscriptions-by-category": {
+        "label": "Abbonamenti per Categoria",
+        "description": "Dettaglio abbonamenti"
+      },
+      "installments-by-category": {
+        "label": "Rate per Categoria",
+        "description": "Dettaglio rate"
+      },
+      "expenses-by-category": {
+        "label": "Spese per Categoria",
+        "description": "Dettaglio spese"
+      },
+      "budgets-by-category": {
+        "label": "Budget per Categoria",
+        "description": "Dettaglio budget"
+      },
+      "income-allocation": {
+        "label": "Allocazione Entrate",
+        "description": "Distribuzione entrate"
+      },
+      "net-worth-trend": {
+        "label": "Tendenza Patrimonio Netto",
+        "description": "Patrimonio netto storico"
+      },
+      "taxes": {
+        "label": "Tasse",
+        "description": "Riepilogo tasse"
+      },
+      "debts-owed": {
+        "label": "Crediti Dovuti",
+        "description": "Tracciamento crediti"
+      },
+      "planned-subscriptions": {
+        "label": "Abbonamenti Pianificati",
+        "description": "Pagamenti abbonamenti per il mese selezionato"
+      },
+      "planned-expenses": {
+        "label": "Spese Pianificate",
+        "description": "Pagamenti spese ricorrenti per il mese selezionato"
+      },
+      "planned-installments": {
+        "label": "Rate Pianificate",
+        "description": "Pagamenti rateali per il mese selezionato"
+      }
+    },
+    "toasts": {
+      "layoutActivated": {
+        "title": "Layout attivato",
+        "description": "Il layout della dashboard è stato attivato con successo."
+      },
+      "layoutDeleted": {
+        "title": "Layout eliminato",
+        "description": "Il layout della dashboard è stato eliminato con successo."
+      },
+      "presetsInitialized": {
+        "title": "Preset inizializzati",
+        "description": "I preset di layout predefiniti sono stati creati."
+      },
+      "layoutCreated": {
+        "title": "Layout creato",
+        "description": "Il layout della dashboard è stato creato con successo."
+      },
+      "layoutUpdated": {
+        "title": "Layout aggiornato",
+        "description": "Il layout della dashboard è stato aggiornato con successo."
+      },
+      "error": {
+        "title": "Errore",
+        "activateDescription": "Impossibile attivare il layout.",
+        "deleteDescription": "Impossibile eliminare il layout.",
+        "initializeDescription": "Impossibile inizializzare i preset.",
+        "saveDescription": "Impossibile salvare il layout.",
+        "nameRequired": "Inserisca un nome per il layout."
+      }
+    },
+    "deleteDialog": {
+      "title": "Elimina Layout",
+      "description": "È sicuro di voler eliminare questo layout? Questa azione non può essere annullata.",
+      "cancel": "Annulla",
+      "delete": "Elimina",
+      "deleting": "Eliminazione..."
+    }
+  },
+  "notifications": {
+    "email": {
+      "title": "Notifiche Email",
+      "description": "Gestisca quali email ricevere da noi",
+      "comingSoon": "Prossimamente",
+      "warningMessage": "Le sue preferenze di notifica sono salvate, ma le notifiche email non vengono ancora inviate. Questa funzionalità verrà attivata presto.",
+      "marketing": {
+        "label": "Email Marketing",
+        "description": "Riceva email su nuove funzionalità, suggerimenti e offerte speciali"
+      },
+      "productUpdates": {
+        "label": "Aggiornamenti Prodotto",
+        "description": "Riceva notifiche quando rilasciamo nuove funzionalità o miglioramenti"
+      },
+      "securityAlerts": {
+        "label": "Avvisi di Sicurezza",
+        "description": "Notifiche di sicurezza importanti sul suo account"
+      },
+      "billing": {
+        "label": "Fatturazione e Pagamenti",
+        "description": "Fatture, conferme di pagamento e aggiornamenti di fatturazione"
+      },
+      "weeklySummary": {
+        "label": "Riepilogo Settimanale",
+        "description": "Un riepilogo settimanale della sua attività finanziaria e approfondimenti"
+      }
+    },
+    "push": {
+      "title": "Notifiche Push",
+      "description": "Gestisca le notifiche in-app e del browser",
+      "comingSoon": "Prossimamente",
+      "warningMessage": "Le sue preferenze di notifica sono salvate, ma le notifiche push non sono ancora attive. Questa funzionalità verrà attivata presto.",
+      "budgetAlerts": {
+        "label": "Avvisi Budget",
+        "description": "Riceva notifiche quando si avvicina ai limiti del budget"
+      },
+      "goalMilestones": {
+        "label": "Traguardi Obiettivi",
+        "description": "Celebri quando raggiunge obiettivi di risparmio o traguardi"
+      },
+      "subscriptionReminders": {
+        "label": "Promemoria Abbonamenti",
+        "description": "Promemoria sui rinnovi degli abbonamenti in arrivo"
+      },
+      "incomeNotifications": {
+        "label": "Notifiche Entrate",
+        "description": "Riceva notifiche quando riceve entrate o pagamenti"
+      }
+    },
+    "toasts": {
+      "emailUpdated": {
+        "title": "Notifiche Email Aggiornate",
+        "description": "Le sue preferenze di notifica email sono state salvate."
+      },
+      "pushUpdated": {
+        "title": "Notifiche Push Aggiornate",
+        "description": "Le sue preferenze di notifica push sono state salvate."
+      },
+      "error": {
+        "title": "Errore",
+        "emailDescription": "Impossibile aggiornare le preferenze di notifica email",
+        "pushDescription": "Impossibile aggiornare le preferenze di notifica push"
+      }
+    }
+  },
+  "privacy": {
+    "analytics": {
+      "title": "Analisi e Tracciamento",
+      "description": "Controlli quali dati raccogliamo per migliorare il nostro servizio",
+      "usageAnalytics": {
+        "label": "Analisi Utilizzo",
+        "description": "Ci aiuti a migliorare condividendo dati di utilizzo anonimi"
+      },
+      "errorReporting": {
+        "label": "Segnalazione Errori",
+        "description": "Invii automaticamente segnalazioni di errori per aiutarci a risolvere i bug"
+      },
+      "performanceMonitoring": {
+        "label": "Monitoraggio Prestazioni",
+        "description": "Ci aiuti a ottimizzare le prestazioni condividendo metriche di prestazioni"
+      }
+    },
+    "dataVisibility": {
+      "title": "Visibilità Dati",
+      "description": "Controlli come vengono utilizzati i suoi dati all'interno della piattaforma",
+      "private": {
+        "label": "Privato",
+        "description": "I suoi dati sono completamente privati e non vengono mai condivisi o utilizzati in statistiche aggregate"
+      },
+      "anonymous": {
+        "label": "Anonimo",
+        "description": "I suoi dati possono essere utilizzati in statistiche aggregate anonime per migliorare il nostro servizio"
+      }
+    },
+    "dataExport": {
+      "title": "Esporta i Suoi Dati",
+      "description": "Scarichi tutti i suoi dati in un formato portatile (conforme al GDPR)",
+      "comingSoon": "Prossimamente",
+      "warningMessage": "La funzionalità di esportazione dati è attualmente in sviluppo. Una volta disponibile, potrà scaricare tutti i suoi dati finanziari.",
+      "info": "Potrà richiedere una copia di tutti i suoi dati personali. Prepareremo un file scaricabile contenente tutte le sue informazioni incluse fonti di reddito, spese, obiettivi e dettagli dell'account.",
+      "button": "Richiedi Esportazione Dati"
+    },
+    "toasts": {
+      "analyticsUpdated": {
+        "title": "Preferenze Analisi Aggiornate",
+        "description": "Le sue preferenze di privacy sono state salvate."
+      },
+      "dataVisibilityUpdated": {
+        "title": "Visibilità Dati Aggiornata",
+        "description": "La sua visibilità dati è ora impostata su"
+      },
+      "dataExportRequested": {
+        "title": "Esportazione Dati Richiesta",
+        "description": "L'esportazione dei suoi dati sarà pronta a breve. Le invieremo un'email con il link per il download."
+      },
+      "error": {
+        "title": "Errore",
+        "analyticsDescription": "Impossibile aggiornare le preferenze di privacy",
+        "dataVisibilityDescription": "Impossibile aggiornare la visibilità dati"
+      }
+    }
+  },
+  "security": {
+    "authMethod": {
+      "title": "Metodo di Autenticazione",
+      "description": "L'autenticazione del suo account è gestita dal suo provider di identità",
+      "signedInWith": "Accesso effettuato con Google",
+      "securityInfo": "La sua password e la sicurezza dell'account sono gestite da Google. Per aggiornare la sua password o le impostazioni di sicurezza, visiti il suo Account Google.",
+      "manageGoogleAccount": "Gestisci Sicurezza Account Google"
+    },
+    "twoFactor": {
+      "title": "Autenticazione a Due Fattori",
+      "description": "Aggiunga un livello extra di sicurezza al suo account",
+      "comingSoon": "Prossimamente",
+      "warningMessage": "L'autenticazione a due fattori è attualmente in sviluppo. Una volta disponibile, potrà aggiungere un livello extra di sicurezza al suo account.",
+      "enable": "Abilita 2FA",
+      "enableDescription": "Richieda un codice di verifica oltre alla sua password",
+      "enabled": {
+        "title": "L'Autenticazione a Due Fattori è Abilitata",
+        "description": "Il suo account è protetto con un livello aggiuntivo di sicurezza."
+      }
+    },
+    "sessions": {
+      "title": "Sessioni Attive",
+      "description": "Gestisca i dispositivi attualmente connessi al suo account",
+      "comingSoon": "Prossimamente",
+      "warningMessage": "Il tracciamento delle sessioni è attualmente in sviluppo. Le sessioni mostrate di seguito sono esempi di ciò che vedrà una volta che questa funzionalità sarà attiva.",
+      "current": "Corrente",
+      "lastActive": "Ultima attività:",
+      "revoke": "Revoca",
+      "revokeAll": "Revoca Tutte le Altre Sessioni"
+    },
+    "toasts": {
+      "twoFactorEnabled": {
+        "title": "2FA Abilitata",
+        "description": "L'autenticazione a due fattori è stata abilitata per il suo account."
+      },
+      "twoFactorDisabled": {
+        "title": "2FA Disabilitata",
+        "description": "L'autenticazione a due fattori è stata disabilitata."
+      },
+      "sessionRevoked": {
+        "title": "Sessione Revocata",
+        "description": "La sessione è stata terminata con successo."
+      },
+      "sessionsRevoked": {
+        "title": "Sessioni Revocate",
+        "description": "Tutte le altre sessioni sono state terminate."
+      },
+      "error": {
+        "title": "Errore",
+        "twoFactorDescription": "Impossibile aggiornare le impostazioni 2FA",
+        "sessionDescription": "Impossibile revocare la sessione",
+        "sessionsDescription": "Impossibile revocare le sessioni"
+      }
+    }
+  }
+}

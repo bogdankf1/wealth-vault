@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { IntlProvider } from 'next-intl';
-import { Locale, defaultLocale } from '@/i18n';
+import { Locale, defaultLocale, locales } from '@/i18n';
 
 type LanguageContextType = {
   locale: Locale;
@@ -31,7 +31,7 @@ export function LanguageProvider({ children, messages }: LanguageProviderProps) 
   // Load locale from localStorage on mount
   useEffect(() => {
     const savedLocale = localStorage.getItem('locale') as Locale;
-    if (savedLocale && ['en', 'uk', 'es'].includes(savedLocale)) {
+    if (savedLocale && locales.includes(savedLocale as Locale)) {
       setLocaleState(savedLocale);
       loadMessages(savedLocale);
     }

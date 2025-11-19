@@ -1,0 +1,310 @@
+{
+  "title": "Dashboard",
+  "description": "La sua panoramica finanziaria completa",
+  "header": {
+    "title": "Dashboard",
+    "description": "La sua panoramica finanziaria completa",
+    "periodLabel": "Periodo:",
+    "clearButton": "Cancella"
+  },
+  "quickActions": {
+    "title": "Azioni Rapide",
+    "description": "Aggiungi nuove voci finanziarie rapidamente",
+    "addIncome": {
+      "label": "Aggiungi Entrata",
+      "description": "Registra fonte di reddito"
+    },
+    "addExpense": {
+      "label": "Aggiungi Spesa",
+      "description": "Traccia spesa"
+    },
+    "addBudget": {
+      "label": "Aggiungi Budget",
+      "description": "Imposta limite di spesa"
+    },
+    "subscription": {
+      "label": "Abbonamento",
+      "description": "Pagamento ricorrente"
+    },
+    "installment": {
+      "label": "Rata",
+      "description": "Piano di pagamento"
+    },
+    "createGoal": {
+      "label": "Crea Obiettivo",
+      "description": "Imposta obiettivo"
+    }
+  },
+  "insightsAlerts": {
+    "title": "Approfondimenti e Avvisi",
+    "description": "Notifiche finanziarie importanti"
+  },
+  "netWorth": {
+    "title": "Patrimonio Netto",
+    "totalLabel": "Patrimonio netto totale",
+    "assets": {
+      "label": "Attività",
+      "portfolio": "Portafoglio",
+      "savings": "Risparmi"
+    },
+    "liabilities": {
+      "label": "Passività",
+      "debt": "Debito"
+    }
+  },
+  "financialHealth": {
+    "title": "Salute Finanziaria",
+    "scoreLabel": "su 100",
+    "components": {
+      "emergencyFund": "Fondo di Emergenza",
+      "debtToIncome": "Rapporto Debito-Reddito",
+      "savingsRate": "Tasso di Risparmio",
+      "investments": "Investimenti",
+      "goalsProgress": "Progresso Obiettivi"
+    },
+    "ratings": {
+      "excellent": "Eccellente",
+      "good": "Buono",
+      "fair": "Discreto",
+      "poor": "Scarso"
+    }
+  },
+  "cashFlow": {
+    "income": {
+      "label": "Entrate",
+      "period": "Mensile"
+    },
+    "expenses": {
+      "label": "Spese"
+    },
+    "subscriptions": {
+      "label": "Abbonamenti",
+      "period": "Mensile"
+    },
+    "installments": {
+      "label": "Rate",
+      "period": "Mensile"
+    },
+    "taxes": {
+      "label": "Tasse",
+      "active": "attive"
+    },
+    "debtsOwed": {
+      "label": "Crediti Dovuti",
+      "active": "attivi"
+    },
+    "netCashFlow": {
+      "label": "Flusso di Cassa Netto",
+      "savingsRateLabel": "Tasso di Risparmio"
+    }
+  },
+  "recentActivity": {
+    "title": "Attività Recente",
+    "emptyState": "Nessuna attività recente"
+  },
+  "analytics": {
+    "title": "Analisi Finanziaria",
+    "description": "Visualizza le sue tendenze e i suoi modelli finanziari"
+  },
+  "tooltips": {
+    "netWorth": {
+      "heading": "Come viene calcolato:",
+      "formula": "Patrimonio Netto = Attività - Passività",
+      "assets": "Attività = Valore Portafoglio + Saldo Risparmi",
+      "liabilities": "Passività = Debito Totale dalle Rate"
+    },
+    "financialHealth": {
+      "heading": "Come viene calcolato:",
+      "formula": "Punteggio = 5 componenti × 20 punti ciascuno (0-100)",
+      "emergencyFund": "1. Fondo di Emergenza: Risparmi ≥ 3 mesi di spese",
+      "debtToIncome": "2. Rapporto Debito-Reddito: Debito totale / reddito < 36%",
+      "savingsRate": "3. Tasso di Risparmio: % di reddito risparmiato (20%+ eccellente)",
+      "investmentDiversity": "4. Diversificazione Investimenti: Tipi di asset multipli",
+      "goalsProgress": "5. Progresso Obiettivi: Completamento medio degli obiettivi"
+    },
+    "income": {
+      "heading": "Come viene calcolato:",
+      "description": "Somma di tutte le fonti di reddito ricorrenti attive (mensile, settimanale, bisettimanale, annuale)"
+    },
+    "expenses": {
+      "heading": "Come viene calcolato:",
+      "dateBased": "Calcolo basato sulla data per {period}",
+      "oneTime": "• Spese una tantum: incluse se la data rientra nel periodo",
+      "recurring": "• Spese ricorrenti: incluse se si sovrappongono al periodo (equivalente mensile)"
+    },
+    "subscriptions": {
+      "heading": "Come viene calcolato:",
+      "description": "Somma di tutti gli abbonamenti attivi (mensile, trimestrale, annuale, semestrale)"
+    },
+    "installments": {
+      "heading": "Come viene calcolato:",
+      "description": "Somma di tutti i pagamenti rateali attivi (mensile, bisettimanale, settimanale)"
+    },
+    "taxes": {
+      "heading": "Come viene calcolato:",
+      "description": "Tasse specifiche del periodo basate sul reddito (calcolate solo quando esiste reddito nel periodo selezionato)"
+    },
+    "debtsOwed": {
+      "heading": "Come viene calcolato:",
+      "description": "Somma di tutti i crediti attivi (non pagati) dovuti a Lei"
+    },
+    "netCashFlow": {
+      "heading": "Come viene calcolato:",
+      "formula": "Flusso di Cassa Netto = Entrate - Spese - Abbonamenti - Rate",
+      "expenses": "• Le spese sono filtrate per data per {period}",
+      "others": "• Entrate, Abbonamenti, Rate mostrano tutti gli attivi (equivalente mensile)",
+      "savingsRate": "Tasso di Risparmio = (Flusso di Cassa Netto / Entrate) × 100%"
+    }
+  },
+  "errors": {
+    "loadFailed": "Impossibile caricare i dati della dashboard. Riprovi."
+  },
+  "widgets": {
+    "aiInsights": {
+      "title": "Approfondimenti AI",
+      "badge": "Powered by AI",
+      "description": "Raccomandazioni finanziarie personalizzate",
+      "refreshTitle": "Aggiorna approfondimenti",
+      "tooltip": {
+        "heading": "Come funziona:",
+        "description": "L'AI analizza i suoi dati finanziari per fornire raccomandazioni personalizzate:",
+        "spendingPatterns": "Modelli di spesa e anomalie",
+        "savingsOpportunities": "Opportunità di risparmio",
+        "budgetOptimization": "Suggerimenti per l'ottimizzazione del budget",
+        "financialHealth": "Miglioramenti della salute finanziaria"
+      },
+      "sections": {
+        "spendingPatterns": "Modelli di Spesa",
+        "savingsOpportunities": "Opportunità di Risparmio",
+        "spendingAlerts": "Avvisi di Spesa"
+      },
+      "emptyState": {
+        "title": "Nessun approfondimento disponibile ancora",
+        "description": "Aggiunga più spese e obiettivi di risparmio per ottenere approfondimenti personalizzati"
+      },
+      "error": "Impossibile caricare gli approfondimenti. Riprovi più tardi.",
+      "cacheNotice": "Gli approfondimenti sono memorizzati nella cache per 24 ore. Clicchi su aggiorna per generare nuovi approfondimenti."
+    },
+    "budgetOverview": {
+      "title": "Panoramica Budget",
+      "description": "Tutti i budget attivi (ciascuno tracciato all'interno del proprio periodo)",
+      "viewAll": "Visualizza Tutto",
+      "tooltip": {
+        "heading": "Come funziona:",
+        "description": "Mostra tutti i budget attualmente attivi aggregati insieme.",
+        "periodNote": "Ogni budget traccia le spese all'interno del proprio periodo di tempo (mensile, trimestrale o annuale).",
+        "colorGreen": "Verde: Utilizzato meno dell'80% del budget",
+        "colorAmber": "Ambra: Utilizzato 80%+ ma non superato",
+        "colorRed": "Rosso: Budget superato"
+      },
+      "infoNote": {
+        "showing": "Visualizzazione di {count} {budgets} attivi. Ogni budget traccia le spese all'interno del proprio periodo di tempo definito.",
+        "budget": "budget",
+        "budgets": "budget"
+      },
+      "stats": {
+        "budgeted": "Preventivato",
+        "spent": "Speso",
+        "remaining": "Rimanente"
+      },
+      "overallProgress": "Progresso Complessivo",
+      "budgetAlerts": "Avvisi Budget",
+      "moreAlerts": "+{count} altri avvisi",
+      "topCategories": "Categorie Principali",
+      "percentUsed": "{percent}% utilizzato",
+      "left": "rimanenti",
+      "over": "oltre",
+      "emptyState": {
+        "title": "Nessun budget impostato ancora",
+        "button": "Crea il Suo Primo Budget"
+      },
+      "error": "Impossibile caricare la panoramica del budget"
+    },
+    "goalsOverview": {
+      "title": "Panoramica Obiettivi",
+      "viewAll": "Visualizza Tutto",
+      "stats": {
+        "totalGoals": "Obiettivi Totali",
+        "active": "attivi",
+        "totalSaved": "Totale Risparmiato",
+        "avgProgress": "{percent}% media",
+        "remaining": "Rimanente",
+        "of": "di"
+      },
+      "overallProgress": "Progresso Complessivo",
+      "remainingOf": "{remaining} rimanenti di {total}",
+      "status": {
+        "onTrack": "{count} in linea",
+        "behind": "{count} in ritardo",
+        "behindAlert": "{count} {goalText} in ritardo sulla tabella di marcia",
+        "goal": "obiettivo è",
+        "goals": "obiettivi sono",
+        "reviewGoals": "Riveda i suoi obiettivi e consideri di adeguare i contributi"
+      },
+      "topCategories": "Categorie Principali",
+      "emptyState": {
+        "title": "Nessun obiettivo creato ancora",
+        "button": "Crea il Suo Primo Obiettivo"
+      },
+      "error": "Impossibile caricare le statistiche degli obiettivi"
+    },
+    "plannedSubscriptions": {
+      "title": "Abbonamenti Pianificati",
+      "description": "Pagamenti abbonamenti per il mese selezionato",
+      "emptyState": "Nessun abbonamento pianificato per questo mese",
+      "error": "Impossibile caricare gli abbonamenti. Riprovi più tardi."
+    },
+    "plannedExpenses": {
+      "title": "Spese Pianificate",
+      "description": "Pagamenti spese ricorrenti per il mese selezionato",
+      "emptyState": "Nessuna spesa ricorrente pianificata per questo mese",
+      "error": "Impossibile caricare le spese. Riprovi più tardi."
+    },
+    "plannedInstallments": {
+      "title": "Rate Pianificate",
+      "description": "Pagamenti rateali per il mese selezionato",
+      "paymentOf": "Pagamento {current} di {total}",
+      "emptyState": "Nessun pagamento rateale pianificato per questo mese",
+      "error": "Impossibile caricare le rate. Riprovi più tardi."
+    },
+    "exchangeRates": {
+      "title": "Tassi di Cambio",
+      "description": "Tassi di cambio valuta in tempo reale",
+      "refreshed": "(aggiornato {time})",
+      "refreshTitle": "Aggiorna tassi di cambio",
+      "tooltip": "Tassi di cambio attuali tra le principali valute. I tassi vengono aggiornati ogni ora e memorizzati nella cache per le prestazioni.",
+      "currencies": {
+        "USD": "Dollaro USA",
+        "EUR": "Euro",
+        "UAH": "Grivna Ucraina"
+      },
+      "equalsLabel": "1 {currency} equivale a:",
+      "rateDetails": {
+        "formula": "1 {from} = {rate} {to}",
+        "updated": "Aggiornato: {datetime}",
+        "source": "Fonte: {source}"
+      },
+      "footer": {
+        "realTime": "Tassi in tempo reale da exchangerate-api.com",
+        "updateFrequency": "Aggiornato ogni ora"
+      }
+    },
+    "layoutSwitcher": {
+      "selectLayout": "Seleziona Layout",
+      "title": "Layout Dashboard",
+      "widgetsCount": "{count} widget",
+      "manageLayouts": "Gestisci layout...",
+      "toast": {
+        "switched": "Layout cambiato",
+        "switchedDescription": "Passato al layout \"{name}\".",
+        "error": "Errore",
+        "errorDescription": "Impossibile cambiare layout."
+      }
+    },
+    "common": {
+      "viewAll": "Visualizza Tutto",
+      "monthly": "Mensile",
+      "active": "attivo"
+    }
+  }
+}

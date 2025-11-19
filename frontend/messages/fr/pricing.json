@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Choisissez votre forfait",
+    "subtitle": "Commencez gratuitement et mettez à niveau au fur et à mesure. Tous les forfaits incluent une garantie de remboursement de 14 jours.",
+    "recommended": "RECOMMANDÉ",
+    "perMonth": "/mois",
+    "empty": "Aucun forfait tarifaire disponible pour le moment."
+  },
+  "buttons": {
+    "currentPlan": "Forfait actuel",
+    "loading": "Chargement...",
+    "getStarted": "Commencer",
+    "subscribe": "S'abonner"
+  },
+  "footer": {
+    "text": "Tous les forfaits peuvent être mis à niveau ou annulés à tout moment. Besoin d'aide pour choisir ?",
+    "contactLink": "Contactez-nous"
+  },
+  "descriptions": {
+    "starter": "Parfait pour commencer avec le suivi des finances personnelles",
+    "growth": "Fonctionnalités avancées pour une gestion financière sérieuse",
+    "wealth": "Fonctionnalités premium pour une gestion complète du patrimoine"
+  },
+  "features": {
+    "starter": {
+      "incomeSources": "Jusqu'à 3 sources de revenus",
+      "expenseTracking": "Suivi des dépenses",
+      "bankUpload": "Téléversement de relevés bancaires",
+      "savingsAccounts": "Jusqu'à 3 comptes d'épargne",
+      "subscriptions": "Jusqu'à 5 abonnements",
+      "installments": "Jusqu'à 2 versements",
+      "portfolioTracking": "Suivi de portefeuille",
+      "financialGoals": "Objectifs financiers",
+      "debtTracking": "Suivi des dettes",
+      "taxTracking": "Suivi des impôts",
+      "aiInsights": "Aperçus IA"
+    },
+    "growth": {
+      "incomeSources": "Jusqu'à 10 sources de revenus",
+      "expenseTracking": "Suivi des dépenses",
+      "aiCategorization": "Catégorisation IA",
+      "bankUpload": "Téléversement de relevés bancaires",
+      "savingsAccounts": "Jusqu'à 10 comptes d'épargne",
+      "multiCurrency": "Support multi-devises",
+      "portfolioAssets": "Jusqu'à 20 actifs de portefeuille",
+      "financialGoals": "Objectifs financiers",
+      "subscriptions": "Jusqu'à 20 abonnements",
+      "installments": "Jusqu'à 10 versements",
+      "debtTracking": "Suivi des dettes",
+      "taxTracking": "Suivi des impôts",
+      "aiInsights": "Aperçus IA"
+    },
+    "wealth": {
+      "incomeSources": "Sources de revenus illimitées",
+      "expenses": "Dépenses illimitées",
+      "aiCategorization": "Catégorisation IA",
+      "aiInsights": "Aperçus IA",
+      "bankUpload": "Téléversement de relevés bancaires",
+      "savingsAccounts": "Comptes d'épargne illimités",
+      "multiCurrency": "Support multi-devises",
+      "portfolioAssets": "Actifs de portefeuille illimités",
+      "stockPrices": "Prix des actions en temps réel",
+      "financialGoals": "Objectifs financiers",
+      "subscriptions": "Abonnements illimités",
+      "installments": "Versements illimités",
+      "debtTracking": "Suivi des dettes",
+      "taxTracking": "Suivi des impôts"
+    }
+  }
+}

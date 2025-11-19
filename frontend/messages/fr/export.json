@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Exporter des données",
+    "description": "Exportez vos données financières dans différents formats"
+  },
+  "card": {
+    "title": "Configuration de l'exportation",
+    "description": "Sélectionnez le type de données, la période et le format que vous souhaitez exporter"
+  },
+  "labels": {
+    "dataType": "Type de données",
+    "exportFormat": "Format d'exportation",
+    "month": "Mois",
+    "year": "Année"
+  },
+  "placeholders": {
+    "selectDataType": "Sélectionner le type de données",
+    "selectFormat": "Sélectionner le format",
+    "selectMonth": "Sélectionner le mois",
+    "selectYear": "Sélectionner l'année"
+  },
+  "entryTypes": {
+    "income": "Revenus",
+    "expenses": "Dépenses",
+    "subscriptions": "Abonnements",
+    "installments": "Versements",
+    "budgets": "Budgets",
+    "savings": "Épargne",
+    "portfolio": "Portefeuille",
+    "goals": "Objectifs",
+    "debts": "Dettes",
+    "taxes": "Impôts"
+  },
+  "months": {
+    "january": "Janvier",
+    "february": "Février",
+    "march": "Mars",
+    "april": "Avril",
+    "may": "Mai",
+    "june": "Juin",
+    "july": "Juillet",
+    "august": "Août",
+    "september": "Septembre",
+    "october": "Octobre",
+    "november": "Novembre",
+    "december": "Décembre"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Exporter les données",
+    "exporting": "Exportation..."
+  },
+  "messages": {
+    "successTitle": "Données {type} exportées avec succès",
+    "successDescription": "Fichier : {filename}",
+    "errorAccessDenied": "Accès refusé",
+    "errorAccessDeniedDescription": "Cette fonctionnalité nécessite un abonnement de niveau Wealth",
+    "errorFailed": "Échec de l'exportation",
+    "errorFailedDescription": "Échec de l'exportation des données. Veuillez réessayer."
+  },
+  "info": {
+    "title": "À propos de l'exportation des données",
+    "point1": "Les exportations incluent tous les enregistrements pour le mois et l'année sélectionnés",
+    "point2": "Les fichiers CSV peuvent être ouverts dans Excel, Google Sheets ou toute application de tableur",
+    "point3": "Cette fonctionnalité est disponible exclusivement pour les abonnés du niveau Wealth",
+    "point4": "Des formats d'exportation supplémentaires pourront être ajoutés dans les futures mises à jour"
+  }
+}

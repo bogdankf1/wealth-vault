@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Esporta Dati",
+    "description": "Esporti i suoi dati finanziari in vari formati"
+  },
+  "card": {
+    "title": "Configurazione Esportazione",
+    "description": "Selezioni il tipo di dati, il periodo e il formato che desidera esportare"
+  },
+  "labels": {
+    "dataType": "Tipo di Dati",
+    "exportFormat": "Formato Esportazione",
+    "month": "Mese",
+    "year": "Anno"
+  },
+  "placeholders": {
+    "selectDataType": "Seleziona tipo di dati",
+    "selectFormat": "Seleziona formato",
+    "selectMonth": "Seleziona mese",
+    "selectYear": "Seleziona anno"
+  },
+  "entryTypes": {
+    "income": "Entrate",
+    "expenses": "Spese",
+    "subscriptions": "Abbonamenti",
+    "installments": "Rate",
+    "budgets": "Budget",
+    "savings": "Risparmi",
+    "portfolio": "Portafoglio",
+    "goals": "Obiettivi",
+    "debts": "Crediti",
+    "taxes": "Tasse"
+  },
+  "months": {
+    "january": "Gennaio",
+    "february": "Febbraio",
+    "march": "Marzo",
+    "april": "Aprile",
+    "may": "Maggio",
+    "june": "Giugno",
+    "july": "Luglio",
+    "august": "Agosto",
+    "september": "Settembre",
+    "october": "Ottobre",
+    "november": "Novembre",
+    "december": "Dicembre"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Esporta Dati",
+    "exporting": "Esportazione..."
+  },
+  "messages": {
+    "successTitle": "Dati {type} esportati con successo",
+    "successDescription": "File: {filename}",
+    "errorAccessDenied": "Accesso negato",
+    "errorAccessDeniedDescription": "Questa funzionalità richiede un abbonamento al livello Wealth",
+    "errorFailed": "Esportazione fallita",
+    "errorFailedDescription": "Impossibile esportare i dati. Riprovi."
+  },
+  "info": {
+    "title": "Informazioni sull'Esportazione Dati",
+    "point1": "Le esportazioni includono tutti i record per il mese e l'anno selezionati",
+    "point2": "I file CSV possono essere aperti in Excel, Google Sheets o qualsiasi applicazione di fogli di calcolo",
+    "point3": "Questa funzionalità è disponibile esclusivamente per gli abbonati al livello Wealth",
+    "point4": "Formati di esportazione aggiuntivi potrebbero essere aggiunti in futuri aggiornamenti"
+  }
+}

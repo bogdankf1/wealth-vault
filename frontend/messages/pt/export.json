@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Exportar Dados",
+    "description": "Exporte seus dados financeiros em vários formatos"
+  },
+  "card": {
+    "title": "Configuração de Exportação",
+    "description": "Selecione o tipo de dados, período e formato que deseja exportar"
+  },
+  "labels": {
+    "dataType": "Tipo de Dados",
+    "exportFormat": "Formato de Exportação",
+    "month": "Mês",
+    "year": "Ano"
+  },
+  "placeholders": {
+    "selectDataType": "Selecionar tipo de dados",
+    "selectFormat": "Selecionar formato",
+    "selectMonth": "Selecionar mês",
+    "selectYear": "Selecionar ano"
+  },
+  "entryTypes": {
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "subscriptions": "Assinaturas",
+    "installments": "Parcelamentos",
+    "budgets": "Orçamentos",
+    "savings": "Poupança",
+    "portfolio": "Portfólio",
+    "goals": "Metas",
+    "debts": "Dívidas",
+    "taxes": "Impostos"
+  },
+  "months": {
+    "january": "Janeiro",
+    "february": "Fevereiro",
+    "march": "Março",
+    "april": "Abril",
+    "may": "Maio",
+    "june": "Junho",
+    "july": "Julho",
+    "august": "Agosto",
+    "september": "Setembro",
+    "october": "Outubro",
+    "november": "Novembro",
+    "december": "Dezembro"
+  },
+  "formats": {
+    "csv": "CSV"
+  },
+  "buttons": {
+    "export": "Exportar Dados",
+    "exporting": "Exportando..."
+  },
+  "messages": {
+    "successTitle": "Dados de {type} exportados com sucesso",
+    "successDescription": "Arquivo: {filename}",
+    "errorAccessDenied": "Acesso negado",
+    "errorAccessDeniedDescription": "Este recurso requer uma assinatura do plano Wealth",
+    "errorFailed": "Exportação falhou",
+    "errorFailedDescription": "Falha ao exportar dados. Por favor, tente novamente."
+  },
+  "info": {
+    "title": "Sobre Exportação de Dados",
+    "point1": "As exportações incluem todos os registros do mês e ano selecionados",
+    "point2": "Arquivos CSV podem ser abertos no Excel, Google Sheets ou qualquer aplicativo de planilha",
+    "point3": "Este recurso está disponível exclusivamente para assinantes do plano Wealth",
+    "point4": "Formatos de exportação adicionais podem ser adicionados em atualizações futuras"
+  }
+}

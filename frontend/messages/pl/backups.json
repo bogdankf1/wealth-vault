@@ -1,0 +1,79 @@
+{
+  "page": {
+    "title": "Kopie zapasowe danych",
+    "description": "Twórz i przywracaj migawki swoich danych finansowych"
+  },
+  "create": {
+    "title": "Utwórz nową kopię zapasową",
+    "description": "Wybierz moduł i utwórz kopię zapasową wszystkich jego danych",
+    "label": "Moduł do kopii zapasowej",
+    "placeholder": "Wybierz moduł",
+    "button": "Utwórz kopię zapasową",
+    "creating": "Tworzenie..."
+  },
+  "list": {
+    "title": "Twoje kopie zapasowe",
+    "description": "Wyświetl i przywróć swoje kopie zapasowe danych",
+    "loading": "Ładowanie kopii zapasowych...",
+    "empty": "Brak jeszcze kopii zapasowych. Utwórz swoją pierwszą kopię zapasową powyżej.",
+    "table": {
+      "date": "Data",
+      "module": "Moduł",
+      "items": "Elementy",
+      "actions": "Akcje"
+    },
+    "itemCount": "{count} element(ów)",
+    "actions": {
+      "restore": "Przywróć",
+      "delete": "Usuń"
+    }
+  },
+  "modules": {
+    "income": "Dochody",
+    "expenses": "Wydatki",
+    "subscriptions": "Subskrypcje",
+    "installments": "Raty",
+    "budgets": "Budżety",
+    "savings": "Oszczędności",
+    "portfolio": "Portfel",
+    "goals": "Cele",
+    "debts": "Długi",
+    "taxes": "Podatki"
+  },
+  "info": {
+    "title": "Ważne informacje",
+    "point1": "Kopie zapasowe tworzą migawkę wszystkich danych w wybranym module w momencie utworzenia",
+    "point2": "Przywrócenie kopii zapasowej USUWA wszystkie bieżące dane i ZASTĘPUJE je danymi z kopii zapasowej",
+    "point3": "Każda kopia zapasowa przechowuje kompletny stan Twoich danych, w tym wszystkie pola i ustawienia",
+    "point4": "Kopie zapasowe są dostępne wyłącznie dla subskrybentów poziomu Wealth",
+    "point5": "Możesz tworzyć wiele kopii zapasowych dla tego samego modułu, aby śledzić zmiany w czasie",
+    "warning": "Ostrzeżenie:"
+  },
+  "dialogs": {
+    "restore": {
+      "title": "Przywrócić kopię zapasową?",
+      "description": "To ZASTĄPI wszystkie Twoje bieżące dane {module} danymi z kopii zapasowej. Wszystkie istniejące elementy zostaną usunięte i zastąpione. Tej operacji nie można cofnąć.",
+      "cancel": "Anuluj",
+      "confirm": "Przywróć",
+      "restoring": "Przywracanie..."
+    },
+    "delete": {
+      "title": "Usunąć kopię zapasową?",
+      "description": "To trwale usunie tę kopię zapasową. Tej operacji nie można cofnąć.",
+      "cancel": "Anuluj",
+      "confirm": "Usuń",
+      "deleting": "Usuwanie..."
+    }
+  },
+  "messages": {
+    "createSuccess": "Kopia zapasowa utworzona pomyślnie",
+    "createSuccessDescription": "Utworzono kopię zapasową {count} elementów {module}",
+    "createError": "Nie udało się utworzyć kopii zapasowej",
+    "restoreSuccess": "Kopia zapasowa przywrócona pomyślnie",
+    "restoreSuccessDescription": "Przywrócono {count} elementów. Wszystkie istniejące elementy zostały zastąpione.",
+    "restoreError": "Nie udało się przywrócić kopii zapasowej",
+    "deleteSuccess": "Kopia zapasowa usunięta pomyślnie",
+    "deleteError": "Nie udało się usunąć kopii zapasowej",
+    "errorGeneric": "Wystąpił błąd"
+  }
+}

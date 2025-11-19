@@ -1,0 +1,70 @@
+{
+  "page": {
+    "title": "Escolha Seu Plano",
+    "subtitle": "Comece gratuitamente e atualize conforme você cresce. Todos os planos incluem garantia de reembolso de 14 dias.",
+    "recommended": "RECOMENDADO",
+    "perMonth": "/mês",
+    "empty": "Nenhum plano de preços disponível no momento."
+  },
+  "buttons": {
+    "currentPlan": "Plano Atual",
+    "loading": "Carregando...",
+    "getStarted": "Começar",
+    "subscribe": "Assinar"
+  },
+  "footer": {
+    "text": "Todos os planos podem ser atualizados ou cancelados a qualquer momento. Precisa de ajuda para escolher?",
+    "contactLink": "Entre em contato"
+  },
+  "descriptions": {
+    "starter": "Perfeito para começar com rastreamento de finanças pessoais",
+    "growth": "Recursos avançados para gestão financeira séria",
+    "wealth": "Recursos premium para gestão abrangente de patrimônio"
+  },
+  "features": {
+    "starter": {
+      "incomeSources": "Até 3 fontes de receita",
+      "expenseTracking": "Rastreamento de despesas",
+      "bankUpload": "Upload de extrato bancário",
+      "savingsAccounts": "Até 3 contas de poupança",
+      "subscriptions": "Até 5 assinaturas",
+      "installments": "Até 2 parcelamentos",
+      "portfolioTracking": "Rastreamento de portfólio",
+      "financialGoals": "Metas financeiras",
+      "debtTracking": "Rastreamento de dívidas",
+      "taxTracking": "Rastreamento de impostos",
+      "aiInsights": "Insights de IA"
+    },
+    "growth": {
+      "incomeSources": "Até 10 fontes de receita",
+      "expenseTracking": "Rastreamento de despesas",
+      "aiCategorization": "Categorização com IA",
+      "bankUpload": "Upload de extrato bancário",
+      "savingsAccounts": "Até 10 contas de poupança",
+      "multiCurrency": "Suporte multi-moeda",
+      "portfolioAssets": "Até 20 ativos de portfólio",
+      "financialGoals": "Metas financeiras",
+      "subscriptions": "Até 20 assinaturas",
+      "installments": "Até 10 parcelamentos",
+      "debtTracking": "Rastreamento de dívidas",
+      "taxTracking": "Rastreamento de impostos",
+      "aiInsights": "Insights de IA"
+    },
+    "wealth": {
+      "incomeSources": "Fontes de receita ilimitadas",
+      "expenses": "Despesas ilimitadas",
+      "aiCategorization": "Categorização com IA",
+      "aiInsights": "Insights de IA",
+      "bankUpload": "Upload de extrato bancário",
+      "savingsAccounts": "Contas de poupança ilimitadas",
+      "multiCurrency": "Suporte multi-moeda",
+      "portfolioAssets": "Ativos de portfólio ilimitados",
+      "stockPrices": "Preços de ações em tempo real",
+      "financialGoals": "Metas financeiras",
+      "subscriptions": "Assinaturas ilimitadas",
+      "installments": "Parcelamentos ilimitados",
+      "debtTracking": "Rastreamento de dívidas",
+      "taxTracking": "Rastreamento de impostos"
+    }
+  }
+}

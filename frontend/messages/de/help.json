@@ -1,0 +1,54 @@
+{
+  "page": {
+    "title": "Hilfe-Center",
+    "description": "Erhalten Sie Hilfe bei Ihren Fragen oder melden Sie Probleme. Unser Support-Team ist hier, um Sie zu unterstützen."
+  },
+  "createTopic": {
+    "title": "Neues Support-Thema erstellen",
+    "description": "Haben Sie eine Frage oder benötigen Hilfe? Erstellen Sie ein neues Thema und wir werden uns bei Ihnen melden.",
+    "titlePlaceholder": "Thementitel (z.B. 'Ausgabe kann nicht hinzugefügt werden')",
+    "messagePlaceholder": "Beschreiben Sie Ihr Problem oder Ihre Frage im Detail...",
+    "button": "Thema erstellen",
+    "creating": "Wird erstellt..."
+  },
+  "topicsList": {
+    "title": "Ihre Support-Themen",
+    "empty": "Noch keine Support-Themen",
+    "emptyDescription": "Erstellen Sie Ihr erstes Thema oben, um Hilfe von unserem Support-Team zu erhalten.",
+    "created": "Erstellt",
+    "lastActivity": "Letzte Aktivität",
+    "ago": "vor",
+    "messages": "Nachrichten"
+  },
+  "topicDetail": {
+    "backButton": "Zurück zu Themen",
+    "refreshButton": "Aktualisieren",
+    "created": "Erstellt",
+    "ago": "vor",
+    "noteTitle": "Hinweis:",
+    "noteText": "Wir antworten normalerweise innerhalb von 24-48 Stunden. Bitte aktualisieren Sie diese Seite, um neue Antworten von unserem Support-Team zu sehen.",
+    "supportTeam": "Support-Team",
+    "you": "Sie",
+    "replyPlaceholder": "Geben Sie hier Ihre Antwort ein...",
+    "sendButton": "Antwort senden",
+    "sending": "Wird gesendet...",
+    "resolvedMessage": "Dieses Thema wurde als gelöst markiert. Wenn Sie weitere Hilfe benötigen, erstellen Sie bitte ein neues Thema."
+  },
+  "status": {
+    "open": "Offen",
+    "inProgress": "In Bearbeitung",
+    "resolved": "Gelöst"
+  },
+  "toasts": {
+    "createError": "Fehler",
+    "createErrorDescription": "Bitte füllen Sie sowohl Titel als auch Nachricht aus",
+    "createSuccess": "Erfolgreich",
+    "createSuccessDescription": "Ihr Support-Thema wurde erstellt",
+    "createFailed": "Fehler",
+    "createFailedDescription": "Thema konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "replySuccess": "Erfolgreich",
+    "replySuccessDescription": "Ihre Antwort wurde gesendet",
+    "replyFailed": "Fehler",
+    "replyFailedDescription": "Antwort konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+  }
+}

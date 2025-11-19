@@ -1,0 +1,310 @@
+{
+  "title": "Dashboard",
+  "description": "Pełny przegląd Twoich finansów",
+  "header": {
+    "title": "Dashboard",
+    "description": "Pełny przegląd Twoich finansów",
+    "periodLabel": "Okres:",
+    "clearButton": "Wyczyść"
+  },
+  "quickActions": {
+    "title": "Szybkie akcje",
+    "description": "Szybko dodawaj nowe wpisy finansowe",
+    "addIncome": {
+      "label": "Dodaj dochód",
+      "description": "Zapisz źródło dochodu"
+    },
+    "addExpense": {
+      "label": "Dodaj wydatek",
+      "description": "Śledź wydatek"
+    },
+    "addBudget": {
+      "label": "Dodaj budżet",
+      "description": "Ustaw limit wydatków"
+    },
+    "subscription": {
+      "label": "Subskrypcja",
+      "description": "Płatność cykliczna"
+    },
+    "installment": {
+      "label": "Rata",
+      "description": "Plan płatności"
+    },
+    "createGoal": {
+      "label": "Utwórz cel",
+      "description": "Ustaw docelową kwotę"
+    }
+  },
+  "insightsAlerts": {
+    "title": "Spostrzeżenia i alerty",
+    "description": "Ważne powiadomienia finansowe"
+  },
+  "netWorth": {
+    "title": "Wartość netto",
+    "totalLabel": "Całkowita wartość netto",
+    "assets": {
+      "label": "Aktywa",
+      "portfolio": "Portfel",
+      "savings": "Oszczędności"
+    },
+    "liabilities": {
+      "label": "Zobowiązania",
+      "debt": "Dług"
+    }
+  },
+  "financialHealth": {
+    "title": "Kondycja finansowa",
+    "scoreLabel": "na 100",
+    "components": {
+      "emergencyFund": "Fundusz awaryjny",
+      "debtToIncome": "Stosunek długu do dochodu",
+      "savingsRate": "Stopa oszczędności",
+      "investments": "Inwestycje",
+      "goalsProgress": "Postęp celów"
+    },
+    "ratings": {
+      "excellent": "Doskonała",
+      "good": "Dobra",
+      "fair": "Przeciętna",
+      "poor": "Słaba"
+    }
+  },
+  "cashFlow": {
+    "income": {
+      "label": "Dochód",
+      "period": "Miesięczny"
+    },
+    "expenses": {
+      "label": "Wydatki"
+    },
+    "subscriptions": {
+      "label": "Subskrypcje",
+      "period": "Miesięczne"
+    },
+    "installments": {
+      "label": "Raty",
+      "period": "Miesięczne"
+    },
+    "taxes": {
+      "label": "Podatki",
+      "active": "aktywne"
+    },
+    "debtsOwed": {
+      "label": "Długi należne",
+      "active": "aktywne"
+    },
+    "netCashFlow": {
+      "label": "Przepływ środków netto",
+      "savingsRateLabel": "Stopa oszczędności"
+    }
+  },
+  "recentActivity": {
+    "title": "Ostatnia aktywność",
+    "emptyState": "Brak ostatniej aktywności"
+  },
+  "analytics": {
+    "title": "Analityka finansowa",
+    "description": "Wizualizuj trendy i wzorce finansowe"
+  },
+  "tooltips": {
+    "netWorth": {
+      "heading": "Jak jest obliczana:",
+      "formula": "Wartość netto = Aktywa - Zobowiązania",
+      "assets": "Aktywa = Wartość portfela + Saldo oszczędności",
+      "liabilities": "Zobowiązania = Całkowity dług z rat"
+    },
+    "financialHealth": {
+      "heading": "Jak jest obliczana:",
+      "formula": "Wynik = 5 komponentów × 20 punktów każdy (0-100)",
+      "emergencyFund": "1. Fundusz awaryjny: Oszczędności ≥ 3 miesiące wydatków",
+      "debtToIncome": "2. Stosunek długu do dochodu: Całkowity dług / dochód < 36%",
+      "savingsRate": "3. Stopa oszczędności: % zaoszczędzonego dochodu (20%+ doskonała)",
+      "investmentDiversity": "4. Różnorodność inwestycji: Wiele rodzajów aktywów",
+      "goalsProgress": "5. Postęp celów: Średnie ukończenie celów"
+    },
+    "income": {
+      "heading": "Jak jest obliczany:",
+      "description": "Suma wszystkich aktywnych cyklicznych źródeł dochodu (miesięczne, tygodniowe, dwutygodniowe, roczne)"
+    },
+    "expenses": {
+      "heading": "Jak jest obliczany:",
+      "dateBased": "Obliczenie oparte na dacie dla {period}",
+      "oneTime": "• Wydatki jednorazowe: uwzględnione, jeśli data przypada w okresie",
+      "recurring": "• Wydatki cykliczne: uwzględnione, jeśli pokrywa się z okresem (ekwiwalent miesięczny)"
+    },
+    "subscriptions": {
+      "heading": "Jak jest obliczany:",
+      "description": "Suma wszystkich aktywnych subskrypcji (miesięczne, kwartalne, roczne, półroczne)"
+    },
+    "installments": {
+      "heading": "Jak jest obliczany:",
+      "description": "Suma wszystkich aktywnych płatności ratalnych (miesięczne, dwutygodniowe, tygodniowe)"
+    },
+    "taxes": {
+      "heading": "Jak jest obliczany:",
+      "description": "Podatki specyficzne dla okresu oparte na dochodzie (obliczane tylko wtedy, gdy dochód istnieje w wybranym okresie)"
+    },
+    "debtsOwed": {
+      "heading": "Jak jest obliczany:",
+      "description": "Suma wszystkich aktywnych długów (nieopłaconych) należnych Tobie"
+    },
+    "netCashFlow": {
+      "heading": "Jak jest obliczany:",
+      "formula": "Przepływ środków netto = Dochód - Wydatki - Subskrypcje - Raty",
+      "expenses": "• Wydatki są filtrowane według daty dla {period}",
+      "others": "• Dochód, Subskrypcje, Raty pokazują wszystkie aktywne (ekwiwalent miesięczny)",
+      "savingsRate": "Stopa oszczędności = (Przepływ środków netto / Dochód) × 100%"
+    }
+  },
+  "errors": {
+    "loadFailed": "Nie udało się załadować danych dashboardu. Spróbuj ponownie."
+  },
+  "widgets": {
+    "aiInsights": {
+      "title": "Spostrzeżenia AI",
+      "badge": "Napędzane przez AI",
+      "description": "Spersonalizowane rekomendacje finansowe",
+      "refreshTitle": "Odśwież spostrzeżenia",
+      "tooltip": {
+        "heading": "Jak to działa:",
+        "description": "AI analizuje Twoje dane finansowe, aby dostarczyć spersonalizowane rekomendacje:",
+        "spendingPatterns": "Wzorce wydatków i anomalie",
+        "savingsOpportunities": "Możliwości oszczędności",
+        "budgetOptimization": "Sugestie optymalizacji budżetu",
+        "financialHealth": "Ulepszenia kondycji finansowej"
+      },
+      "sections": {
+        "spendingPatterns": "Wzorce wydatków",
+        "savingsOpportunities": "Możliwości oszczędności",
+        "spendingAlerts": "Alerty wydatków"
+      },
+      "emptyState": {
+        "title": "Brak jeszcze dostępnych spostrzeżeń",
+        "description": "Dodaj więcej wydatków i celów oszczędnościowych, aby otrzymać spersonalizowane spostrzeżenia"
+      },
+      "error": "Nie udało się załadować spostrzeżeń. Spróbuj ponownie później.",
+      "cacheNotice": "Spostrzeżenia są buforowane przez 24 godziny. Kliknij odśwież, aby wygenerować nowe spostrzeżenia."
+    },
+    "budgetOverview": {
+      "title": "Przegląd budżetu",
+      "description": "Wszystkie aktywne budżety (każdy śledzony w swoim własnym okresie)",
+      "viewAll": "Wyświetl wszystko",
+      "tooltip": {
+        "heading": "Jak to działa:",
+        "description": "Pokazuje wszystkie aktualnie aktywne budżety zagregowane razem.",
+        "periodNote": "Każdy budżet śledzi wydatki w swoim własnym okresie (miesięcznym, kwartalnym lub rocznym).",
+        "colorGreen": "Zielony: Wykorzystano poniżej 80% budżetu",
+        "colorAmber": "Bursztynowy: Wykorzystano 80%+ ale nie przekroczono",
+        "colorRed": "Czerwony: Budżet przekroczony"
+      },
+      "infoNote": {
+        "showing": "Wyświetlanie {count} aktywnych {budgets}. Każdy budżet śledzi wydatki w swoim własnym zdefiniowanym okresie.",
+        "budget": "budżetu",
+        "budgets": "budżetów"
+      },
+      "stats": {
+        "budgeted": "Zabudżetowane",
+        "spent": "Wydane",
+        "remaining": "Pozostało"
+      },
+      "overallProgress": "Postęp ogólny",
+      "budgetAlerts": "Alerty budżetowe",
+      "moreAlerts": "+{count} więcej alertów",
+      "topCategories": "Najważniejsze kategorie",
+      "percentUsed": "{percent}% wykorzystane",
+      "left": "pozostało",
+      "over": "przekroczono",
+      "emptyState": {
+        "title": "Nie ustawiono jeszcze żadnych budżetów",
+        "button": "Utwórz swój pierwszy budżet"
+      },
+      "error": "Nie udało się załadować przeglądu budżetu"
+    },
+    "goalsOverview": {
+      "title": "Przegląd celów",
+      "viewAll": "Wyświetl wszystko",
+      "stats": {
+        "totalGoals": "Wszystkie cele",
+        "active": "aktywne",
+        "totalSaved": "Całkowite oszczędności",
+        "avgProgress": "{percent}% średnia",
+        "remaining": "Pozostało",
+        "of": "z"
+      },
+      "overallProgress": "Postęp ogólny",
+      "remainingOf": "{remaining} pozostało z {total}",
+      "status": {
+        "onTrack": "{count} na dobrej drodze",
+        "behind": "{count} z opóźnieniem",
+        "behindAlert": "{count} {goalText} z opóźnieniem",
+        "goal": "cel jest",
+        "goals": "cele są",
+        "reviewGoals": "Przejrzyj swoje cele i rozważ dostosowanie wkładów"
+      },
+      "topCategories": "Najważniejsze kategorie",
+      "emptyState": {
+        "title": "Nie utworzono jeszcze celów",
+        "button": "Utwórz swój pierwszy cel"
+      },
+      "error": "Nie udało się załadować statystyk celów"
+    },
+    "plannedSubscriptions": {
+      "title": "Zaplanowane subskrypcje",
+      "description": "Płatności subskrypcji dla wybranego miesiąca",
+      "emptyState": "Brak zaplanowanych subskrypcji na ten miesiąc",
+      "error": "Nie udało się załadować subskrypcji. Spróbuj ponownie później."
+    },
+    "plannedExpenses": {
+      "title": "Zaplanowane wydatki",
+      "description": "Cykliczne płatności wydatków dla wybranego miesiąca",
+      "emptyState": "Brak zaplanowanych cyklicznych wydatków na ten miesiąc",
+      "error": "Nie udało się załadować wydatków. Spróbuj ponownie później."
+    },
+    "plannedInstallments": {
+      "title": "Zaplanowane raty",
+      "description": "Płatności ratalnych dla wybranego miesiąca",
+      "paymentOf": "Płatność {current} z {total}",
+      "emptyState": "Brak zaplanowanych płatności ratalnych na ten miesiąc",
+      "error": "Nie udało się załadować rat. Spróbuj ponownie później."
+    },
+    "exchangeRates": {
+      "title": "Kursy walut",
+      "description": "Bieżące kursy wymiany walut",
+      "refreshed": "(odświeżono {time})",
+      "refreshTitle": "Odśwież kursy walut",
+      "tooltip": "Aktualne kursy wymiany między głównymi walutami. Kursy są aktualizowane co godzinę i buforowane dla wydajności.",
+      "currencies": {
+        "USD": "Dolar amerykański",
+        "EUR": "Euro",
+        "UAH": "Hrywna ukraińska"
+      },
+      "equalsLabel": "1 {currency} równa się:",
+      "rateDetails": {
+        "formula": "1 {from} = {rate} {to}",
+        "updated": "Zaktualizowano: {datetime}",
+        "source": "Źródło: {source}"
+      },
+      "footer": {
+        "realTime": "Kursy w czasie rzeczywistym z exchangerate-api.com",
+        "updateFrequency": "Aktualizowane co godzinę"
+      }
+    },
+    "layoutSwitcher": {
+      "selectLayout": "Wybierz układ",
+      "title": "Układy dashboardu",
+      "widgetsCount": "{count} widżetów",
+      "manageLayouts": "Zarządzaj układami...",
+      "toast": {
+        "switched": "Układ przełączony",
+        "switchedDescription": "Przełączono na układ \"{name}\".",
+        "error": "Błąd",
+        "errorDescription": "Nie udało się przełączyć układu."
+      }
+    },
+    "common": {
+      "viewAll": "Wyświetl wszystko",
+      "monthly": "Miesięczny",
+      "active": "aktywny"
+    }
+  }
+}

@@ -1,0 +1,537 @@
+{
+  "page": {
+    "title": "Configurações",
+    "description": "Gerencie as configurações e preferências da sua conta"
+  },
+  "tabs": {
+    "account": "Conta",
+    "subscription": "Assinatura",
+    "appearance": "Aparência",
+    "dashboard": "Dashboard",
+    "notifications": "Notificações",
+    "privacy": "Privacidade",
+    "security": "Segurança"
+  },
+  "account": {
+    "title": "Informações da Conta",
+    "description": "Detalhes e informações da sua conta",
+    "name": "Nome",
+    "email": "E-mail",
+    "memberSince": "Membro Desde",
+    "notSet": "Não definido"
+  },
+  "subscription": {
+    "title": "Detalhes da Assinatura",
+    "description": "Gerencie seu plano e informações de cobrança",
+    "currentPlan": "Seu Plano Atual",
+    "currentPeriod": "Período Atual",
+    "nextBillingDate": "Próxima Data de Cobrança",
+    "subscriptionEnding": "Assinatura Encerrando",
+    "subscriptionEndingDescription": "Sua assinatura será cancelada em",
+    "viewPricingPlans": "Ver Planos de Preços",
+    "cancelSubscription": "Cancelar Assinatura",
+    "statuses": {
+      "active": "ativo",
+      "past_due": "vencido",
+      "cancelled": "cancelado"
+    },
+    "paymentHistory": {
+      "title": "Histórico de Pagamentos",
+      "description": "Suas transações de pagamento recentes",
+      "subscriptionPayment": "Pagamento de assinatura",
+      "statuses": {
+        "succeeded": "sucesso",
+        "failed": "falhou",
+        "pending": "pendente"
+      }
+    },
+    "cancelDialog": {
+      "title": "Cancelar Assinatura",
+      "description": "Tem certeza de que deseja cancelar sua assinatura? Você ainda terá acesso até o final do período de cobrança atual.",
+      "keepSubscription": "Manter Assinatura",
+      "confirmCancel": "Cancelar Assinatura"
+    },
+    "toasts": {
+      "cancelled": {
+        "title": "Assinatura Cancelada",
+        "description": "Sua assinatura será cancelada no final do período de cobrança."
+      },
+      "error": {
+        "title": "Erro",
+        "description": "Falha ao cancelar assinatura"
+      }
+    }
+  },
+  "appearance": {
+    "theme": {
+      "title": "Tema",
+      "description": "Escolha seu esquema de cores preferido",
+      "options": {
+        "light": {
+          "label": "Claro",
+          "description": "Tema claro"
+        },
+        "dark": {
+          "label": "Escuro",
+          "description": "Tema escuro"
+        },
+        "system": {
+          "label": "Sistema",
+          "description": "Seguir preferência do sistema"
+        }
+      }
+    },
+    "language": {
+      "title": "Idioma",
+      "description": "Escolha seu idioma preferido para a interface",
+      "selectPlaceholder": "Selecionar idioma"
+    },
+    "accentColor": {
+      "title": "Cor de Destaque",
+      "description": "Escolha sua cor de destaque preferida",
+      "comingSoon": "Em Breve",
+      "warningMessage": "Sua preferência de cor de destaque está salva, mas cores de destaque personalizadas ainda não são aplicadas em todo o aplicativo. Este recurso será ativado em breve.",
+      "colors": {
+        "blue": "Azul",
+        "purple": "Roxo",
+        "green": "Verde",
+        "orange": "Laranja",
+        "red": "Vermelho",
+        "pink": "Rosa",
+        "indigo": "Índigo",
+        "teal": "Azul-petróleo"
+      }
+    },
+    "fontSize": {
+      "title": "Tamanho da Fonte",
+      "description": "Ajuste o tamanho base da fonte",
+      "comingSoon": "Em Breve",
+      "warningMessage": "Sua preferência de tamanho de fonte está salva, mas o dimensionamento dinâmico de fonte ainda não é aplicado em todo o aplicativo. Este recurso será ativado em breve.",
+      "selectPlaceholder": "Selecionar tamanho da fonte",
+      "options": {
+        "small": {
+          "label": "Pequeno",
+          "description": "Base 14px"
+        },
+        "medium": {
+          "label": "Médio",
+          "description": "Base 16px (padrão)"
+        },
+        "large": {
+          "label": "Grande",
+          "description": "Base 18px"
+        }
+      }
+    },
+    "currency": {
+      "title": "Moeda",
+      "description": "Escolha sua moeda preferida para todas as transações e exibições",
+      "label": "Moeda",
+      "info": "Esta moeda será usada para entrada de dados e exibição de todos os valores",
+      "selectPlaceholder": "Selecionar moeda"
+    },
+    "defaultViews": {
+      "title": "Preferências de Visualização Padrão",
+      "description": "Defina suas visualizações padrão preferidas para páginas de módulos. Você sempre pode substituí-las em páginas individuais.",
+      "contentView": {
+        "title": "Visualização de Conteúdo",
+        "description": "Escolha a visualização padrão para exibir cartões de conteúdo (receitas, despesas, etc.)",
+        "options": {
+          "card": {
+            "label": "Visualização em Cartão",
+            "description": "Layout em grade com cartões detalhados"
+          },
+          "list": {
+            "label": "Visualização em Lista",
+            "description": "Layout de tabela compacto"
+          }
+        }
+      },
+      "statsView": {
+        "title": "Visualização de Estatísticas",
+        "description": "Escolha a visualização padrão para exibir cartões de estatísticas no topo das páginas de módulos",
+        "options": {
+          "cards": {
+            "label": "Visualização em Cartões",
+            "description": "Layout em grade de cartões tradicional"
+          },
+          "compact": {
+            "label": "Visualização Compacta",
+            "description": "Layout de lista com economia de espaço"
+          }
+        }
+      }
+    },
+    "toasts": {
+      "themeUpdated": {
+        "title": "Tema Atualizado",
+        "description": "Tema alterado para"
+      },
+      "languageUpdated": {
+        "title": "Idioma Atualizado",
+        "description": "Idioma alterado para"
+      },
+      "accentColorUpdated": {
+        "title": "Cor de Destaque Atualizada",
+        "description": "Cor de destaque alterada para"
+      },
+      "fontSizeUpdated": {
+        "title": "Tamanho da Fonte Atualizado",
+        "description": "Tamanho da fonte alterado para"
+      },
+      "currencyUpdated": {
+        "title": "Moeda Atualizada",
+        "description": "Moeda alterada para"
+      },
+      "contentViewUpdated": {
+        "title": "Visualização de Conteúdo Padrão Atualizada",
+        "description": "Visualização de conteúdo padrão alterada para"
+      },
+      "statsViewUpdated": {
+        "title": "Visualização de Estatísticas Padrão Atualizada",
+        "description": "Visualização de estatísticas padrão alterada para"
+      },
+      "error": {
+        "title": "Erro",
+        "themeDescription": "Falha ao salvar preferência de tema",
+        "languageDescription": "Falha ao salvar preferência de idioma",
+        "accentColorDescription": "Falha ao salvar preferência de cor de destaque",
+        "fontSizeDescription": "Falha ao salvar preferência de tamanho de fonte",
+        "currencyDescription": "Falha ao salvar preferência de moeda",
+        "contentViewDescription": "Falha ao salvar preferência de visualização de conteúdo padrão",
+        "statsViewDescription": "Falha ao salvar preferência de visualização de estatísticas padrão"
+      }
+    }
+  },
+  "dashboardLayouts": {
+    "title": "Layouts do Dashboard",
+    "description": "Personalize seu dashboard criando e gerenciando diferentes layouts",
+    "wealthTierRequired": "Layouts personalizados requerem plano Wealth",
+    "initializePresets": "Inicializar Predefinições",
+    "createLayout": "Criar Layout",
+    "upgradeToCreate": "Atualizar para Criar",
+    "active": "Ativo",
+    "preset": "Predefinido",
+    "widgetsVisible": "widgets visíveis",
+    "of": "de",
+    "noLayoutsFound": "Nenhum layout encontrado. Crie seu primeiro layout ou inicialize as predefinições.",
+    "upgradeToWealth": "Atualizar para Wealth",
+    "customLayoutsInfo": "Layouts personalizados estão disponíveis para assinantes do plano Wealth.",
+    "viewPricing": "Ver preços",
+    "editor": {
+      "createTitle": "Criar Layout",
+      "editTitle": "Editar Layout",
+      "description": "Configure quais widgets mostrar e sua visibilidade em seu dashboard.",
+      "layoutName": "Nome do Layout",
+      "layoutNamePlaceholder": "ex., Meu Layout Personalizado",
+      "widgetsLabel": "Widgets",
+      "cancel": "Cancelar",
+      "create": "Criar",
+      "update": "Atualizar"
+    },
+    "widgets": {
+      "quick-actions": {
+        "label": "Ações Rápidas",
+        "description": "Botões de acesso rápido"
+      },
+      "ai-insights": {
+        "label": "Insights de IA",
+        "description": "Insights financeiros com IA"
+      },
+      "exchange-rates": {
+        "label": "Taxas de Câmbio",
+        "description": "Taxas de câmbio de moedas"
+      },
+      "net-worth": {
+        "label": "Patrimônio Líquido",
+        "description": "Visão geral do patrimônio líquido total"
+      },
+      "income-vs-expenses": {
+        "label": "Receitas vs Despesas",
+        "description": "Gráfico de comparação"
+      },
+      "monthly-spending": {
+        "label": "Gastos Mensais",
+        "description": "Detalhamento de gastos"
+      },
+      "recent-transactions": {
+        "label": "Transações Recentes",
+        "description": "Últimas transações"
+      },
+      "upcoming-bills": {
+        "label": "Contas Próximas",
+        "description": "Contas e assinaturas"
+      },
+      "budget-overview": {
+        "label": "Visão Geral do Orçamento",
+        "description": "Progresso do orçamento"
+      },
+      "goals-progress": {
+        "label": "Progresso das Metas",
+        "description": "Metas financeiras"
+      },
+      "portfolio-summary": {
+        "label": "Resumo do Portfólio",
+        "description": "Portfólio de investimentos"
+      },
+      "subscriptions-by-category": {
+        "label": "Assinaturas por Categoria",
+        "description": "Detalhamento de assinaturas"
+      },
+      "installments-by-category": {
+        "label": "Parcelamentos por Categoria",
+        "description": "Detalhamento de parcelamentos"
+      },
+      "expenses-by-category": {
+        "label": "Despesas por Categoria",
+        "description": "Detalhamento de despesas"
+      },
+      "budgets-by-category": {
+        "label": "Orçamentos por Categoria",
+        "description": "Detalhamento de orçamentos"
+      },
+      "income-allocation": {
+        "label": "Alocação de Receita",
+        "description": "Distribuição de receita"
+      },
+      "net-worth-trend": {
+        "label": "Tendência do Patrimônio Líquido",
+        "description": "Patrimônio líquido histórico"
+      },
+      "taxes": {
+        "label": "Impostos",
+        "description": "Resumo de impostos"
+      },
+      "debts-owed": {
+        "label": "Dívidas a Receber",
+        "description": "Rastreamento de dívidas"
+      },
+      "planned-subscriptions": {
+        "label": "Assinaturas Planejadas",
+        "description": "Pagamentos de assinaturas para o mês selecionado"
+      },
+      "planned-expenses": {
+        "label": "Despesas Planejadas",
+        "description": "Pagamentos de despesas recorrentes para o mês selecionado"
+      },
+      "planned-installments": {
+        "label": "Parcelamentos Planejados",
+        "description": "Pagamentos de parcelamentos para o mês selecionado"
+      }
+    },
+    "toasts": {
+      "layoutActivated": {
+        "title": "Layout ativado",
+        "description": "O layout do dashboard foi ativado com sucesso."
+      },
+      "layoutDeleted": {
+        "title": "Layout excluído",
+        "description": "O layout do dashboard foi excluído com sucesso."
+      },
+      "presetsInitialized": {
+        "title": "Predefinições inicializadas",
+        "description": "Os layouts padrão predefinidos foram criados."
+      },
+      "layoutCreated": {
+        "title": "Layout criado",
+        "description": "O layout do dashboard foi criado com sucesso."
+      },
+      "layoutUpdated": {
+        "title": "Layout atualizado",
+        "description": "O layout do dashboard foi atualizado com sucesso."
+      },
+      "error": {
+        "title": "Erro",
+        "activateDescription": "Falha ao ativar layout.",
+        "deleteDescription": "Falha ao excluir layout.",
+        "initializeDescription": "Falha ao inicializar predefinições.",
+        "saveDescription": "Falha ao salvar layout.",
+        "nameRequired": "Por favor, insira um nome para o layout."
+      }
+    },
+    "deleteDialog": {
+      "title": "Excluir Layout",
+      "description": "Tem certeza de que deseja excluir este layout? Esta ação não pode ser desfeita.",
+      "cancel": "Cancelar",
+      "delete": "Excluir",
+      "deleting": "Excluindo..."
+    }
+  },
+  "notifications": {
+    "email": {
+      "title": "Notificações por E-mail",
+      "description": "Gerencie quais e-mails você recebe de nós",
+      "comingSoon": "Em Breve",
+      "warningMessage": "Suas preferências de notificação estão salvas, mas as notificações por e-mail ainda não estão sendo enviadas. Este recurso será ativado em breve.",
+      "marketing": {
+        "label": "E-mails de Marketing",
+        "description": "Receba e-mails sobre novos recursos, dicas e ofertas especiais"
+      },
+      "productUpdates": {
+        "label": "Atualizações do Produto",
+        "description": "Seja notificado quando lançarmos novos recursos ou melhorias"
+      },
+      "securityAlerts": {
+        "label": "Alertas de Segurança",
+        "description": "Notificações importantes de segurança sobre sua conta"
+      },
+      "billing": {
+        "label": "Cobranças e Pagamentos",
+        "description": "Faturas, confirmações de pagamento e atualizações de cobrança"
+      },
+      "weeklySummary": {
+        "label": "Resumo Semanal",
+        "description": "Um resumo semanal de sua atividade financeira e insights"
+      }
+    },
+    "push": {
+      "title": "Notificações Push",
+      "description": "Gerencie notificações no aplicativo e no navegador",
+      "comingSoon": "Em Breve",
+      "warningMessage": "Suas preferências de notificação estão salvas, mas as notificações push ainda não estão ativas. Este recurso será ativado em breve.",
+      "budgetAlerts": {
+        "label": "Alertas de Orçamento",
+        "description": "Seja notificado quando estiver se aproximando dos limites de seu orçamento"
+      },
+      "goalMilestones": {
+        "label": "Marcos de Metas",
+        "description": "Comemore quando atingir metas de poupança ou marcos"
+      },
+      "subscriptionReminders": {
+        "label": "Lembretes de Assinatura",
+        "description": "Lembretes sobre renovações de assinaturas próximas"
+      },
+      "incomeNotifications": {
+        "label": "Notificações de Receita",
+        "description": "Seja notificado quando receber receita ou pagamentos"
+      }
+    },
+    "toasts": {
+      "emailUpdated": {
+        "title": "Notificações por E-mail Atualizadas",
+        "description": "Suas preferências de notificação por e-mail foram salvas."
+      },
+      "pushUpdated": {
+        "title": "Notificações Push Atualizadas",
+        "description": "Suas preferências de notificação push foram salvas."
+      },
+      "error": {
+        "title": "Erro",
+        "emailDescription": "Falha ao atualizar preferências de notificação por e-mail",
+        "pushDescription": "Falha ao atualizar preferências de notificação push"
+      }
+    }
+  },
+  "privacy": {
+    "analytics": {
+      "title": "Análises e Rastreamento",
+      "description": "Controle quais dados coletamos para melhorar nosso serviço",
+      "usageAnalytics": {
+        "label": "Análises de Uso",
+        "description": "Ajude-nos a melhorar compartilhando dados de uso anônimos"
+      },
+      "errorReporting": {
+        "label": "Relatório de Erros",
+        "description": "Envie automaticamente relatórios de erro para nos ajudar a corrigir bugs"
+      },
+      "performanceMonitoring": {
+        "label": "Monitoramento de Desempenho",
+        "description": "Ajude-nos a otimizar o desempenho compartilhando métricas de desempenho"
+      }
+    },
+    "dataVisibility": {
+      "title": "Visibilidade de Dados",
+      "description": "Controle como seus dados são usados dentro da plataforma",
+      "private": {
+        "label": "Privado",
+        "description": "Seus dados são completamente privados e nunca compartilhados ou usados em estatísticas agregadas"
+      },
+      "anonymous": {
+        "label": "Anônimo",
+        "description": "Seus dados podem ser usados em estatísticas agregadas anônimas para melhorar nosso serviço"
+      }
+    },
+    "dataExport": {
+      "title": "Exportar Seus Dados",
+      "description": "Baixe todos os seus dados em formato portátil (em conformidade com GDPR)",
+      "comingSoon": "Em Breve",
+      "warningMessage": "A funcionalidade de exportação de dados está atualmente em desenvolvimento. Uma vez disponível, você poderá baixar todos os seus dados financeiros.",
+      "info": "Você poderá solicitar uma cópia de todos os seus dados pessoais. Prepararemos um arquivo baixável contendo todas as suas informações, incluindo fontes de receita, despesas, metas e detalhes da conta.",
+      "button": "Solicitar Exportação de Dados"
+    },
+    "toasts": {
+      "analyticsUpdated": {
+        "title": "Preferências de Análises Atualizadas",
+        "description": "Suas preferências de privacidade foram salvas."
+      },
+      "dataVisibilityUpdated": {
+        "title": "Visibilidade de Dados Atualizada",
+        "description": "Sua visibilidade de dados está agora definida para"
+      },
+      "dataExportRequested": {
+        "title": "Exportação de Dados Solicitada",
+        "description": "Sua exportação de dados estará pronta em breve. Enviaremos um e-mail com o link de download."
+      },
+      "error": {
+        "title": "Erro",
+        "analyticsDescription": "Falha ao atualizar preferências de privacidade",
+        "dataVisibilityDescription": "Falha ao atualizar visibilidade de dados"
+      }
+    }
+  },
+  "security": {
+    "authMethod": {
+      "title": "Método de Autenticação",
+      "description": "A autenticação da sua conta é gerenciada pelo seu provedor de identidade",
+      "signedInWith": "Conectado com Google",
+      "securityInfo": "Sua senha e segurança da conta são gerenciadas pelo Google. Para atualizar sua senha ou configurações de segurança, visite sua Conta do Google.",
+      "manageGoogleAccount": "Gerenciar Segurança da Conta do Google"
+    },
+    "twoFactor": {
+      "title": "Autenticação de Dois Fatores",
+      "description": "Adicione uma camada extra de segurança à sua conta",
+      "comingSoon": "Em Breve",
+      "warningMessage": "A Autenticação de Dois Fatores está atualmente em desenvolvimento. Uma vez disponível, você poderá adicionar uma camada extra de segurança à sua conta.",
+      "enable": "Ativar 2FA",
+      "enableDescription": "Requer um código de verificação além de sua senha",
+      "enabled": {
+        "title": "Autenticação de Dois Fatores está Ativada",
+        "description": "Sua conta está protegida com uma camada adicional de segurança."
+      }
+    },
+    "sessions": {
+      "title": "Sessões Ativas",
+      "description": "Gerencie dispositivos que estão atualmente conectados à sua conta",
+      "comingSoon": "Em Breve",
+      "warningMessage": "O rastreamento de sessões está atualmente em desenvolvimento. As sessões mostradas abaixo são exemplos do que você verá quando este recurso estiver ativo.",
+      "current": "Atual",
+      "lastActive": "Última atividade:",
+      "revoke": "Revogar",
+      "revokeAll": "Revogar Todas as Outras Sessões"
+    },
+    "toasts": {
+      "twoFactorEnabled": {
+        "title": "2FA Ativado",
+        "description": "A autenticação de dois fatores foi ativada para sua conta."
+      },
+      "twoFactorDisabled": {
+        "title": "2FA Desativado",
+        "description": "A autenticação de dois fatores foi desativada."
+      },
+      "sessionRevoked": {
+        "title": "Sessão Revogada",
+        "description": "A sessão foi encerrada com sucesso."
+      },
+      "sessionsRevoked": {
+        "title": "Sessões Revogadas",
+        "description": "Todas as outras sessões foram encerradas."
+      },
+      "error": {
+        "title": "Erro",
+        "twoFactorDescription": "Falha ao atualizar configurações de 2FA",
+        "sessionDescription": "Falha ao revogar sessão",
+        "sessionsDescription": "Falha ao revogar sessões"
+      }
+    }
+  }
+}

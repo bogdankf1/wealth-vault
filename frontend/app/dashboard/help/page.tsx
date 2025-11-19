@@ -19,9 +19,26 @@ import {
   type SupportTopic,
 } from '@/lib/api/supportApi';
 import { formatDistanceToNow } from 'date-fns';
-import { enUS, es, uk } from 'date-fns/locale';
+import { enUS, es, uk, pl, ptBR, it, fr, de } from 'date-fns/locale';
 import { useTranslations } from 'next-intl';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { Locale } from '@/i18n';
+
+// Map locale codes to date-fns locale objects
+const getDateLocale = (locale: Locale) => {
+  const localeMap = {
+    en: enUS,
+    uk: uk,
+    es: es,
+    pl: pl,
+    pt: ptBR,
+    it: it,
+    fr: fr,
+    de: de,
+  } as const;
+
+  return localeMap[locale] || enUS;
+};
 
 export default function HelpCenterPage() {
   const router = useRouter();
@@ -35,7 +52,7 @@ export default function HelpCenterPage() {
   const tToasts = useTranslations('help.toasts');
 
   // Get date-fns locale based on current language
-  const dateLocale = locale === 'es' ? es : locale === 'uk' ? uk : enUS;
+  const dateLocale = getDateLocale(locale);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [newTopicTitle, setNewTopicTitle] = useState('');
   const [newTopicMessage, setNewTopicMessage] = useState('');

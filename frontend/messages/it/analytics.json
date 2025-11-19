@@ -1,0 +1,93 @@
+{
+  "incomeAllocation": {
+    "title": "Allocazione Entrate",
+    "description": "Come viene distribuito il suo reddito",
+    "tooltip": "Mostra come il suo reddito mensile viene allocato tra spese, abbonamenti, rate e risparmi netti. Aiuta a identificare modelli di spesa e potenziale di risparmio.",
+    "totalIncome": "Entrate Totali",
+    "categories": {
+      "expenses": "Spese",
+      "subscriptions": "Abbonamenti",
+      "installments": "Rate",
+      "netSavings": "Risparmi Netti",
+      "taxes": "Tasse"
+    },
+    "chartLabels": {
+      "amount": "Importo",
+      "percentage": "Percentuale"
+    },
+    "summary": "Riepilogo allocazione entrate mensili",
+    "emptyState": "Nessun dato sulle entrate disponibile per il mese corrente"
+  },
+  "netWorthTrend": {
+    "title": "Tendenza Patrimonio Netto",
+    "description": "Tracci la crescita della sua ricchezza nel tempo",
+    "tooltip": "Visualizza i cambiamenti del patrimonio netto nel tempo. Patrimonio Netto = Attività (portafoglio + risparmi) - Passività (debiti). Aiuta a tracciare il progresso nella costruzione della ricchezza.",
+    "stats": {
+      "current": "Patrimonio Netto Attuale",
+      "periodChange": "Variazione Periodo",
+      "peak": "Patrimonio Netto Massimo",
+      "starting": "Punto di Partenza"
+    },
+    "categories": {
+      "netWorth": "Patrimonio Netto",
+      "assets": "Attività",
+      "liabilities": "Passività"
+    },
+    "insights": {
+      "title": "Analisi Crescita",
+      "trend": "Tendenza Complessiva",
+      "growing": "In Crescita",
+      "declining": "In Declino",
+      "avgMonthly": "Variazione Media Mensile"
+    },
+    "emptyState": "Nessun dato sul patrimonio netto disponibile per il periodo selezionato"
+  },
+  "subscriptionsByCategory": {
+    "title": "Abbonamenti per Categoria",
+    "description": "Spesa mensile abbonamenti per categoria",
+    "tooltip": "Mostra tutti gli abbonamenti attivi raggruppati per categoria. Gli importi sono equivalenti mensili indipendentemente dalla frequenza di fatturazione.",
+    "total": "Totale",
+    "chartLabels": {
+      "amount": "Importo",
+      "percentage": "Percentuale"
+    },
+    "topCategories": "Categorie principali abbonamenti",
+    "emptyState": "Nessun dato sugli abbonamenti disponibile"
+  },
+  "installmentsByCategory": {
+    "title": "Rate per Categoria",
+    "description": "Pagamenti rateali mensili per categoria",
+    "tooltip": "Mostra tutti i piani rateali attivi raggruppati per categoria. Visualizza gli importi di pagamento mensili.",
+    "total": "Totale",
+    "chartLabels": {
+      "amount": "Importo",
+      "percentage": "Percentuale"
+    },
+    "topCategories": "Categorie principali rate",
+    "emptyState": "Nessun dato sulle rate disponibile"
+  },
+  "expensesByCategory": {
+    "title": "Spese per Categoria",
+    "description": "Distribuzione spese mensili per categoria",
+    "tooltip": "Mostra il dettaglio delle spese per categoria per il periodo selezionato. Aiuta a identificare le principali aree di spesa.",
+    "total": "Totale",
+    "chartLabels": {
+      "amount": "Importo",
+      "percentage": "Percentuale"
+    },
+    "topCategories": "Categorie principali spese",
+    "emptyState": "Nessun dato sulle spese disponibile"
+  },
+  "budgetsByCategory": {
+    "title": "Budget per Categoria",
+    "description": "Allocazione budget mensile per categoria",
+    "tooltip": "Mostra tutti i budget attivi raggruppati per categoria. Ogni budget traccia le spese all'interno del proprio periodo di tempo.",
+    "total": "Totale",
+    "chartLabels": {
+      "amount": "Importo",
+      "percentage": "Percentuale"
+    },
+    "topCategories": "Categorie principali budget",
+    "emptyState": "Nessun dato sui budget disponibile"
+  }
+}

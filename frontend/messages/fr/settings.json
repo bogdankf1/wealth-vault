@@ -1,0 +1,537 @@
+{
+  "page": {
+    "title": "Paramètres",
+    "description": "Gérez les paramètres et préférences de votre compte"
+  },
+  "tabs": {
+    "account": "Compte",
+    "subscription": "Abonnement",
+    "appearance": "Apparence",
+    "dashboard": "Tableau de bord",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "security": "Sécurité"
+  },
+  "account": {
+    "title": "Informations du compte",
+    "description": "Détails et informations de votre compte",
+    "name": "Nom",
+    "email": "Email",
+    "memberSince": "Membre depuis",
+    "notSet": "Non défini"
+  },
+  "subscription": {
+    "title": "Détails de l'abonnement",
+    "description": "Gérez votre forfait et vos informations de facturation",
+    "currentPlan": "Votre forfait actuel",
+    "currentPeriod": "Période actuelle",
+    "nextBillingDate": "Prochaine date de facturation",
+    "subscriptionEnding": "Fin de l'abonnement",
+    "subscriptionEndingDescription": "Votre abonnement sera annulé le",
+    "viewPricingPlans": "Voir les forfaits tarifaires",
+    "cancelSubscription": "Annuler l'abonnement",
+    "statuses": {
+      "active": "actif",
+      "past_due": "en retard",
+      "cancelled": "annulé"
+    },
+    "paymentHistory": {
+      "title": "Historique des paiements",
+      "description": "Vos transactions de paiement récentes",
+      "subscriptionPayment": "Paiement d'abonnement",
+      "statuses": {
+        "succeeded": "réussi",
+        "failed": "échoué",
+        "pending": "en attente"
+      }
+    },
+    "cancelDialog": {
+      "title": "Annuler l'abonnement",
+      "description": "Êtes-vous sûr de vouloir annuler votre abonnement ? Vous aurez toujours accès jusqu'à la fin de votre période de facturation actuelle.",
+      "keepSubscription": "Conserver l'abonnement",
+      "confirmCancel": "Annuler l'abonnement"
+    },
+    "toasts": {
+      "cancelled": {
+        "title": "Abonnement annulé",
+        "description": "Votre abonnement sera annulé à la fin de la période de facturation."
+      },
+      "error": {
+        "title": "Erreur",
+        "description": "Échec de l'annulation de l'abonnement"
+      }
+    }
+  },
+  "appearance": {
+    "theme": {
+      "title": "Thème",
+      "description": "Choisissez votre schéma de couleurs préféré",
+      "options": {
+        "light": {
+          "label": "Clair",
+          "description": "Thème clair"
+        },
+        "dark": {
+          "label": "Sombre",
+          "description": "Thème sombre"
+        },
+        "system": {
+          "label": "Système",
+          "description": "Suivre la préférence système"
+        }
+      }
+    },
+    "language": {
+      "title": "Langue",
+      "description": "Choisissez votre langue préférée pour l'interface",
+      "selectPlaceholder": "Sélectionner la langue"
+    },
+    "accentColor": {
+      "title": "Couleur d'accentuation",
+      "description": "Choisissez votre couleur d'accentuation préférée",
+      "comingSoon": "Bientôt disponible",
+      "warningMessage": "Votre préférence de couleur d'accentuation est enregistrée, mais les couleurs d'accentuation personnalisées ne sont pas encore appliquées dans l'application. Cette fonctionnalité sera activée prochainement.",
+      "colors": {
+        "blue": "Bleu",
+        "purple": "Violet",
+        "green": "Vert",
+        "orange": "Orange",
+        "red": "Rouge",
+        "pink": "Rose",
+        "indigo": "Indigo",
+        "teal": "Sarcelle"
+      }
+    },
+    "fontSize": {
+      "title": "Taille de police",
+      "description": "Ajustez la taille de police de base",
+      "comingSoon": "Bientôt disponible",
+      "warningMessage": "Votre préférence de taille de police est enregistrée, mais le dimensionnement dynamique des polices n'est pas encore appliqué dans l'application. Cette fonctionnalité sera activée prochainement.",
+      "selectPlaceholder": "Sélectionner la taille de police",
+      "options": {
+        "small": {
+          "label": "Petite",
+          "description": "14px de base"
+        },
+        "medium": {
+          "label": "Moyenne",
+          "description": "16px de base (par défaut)"
+        },
+        "large": {
+          "label": "Grande",
+          "description": "18px de base"
+        }
+      }
+    },
+    "currency": {
+      "title": "Devise",
+      "description": "Choisissez votre devise préférée pour toutes les transactions et affichages",
+      "label": "Devise",
+      "info": "Cette devise sera utilisée pour la saisie des données et l'affichage de tous les montants",
+      "selectPlaceholder": "Sélectionner la devise"
+    },
+    "defaultViews": {
+      "title": "Préférences de vue par défaut",
+      "description": "Définissez vos vues par défaut préférées pour les pages de modules. Vous pouvez toujours les remplacer sur les pages individuelles.",
+      "contentView": {
+        "title": "Vue du contenu",
+        "description": "Choisissez la vue par défaut pour afficher les cartes de contenu (revenus, dépenses, etc.)",
+        "options": {
+          "card": {
+            "label": "Vue carte",
+            "description": "Disposition en grille avec des cartes détaillées"
+          },
+          "list": {
+            "label": "Vue liste",
+            "description": "Disposition de tableau compacte"
+          }
+        }
+      },
+      "statsView": {
+        "title": "Vue des statistiques",
+        "description": "Choisissez la vue par défaut pour afficher les cartes de statistiques en haut des pages de modules",
+        "options": {
+          "cards": {
+            "label": "Vue cartes",
+            "description": "Disposition en grille de cartes traditionnelle"
+          },
+          "compact": {
+            "label": "Vue compacte",
+            "description": "Disposition en liste économisant l'espace"
+          }
+        }
+      }
+    },
+    "toasts": {
+      "themeUpdated": {
+        "title": "Thème mis à jour",
+        "description": "Thème changé en"
+      },
+      "languageUpdated": {
+        "title": "Langue mise à jour",
+        "description": "Langue changée en"
+      },
+      "accentColorUpdated": {
+        "title": "Couleur d'accentuation mise à jour",
+        "description": "Couleur d'accentuation changée en"
+      },
+      "fontSizeUpdated": {
+        "title": "Taille de police mise à jour",
+        "description": "Taille de police changée en"
+      },
+      "currencyUpdated": {
+        "title": "Devise mise à jour",
+        "description": "Devise changée en"
+      },
+      "contentViewUpdated": {
+        "title": "Vue de contenu par défaut mise à jour",
+        "description": "Vue de contenu par défaut changée en"
+      },
+      "statsViewUpdated": {
+        "title": "Vue des statistiques par défaut mise à jour",
+        "description": "Vue des statistiques par défaut changée en"
+      },
+      "error": {
+        "title": "Erreur",
+        "themeDescription": "Échec de l'enregistrement de la préférence de thème",
+        "languageDescription": "Échec de l'enregistrement de la préférence de langue",
+        "accentColorDescription": "Échec de l'enregistrement de la préférence de couleur d'accentuation",
+        "fontSizeDescription": "Échec de l'enregistrement de la préférence de taille de police",
+        "currencyDescription": "Échec de l'enregistrement de la préférence de devise",
+        "contentViewDescription": "Échec de l'enregistrement de la préférence de vue de contenu par défaut",
+        "statsViewDescription": "Échec de l'enregistrement de la préférence de vue des statistiques par défaut"
+      }
+    }
+  },
+  "dashboardLayouts": {
+    "title": "Dispositions du tableau de bord",
+    "description": "Personnalisez votre tableau de bord en créant et gérant différentes dispositions",
+    "wealthTierRequired": "Les dispositions personnalisées nécessitent le niveau Wealth",
+    "initializePresets": "Initialiser les préréglages",
+    "createLayout": "Créer une disposition",
+    "upgradeToCreate": "Mettre à niveau pour créer",
+    "active": "Actif",
+    "preset": "Préréglage",
+    "widgetsVisible": "widgets visibles",
+    "of": "sur",
+    "noLayoutsFound": "Aucune disposition trouvée. Créez votre première disposition ou initialisez les préréglages.",
+    "upgradeToWealth": "Passer à Wealth",
+    "customLayoutsInfo": "Les dispositions personnalisées sont disponibles pour les abonnés du niveau Wealth.",
+    "viewPricing": "Voir les tarifs",
+    "editor": {
+      "createTitle": "Créer une disposition",
+      "editTitle": "Modifier la disposition",
+      "description": "Configurez les widgets à afficher et leur visibilité sur votre tableau de bord.",
+      "layoutName": "Nom de la disposition",
+      "layoutNamePlaceholder": "par ex., Ma disposition personnalisée",
+      "widgetsLabel": "Widgets",
+      "cancel": "Annuler",
+      "create": "Créer",
+      "update": "Mettre à jour"
+    },
+    "widgets": {
+      "quick-actions": {
+        "label": "Actions rapides",
+        "description": "Boutons d'accès rapide"
+      },
+      "ai-insights": {
+        "label": "Aperçus IA",
+        "description": "Aperçus financiers alimentés par l'IA"
+      },
+      "exchange-rates": {
+        "label": "Taux de change",
+        "description": "Taux de change des devises"
+      },
+      "net-worth": {
+        "label": "Valeur nette",
+        "description": "Vue d'ensemble de la valeur nette totale"
+      },
+      "income-vs-expenses": {
+        "label": "Revenus vs Dépenses",
+        "description": "Graphique de comparaison"
+      },
+      "monthly-spending": {
+        "label": "Dépenses mensuelles",
+        "description": "Répartition des dépenses"
+      },
+      "recent-transactions": {
+        "label": "Transactions récentes",
+        "description": "Dernières transactions"
+      },
+      "upcoming-bills": {
+        "label": "Factures à venir",
+        "description": "Factures et abonnements"
+      },
+      "budget-overview": {
+        "label": "Aperçu du budget",
+        "description": "Progression du budget"
+      },
+      "goals-progress": {
+        "label": "Progression des objectifs",
+        "description": "Objectifs financiers"
+      },
+      "portfolio-summary": {
+        "label": "Résumé du portefeuille",
+        "description": "Portefeuille d'investissement"
+      },
+      "subscriptions-by-category": {
+        "label": "Abonnements par catégorie",
+        "description": "Répartition des abonnements"
+      },
+      "installments-by-category": {
+        "label": "Versements par catégorie",
+        "description": "Répartition des versements"
+      },
+      "expenses-by-category": {
+        "label": "Dépenses par catégorie",
+        "description": "Répartition des dépenses"
+      },
+      "budgets-by-category": {
+        "label": "Budgets par catégorie",
+        "description": "Répartition des budgets"
+      },
+      "income-allocation": {
+        "label": "Répartition des revenus",
+        "description": "Distribution des revenus"
+      },
+      "net-worth-trend": {
+        "label": "Tendance de la valeur nette",
+        "description": "Valeur nette historique"
+      },
+      "taxes": {
+        "label": "Impôts",
+        "description": "Résumé des impôts"
+      },
+      "debts-owed": {
+        "label": "Dettes dues",
+        "description": "Suivi des dettes"
+      },
+      "planned-subscriptions": {
+        "label": "Abonnements prévus",
+        "description": "Paiements d'abonnements pour le mois sélectionné"
+      },
+      "planned-expenses": {
+        "label": "Dépenses prévues",
+        "description": "Paiements de dépenses récurrentes pour le mois sélectionné"
+      },
+      "planned-installments": {
+        "label": "Versements prévus",
+        "description": "Paiements de versements pour le mois sélectionné"
+      }
+    },
+    "toasts": {
+      "layoutActivated": {
+        "title": "Disposition activée",
+        "description": "La disposition du tableau de bord a été activée avec succès."
+      },
+      "layoutDeleted": {
+        "title": "Disposition supprimée",
+        "description": "La disposition du tableau de bord a été supprimée avec succès."
+      },
+      "presetsInitialized": {
+        "title": "Préréglages initialisés",
+        "description": "Les préréglages de disposition par défaut ont été créés."
+      },
+      "layoutCreated": {
+        "title": "Disposition créée",
+        "description": "La disposition du tableau de bord a été créée avec succès."
+      },
+      "layoutUpdated": {
+        "title": "Disposition mise à jour",
+        "description": "La disposition du tableau de bord a été mise à jour avec succès."
+      },
+      "error": {
+        "title": "Erreur",
+        "activateDescription": "Échec de l'activation de la disposition.",
+        "deleteDescription": "Échec de la suppression de la disposition.",
+        "initializeDescription": "Échec de l'initialisation des préréglages.",
+        "saveDescription": "Échec de l'enregistrement de la disposition.",
+        "nameRequired": "Veuillez saisir un nom de disposition."
+      }
+    },
+    "deleteDialog": {
+      "title": "Supprimer la disposition",
+      "description": "Êtes-vous sûr de vouloir supprimer cette disposition ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleting": "Suppression..."
+    }
+  },
+  "notifications": {
+    "email": {
+      "title": "Notifications par email",
+      "description": "Gérez les emails que vous recevez de notre part",
+      "comingSoon": "Bientôt disponible",
+      "warningMessage": "Vos préférences de notification sont enregistrées, mais les notifications par email ne sont pas encore envoyées. Cette fonctionnalité sera activée prochainement.",
+      "marketing": {
+        "label": "Emails marketing",
+        "description": "Recevoir des emails sur les nouvelles fonctionnalités, astuces et offres spéciales"
+      },
+      "productUpdates": {
+        "label": "Mises à jour du produit",
+        "description": "Être informé lorsque nous publions de nouvelles fonctionnalités ou améliorations"
+      },
+      "securityAlerts": {
+        "label": "Alertes de sécurité",
+        "description": "Notifications de sécurité importantes concernant votre compte"
+      },
+      "billing": {
+        "label": "Facturation et paiements",
+        "description": "Factures, confirmations de paiement et mises à jour de facturation"
+      },
+      "weeklySummary": {
+        "label": "Résumé hebdomadaire",
+        "description": "Un digest hebdomadaire de votre activité financière et aperçus"
+      }
+    },
+    "push": {
+      "title": "Notifications push",
+      "description": "Gérer les notifications dans l'application et dans le navigateur",
+      "comingSoon": "Bientôt disponible",
+      "warningMessage": "Vos préférences de notification sont enregistrées, mais les notifications push ne sont pas encore actives. Cette fonctionnalité sera activée prochainement.",
+      "budgetAlerts": {
+        "label": "Alertes budgétaires",
+        "description": "Être informé lorsque vous approchez de vos limites budgétaires"
+      },
+      "goalMilestones": {
+        "label": "Jalons d'objectifs",
+        "description": "Célébrer lorsque vous atteignez des objectifs d'épargne ou jalons"
+      },
+      "subscriptionReminders": {
+        "label": "Rappels d'abonnement",
+        "description": "Rappels concernant les renouvellements d'abonnement à venir"
+      },
+      "incomeNotifications": {
+        "label": "Notifications de revenus",
+        "description": "Être informé lorsque vous recevez des revenus ou paiements"
+      }
+    },
+    "toasts": {
+      "emailUpdated": {
+        "title": "Notifications par email mises à jour",
+        "description": "Vos préférences de notification par email ont été enregistrées."
+      },
+      "pushUpdated": {
+        "title": "Notifications push mises à jour",
+        "description": "Vos préférences de notification push ont été enregistrées."
+      },
+      "error": {
+        "title": "Erreur",
+        "emailDescription": "Échec de la mise à jour des préférences de notification par email",
+        "pushDescription": "Échec de la mise à jour des préférences de notification push"
+      }
+    }
+  },
+  "privacy": {
+    "analytics": {
+      "title": "Analyses et suivi",
+      "description": "Contrôlez les données que nous collectons pour améliorer notre service",
+      "usageAnalytics": {
+        "label": "Analyses d'utilisation",
+        "description": "Aidez-nous à nous améliorer en partageant des données d'utilisation anonymes"
+      },
+      "errorReporting": {
+        "label": "Rapports d'erreur",
+        "description": "Envoyer automatiquement des rapports d'erreur pour nous aider à corriger les bugs"
+      },
+      "performanceMonitoring": {
+        "label": "Surveillance des performances",
+        "description": "Aidez-nous à optimiser les performances en partageant les métriques de performance"
+      }
+    },
+    "dataVisibility": {
+      "title": "Visibilité des données",
+      "description": "Contrôlez comment vos données sont utilisées au sein de la plateforme",
+      "private": {
+        "label": "Privé",
+        "description": "Vos données sont complètement privées et ne sont jamais partagées ou utilisées dans des statistiques agrégées"
+      },
+      "anonymous": {
+        "label": "Anonyme",
+        "description": "Vos données peuvent être utilisées dans des statistiques agrégées anonymes pour améliorer notre service"
+      }
+    },
+    "dataExport": {
+      "title": "Exporter vos données",
+      "description": "Téléchargez toutes vos données dans un format portable (conforme RGPD)",
+      "comingSoon": "Bientôt disponible",
+      "warningMessage": "La fonctionnalité d'exportation de données est actuellement en développement. Une fois disponible, vous pourrez télécharger toutes vos données financières.",
+      "info": "Vous pourrez demander une copie de toutes vos données personnelles. Nous préparerons un fichier téléchargeable contenant toutes vos informations, y compris les sources de revenus, dépenses, objectifs et détails du compte.",
+      "button": "Demander l'exportation des données"
+    },
+    "toasts": {
+      "analyticsUpdated": {
+        "title": "Préférences d'analyses mises à jour",
+        "description": "Vos préférences de confidentialité ont été enregistrées."
+      },
+      "dataVisibilityUpdated": {
+        "title": "Visibilité des données mise à jour",
+        "description": "Votre visibilité des données est maintenant définie sur"
+      },
+      "dataExportRequested": {
+        "title": "Exportation des données demandée",
+        "description": "Votre exportation de données sera prête sous peu. Nous vous enverrons un email avec le lien de téléchargement."
+      },
+      "error": {
+        "title": "Erreur",
+        "analyticsDescription": "Échec de la mise à jour des préférences de confidentialité",
+        "dataVisibilityDescription": "Échec de la mise à jour de la visibilité des données"
+      }
+    }
+  },
+  "security": {
+    "authMethod": {
+      "title": "Méthode d'authentification",
+      "description": "L'authentification de votre compte est gérée par votre fournisseur d'identité",
+      "signedInWith": "Connecté avec Google",
+      "securityInfo": "Votre mot de passe et la sécurité de votre compte sont gérés par Google. Pour mettre à jour votre mot de passe ou vos paramètres de sécurité, visitez votre compte Google.",
+      "manageGoogleAccount": "Gérer la sécurité du compte Google"
+    },
+    "twoFactor": {
+      "title": "Authentification à deux facteurs",
+      "description": "Ajoutez une couche de sécurité supplémentaire à votre compte",
+      "comingSoon": "Bientôt disponible",
+      "warningMessage": "L'authentification à deux facteurs est actuellement en développement. Une fois disponible, vous pourrez ajouter une couche de sécurité supplémentaire à votre compte.",
+      "enable": "Activer 2FA",
+      "enableDescription": "Exiger un code de vérification en plus de votre mot de passe",
+      "enabled": {
+        "title": "L'authentification à deux facteurs est activée",
+        "description": "Votre compte est protégé par une couche de sécurité supplémentaire."
+      }
+    },
+    "sessions": {
+      "title": "Sessions actives",
+      "description": "Gérez les appareils actuellement connectés à votre compte",
+      "comingSoon": "Bientôt disponible",
+      "warningMessage": "Le suivi des sessions est actuellement en développement. Les sessions affichées ci-dessous sont des exemples de ce que vous verrez une fois cette fonctionnalité en ligne.",
+      "current": "Actuelle",
+      "lastActive": "Dernière activité :",
+      "revoke": "Révoquer",
+      "revokeAll": "Révoquer toutes les autres sessions"
+    },
+    "toasts": {
+      "twoFactorEnabled": {
+        "title": "2FA activée",
+        "description": "L'authentification à deux facteurs a été activée pour votre compte."
+      },
+      "twoFactorDisabled": {
+        "title": "2FA désactivée",
+        "description": "L'authentification à deux facteurs a été désactivée."
+      },
+      "sessionRevoked": {
+        "title": "Session révoquée",
+        "description": "La session a été terminée avec succès."
+      },
+      "sessionsRevoked": {
+        "title": "Sessions révoquées",
+        "description": "Toutes les autres sessions ont été terminées."
+      },
+      "error": {
+        "title": "Erreur",
+        "twoFactorDescription": "Échec de la mise à jour des paramètres 2FA",
+        "sessionDescription": "Échec de la révocation de la session",
+        "sessionsDescription": "Échec de la révocation des sessions"
+      }
+    }
+  }
+}
