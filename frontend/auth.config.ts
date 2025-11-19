@@ -50,9 +50,23 @@ export const authConfig: NextAuthConfig = {
             token.user = data.user;
             token.role = data.user.role;
             token.tier = data.user.tier?.name || 'starter';
+            token.error = undefined; // Clear any previous errors
+          } else {
+            // Backend authentication failed
+            const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+            token.error = {
+              type: 'BackendAuthError',
+              message: errorData.detail || `Backend authentication failed: ${response.status}`,
+              status: response.status,
+            };
           }
         } catch (error) {
-          // Authentication failed, token will not have backend data
+          // Network or other error
+          token.error = {
+            type: 'NetworkError',
+            message: 'Unable to connect to authentication server. Please check your connection and try again.',
+            status: 0,
+          };
         }
       }
 
@@ -68,6 +82,10 @@ export const authConfig: NextAuthConfig = {
           role: token.role as string,
           tier: token.tier as string,
         };
+        // Pass auth error to session if exists
+        if (token.error) {
+          session.error = token.error as { type: string; message: string; status: number };
+        }
       }
       return session;
     },

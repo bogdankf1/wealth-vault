@@ -13,6 +13,30 @@ function LoginForm() {
   const t = useTranslations('login');
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const error = searchParams.get('error');
+
+  // Map NextAuth error codes to user-friendly messages
+  const getErrorMessage = (errorCode: string | null) => {
+    if (!errorCode) return null;
+
+    const errorMessages: Record<string, string> = {
+      Configuration: 'There is a problem with the server configuration. Please contact support.',
+      AccessDenied: 'Access denied. You do not have permission to sign in.',
+      Verification: 'The verification link has expired or has already been used.',
+      OAuthSignin: 'Error starting the sign-in process. Please try again.',
+      OAuthCallback: 'Error during sign-in. Please try again.',
+      OAuthCreateAccount: 'Could not create an account. Please try again.',
+      EmailCreateAccount: 'Could not create an account with this email.',
+      Callback: 'Error during authentication. Please try again.',
+      OAuthAccountNotLinked: 'This account is already linked to another provider.',
+      SessionRequired: 'Please sign in to access this page.',
+      Default: 'An error occurred during sign-in. Please try again.',
+    };
+
+    return errorMessages[errorCode] || errorMessages.Default;
+  };
+
+  const errorMessage = getErrorMessage(error);
 
   const handleGoogleSignIn = async () => {
     await signIn('google', { callbackUrl });
@@ -34,6 +58,15 @@ function LoginForm() {
         </div>
 
         <div className="space-y-4">
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400 text-center">
+                {errorMessage}
+              </p>
+            </div>
+          )}
+
           <button
             onClick={handleGoogleSignIn}
             className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"

@@ -37,6 +37,7 @@ import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
 import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
 import { NAVIGATION_FEATURES } from '@/lib/constants/feature-map';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
+import { AuthErrorHandler } from '@/components/auth/auth-error-handler';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 export default function DashboardLayout({
@@ -120,8 +121,12 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Mobile/Tablet sidebar backdrop */}
+    <>
+      {/* Authentication Error Handler */}
+      <AuthErrorHandler />
+
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Mobile/Tablet sidebar backdrop */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 xl:hidden"
@@ -289,8 +294,9 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      {/* Debug panel (development only) - Hidden but available for debugging */}
-      {/* <SessionDebug /> */}
-    </div>
+        {/* Debug panel (development only) - Hidden but available for debugging */}
+        {/* <SessionDebug /> */}
+      </div>
+    </>
   );
 }
