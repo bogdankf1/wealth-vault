@@ -220,7 +220,6 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save subscription:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

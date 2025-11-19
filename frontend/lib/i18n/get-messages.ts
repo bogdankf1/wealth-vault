@@ -46,8 +46,7 @@ export async function getMessages(locale: Locale = defaultLocale) {
       sidebar: sidebarMessages.default,
     };
   } catch (error) {
-    console.error(`Failed to load messages for locale: ${locale}`, error);
-    // Fallback to default locale
+    // Fallback to default locale if loading fails
     const commonMessages = await import(`@/messages/${defaultLocale}/common.json`);
     const expensesMessages = await import(`@/messages/${defaultLocale}/expenses.json`);
     const incomeMessages = await import(`@/messages/${defaultLocale}/income.json`);

@@ -128,7 +128,6 @@ export default function SubscriptionsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive subscription:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -143,7 +142,6 @@ export default function SubscriptionsArchivePage() {
         await updateSubscription({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive subscription ${id}:`, error);
         failCount++;
       }
     }
@@ -177,7 +175,6 @@ export default function SubscriptionsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete subscription:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -223,7 +220,6 @@ export default function SubscriptionsArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedSubscriptionIds(new Set());
     } catch (error) {
-      console.error('Failed to delete subscriptions:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };

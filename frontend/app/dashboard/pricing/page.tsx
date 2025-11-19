@@ -114,7 +114,6 @@ export default function PricingPage() {
       // Redirect to Stripe checkout
       window.location.href = result.url;
     } catch (error) {
-      console.error('Failed to create checkout session:', error);
       setLoadingTier(null);
     }
   };

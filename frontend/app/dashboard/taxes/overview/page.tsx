@@ -91,7 +91,6 @@ export default function TaxesPage() {
       toast.success(tOverview('deleteSuccess'));
       setDeletingTax(null);
     } catch (error) {
-      console.error('Failed to delete tax:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -106,7 +105,6 @@ export default function TaxesPage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive tax:', error);
       toast.error(tOverview('archiveError'));
     }
   };
@@ -121,7 +119,6 @@ export default function TaxesPage() {
         await updateTax({ id, data: { is_active: false } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to archive tax ${id}:`, error);
         failCount++;
       }
     }
@@ -216,7 +213,6 @@ export default function TaxesPage() {
       setBatchDeleteDialogOpen(false);
       setSelectedTaxIds(new Set());
     } catch (error) {
-      console.error('Batch delete failed:', error);
       toast.error(tOverview('batchDeleteError', { count: selectedTaxIds.size }));
     }
   };

@@ -125,7 +125,6 @@ export default function ExpensesPage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive expense:', error);
       toast.error('Failed to archive expense');
     }
   };
@@ -140,7 +139,6 @@ export default function ExpensesPage() {
         await updateExpense({ id, data: { is_active: false } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to archive expense ${id}:`, error);
         failCount++;
       }
     }
@@ -164,7 +162,6 @@ export default function ExpensesPage() {
       setDeleteDialogOpen(false);
       setDeletingExpenseId(null);
     } catch (error) {
-      console.error('Failed to delete expense:', error);
       toast.error('Failed to delete expense');
     }
   };
@@ -216,7 +213,6 @@ export default function ExpensesPage() {
       setBatchDeleteDialogOpen(false);
       setSelectedExpenseIds(new Set());
     } catch (error) {
-      console.error('Failed to batch delete expenses:', error);
       toast.error('Failed to delete expenses');
     }
   };

@@ -83,7 +83,7 @@ export function LanguageProvider({ children, messages }: LanguageProviderProps) 
         sidebar: sidebarMessages.default,
       });
     } catch (error) {
-      console.error(`Failed to load messages for locale: ${newLocale}`, error);
+      // Failed to load messages, fallback to current messages
     }
   };
 

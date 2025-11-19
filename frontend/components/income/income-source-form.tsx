@@ -249,7 +249,6 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save income source:', error);
       toast.error(isEditing ? 'Failed to update income source' : 'Failed to create income source');
     }
   };

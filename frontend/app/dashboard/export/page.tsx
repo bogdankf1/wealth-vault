@@ -119,7 +119,6 @@ export default function ExportPage() {
         description: tMessages('successDescription', { filename }),
       });
     } catch (err) {
-      console.error('Export error:', err);
       const error = err as FetchBaseQueryError | SerializedError;
 
       if ('status' in error) {

@@ -124,7 +124,6 @@ export default function PortfolioArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive portfolio asset:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -139,7 +138,6 @@ export default function PortfolioArchivePage() {
         await updateAsset({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive portfolio asset ${id}:`, error);
         failCount++;
       }
     }
@@ -173,7 +171,6 @@ export default function PortfolioArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete portfolio asset:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -219,7 +216,6 @@ export default function PortfolioArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedAssetIds(new Set());
     } catch (error) {
-      console.error('Failed to delete portfolio assets:', error);
       toast.error(tOverview('batchDeleteError', { count: selectedAssetIds.size }));
     }
   };

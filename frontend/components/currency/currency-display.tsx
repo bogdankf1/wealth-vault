@@ -50,8 +50,7 @@ export function CurrencyDisplay({
           setConvertedAmount(result.converted_amount);
           setIsConverting(false);
         })
-        .catch((error) => {
-          console.error('Currency conversion failed:', error);
+        .catch(() => {
           setConvertedAmount(null);
           setIsConverting(false);
         });

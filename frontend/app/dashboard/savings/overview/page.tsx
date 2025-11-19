@@ -96,7 +96,6 @@ export default function SavingsPage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive account:', error);
       toast.error(tOverview('archiveError'));
     }
   };
@@ -111,7 +110,6 @@ export default function SavingsPage() {
         await updateAccount({ id, data: { is_active: false } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to archive account ${id}:`, error);
         failCount++;
       }
     }
@@ -133,7 +131,6 @@ export default function SavingsPage() {
         toast.success(tOverview('deleteSuccess'));
         setDeletingAccount(null);
       } catch (error) {
-        console.error('Failed to delete account:', error);
         toast.error(tOverview('deleteError'));
       }
     }

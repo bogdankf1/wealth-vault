@@ -108,7 +108,6 @@ export default function PortfolioPage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive asset:', error);
       toast.error(tOverview('archiveError'));
     }
   };
@@ -123,7 +122,6 @@ export default function PortfolioPage() {
         await updateAsset({ id, data: { is_active: false } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to archive asset ${id}:`, error);
         failCount++;
       }
     }
@@ -147,7 +145,6 @@ export default function PortfolioPage() {
       setDeleteDialogOpen(false);
       setDeletingAssetId(null);
     } catch (error) {
-      console.error('Failed to delete asset:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -232,7 +229,6 @@ export default function PortfolioPage() {
       setBatchDeleteDialogOpen(false);
       setSelectedAssetIds(new Set());
     } catch (error) {
-      console.error('Batch delete failed:', error);
       toast.error(tOverview('batchDeleteError', { count: selectedAssetIds.size }));
     }
   };

@@ -170,7 +170,6 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save account:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

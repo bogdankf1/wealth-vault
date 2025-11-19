@@ -138,7 +138,7 @@ export function ExchangeRatesWidget() {
       setLastRefreshed(new Date());
       setRefetchKey(Date.now()); // Force refetch by changing key
     } catch (error) {
-      console.error('Failed to refresh exchange rates:', error);
+      // Failed to refresh exchange rates
     }
   };
 

@@ -212,7 +212,6 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save portfolio asset:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

@@ -200,7 +200,6 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save debt:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

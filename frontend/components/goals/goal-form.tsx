@@ -239,7 +239,6 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save goal:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

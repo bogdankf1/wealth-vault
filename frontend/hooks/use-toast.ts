@@ -14,9 +14,6 @@ export function useToast() {
   const [toasts, setToasts] = useState<ToastOptions[]>([]);
 
   const toast = useCallback((options: ToastOptions) => {
-    // Simple console logging for now
-    console.log(`[Toast ${options.variant || 'default'}]:`, options.title, options.description);
-
     // You can implement actual toast UI here or integrate with a toast library
     setToasts((prev) => [...prev, options]);
 

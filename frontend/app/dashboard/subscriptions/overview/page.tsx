@@ -141,7 +141,6 @@ export default function SubscriptionsPage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive subscription:', error);
       toast.error(tOverview('archiveError'));
     }
   };
@@ -156,7 +155,6 @@ export default function SubscriptionsPage() {
         await updateSubscription({ id, data: { is_active: false } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to archive subscription ${id}:`, error);
         failCount++;
       }
     }
@@ -180,7 +178,6 @@ export default function SubscriptionsPage() {
       setDeleteDialogOpen(false);
       setDeletingSubscriptionId(null);
     } catch (error) {
-      console.error('Failed to delete subscription:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -232,7 +229,6 @@ export default function SubscriptionsPage() {
       setBatchDeleteDialogOpen(false);
       setSelectedSubscriptionIds(new Set());
     } catch (error) {
-      console.error('Failed to batch delete subscriptions:', error);
       toast.error(tOverview('deleteError'));
     }
   };

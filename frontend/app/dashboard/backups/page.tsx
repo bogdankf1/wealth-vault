@@ -104,7 +104,6 @@ export default function BackupsPage() {
         description: tMessages('createSuccessDescription', { count: result.item_count, module: selectedModule }),
       });
     } catch (error) {
-      console.error('Create backup error:', error);
       toast.error(tMessages('createError'), {
         description: getErrorMessage(error as FetchBaseQueryError | SerializedError),
       });
@@ -126,7 +125,6 @@ export default function BackupsPage() {
 
       setRestoreBackup(null);
     } catch (error) {
-      console.error('Restore backup error:', error);
       toast.error(tMessages('restoreError'), {
         description: getErrorMessage(error as FetchBaseQueryError | SerializedError),
       });
@@ -142,7 +140,6 @@ export default function BackupsPage() {
       toast.success(tMessages('deleteSuccess'));
       setDeleteBackupId(null);
     } catch (error) {
-      console.error('Delete backup error:', error);
       toast.error(tMessages('deleteError'), {
         description: getErrorMessage(error as FetchBaseQueryError | SerializedError),
       });

@@ -114,7 +114,6 @@ export default function GoalsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive goal:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -129,7 +128,6 @@ export default function GoalsArchivePage() {
         await updateGoal({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive goal ${id}:`, error);
         failCount++;
       }
     }
@@ -163,7 +161,6 @@ export default function GoalsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete goal:', error);
       toast.error(tCommon('deleteError'));
     }
   };
@@ -209,7 +206,6 @@ export default function GoalsArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedGoalIds(new Set());
     } catch (error) {
-      console.error('Failed to delete goals:', error);
       toast.error(tCommon('deleteError'));
     }
   };

@@ -281,7 +281,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save installment:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

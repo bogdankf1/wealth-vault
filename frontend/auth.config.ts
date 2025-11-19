@@ -52,7 +52,7 @@ export const authConfig: NextAuthConfig = {
             token.tier = data.user.tier?.name || 'starter';
           }
         } catch (error) {
-          console.error('Failed to authenticate with backend:', error);
+          // Authentication failed, token will not have backend data
         }
       }
 

@@ -121,7 +121,6 @@ export default function BudgetsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive budget:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -136,7 +135,6 @@ export default function BudgetsArchivePage() {
         await updateBudget({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive budget ${id}:`, error);
         failCount++;
       }
     }
@@ -170,7 +168,6 @@ export default function BudgetsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete budget:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -216,7 +213,6 @@ export default function BudgetsArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedBudgetIds(new Set());
     } catch (error) {
-      console.error('Failed to delete budgets:', error);
       toast.error(tOverview('deleteError'));
     }
   };

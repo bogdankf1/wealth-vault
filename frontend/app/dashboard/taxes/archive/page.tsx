@@ -113,7 +113,6 @@ export default function TaxesArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive tax record:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -128,7 +127,6 @@ export default function TaxesArchivePage() {
         await updateTax({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive tax record ${id}:`, error);
         failCount++;
       }
     }
@@ -162,7 +160,6 @@ export default function TaxesArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete tax record:', error);
       toast.error(tArchive('deleteError'));
     }
   };
@@ -208,7 +205,6 @@ export default function TaxesArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedTaxIds(new Set());
     } catch (error) {
-      console.error('Failed to delete tax records:', error);
       toast.error(tArchive('batchDeleteError', { count: selectedTaxIds.size }));
     }
   };

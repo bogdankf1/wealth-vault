@@ -52,7 +52,7 @@ class EventBus {
       try {
         return Promise.resolve(handler(data));
       } catch (error) {
-        console.error(`[EventBus] Error in handler for ${event}:`, error);
+        // Silently handle errors in event handlers
         return Promise.resolve();
       }
     });

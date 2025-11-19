@@ -90,7 +90,6 @@ export default function DebtsPage() {
       toast.success(tOverview('deleteSuccess'));
       setDeletingDebt(null);
     } catch (error) {
-      console.error('Failed to delete debt:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -105,7 +104,6 @@ export default function DebtsPage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive debt:', error);
       toast.error(tOverview('archiveError'));
     }
   };
@@ -120,7 +118,6 @@ export default function DebtsPage() {
         await updateDebt({ id, data: { is_active: false } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to archive debt ${id}:`, error);
         failCount++;
       }
     }
@@ -215,7 +212,6 @@ export default function DebtsPage() {
       setBatchDeleteDialogOpen(false);
       setSelectedDebtIds(new Set());
     } catch (error) {
-      console.error('Batch delete failed:', error);
       toast.error(tOverview('batchDeleteError', { count: selectedDebtIds.size }));
     }
   };

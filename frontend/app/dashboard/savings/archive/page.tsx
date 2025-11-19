@@ -123,7 +123,6 @@ export default function SavingsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive savings account:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -138,7 +137,6 @@ export default function SavingsArchivePage() {
         await updateAccount({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive savings account ${id}:`, error);
         failCount++;
       }
     }
@@ -172,7 +170,6 @@ export default function SavingsArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete savings account:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -218,7 +215,6 @@ export default function SavingsArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedAccountIds(new Set());
     } catch (error) {
-      console.error('Failed to delete savings accounts:', error);
       toast.error(tOverview('batchDeleteError', { count: selectedAccountIds.size }));
     }
   };

@@ -217,7 +217,6 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
       onClose();
       reset();
     } catch (error) {
-      console.error('Failed to save expense:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

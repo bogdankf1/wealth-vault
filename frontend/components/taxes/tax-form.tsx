@@ -209,7 +209,6 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
       reset();
       setAmountInput('');
     } catch (error) {
-      console.error('Failed to save tax:', error);
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };

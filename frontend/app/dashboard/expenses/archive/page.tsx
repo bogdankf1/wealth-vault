@@ -112,7 +112,6 @@ export default function ExpensesArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive expense:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -127,7 +126,6 @@ export default function ExpensesArchivePage() {
         await updateExpense({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive expense ${id}:`, error);
         failCount++;
       }
     }
@@ -161,7 +159,6 @@ export default function ExpensesArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete expense:', error);
       toast.error(tArchive('deleteError'));
     }
   };
@@ -207,7 +204,6 @@ export default function ExpensesArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedExpenseIds(new Set());
     } catch (error) {
-      console.error('Failed to delete expenses:', error);
       toast.error(tArchive('deleteError'));
     }
   };

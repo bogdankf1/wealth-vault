@@ -112,7 +112,6 @@ export default function IncomeArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to unarchive income source:', error);
       toast.error(tArchive('unarchiveError'));
     }
   };
@@ -127,7 +126,6 @@ export default function IncomeArchivePage() {
         await updateSource({ id, data: { is_active: true } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to unarchive income source ${id}:`, error);
         failCount++;
       }
     }
@@ -161,7 +159,6 @@ export default function IncomeArchivePage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to delete income source:', error);
       toast.error(tArchive('deleteError'));
     }
   };
@@ -207,7 +204,6 @@ export default function IncomeArchivePage() {
       setBatchDeleteDialogOpen(false);
       setSelectedSourceIds(new Set());
     } catch (error) {
-      console.error('Failed to delete income sources:', error);
       toast.error(tArchive('deleteError'));
     }
   };

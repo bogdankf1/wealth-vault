@@ -149,7 +149,6 @@ export default function InstallmentsPage() {
         return newSet;
       });
     } catch (error) {
-      console.error('Failed to archive installment:', error);
       toast.error(tOverview('archiveError'));
     }
   };
@@ -164,7 +163,6 @@ export default function InstallmentsPage() {
         await updateInstallment({ id, data: { is_active: false } }).unwrap();
         successCount++;
       } catch (error) {
-        console.error(`Failed to archive installment ${id}:`, error);
         failCount++;
       }
     }
@@ -188,7 +186,6 @@ export default function InstallmentsPage() {
       setDeleteDialogOpen(false);
       setDeletingInstallmentId(null);
     } catch (error) {
-      console.error('Failed to delete installment:', error);
       toast.error(tOverview('deleteError'));
     }
   };
@@ -237,7 +234,6 @@ export default function InstallmentsPage() {
       setBatchDeleteDialogOpen(false);
       setSelectedInstallmentIds(new Set());
     } catch (error) {
-      console.error('Batch delete failed:', error);
       toast.error(tOverview('batchDeleteError', { count: selectedInstallmentIds.size }));
     }
   };
