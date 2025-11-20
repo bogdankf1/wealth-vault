@@ -163,7 +163,7 @@ export const adminApi = apiSlice.injectEndpoints({
     }),
 
     // Tier Management
-    getTiers: builder.query<Tier[], void>({
+    getAdminTiers: builder.query<Tier[], void>({
       query: () => '/api/v1/admin/tiers',
       providesTags: ['Tiers'],
     }),
@@ -277,7 +277,7 @@ export const {
   useUnsuspendUserMutation,
 
   // Tier Management
-  useGetTiersQuery,
+  useGetAdminTiersQuery,
   useGetTierByIdQuery,
   useUpdateTierMutation,
   useGetTierFeaturesQuery,

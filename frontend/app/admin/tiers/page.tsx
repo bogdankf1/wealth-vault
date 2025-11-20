@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-    useGetTiersQuery,
+    useGetAdminTiersQuery,
     useGetTierFeaturesQuery,
     useGetAllFeaturesQuery,
     useUpdateTierMutation,
@@ -42,7 +42,7 @@ export default function TiersPage() {
   const [editedPriceAnnual, setEditedPriceAnnual] = useState(0);
   const [editedIsActive, setEditedIsActive] = useState(true);
 
-  const { data: tiers, isLoading } = useGetTiersQuery();
+  const { data: tiers, isLoading } = useGetAdminTiersQuery();
   const { data: allFeatures } = useGetAllFeaturesQuery();
 
   // Fetch features for each tier (we need to call hooks unconditionally)

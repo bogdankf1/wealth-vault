@@ -28,7 +28,7 @@ import {
 import { Label } from '@/components/ui/label';
 import {
   useGetUsersQuery,
-  useGetTiersQuery,
+  useGetAdminTiersQuery,
   useUpdateUserMutation,
   useSuspendUserMutation,
   useUnsuspendUserMutation,
@@ -67,7 +67,7 @@ export default function UsersPage() {
     tier_name: tierFilter || undefined,
   });
 
-  const { data: tiers } = useGetTiersQuery();
+  const { data: tiers } = useGetAdminTiersQuery();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const [suspendUser] = useSuspendUserMutation();
   const [unsuspendUser] = useUnsuspendUserMutation();
