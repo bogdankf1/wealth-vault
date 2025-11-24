@@ -151,7 +151,7 @@
   },
   "archive": {
     "title": "Despesas Arquivadas",
-    "description": "Visualize e gerencie despesas arquivadas",
+    "description": "Descrição",
     "unarchive": "Desarquivar",
     "unarchiveSelected": "Desarquivar Selecionados ({count})",
     "unarchiveSuccess": "Despesa desarquivada com sucesso",
@@ -171,7 +171,6 @@
     "batchDeleteSuccess": "Excluídas com sucesso {count} despesa(s) permanentemente",
     "batchDeleteError": "Falha ao excluir {count} despesa(s)",
     "name": "Nome",
-    "description": "Descrição",
     "category": "Categoria",
     "amount": "Valor",
     "frequency": "Frequência",
@@ -182,7 +181,7 @@
   },
   "import": {
     "title": "Importar Despesas",
-    "description": "Envie extratos bancários para importar despesas automaticamente",
+    "description": "Descrição",
     "uploadStep": "Enviar",
     "parseStep": "Processar",
     "reviewStep": "Revisar",
@@ -209,7 +208,6 @@
     "tabSubscriptions": "Assinaturas ({count})",
     "tabInstallments": "Parcelamentos ({count})",
     "date": "Data",
-    "description": "Descrição",
     "category": "Categoria",
     "amount": "Valor",
     "proceedToImport": "Prosseguir para Importar",
@@ -244,12 +242,19 @@
     "one_time": "Único"
   },
   "categories": {
-    "housing": "Moradia",
+    "groceries": "Supermercado",
+    "diningOut": "Restaurantes / Delivery",
+    "clothing": "Roupas",
+    "gifts": "Presentes",
     "transportation": "Transporte",
-    "food": "Alimentação",
-    "utilities": "Utilidades",
+    "personalCare": "Cuidados pessoais",
     "healthcare": "Saúde",
-    "entertainment": "Entretenimento",
-    "other": "Outros"
+    "luxuryPremium": "Luxo & Premium",
+    "postalShipping": "Correios & Envios",
+    "miscellaneous": "Diversos",
+    "housing": "Moradia",
+    "educationLearning": "Educação",
+    "travelVacations": "Viagens & Férias",
+    "entertainment": "Entretenimento"
   }
 }

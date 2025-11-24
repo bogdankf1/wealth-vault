@@ -151,7 +151,7 @@
   },
   "archive": {
     "title": "Dépenses archivées",
-    "description": "Voir et gérer les dépenses archivées",
+    "description": "Description",
     "unarchive": "Désarchiver",
     "unarchiveSelected": "Désarchiver la sélection ({count})",
     "unarchiveSuccess": "Dépense désarchivée avec succès",
@@ -171,7 +171,6 @@
     "batchDeleteSuccess": "{count} dépense(s) supprimée(s) définitivement avec succès",
     "batchDeleteError": "Échec de la suppression de {count} dépense(s)",
     "name": "Nom",
-    "description": "Description",
     "category": "Catégorie",
     "amount": "Montant",
     "frequency": "Fréquence",
@@ -182,7 +181,7 @@
   },
   "import": {
     "title": "Importer des dépenses",
-    "description": "Téléversez des relevés bancaires pour importer automatiquement les dépenses",
+    "description": "Description",
     "uploadStep": "Téléverser",
     "parseStep": "Analyser",
     "reviewStep": "Réviser",
@@ -209,7 +208,6 @@
     "tabSubscriptions": "Abonnements ({count})",
     "tabInstallments": "Versements ({count})",
     "date": "Date",
-    "description": "Description",
     "category": "Catégorie",
     "amount": "Montant",
     "proceedToImport": "Procéder à l'importation",
@@ -244,12 +242,19 @@
     "one_time": "Ponctuel"
   },
   "categories": {
-    "housing": "Logement",
+    "groceries": "Courses",
+    "diningOut": "Restaurant / Livraison",
+    "clothing": "Vêtements",
+    "gifts": "Cadeaux",
     "transportation": "Transport",
-    "food": "Alimentation",
-    "utilities": "Services publics",
+    "personalCare": "Soins personnels",
     "healthcare": "Santé",
-    "entertainment": "Divertissement",
-    "other": "Autre"
+    "luxuryPremium": "Luxe & Premium",
+    "postalShipping": "Poste & Livraison",
+    "miscellaneous": "Divers",
+    "housing": "Logement",
+    "educationLearning": "Éducation",
+    "travelVacations": "Voyages & Vacances",
+    "entertainment": "Divertissement"
   }
 }

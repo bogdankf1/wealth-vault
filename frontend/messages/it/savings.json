@@ -10,7 +10,7 @@
   },
   "overview": {
     "title": "Panoramica Risparmi",
-    "description": "Tracci e gestisca i suoi conti di risparmio",
+    "description": "Descrizione",
     "addAccount": "Aggiungi Conto",
     "totalAccounts": "Conti Totali",
     "activeAccounts": "Conti Attivi",
@@ -26,7 +26,6 @@
     "selectAll": "Seleziona tutto",
     "deselectAll": "Deseleziona tutto",
     "name": "Nome",
-    "description": "Descrizione",
     "accountType": "Tipo Conto",
     "balance": "Saldo",
     "interestRate": "Tasso di Interesse",
@@ -114,12 +113,11 @@
     "save": "Salva"
   },
   "accountTypes": {
-    "savings": "Conto di Risparmio",
-    "checking": "Conto Corrente",
-    "moneyMarket": "Mercato Monetario",
-    "cd": "Certificato di Deposito",
-    "investment": "Conto Investimenti",
-    "retirement": "Conto Pensione",
+    "personal": "Risparmi Personali",
+    "business": "Conto Aziendale",
+    "cash": "Conto Contanti",
+    "crypto": "Criptovaluta",
+    "fixedDeposit": "Deposito Vincolato",
     "other": "Altro"
   },
   "status": {

@@ -50,6 +50,47 @@ export default function GoalsPage() {
   const tCategories = useTranslations('goals.categories');
   const tStatus = useTranslations('goals.status');
 
+  // Legacy mapping for old category values to translation keys
+  const GOAL_CATEGORY_MAP: Record<string, string> = {
+    'Home/Property': 'homeProperty',
+    'Vehicle': 'vehicle',
+    'Education': 'education',
+    'Wedding': 'wedding',
+    'Travel': 'travelVacation',
+    'Travel/Vacation': 'travelVacation',
+    'Emergency Fund': 'emergencyFund',
+    'Major Purchase': 'majorPurchase',
+    'General Savings': 'generalSavings',
+    'Retirement': 'retirement',
+    'Other': 'other',
+  };
+
+  // Helper to translate category
+  const translateCategory = (category: string | undefined | null): string => {
+    if (!category) return '';
+
+    // Check legacy mapping first
+    if (GOAL_CATEGORY_MAP[category]) {
+      return tCategories(GOAL_CATEGORY_MAP[category] as Parameters<typeof tCategories>[0]);
+    }
+
+    // Convert "travel_vacation" to "travelVacation"
+    const key = category
+      .split(/[\s_]+/)
+      .filter(word => word.length > 0)
+      .map((word, index) =>
+        index === 0
+          ? word.toLowerCase()
+          : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      )
+      .join('');
+    try {
+      return tCategories(key as Parameters<typeof tCategories>[0]);
+    } catch {
+      return category;
+    }
+  };
+
   // Get context for setting actions
   const { setActions } = React.useContext(GoalsActionsContext);
 
@@ -592,7 +633,7 @@ export default function GoalsPage() {
 
                       <div className="min-h-[24px]">
                         {goal.category && (
-                          <Badge variant="outline">{goal.category}</Badge>
+                          <Badge variant="outline">{translateCategory(goal.category)}</Badge>
                         )}
                       </div>
 
@@ -681,7 +722,7 @@ export default function GoalsPage() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {goal.category ? (
-                            <Badge variant="outline" className="text-xs">{goal.category}</Badge>
+                            <Badge variant="outline" className="text-xs">{translateCategory(goal.category)}</Badge>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}

@@ -10,7 +10,7 @@
   },
   "overview": {
     "title": "Ersparnisübersicht",
-    "description": "Verfolgen und verwalten Sie Ihre Sparkonten",
+    "description": "Beschreibung",
     "addAccount": "Konto hinzufügen",
     "totalAccounts": "Konten insgesamt",
     "activeAccounts": "Aktive Konten",
@@ -26,7 +26,6 @@
     "selectAll": "Alle auswählen",
     "deselectAll": "Alle abwählen",
     "name": "Name",
-    "description": "Beschreibung",
     "accountType": "Kontotyp",
     "balance": "Saldo",
     "interestRate": "Zinssatz",
@@ -114,12 +113,11 @@
     "save": "Speichern"
   },
   "accountTypes": {
-    "savings": "Sparkonto",
-    "checking": "Girokonto",
-    "moneyMarket": "Geldmarktkonto",
-    "cd": "Festgeldkonto",
-    "investment": "Anlagekonto",
-    "retirement": "Rentenkonto",
+    "personal": "Persönliche Ersparnisse",
+    "business": "Geschäftskonto",
+    "cash": "Bargeldkonto",
+    "crypto": "Kryptowährung",
+    "fixedDeposit": "Festgeld",
     "other": "Sonstiges"
   },
   "status": {

@@ -57,6 +57,27 @@ export default function InstallmentsPage() {
   const tFrequencies = useTranslations('installments.frequencies');
   const tActions = useTranslations('installments.actions');
   const tPayment = useTranslations('installments.payment');
+  const tCategories = useTranslations('installments.categories');
+
+  // Helper to translate category
+  const translateCategory = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // Convert "Personal Tech" or "personal_tech" to "personalTech"
+    const key = category
+      .split(/[\s_&]+/)
+      .filter(word => word.length > 0)
+      .map((word, index) =>
+        index === 0
+          ? word.toLowerCase()
+          : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      )
+      .join('');
+    try {
+      return tCategories(key as Parameters<typeof tCategories>[0]);
+    } catch {
+      return category;
+    }
+  };
 
   const { setActions } = React.useContext(InstallmentsActionsContext);
 
@@ -702,7 +723,7 @@ export default function InstallmentsPage() {
 
                       <div className="min-h-[24px]">
                         {installment.category && (
-                          <Badge variant="outline" className="text-xs flex-shrink-0">{installment.category}</Badge>
+                          <Badge variant="outline" className="text-xs flex-shrink-0">{translateCategory(installment.category)}</Badge>
                         )}
                       </div>
 
@@ -799,7 +820,7 @@ export default function InstallmentsPage() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {installment.category ? (
-                            <Badge variant="outline" className="text-xs">{installment.category}</Badge>
+                            <Badge variant="outline" className="text-xs">{translateCategory(installment.category)}</Badge>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}

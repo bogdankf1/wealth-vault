@@ -27,6 +27,7 @@ import { BudgetsActionsContext } from '../context';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
+import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
 export default function BudgetsPage() {
   // Translation hooks
@@ -35,6 +36,23 @@ export default function BudgetsPage() {
   const tCommon = useTranslations('common');
   const tPeriod = useTranslations('budgets.period');
   const tStatus = useTranslations('budgets.status');
+  const tCategories = useTranslations('expenses.categories');
+
+  // Helper to translate category (handles both new keys and legacy names)
+  const translateCategory = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // Check if it's already a translation key
+    if (EXPENSE_CATEGORY_KEYS.includes(category as typeof EXPENSE_CATEGORY_KEYS[number])) {
+      return tCategories(category as typeof EXPENSE_CATEGORY_KEYS[number]);
+    }
+    // Check if it's a legacy name that needs mapping
+    const key = CATEGORY_NAME_TO_KEY[category];
+    if (key) {
+      return tCategories(key);
+    }
+    // Return as-is if not found
+    return category;
+  };
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
@@ -299,7 +317,7 @@ export default function BudgetsPage() {
   const statsCards: StatCard[] = overview?.stats
     ? [
         {
-          title: selectedMonth ? 'Period Budgeted' : 'Total Budgeted',
+          title: selectedMonth ? tOverview('periodBudgeted') : tOverview('totalBudgeted'),
           value: (
             <CurrencyDisplay
               amount={overview.stats.total_budgeted}
@@ -309,12 +327,15 @@ export default function BudgetsPage() {
             />
           ),
           description: selectedMonth
-            ? `${overview.stats.active_budgets} active in ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${overview.stats.active_budgets} active ${overview.stats.active_budgets === 1 ? 'budget' : 'budgets'}`,
+            ? tOverview('activeInMonth', {
+                count: overview.stats.active_budgets,
+                month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+              })
+            : tOverview('activeBudgetsCount', { count: overview.stats.active_budgets }),
           icon: Wallet,
         },
         {
-          title: selectedMonth ? 'Period Spent' : 'Total Spent',
+          title: selectedMonth ? tOverview('periodSpent') : tOverview('totalSpent'),
           value: (
             <CurrencyDisplay
               amount={overview.stats.total_spent}
@@ -323,11 +344,11 @@ export default function BudgetsPage() {
               showCode={false}
             />
           ),
-          description: `${overview.stats.overall_percentage_used.toFixed(1)}% of budget used`,
+          description: tOverview('budgetUsedPercent', { percent: overview.stats.overall_percentage_used.toFixed(1) }),
           icon: DollarSign,
         },
         {
-          title: 'Remaining',
+          title: tOverview('remaining'),
           value: (
             <CurrencyDisplay
               amount={overview.stats.total_remaining}
@@ -337,8 +358,8 @@ export default function BudgetsPage() {
             />
           ),
           description: overview.stats.budgets_overspent > 0
-            ? `${overview.stats.budgets_overspent} ${overview.stats.budgets_overspent === 1 ? 'budget' : 'budgets'} overspent`
-            : `${overview.stats.budgets_near_limit} near limit`,
+            ? tOverview('budgetsOverspent', { count: overview.stats.budgets_overspent })
+            : tOverview('nearLimit', { count: overview.stats.budgets_near_limit }),
           icon: Target,
         },
       ]
@@ -537,7 +558,7 @@ export default function BudgetsPage() {
                       <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
                         {budget.display_currency && budget.display_currency !== budget.currency && (
                           <>
-                            Original: <CurrencyDisplay
+                            {tOverview('original')}: <CurrencyDisplay
                               amount={budget.amount}
                               currency={budget.currency}
                               showSymbol={true}
@@ -550,14 +571,14 @@ export default function BudgetsPage() {
 
                     <div className="rounded-lg bg-muted p-2 md:p-3 min-h-[60px] flex items-center justify-center">
                       <p className="text-[10px] md:text-xs text-muted-foreground">
-                        Period: {budget.start_date.split('T')[0]}
-                        {budget.end_date ? ` to ${budget.end_date.split('T')[0]}` : ' (ongoing)'}
+                        {tOverview('periodLabel')}: {budget.start_date.split('T')[0]}
+                        {budget.end_date ? ` ${tOverview('to')} ${budget.end_date.split('T')[0]}` : ` (${tOverview('ongoing')})`}
                       </p>
                     </div>
 
                     <div className="min-h-[24px]">
                       {budget.category && (
-                        <Badge variant="outline" className="text-xs flex-shrink-0">{budget.category}</Badge>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">{translateCategory(budget.category)}</Badge>
                       )}
                     </div>
 
@@ -643,7 +664,7 @@ export default function BudgetsPage() {
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         {budget.category ? (
-                          <Badge variant="outline" className="text-xs">{budget.category}</Badge>
+                          <Badge variant="outline" className="text-xs">{translateCategory(budget.category)}</Badge>
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}
@@ -664,7 +685,7 @@ export default function BudgetsPage() {
                       <TableCell className="hidden xl:table-cell">
                         <span className="text-sm text-muted-foreground">
                           {budget.start_date.split('T')[0]}
-                          {budget.end_date ? ` to ${budget.end_date.split('T')[0]}` : ' (ongoing)'}
+                          {budget.end_date ? ` ${tOverview('to')} ${budget.end_date.split('T')[0]}` : ` (${tOverview('ongoing')})`}
                         </span>
                       </TableCell>
                       <TableCell className="hidden 2xl:table-cell text-right">

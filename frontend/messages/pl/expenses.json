@@ -151,7 +151,7 @@
   },
   "archive": {
     "title": "Zarchiwizowane wydatki",
-    "description": "Wyświetl i zarządzaj zarchiwizowanymi wydatkami",
+    "description": "Opis",
     "unarchive": "Przywróć z archiwum",
     "unarchiveSelected": "Przywróć z archiwum zaznaczone ({count})",
     "unarchiveSuccess": "Wydatek przywrócony z archiwum pomyślnie",
@@ -171,7 +171,6 @@
     "batchDeleteSuccess": "Pomyślnie usunięto trwale {count} wydatek(ów)",
     "batchDeleteError": "Nie udało się usunąć {count} wydatek(ów)",
     "name": "Nazwa",
-    "description": "Opis",
     "category": "Kategoria",
     "amount": "Kwota",
     "frequency": "Częstotliwość",
@@ -182,7 +181,7 @@
   },
   "import": {
     "title": "Import wydatków",
-    "description": "Prześlij wyciągi bankowe, aby automatycznie zaimportować wydatki",
+    "description": "Opis",
     "uploadStep": "Prześlij",
     "parseStep": "Parsuj",
     "reviewStep": "Przegląd",
@@ -209,7 +208,6 @@
     "tabSubscriptions": "Subskrypcje ({count})",
     "tabInstallments": "Raty ({count})",
     "date": "Data",
-    "description": "Opis",
     "category": "Kategoria",
     "amount": "Kwota",
     "proceedToImport": "Przejdź do importu",
@@ -244,12 +242,19 @@
     "one_time": "Jednorazowo"
   },
   "categories": {
-    "housing": "Mieszkanie",
+    "groceries": "Zakupy spożywcze",
+    "diningOut": "Restauracje / Dostawa",
+    "clothing": "Odzież",
+    "gifts": "Prezenty",
     "transportation": "Transport",
-    "food": "Jedzenie",
-    "utilities": "Media",
-    "healthcare": "Opieka zdrowotna",
-    "entertainment": "Rozrywka",
-    "other": "Inne"
+    "personalCare": "Pielęgnacja",
+    "healthcare": "Zdrowie",
+    "luxuryPremium": "Luksus & Premium",
+    "postalShipping": "Poczta & Wysyłka",
+    "miscellaneous": "Różne",
+    "housing": "Mieszkanie",
+    "educationLearning": "Edukacja",
+    "travelVacations": "Podróże & Wakacje",
+    "entertainment": "Rozrywka"
   }
 }

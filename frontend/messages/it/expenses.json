@@ -151,7 +151,7 @@
   },
   "archive": {
     "title": "Spese Archiviate",
-    "description": "Visualizza e gestisca le spese archiviate",
+    "description": "Descrizione",
     "unarchive": "Ripristina",
     "unarchiveSelected": "Ripristina Selezionati ({count})",
     "unarchiveSuccess": "Spesa ripristinata con successo",
@@ -171,7 +171,6 @@
     "batchDeleteSuccess": "Eliminate permanentemente con successo {count} spese",
     "batchDeleteError": "Impossibile eliminare {count} spese",
     "name": "Nome",
-    "description": "Descrizione",
     "category": "Categoria",
     "amount": "Importo",
     "frequency": "Frequenza",
@@ -182,7 +181,7 @@
   },
   "import": {
     "title": "Importa Spese",
-    "description": "Carichi estratti bancari per importare automaticamente le spese",
+    "description": "Descrizione",
     "uploadStep": "Carica",
     "parseStep": "Analizza",
     "reviewStep": "Rivedi",
@@ -209,7 +208,6 @@
     "tabSubscriptions": "Abbonamenti ({count})",
     "tabInstallments": "Rate ({count})",
     "date": "Data",
-    "description": "Descrizione",
     "category": "Categoria",
     "amount": "Importo",
     "proceedToImport": "Procedi all'Importazione",
@@ -244,12 +242,19 @@
     "one_time": "Una tantum"
   },
   "categories": {
-    "housing": "Abitazione",
+    "groceries": "Spesa",
+    "diningOut": "Ristoranti / Consegna",
+    "clothing": "Abbigliamento",
+    "gifts": "Regali",
     "transportation": "Trasporti",
-    "food": "Alimentari",
-    "utilities": "Utenze",
-    "healthcare": "Assistenza Sanitaria",
-    "entertainment": "Intrattenimento",
-    "other": "Altro"
+    "personalCare": "Cura personale",
+    "healthcare": "Sanità",
+    "luxuryPremium": "Lusso & Premium",
+    "postalShipping": "Posta & Spedizioni",
+    "miscellaneous": "Varie",
+    "housing": "Alloggio",
+    "educationLearning": "Istruzione",
+    "travelVacations": "Viaggi & Vacanze",
+    "entertainment": "Intrattenimento"
   }
 }

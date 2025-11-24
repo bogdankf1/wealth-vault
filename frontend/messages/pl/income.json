@@ -11,7 +11,7 @@
   },
   "overview": {
     "title": "Przegląd dochodów",
-    "description": "Śledź i zarządzaj swoimi źródłami dochodu",
+    "description": "Opis",
     "addIncome": "Dodaj dochód",
     "totalIncome": "Całkowity dochód",
     "periodIncome": "Dochód w okresie",
@@ -46,7 +46,6 @@
     "archiveSelected": "Archiwizuj zaznaczone ({count})",
     "deleteSelected": "Usuń zaznaczone ({count})",
     "name": "Nazwa",
-    "description": "Opis",
     "category": "Kategoria",
     "amount": "Kwota",
     "frequency": "Częstotliwość",
@@ -171,7 +170,7 @@
   },
   "archive": {
     "title": "Zarchiwizowane dochody",
-    "description": "Wyświetl i zarządzaj zarchiwizowanymi źródłami dochodu",
+    "description": "Opis",
     "unarchive": "Przywróć z archiwum",
     "unarchiveSelected": "Przywróć z archiwum zaznaczone ({count})",
     "deleteSelected": "Usuń zaznaczone ({count})",
@@ -194,7 +193,6 @@
     "selectAll": "Zaznacz wszystko",
     "deselectAll": "Odznacz wszystko",
     "name": "Nazwa",
-    "description": "Opis",
     "category": "Kategoria",
     "amount": "Kwota",
     "frequency": "Częstotliwość",
@@ -212,9 +210,12 @@
   },
   "categories": {
     "salary": "Wynagrodzenie",
-    "freelance": "Freelance",
     "business": "Biznes",
+    "freelance": "Freelance",
+    "sideProjects": "Projekty poboczne",
     "investments": "Inwestycje",
+    "gifts": "Prezenty",
+    "refundsReimbursements": "Zwroty i rekompensaty",
     "rental": "Wynajem",
     "other": "Inne"
   }

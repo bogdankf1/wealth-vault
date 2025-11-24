@@ -11,7 +11,7 @@
   },
   "overview": {
     "title": "Vue d'ensemble des revenus",
-    "description": "Suivez et gérez vos sources de revenus",
+    "description": "Description",
     "addIncome": "Ajouter un revenu",
     "totalIncome": "Revenus totaux",
     "periodIncome": "Revenus de la période",
@@ -46,7 +46,6 @@
     "archiveSelected": "Archiver la sélection ({count})",
     "deleteSelected": "Supprimer la sélection ({count})",
     "name": "Nom",
-    "description": "Description",
     "category": "Catégorie",
     "amount": "Montant",
     "frequency": "Fréquence",
@@ -171,7 +170,7 @@
   },
   "archive": {
     "title": "Revenus archivés",
-    "description": "Voir et gérer les sources de revenus archivées",
+    "description": "Description",
     "unarchive": "Désarchiver",
     "unarchiveSelected": "Désarchiver la sélection ({count})",
     "deleteSelected": "Supprimer la sélection ({count})",
@@ -194,7 +193,6 @@
     "selectAll": "Tout sélectionner",
     "deselectAll": "Tout désélectionner",
     "name": "Nom",
-    "description": "Description",
     "category": "Catégorie",
     "amount": "Montant",
     "frequency": "Fréquence",
@@ -212,9 +210,12 @@
   },
   "categories": {
     "salary": "Salaire",
-    "freelance": "Freelance",
     "business": "Entreprise",
+    "freelance": "Freelance",
+    "sideProjects": "Projets secondaires",
     "investments": "Investissements",
+    "gifts": "Cadeaux",
+    "refundsReimbursements": "Remboursements",
     "rental": "Location",
     "other": "Autre"
   }

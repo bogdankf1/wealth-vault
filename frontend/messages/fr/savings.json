@@ -10,7 +10,7 @@
   },
   "overview": {
     "title": "Vue d'ensemble de l'épargne",
-    "description": "Suivez et gérez vos comptes d'épargne",
+    "description": "Description",
     "addAccount": "Ajouter un compte",
     "totalAccounts": "Comptes totaux",
     "activeAccounts": "Comptes actifs",
@@ -26,7 +26,6 @@
     "selectAll": "Tout sélectionner",
     "deselectAll": "Tout désélectionner",
     "name": "Nom",
-    "description": "Description",
     "accountType": "Type de compte",
     "balance": "Solde",
     "interestRate": "Taux d'intérêt",
@@ -114,12 +113,11 @@
     "save": "Enregistrer"
   },
   "accountTypes": {
-    "savings": "Compte d'épargne",
-    "checking": "Compte courant",
-    "moneyMarket": "Marché monétaire",
-    "cd": "Certificat de dépôt",
-    "investment": "Compte d'investissement",
-    "retirement": "Compte de retraite",
+    "personal": "Épargne Personnelle",
+    "business": "Compte Professionnel",
+    "cash": "Compte Espèces",
+    "crypto": "Cryptomonnaie",
+    "fixedDeposit": "Dépôt à Terme",
     "other": "Autre"
   },
   "status": {

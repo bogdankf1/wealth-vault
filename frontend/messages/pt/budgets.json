@@ -49,7 +49,18 @@
     "batchArchiveSuccess": "Arquivados com sucesso {count} orçamento(s)",
     "batchArchiveError": "Falha ao arquivar {count} orçamento(s)",
     "archiveSelected": "Arquivar Selecionados ({count})",
-    "deleteSelected": "Excluir Selecionados ({count})"
+    "deleteSelected": "Excluir Selecionados ({count})",
+    "periodBudgeted": "Orçado no período",
+    "periodSpent": "Gasto no período",
+    "activeInMonth": "{count} ativos em {month}",
+    "activeBudgetsCount": "{count} orçamentos ativos",
+    "budgetUsedPercent": "{percent}% do orçamento usado",
+    "budgetsOverspent": "{count} orçamentos excedidos",
+    "nearLimit": "{count} perto do limite",
+    "original": "Original",
+    "periodLabel": "Período",
+    "ongoing": "contínuo",
+    "to": "a"
   },
   "analysis": {
     "title": "Análise de Orçamento",

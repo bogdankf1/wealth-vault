@@ -72,11 +72,11 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
   const tAccountTypes = useTranslations('savings.accountTypes');
 
   const ACCOUNT_TYPE_OPTIONS = [
-    { value: 'crypto', label: tAccountTypes('other') },
-    { value: 'cash', label: tAccountTypes('other') },
-    { value: 'business', label: tAccountTypes('other') },
-    { value: 'personal', label: tAccountTypes('other') },
-    { value: 'fixed_deposit', label: tAccountTypes('cd') },
+    { value: 'personal', label: tAccountTypes('personal') },
+    { value: 'business', label: tAccountTypes('business') },
+    { value: 'cash', label: tAccountTypes('cash') },
+    { value: 'crypto', label: tAccountTypes('crypto') },
+    { value: 'fixed_deposit', label: tAccountTypes('fixedDeposit') },
     { value: 'other', label: tAccountTypes('other') },
   ];
 

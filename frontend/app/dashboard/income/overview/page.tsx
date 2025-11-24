@@ -43,13 +43,31 @@ import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
+import { INCOME_CATEGORY_NAME_TO_KEY, INCOME_CATEGORY_KEYS } from '@/lib/constants/income-categories';
 
 export default function IncomePage() {
   const tOverview = useTranslations('income.overview');
   const tActions = useTranslations('income.actions');
   const tStatus = useTranslations('income.status');
   const tFrequency = useTranslations('income.frequency');
+  const tCategories = useTranslations('income.categories');
   const tCommon = useTranslations('common');
+
+  // Helper to translate category (handles both new keys and legacy names)
+  const translateCategory = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // Check if it's already a translation key
+    if (INCOME_CATEGORY_KEYS.includes(category as typeof INCOME_CATEGORY_KEYS[number])) {
+      return tCategories(category as typeof INCOME_CATEGORY_KEYS[number]);
+    }
+    // Check if it's a legacy name that needs mapping
+    const key = INCOME_CATEGORY_NAME_TO_KEY[category];
+    if (key) {
+      return tCategories(key);
+    }
+    // Return as-is if not found
+    return category;
+  };
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
@@ -621,7 +639,7 @@ export default function IncomePage() {
 
                     <div className="min-h-[24px]">
                       {source.category && (
-                        <Badge variant="outline">{source.category}</Badge>
+                        <Badge variant="outline">{translateCategory(source.category)}</Badge>
                       )}
                     </div>
 
@@ -707,7 +725,7 @@ export default function IncomePage() {
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         {source.category ? (
-                          <Badge variant="outline" className="text-xs">{source.category}</Badge>
+                          <Badge variant="outline" className="text-xs">{translateCategory(source.category)}</Badge>
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}

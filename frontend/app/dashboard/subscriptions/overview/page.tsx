@@ -56,6 +56,27 @@ export default function SubscriptionsPage() {
   const tFrequencies = useTranslations('subscriptions.frequencies');
   const tStatus = useTranslations('subscriptions.status');
   const tRenewal = useTranslations('subscriptions.renewal');
+  const tCategories = useTranslations('subscriptions.categories');
+
+  // Helper to translate category
+  const translateCategory = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // Convert "Cloud Storage" or "cloud_storage" to "cloudStorage"
+    const key = category
+      .split(/[\s_&]+/)
+      .filter(word => word.length > 0)
+      .map((word, index) =>
+        index === 0
+          ? word.toLowerCase()
+          : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      )
+      .join('');
+    try {
+      return tCategories(key as Parameters<typeof tCategories>[0]);
+    } catch {
+      return category;
+    }
+  };
 
   const FREQUENCY_LABELS: Record<string, string> = {
     monthly: tFrequencies('monthly'),
@@ -666,7 +687,7 @@ export default function SubscriptionsPage() {
 
                       <div className="min-h-[24px]">
                         {subscription.category && (
-                          <Badge variant="outline" className="text-xs">{subscription.category}</Badge>
+                          <Badge variant="outline" className="text-xs">{translateCategory(subscription.category)}</Badge>
                         )}
                       </div>
 
@@ -775,7 +796,7 @@ export default function SubscriptionsPage() {
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
                           {subscription.category ? (
-                            <Badge variant="outline" className="text-xs">{subscription.category}</Badge>
+                            <Badge variant="outline" className="text-xs">{translateCategory(subscription.category)}</Badge>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}

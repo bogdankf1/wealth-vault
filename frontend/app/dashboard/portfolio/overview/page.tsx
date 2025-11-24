@@ -52,6 +52,19 @@ export default function PortfolioPage() {
   const tAssetTypes = useTranslations('portfolio.assetTypes');
   const tStatus = useTranslations('portfolio.status');
 
+  // Helper to translate asset type
+  const translateAssetType = (assetType: string | undefined | null): string => {
+    if (!assetType) return '';
+    // Convert to camelCase: first letter lowercase, then handle snake_case
+    let key = assetType.charAt(0).toLowerCase() + assetType.slice(1);
+    key = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    try {
+      return tAssetTypes(key as Parameters<typeof tAssetTypes>[0]);
+    } catch {
+      return assetType;
+    }
+  };
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -617,7 +630,7 @@ export default function PortfolioPage() {
 
                       <div className="min-h-[24px]">
                         {asset.asset_type && (
-                          <Badge variant="outline">{asset.asset_type}</Badge>
+                          <Badge variant="outline">{translateAssetType(asset.asset_type)}</Badge>
                         )}
                       </div>
 
@@ -709,7 +722,7 @@ export default function PortfolioPage() {
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
                           {asset.asset_type ? (
-                            <Badge variant="outline" className="text-xs">{asset.asset_type}</Badge>
+                            <Badge variant="outline" className="text-xs">{translateAssetType(asset.asset_type)}</Badge>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}

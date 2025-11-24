@@ -10,7 +10,7 @@
   },
   "overview": {
     "title": "Przegląd oszczędności",
-    "description": "Śledź i zarządzaj swoimi kontami oszczędnościowymi",
+    "description": "Opis",
     "addAccount": "Dodaj konto",
     "totalAccounts": "Wszystkie konta",
     "activeAccounts": "Aktywne konta",
@@ -26,7 +26,6 @@
     "selectAll": "Zaznacz wszystko",
     "deselectAll": "Odznacz wszystko",
     "name": "Nazwa",
-    "description": "Opis",
     "accountType": "Typ konta",
     "balance": "Saldo",
     "interestRate": "Stopa procentowa",
@@ -114,12 +113,11 @@
     "save": "Zapisz"
   },
   "accountTypes": {
-    "savings": "Konto oszczędnościowe",
-    "checking": "Konto rozliczeniowe",
-    "moneyMarket": "Rynek pieniężny",
-    "cd": "Certyfikat depozytowy",
-    "investment": "Konto inwestycyjne",
-    "retirement": "Konto emerytalne",
+    "personal": "Oszczędności Osobiste",
+    "business": "Konto Firmowe",
+    "cash": "Konto Gotówkowe",
+    "crypto": "Kryptowaluta",
+    "fixedDeposit": "Lokata Terminowa",
     "other": "Inne"
   },
   "status": {

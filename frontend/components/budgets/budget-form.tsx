@@ -37,7 +37,18 @@ import { Slider } from '@/components/ui/slider';
 import { CurrencyInput } from '@/components/currency/currency-input';
 import { useCreateBudgetMutation, useUpdateBudgetMutation, Budget } from '@/lib/api/budgetsApi';
 import { toast } from 'sonner';
-import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
+import { EXPENSE_CATEGORY_KEYS, CATEGORY_NAME_TO_KEY } from '@/lib/constants/expense-categories';
+
+// Helper to convert legacy category name to key
+const getCategoryKey = (category: string | undefined | null): string => {
+  if (!category) return '';
+  // If it's already a valid key, return it
+  if (EXPENSE_CATEGORY_KEYS.includes(category as typeof EXPENSE_CATEGORY_KEYS[number])) {
+    return category;
+  }
+  // Convert legacy name to key
+  return CATEGORY_NAME_TO_KEY[category] || category;
+};
 
 const budgetSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -76,6 +87,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
   const tForm = useTranslations('budgets.form');
   const tActions = useTranslations('budgets.actions');
   const tPeriod = useTranslations('budgets.period');
+  const tCategories = useTranslations('expenses.categories');
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
@@ -88,7 +100,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
     defaultValues: budget
       ? {
           name: budget.name,
-          category: budget.category,
+          category: getCategoryKey(budget.category),
           description: budget.description || '',
           amount: Number(budget.amount),
           currency: budget.currency,
@@ -197,9 +209,9 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {EXPENSE_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
+                      {EXPENSE_CATEGORY_KEYS.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {tCategories(key)}
                         </SelectItem>
                       ))}
                     </SelectContent>

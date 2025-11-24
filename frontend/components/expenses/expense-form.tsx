@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/select';
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
-import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
+import { EXPENSE_CATEGORY_KEYS, CATEGORY_NAME_TO_KEY } from '@/lib/constants/expense-categories';
 import { CurrencyInput } from '@/components/currency';
 
 interface ExpenseFormProps {
@@ -53,6 +53,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
   const tFrequency = useTranslations('expenses.frequency');
   const tActions = useTranslations('expenses.actions');
   const tOverview = useTranslations('expenses.overview');
+  const tCategories = useTranslations('expenses.categories');
 
   // Form validation schema with translated messages
   const expenseSchema = z.object({
@@ -120,14 +121,26 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
     },
   });
 
+  // Helper to convert legacy category name to key
+  const getCategoryKey = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // If it's already a valid key, return it
+    if (EXPENSE_CATEGORY_KEYS.includes(category as typeof EXPENSE_CATEGORY_KEYS[number])) {
+      return category;
+    }
+    // Convert legacy name to key
+    return CATEGORY_NAME_TO_KEY[category] || category;
+  };
+
   // Load existing expense data or reset for new expense
   useEffect(() => {
     if (isEditing && existingExpense) {
       const isOneTime = existingExpense.frequency === 'one_time';
+      const categoryKey = getCategoryKey(existingExpense.category);
       const formData = {
         name: existingExpense.name,
         description: existingExpense.description || '',
-        category: existingExpense.category || '',
+        category: categoryKey,
         amount: typeof existingExpense.amount === 'string'
           ? parseFloat(existingExpense.amount)
           : existingExpense.amount,
@@ -155,8 +168,8 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
       setAmountInput(String(amountNum));
 
       setTimeout(() => {
-        if (existingExpense.category) {
-          setValue('category', existingExpense.category, { shouldDirty: true });
+        if (categoryKey) {
+          setValue('category', categoryKey, { shouldDirty: true });
         }
         setValue('frequency', existingExpense.frequency as ExpenseFrequency, { shouldDirty: true });
         setValue('currency', existingExpense.currency, { shouldDirty: true });
@@ -290,9 +303,9 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                   <SelectValue placeholder={tForm('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                  {EXPENSE_CATEGORY_KEYS.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {tCategories(key)}
                     </SelectItem>
                   ))}
                 </SelectContent>

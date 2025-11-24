@@ -49,7 +49,18 @@
     "batchArchiveSuccess": "Pomyślnie zarchiwizowano {count} budżet(ów)",
     "batchArchiveError": "Nie udało się zarchiwizować {count} budżet(ów)",
     "archiveSelected": "Archiwizuj zaznaczone ({count})",
-    "deleteSelected": "Usuń zaznaczone ({count})"
+    "deleteSelected": "Usuń zaznaczone ({count})",
+    "periodBudgeted": "Budżet okresu",
+    "periodSpent": "Wydane w okresie",
+    "activeInMonth": "{count} aktywnych w {month}",
+    "activeBudgetsCount": "{count} aktywnych budżetów",
+    "budgetUsedPercent": "{percent}% budżetu wykorzystano",
+    "budgetsOverspent": "{count} budżetów przekroczonych",
+    "nearLimit": "{count} blisko limitu",
+    "original": "Oryginalna",
+    "periodLabel": "Okres",
+    "ongoing": "bezterminowo",
+    "to": "do"
   },
   "analysis": {
     "title": "Analiza budżetu",

@@ -11,7 +11,7 @@
   },
   "overview": {
     "title": "Panoramica Entrate",
-    "description": "Tracci e gestisca le sue fonti di reddito",
+    "description": "Descrizione",
     "addIncome": "Aggiungi Entrata",
     "totalIncome": "Entrate Totali",
     "periodIncome": "Entrate Periodo",
@@ -46,7 +46,6 @@
     "archiveSelected": "Archivia Selezionati ({count})",
     "deleteSelected": "Elimina Selezionati ({count})",
     "name": "Nome",
-    "description": "Descrizione",
     "category": "Categoria",
     "amount": "Importo",
     "frequency": "Frequenza",
@@ -171,7 +170,7 @@
   },
   "archive": {
     "title": "Entrate Archiviate",
-    "description": "Visualizza e gestisca le fonti di reddito archiviate",
+    "description": "Descrizione",
     "unarchive": "Ripristina",
     "unarchiveSelected": "Ripristina Selezionati ({count})",
     "deleteSelected": "Elimina Selezionati ({count})",
@@ -194,7 +193,6 @@
     "selectAll": "Seleziona tutto",
     "deselectAll": "Deseleziona tutto",
     "name": "Nome",
-    "description": "Descrizione",
     "category": "Categoria",
     "amount": "Importo",
     "frequency": "Frequenza",
@@ -212,9 +210,12 @@
   },
   "categories": {
     "salary": "Stipendio",
+    "business": "Attività",
     "freelance": "Freelance",
-    "business": "Business",
+    "sideProjects": "Progetti secondari",
     "investments": "Investimenti",
+    "gifts": "Regali",
+    "refundsReimbursements": "Rimborsi",
     "rental": "Affitto",
     "other": "Altro"
   }

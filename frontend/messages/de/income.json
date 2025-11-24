@@ -11,7 +11,7 @@
   },
   "overview": {
     "title": "Einkommensübersicht",
-    "description": "Verfolgen und verwalten Sie Ihre Einkommensquellen",
+    "description": "Beschreibung",
     "addIncome": "Einkommen hinzufügen",
     "totalIncome": "Gesamteinkommen",
     "periodIncome": "Zeitraumeinkommen",
@@ -46,7 +46,6 @@
     "archiveSelected": "Ausgewählte archivieren ({count})",
     "deleteSelected": "Ausgewählte löschen ({count})",
     "name": "Name",
-    "description": "Beschreibung",
     "category": "Kategorie",
     "amount": "Betrag",
     "frequency": "Frequenz",
@@ -171,7 +170,7 @@
   },
   "archive": {
     "title": "Archiviertes Einkommen",
-    "description": "Archivierte Einkommensquellen anzeigen und verwalten",
+    "description": "Beschreibung",
     "unarchive": "Aus Archiv holen",
     "unarchiveSelected": "Ausgewählte aus Archiv holen ({count})",
     "deleteSelected": "Ausgewählte löschen ({count})",
@@ -194,7 +193,6 @@
     "selectAll": "Alle auswählen",
     "deselectAll": "Alle abwählen",
     "name": "Name",
-    "description": "Beschreibung",
     "category": "Kategorie",
     "amount": "Betrag",
     "frequency": "Frequenz",
@@ -212,10 +210,13 @@
   },
   "categories": {
     "salary": "Gehalt",
-    "freelance": "Freiberuflich",
     "business": "Geschäft",
+    "freelance": "Freiberuflich",
+    "sideProjects": "Nebenprojekte",
     "investments": "Investitionen",
-    "rental": "Vermietung",
+    "gifts": "Geschenke",
+    "refundsReimbursements": "Rückerstattungen",
+    "rental": "Miete",
     "other": "Sonstiges"
   }
 }

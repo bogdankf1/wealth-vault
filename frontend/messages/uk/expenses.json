@@ -151,7 +151,7 @@
   },
   "archive": {
     "title": "Архівовані витрати",
-    "description": "Перегляд та керування архівованими витратами",
+    "description": "Опис",
     "unarchive": "Розархівувати",
     "unarchiveSelected": "Розархівувати вибрані ({count})",
     "unarchiveSuccess": "Витрату успішно розархівовано",
@@ -171,7 +171,6 @@
     "batchDeleteSuccess": "Успішно видалено {count} витрат(и) назавжди",
     "batchDeleteError": "Не вдалося видалити {count} витрат(и)",
     "name": "Назва",
-    "description": "Опис",
     "category": "Категорія",
     "amount": "Сума",
     "frequency": "Частота",
@@ -182,7 +181,7 @@
   },
   "import": {
     "title": "Імпорт витрат",
-    "description": "Завантажте банківські виписки для автоматичного імпорту витрат",
+    "description": "Опис",
     "uploadStep": "Завантажити",
     "parseStep": "Розібрати",
     "reviewStep": "Переглянути",
@@ -209,7 +208,6 @@
     "tabSubscriptions": "Підписки ({count})",
     "tabInstallments": "Розстрочки ({count})",
     "date": "Дата",
-    "description": "Опис",
     "category": "Категорія",
     "amount": "Сума",
     "proceedToImport": "Перейти до імпорту",
@@ -244,12 +242,19 @@
     "one_time": "Одноразово"
   },
   "categories": {
-    "housing": "Житло",
+    "groceries": "Продукти",
+    "diningOut": "Їжа на виніс / Доставка",
+    "clothing": "Одяг",
+    "gifts": "Подарунки",
     "transportation": "Транспорт",
-    "food": "Їжа",
-    "utilities": "Комунальні послуги",
-    "healthcare": "Охорона здоров'я",
-    "entertainment": "Розваги",
-    "other": "Інше"
+    "personalCare": "Особистий догляд",
+    "healthcare": "Медицина",
+    "luxuryPremium": "Люкс та преміум товари",
+    "postalShipping": "Пошта та доставка",
+    "miscellaneous": "Різне",
+    "housing": "Житло",
+    "educationLearning": "Освіта та навчання",
+    "travelVacations": "Подорожі та відпустка",
+    "entertainment": "Розваги"
   }
 }

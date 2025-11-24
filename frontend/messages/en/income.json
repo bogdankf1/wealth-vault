@@ -11,7 +11,7 @@
   },
   "overview": {
     "title": "Income Overview",
-    "description": "Track and manage your income sources",
+    "description": "Description",
     "addIncome": "Add Income",
     "totalIncome": "Total Income",
     "periodIncome": "Period Income",
@@ -46,7 +46,6 @@
     "archiveSelected": "Archive Selected ({count})",
     "deleteSelected": "Delete Selected ({count})",
     "name": "Name",
-    "description": "Description",
     "category": "Category",
     "amount": "Amount",
     "frequency": "Frequency",
@@ -171,7 +170,7 @@
   },
   "archive": {
     "title": "Archived Income",
-    "description": "View and manage archived income sources",
+    "description": "Description",
     "unarchive": "Unarchive",
     "unarchiveSelected": "Unarchive Selected ({count})",
     "deleteSelected": "Delete Selected ({count})",
@@ -194,7 +193,6 @@
     "selectAll": "Select all",
     "deselectAll": "Deselect all",
     "name": "Name",
-    "description": "Description",
     "category": "Category",
     "amount": "Amount",
     "frequency": "Frequency",
@@ -212,9 +210,12 @@
   },
   "categories": {
     "salary": "Salary",
-    "freelance": "Freelance",
     "business": "Business",
+    "freelance": "Freelance",
+    "sideProjects": "Side Projects",
     "investments": "Investments",
+    "gifts": "Gifts",
+    "refundsReimbursements": "Refunds & Reimbursements",
     "rental": "Rental",
     "other": "Other"
   }

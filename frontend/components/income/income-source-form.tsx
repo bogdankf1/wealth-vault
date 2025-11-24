@@ -39,6 +39,7 @@ import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
 import { toast } from 'sonner';
+import { INCOME_CATEGORY_KEYS, INCOME_CATEGORY_NAME_TO_KEY } from '@/lib/constants/income-categories';
 
 // Form validation schema
 const incomeSourceSchema = z.object({
@@ -88,23 +89,13 @@ const FREQUENCY_OPTIONS = [
   { value: 'annually', label: 'Annually' },
 ];
 
-const CATEGORY_OPTIONS = [
-  { value: 'Salary', label: 'Salary' },
-  { value: 'Business', label: 'Business' },
-  { value: 'Freelance', label: 'Freelance' },
-  { value: 'Side Projects', label: 'Side Projects' },
-  { value: 'Investments', label: 'Investments' },
-  { value: 'Gifts', label: 'Gifts' },
-  { value: 'Refunds & Reimbursements', label: 'Refunds & Reimbursements' },
-  { value: 'Rental', label: 'Rental' },
-  { value: 'Other', label: 'Other' },
-];
 
 export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceFormProps) {
   const isEditing = Boolean(sourceId);
   const tForm = useTranslations('income.form');
   const tActions = useTranslations('income.actions');
   const tFrequency = useTranslations('income.frequency');
+  const tCategories = useTranslations('income.categories');
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
@@ -140,14 +131,26 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
     },
   });
 
+  // Helper to convert legacy category name to key
+  const getCategoryKey = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // If it's already a valid key, return it
+    if (INCOME_CATEGORY_KEYS.includes(category as typeof INCOME_CATEGORY_KEYS[number])) {
+      return category;
+    }
+    // Convert legacy name to key
+    return INCOME_CATEGORY_NAME_TO_KEY[category] || category;
+  };
+
   // Load existing source data or reset for new source
   useEffect(() => {
     if (isEditing && existingSource) {
       const isOneTime = existingSource.frequency === 'one_time';
+      const categoryKey = getCategoryKey(existingSource.category);
       const formData = {
         name: existingSource.name,
         description: existingSource.description || '',
-        category: existingSource.category || '',
+        category: categoryKey,
         // Ensure amount is always a number, even if API sends string
         amount: typeof existingSource.amount === 'string'
           ? parseFloat(existingSource.amount)
@@ -179,8 +182,8 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
       // Explicitly set category, frequency, and currency to ensure Select components update
       // Use setTimeout to ensure this happens after render
       setTimeout(() => {
-        if (existingSource.category) {
-          setValue('category', existingSource.category, { shouldDirty: true });
+        if (categoryKey) {
+          setValue('category', categoryKey, { shouldDirty: true });
         }
         setValue('frequency', existingSource.frequency as IncomeFrequency, { shouldDirty: true });
         setValue('currency', existingSource.currency, { shouldDirty: true });
@@ -325,9 +328,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                   <SelectValue placeholder={tForm('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                  {INCOME_CATEGORY_KEYS.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {tCategories(key)}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -114,12 +114,11 @@
     "save": "Save"
   },
   "accountTypes": {
-    "savings": "Savings Account",
-    "checking": "Checking Account",
-    "moneyMarket": "Money Market",
-    "cd": "Certificate of Deposit",
-    "investment": "Investment Account",
-    "retirement": "Retirement Account",
+    "personal": "Personal Savings",
+    "business": "Business Account",
+    "cash": "Cash Account",
+    "crypto": "Cryptocurrency",
+    "fixedDeposit": "Fixed Deposit",
     "other": "Other"
   },
   "status": {

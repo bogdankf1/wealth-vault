@@ -11,7 +11,7 @@
   },
   "overview": {
     "title": "Visão Geral de Receitas",
-    "description": "Rastreie e gerencie suas fontes de receita",
+    "description": "Descrição",
     "addIncome": "Adicionar Receita",
     "totalIncome": "Receita Total",
     "periodIncome": "Receita do Período",
@@ -46,7 +46,6 @@
     "archiveSelected": "Arquivar Selecionados ({count})",
     "deleteSelected": "Excluir Selecionados ({count})",
     "name": "Nome",
-    "description": "Descrição",
     "category": "Categoria",
     "amount": "Valor",
     "frequency": "Frequência",
@@ -171,7 +170,7 @@
   },
   "archive": {
     "title": "Receitas Arquivadas",
-    "description": "Visualize e gerencie fontes de receita arquivadas",
+    "description": "Descrição",
     "unarchive": "Desarquivar",
     "unarchiveSelected": "Desarquivar Selecionados ({count})",
     "deleteSelected": "Excluir Selecionados ({count})",
@@ -194,7 +193,6 @@
     "selectAll": "Selecionar todos",
     "deselectAll": "Desmarcar todos",
     "name": "Nome",
-    "description": "Descrição",
     "category": "Categoria",
     "amount": "Valor",
     "frequency": "Frequência",
@@ -212,10 +210,13 @@
   },
   "categories": {
     "salary": "Salário",
-    "freelance": "Freelancer",
     "business": "Negócio",
+    "freelance": "Freelance",
+    "sideProjects": "Projetos paralelos",
     "investments": "Investimentos",
+    "gifts": "Presentes",
+    "refundsReimbursements": "Reembolsos",
     "rental": "Aluguel",
-    "other": "Outros"
+    "other": "Outro"
   }
 }

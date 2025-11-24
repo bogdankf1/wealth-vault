@@ -10,7 +10,7 @@
   },
   "overview": {
     "title": "Resumen de Ahorros",
-    "description": "Rastrea y gestiona tus cuentas de ahorro",
+    "description": "Descripción",
     "addAccount": "Agregar Cuenta",
     "totalAccounts": "Total de Cuentas",
     "activeAccounts": "Cuentas Activas",
@@ -26,7 +26,6 @@
     "selectAll": "Seleccionar todo",
     "deselectAll": "Deseleccionar todo",
     "name": "Nombre",
-    "description": "Descripción",
     "accountType": "Tipo de Cuenta",
     "balance": "Saldo",
     "interestRate": "Tasa de Interés",
@@ -114,12 +113,11 @@
     "save": "Guardar"
   },
   "accountTypes": {
-    "savings": "Cuenta de Ahorros",
-    "checking": "Cuenta Corriente",
-    "moneyMarket": "Mercado Monetario",
-    "cd": "Certificado de Depósito",
-    "investment": "Cuenta de Inversión",
-    "retirement": "Cuenta de Jubilación",
+    "personal": "Ahorros Personales",
+    "business": "Cuenta Empresarial",
+    "cash": "Cuenta de Efectivo",
+    "crypto": "Criptomoneda",
+    "fixedDeposit": "Depósito a Plazo",
     "other": "Otro"
   },
   "status": {

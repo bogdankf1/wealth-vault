@@ -37,10 +37,11 @@ import {
 import { useCreateExpenseMutation } from '@/lib/api/expensesApi';
 import { useListSubscriptionsQuery } from '@/lib/api/subscriptionsApi';
 import { useListInstallmentsQuery } from '@/lib/api/installmentsApi';
-import { CATEGORY_OPTIONS } from '@/lib/constants/expense-categories';
+import { EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
 export default function ImportStatementPage() {
   const t = useTranslations('expenses.import');
+  const tCategories = useTranslations('expenses.categories');
 
   const [parseStatement, { isLoading: isParsing }] = useParseStatementMutation();
   const [batchCategorize, { isLoading: isCategorizing }] = useBatchCategorizeTransactionsMutation();
@@ -452,9 +453,9 @@ export default function ImportStatementPage() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {CATEGORY_OPTIONS.map((option) => (
-                                      <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
+                                    {EXPENSE_CATEGORY_KEYS.map((key) => (
+                                      <SelectItem key={key} value={key}>
+                                        {tCategories(key)}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -515,9 +516,9 @@ export default function ImportStatementPage() {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {CATEGORY_OPTIONS.map((option) => (
-                                          <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
+                                        {EXPENSE_CATEGORY_KEYS.map((key) => (
+                                          <SelectItem key={key} value={key}>
+                                            {tCategories(key)}
                                           </SelectItem>
                                         ))}
                                       </SelectContent>
@@ -625,9 +626,9 @@ export default function ImportStatementPage() {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {CATEGORY_OPTIONS.map((option) => (
-                                          <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
+                                        {EXPENSE_CATEGORY_KEYS.map((key) => (
+                                          <SelectItem key={key} value={key}>
+                                            {tCategories(key)}
                                           </SelectItem>
                                         ))}
                                       </SelectContent>
@@ -693,9 +694,9 @@ export default function ImportStatementPage() {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {CATEGORY_OPTIONS.map((option) => (
-                                          <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
+                                        {EXPENSE_CATEGORY_KEYS.map((key) => (
+                                          <SelectItem key={key} value={key}>
+                                            {tCategories(key)}
                                           </SelectItem>
                                         ))}
                                       </SelectContent>

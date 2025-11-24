@@ -49,7 +49,18 @@
     "batchArchiveSuccess": "Успішно архівовано {count} бюджет(ів)",
     "batchArchiveError": "Не вдалося архівувати {count} бюджет(ів)",
     "archiveSelected": "Архівувати вибрані ({count})",
-    "deleteSelected": "Видалити вибрані ({count})"
+    "deleteSelected": "Видалити вибрані ({count})",
+    "periodBudgeted": "Заплановано за період",
+    "periodSpent": "Витрачено за період",
+    "activeInMonth": "{count} активних у {month}",
+    "activeBudgetsCount": "{count} активних бюджетів",
+    "budgetUsedPercent": "{percent}% бюджету використано",
+    "budgetsOverspent": "{count} бюджетів перевитрачено",
+    "nearLimit": "{count} близько до ліміту",
+    "original": "Початкова",
+    "periodLabel": "Період",
+    "ongoing": "безстроково",
+    "to": "до"
   },
   "analysis": {
     "title": "Аналіз бюджетів",

@@ -10,7 +10,7 @@
   },
   "overview": {
     "title": "Visão Geral da Poupança",
-    "description": "Acompanhe e gerencie suas contas de poupança",
+    "description": "Descrição",
     "addAccount": "Adicionar Conta",
     "totalAccounts": "Total de Contas",
     "activeAccounts": "Contas Ativas",
@@ -26,7 +26,6 @@
     "selectAll": "Selecionar todos",
     "deselectAll": "Desmarcar todos",
     "name": "Nome",
-    "description": "Descrição",
     "accountType": "Tipo de Conta",
     "balance": "Saldo",
     "interestRate": "Taxa de Juros",
@@ -114,13 +113,12 @@
     "save": "Salvar"
   },
   "accountTypes": {
-    "savings": "Conta Poupança",
-    "checking": "Conta Corrente",
-    "moneyMarket": "Mercado Monetário",
-    "cd": "Certificado de Depósito",
-    "investment": "Conta de Investimento",
-    "retirement": "Conta de Aposentadoria",
-    "other": "Outros"
+    "personal": "Poupança Pessoal",
+    "business": "Conta Empresarial",
+    "cash": "Conta em Dinheiro",
+    "crypto": "Criptomoeda",
+    "fixedDeposit": "Depósito a Prazo",
+    "other": "Outro"
   },
   "status": {
     "active": "Ativo",

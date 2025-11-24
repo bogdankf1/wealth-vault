@@ -151,7 +151,7 @@
   },
   "archive": {
     "title": "Archivierte Ausgaben",
-    "description": "Archivierte Ausgaben anzeigen und verwalten",
+    "description": "Beschreibung",
     "unarchive": "Aus Archiv holen",
     "unarchiveSelected": "Ausgewählte aus Archiv holen ({count})",
     "unarchiveSuccess": "Ausgabe erfolgreich aus Archiv geholt",
@@ -171,7 +171,6 @@
     "batchDeleteSuccess": "{count} Ausgabe(n) erfolgreich dauerhaft gelöscht",
     "batchDeleteError": "{count} Ausgabe(n) konnten nicht gelöscht werden",
     "name": "Name",
-    "description": "Beschreibung",
     "category": "Kategorie",
     "amount": "Betrag",
     "frequency": "Frequenz",
@@ -182,7 +181,7 @@
   },
   "import": {
     "title": "Ausgaben importieren",
-    "description": "Laden Sie Bankkontoauszüge hoch, um Ausgaben automatisch zu importieren",
+    "description": "Beschreibung",
     "uploadStep": "Hochladen",
     "parseStep": "Parsen",
     "reviewStep": "Überprüfen",
@@ -209,7 +208,6 @@
     "tabSubscriptions": "Abonnements ({count})",
     "tabInstallments": "Ratenzahlungen ({count})",
     "date": "Datum",
-    "description": "Beschreibung",
     "category": "Kategorie",
     "amount": "Betrag",
     "proceedToImport": "Mit Import fortfahren",
@@ -244,12 +242,19 @@
     "one_time": "Einmalig"
   },
   "categories": {
-    "housing": "Wohnen",
+    "groceries": "Lebensmittel",
+    "diningOut": "Essen gehen / Lieferung",
+    "clothing": "Kleidung",
+    "gifts": "Geschenke",
     "transportation": "Transport",
-    "food": "Lebensmittel",
-    "utilities": "Versorgungsleistungen",
-    "healthcare": "Gesundheitswesen",
-    "entertainment": "Unterhaltung",
-    "other": "Sonstiges"
+    "personalCare": "Körperpflege",
+    "healthcare": "Gesundheit",
+    "luxuryPremium": "Luxus & Premium",
+    "postalShipping": "Post & Versand",
+    "miscellaneous": "Sonstiges",
+    "housing": "Wohnen",
+    "educationLearning": "Bildung & Lernen",
+    "travelVacations": "Reisen & Urlaub",
+    "entertainment": "Unterhaltung"
   }
 }

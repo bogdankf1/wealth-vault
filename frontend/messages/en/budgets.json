@@ -49,7 +49,18 @@
     "batchArchiveSuccess": "Successfully archived {count} budget(s)",
     "batchArchiveError": "Failed to archive {count} budget(s)",
     "archiveSelected": "Archive Selected ({count})",
-    "deleteSelected": "Delete Selected ({count})"
+    "deleteSelected": "Delete Selected ({count})",
+    "periodBudgeted": "Period Budgeted",
+    "periodSpent": "Period Spent",
+    "activeInMonth": "{count} active in {month}",
+    "activeBudgetsCount": "{count} active {count, plural, one {budget} other {budgets}}",
+    "budgetUsedPercent": "{percent}% of budget used",
+    "budgetsOverspent": "{count} {count, plural, one {budget} other {budgets}} overspent",
+    "nearLimit": "{count} near limit",
+    "original": "Original",
+    "periodLabel": "Period",
+    "ongoing": "ongoing",
+    "to": "to"
   },
   "analysis": {
     "title": "Budget Analysis",

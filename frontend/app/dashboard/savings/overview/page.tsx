@@ -49,11 +49,11 @@ export default function SavingsPage() {
   const tStatus = useTranslations('savings.status');
 
   const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-    crypto: tAccountTypes('other'),
-    cash: tAccountTypes('other'),
-    business: tAccountTypes('other'),
-    personal: tAccountTypes('other'),
-    fixed_deposit: tAccountTypes('cd'),
+    personal: tAccountTypes('personal'),
+    business: tAccountTypes('business'),
+    cash: tAccountTypes('cash'),
+    crypto: tAccountTypes('crypto'),
+    fixed_deposit: tAccountTypes('fixedDeposit'),
     other: tAccountTypes('other'),
   };
 

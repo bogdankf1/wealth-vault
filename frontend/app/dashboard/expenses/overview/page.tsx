@@ -41,6 +41,7 @@ import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { ExpenseActionsContext } from '../context';
+import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
 export default function ExpensesPage() {
   const tOverview = useTranslations('expenses.overview');
@@ -48,6 +49,23 @@ export default function ExpensesPage() {
   const tStatus = useTranslations('expenses.status');
   const tFrequency = useTranslations('expenses.frequency');
   const tCommon = useTranslations('common');
+  const tCategories = useTranslations('expenses.categories');
+
+  // Helper to translate category (handles both new keys and legacy names)
+  const translateCategory = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // Check if it's already a translation key
+    if (EXPENSE_CATEGORY_KEYS.includes(category as typeof EXPENSE_CATEGORY_KEYS[number])) {
+      return tCategories(category as typeof EXPENSE_CATEGORY_KEYS[number]);
+    }
+    // Check if it's a legacy name that needs conversion
+    const key = CATEGORY_NAME_TO_KEY[category];
+    if (key) {
+      return tCategories(key);
+    }
+    // Fallback to original value
+    return category;
+  };
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -621,7 +639,7 @@ export default function ExpensesPage() {
 
                     <div className="min-h-[24px]">
                       {expense.category && (
-                        <Badge variant="outline" className="text-xs flex-shrink-0">{expense.category}</Badge>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">{translateCategory(expense.category)}</Badge>
                       )}
                     </div>
 
@@ -708,7 +726,7 @@ export default function ExpensesPage() {
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         {expense.category ? (
-                          <Badge variant="outline" className="text-xs">{expense.category}</Badge>
+                          <Badge variant="outline" className="text-xs">{translateCategory(expense.category)}</Badge>
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}

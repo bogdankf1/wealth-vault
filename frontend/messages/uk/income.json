@@ -11,7 +11,7 @@
   },
   "overview": {
     "title": "Огляд доходів",
-    "description": "Відстежуйте та керуйте джерелами доходів",
+    "description": "Опис",
     "addIncome": "Додати дохід",
     "totalIncome": "Всього доходів",
     "periodIncome": "Дохід за період",
@@ -46,7 +46,6 @@
     "archiveSelected": "Архівувати вибрані ({count})",
     "deleteSelected": "Видалити вибрані ({count})",
     "name": "Назва",
-    "description": "Опис",
     "category": "Категорія",
     "amount": "Сума",
     "frequency": "Частота",
@@ -171,7 +170,7 @@
   },
   "archive": {
     "title": "Архівовані доходи",
-    "description": "Перегляд та керування архівованими джерелами доходів",
+    "description": "Опис",
     "unarchive": "Розархівувати",
     "unarchiveSelected": "Розархівувати вибрані ({count})",
     "deleteSelected": "Видалити вибрані ({count})",
@@ -194,7 +193,6 @@
     "selectAll": "Вибрати все",
     "deselectAll": "Скасувати вибір",
     "name": "Назва",
-    "description": "Опис",
     "category": "Категорія",
     "amount": "Сума",
     "frequency": "Частота",
@@ -212,9 +210,12 @@
   },
   "categories": {
     "salary": "Зарплата",
-    "freelance": "Фріланс",
     "business": "Бізнес",
+    "freelance": "Фріланс",
+    "sideProjects": "Побічні проєкти",
     "investments": "Інвестиції",
+    "gifts": "Подарунки",
+    "refundsReimbursements": "Повернення та компенсації",
     "rental": "Оренда",
     "other": "Інше"
   }

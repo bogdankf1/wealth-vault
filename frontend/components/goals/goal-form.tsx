@@ -93,6 +93,36 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
     { value: 'other', label: tCategories('other') },
   ];
 
+  // Legacy mapping for old category values to new keys
+  const GOAL_CATEGORY_MAP: Record<string, string> = {
+    'Home/Property': 'home_property',
+    'Vehicle': 'vehicle',
+    'Education': 'education',
+    'Wedding': 'wedding',
+    'Travel': 'travel_vacation',
+    'Travel/Vacation': 'travel_vacation',
+    'Emergency Fund': 'emergency_fund',
+    'Major Purchase': 'major_purchase',
+    'General Savings': 'general_savings',
+    'Retirement': 'retirement',
+    'Other': 'other',
+  };
+
+  // Helper to convert legacy category name to key
+  const getCategoryKey = (category: string | undefined | null): string => {
+    if (!category) return '';
+    // Check legacy mapping first
+    if (GOAL_CATEGORY_MAP[category]) {
+      return GOAL_CATEGORY_MAP[category];
+    }
+    // If it's already a valid key, return it
+    const validKeys = CATEGORY_OPTIONS.map(opt => opt.value);
+    if (validKeys.includes(category)) {
+      return category;
+    }
+    return category;
+  };
+
   // Local state to track the string value of inputs while user is typing
   const [targetAmountInput, setTargetAmountInput] = React.useState<string>('');
   const [currentAmountInput, setCurrentAmountInput] = React.useState<string>('');
@@ -132,10 +162,11 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
   // Load existing goal data or reset for new goal
   useEffect(() => {
     if (isEditing && existingGoal) {
+      const categoryKey = getCategoryKey(existingGoal.category);
       const formData = {
         name: existingGoal.name,
         description: existingGoal.description || '',
-        category: existingGoal.category || '',
+        category: categoryKey,
         target_amount: typeof existingGoal.target_amount === 'string'
           ? parseFloat(existingGoal.target_amount)
           : existingGoal.target_amount,
@@ -177,8 +208,8 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
       setMonthlyContributionInput(String(monthlyContribNum));
 
       setTimeout(() => {
-        if (existingGoal.category) {
-          setValue('category', existingGoal.category, { shouldDirty: true });
+        if (categoryKey) {
+          setValue('category', categoryKey, { shouldDirty: true });
         }
         setValue('currency', existingGoal.currency, { shouldDirty: true });
       }, 0);

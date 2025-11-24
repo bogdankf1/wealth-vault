@@ -151,7 +151,7 @@
   },
   "archive": {
     "title": "Gastos archivados",
-    "description": "Ver y gestionar gastos archivados",
+    "description": "Descripción",
     "unarchive": "Desarchivar",
     "unarchiveSelected": "Desarchivar seleccionados ({count})",
     "unarchiveSuccess": "Gasto desarchivado exitosamente",
@@ -171,7 +171,6 @@
     "batchDeleteSuccess": "Se eliminaron {count} gasto(s) permanentemente",
     "batchDeleteError": "Error al eliminar {count} gasto(s)",
     "name": "Nombre",
-    "description": "Descripción",
     "category": "Categoría",
     "amount": "Monto",
     "frequency": "Frecuencia",
@@ -182,7 +181,7 @@
   },
   "import": {
     "title": "Importar gastos",
-    "description": "Sube extractos bancarios para importar gastos automáticamente",
+    "description": "Descripción",
     "uploadStep": "Subir",
     "parseStep": "Analizar",
     "reviewStep": "Revisar",
@@ -209,7 +208,6 @@
     "tabSubscriptions": "Suscripciones ({count})",
     "tabInstallments": "Cuotas ({count})",
     "date": "Fecha",
-    "description": "Descripción",
     "category": "Categoría",
     "amount": "Monto",
     "proceedToImport": "Continuar con la importación",
@@ -244,12 +242,19 @@
     "one_time": "Una vez"
   },
   "categories": {
-    "housing": "Vivienda",
+    "groceries": "Compras de supermercado",
+    "diningOut": "Restaurantes / Delivery",
+    "clothing": "Ropa",
+    "gifts": "Regalos",
     "transportation": "Transporte",
-    "food": "Comida",
-    "utilities": "Servicios públicos",
+    "personalCare": "Cuidado personal",
     "healthcare": "Salud",
-    "entertainment": "Entretenimiento",
-    "other": "Otro"
+    "luxuryPremium": "Artículos de lujo",
+    "postalShipping": "Correo y envíos",
+    "miscellaneous": "Varios",
+    "housing": "Vivienda",
+    "educationLearning": "Educación",
+    "travelVacations": "Viajes y vacaciones",
+    "entertainment": "Entretenimiento"
   }
 }
