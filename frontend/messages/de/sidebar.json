@@ -12,6 +12,12 @@
     "debts": "Schulden",
     "taxes": "Steuern"
   },
+  "groups": {
+    "incomeExpenses": "Einkommen & Ausgaben",
+    "savingsInvestments": "Ersparnisse & Investitionen",
+    "recurring": "Wiederkehrend",
+    "liabilities": "Verbindlichkeiten"
+  },
   "bottomNavigation": {
     "export": "Exportieren",
     "backups": "Sicherungen",

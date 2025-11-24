@@ -12,6 +12,12 @@
     "debts": "Debts",
     "taxes": "Taxes"
   },
+  "groups": {
+    "incomeExpenses": "Income & Expenses",
+    "savingsInvestments": "Savings & Investments",
+    "recurring": "Recurring",
+    "liabilities": "Liabilities"
+  },
   "bottomNavigation": {
     "export": "Export",
     "backups": "Backups",

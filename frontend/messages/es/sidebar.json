@@ -12,6 +12,12 @@
     "debts": "Deudas",
     "taxes": "Impuestos"
   },
+  "groups": {
+    "incomeExpenses": "Ingresos y Gastos",
+    "savingsInvestments": "Ahorros e Inversiones",
+    "recurring": "Recurrentes",
+    "liabilities": "Pasivos"
+  },
   "bottomNavigation": {
     "export": "Exportar",
     "backups": "Respaldos",

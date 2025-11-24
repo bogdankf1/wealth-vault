@@ -12,6 +12,12 @@
     "debts": "Борги",
     "taxes": "Податки"
   },
+  "groups": {
+    "incomeExpenses": "Доходи та Витрати",
+    "savingsInvestments": "Заощадження та Інвестиції",
+    "recurring": "Регулярні",
+    "liabilities": "Зобов'язання"
+  },
   "bottomNavigation": {
     "export": "Експорт",
     "backups": "Резервні Копії",

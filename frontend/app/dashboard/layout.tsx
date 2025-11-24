@@ -28,7 +28,8 @@ import {
   LayoutDashboard,
   Download,
   Database,
-  HelpCircle
+  HelpCircle,
+  ChevronDown
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -50,23 +51,64 @@ export default function DashboardLayout({
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: userFeatures } = useGetUserFeaturesQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    incomeExpenses: true,
+    savingsInvestments: true,
+    recurring: true,
+    liabilities: true,
+  });
   const t = useTranslations('sidebar');
+
+  const toggleGroup = (groupKey: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupKey]: !prev[groupKey]
+    }));
+  };
 
   // Preload currencies to ensure they're available when editing entries
   useGetCurrenciesQuery({ active_only: true });
 
-  const navigation = [
-    { name: t('navigation.dashboard'), href: '/dashboard', icon: LayoutDashboard },
-    { name: t('navigation.income'), href: '/dashboard/income', icon: TrendingUp },
-    { name: t('navigation.expenses'), href: '/dashboard/expenses', icon: DollarSign },
-    { name: t('navigation.budgets'), href: '/dashboard/budgets', icon: Wallet },
-    { name: t('navigation.savings'), href: '/dashboard/savings', icon: PiggyBank },
-    { name: t('navigation.portfolio'), href: '/dashboard/portfolio', icon: LineChart },
-    { name: t('navigation.goals'), href: '/dashboard/goals', icon: Target },
-    { name: t('navigation.subscriptions'), href: '/dashboard/subscriptions', icon: CreditCard },
-    { name: t('navigation.installments'), href: '/dashboard/installments', icon: Receipt },
-    { name: t('navigation.debts'), href: '/dashboard/debts', icon: UserMinus },
-    { name: t('navigation.taxes'), href: '/dashboard/taxes', icon: FileText },
+  const navigationGroups = [
+    {
+      items: [
+        { name: t('navigation.dashboard'), href: '/dashboard', icon: LayoutDashboard },
+      ],
+    },
+    {
+      key: 'incomeExpenses',
+      label: t('groups.incomeExpenses'),
+      items: [
+        { name: t('navigation.income'), href: '/dashboard/income', icon: TrendingUp },
+        { name: t('navigation.expenses'), href: '/dashboard/expenses', icon: DollarSign },
+      ],
+    },
+    {
+      key: 'savingsInvestments',
+      label: t('groups.savingsInvestments'),
+      items: [
+        { name: t('navigation.savings'), href: '/dashboard/savings', icon: PiggyBank },
+        { name: t('navigation.portfolio'), href: '/dashboard/portfolio', icon: LineChart },
+        { name: t('navigation.goals'), href: '/dashboard/goals', icon: Target },
+      ],
+    },
+    {
+      key: 'recurring',
+      label: t('groups.recurring'),
+      items: [
+        { name: t('navigation.budgets'), href: '/dashboard/budgets', icon: Wallet },
+        { name: t('navigation.subscriptions'), href: '/dashboard/subscriptions', icon: CreditCard },
+        { name: t('navigation.installments'), href: '/dashboard/installments', icon: Receipt },
+      ],
+    },
+    {
+      key: 'liabilities',
+      label: t('groups.liabilities'),
+      items: [
+        { name: t('navigation.debts'), href: '/dashboard/debts', icon: UserMinus },
+        { name: t('navigation.taxes'), href: '/dashboard/taxes', icon: FileText },
+      ],
+    },
   ];
 
   const bottomNavigation = [
@@ -95,10 +137,11 @@ export default function DashboardLayout({
     return requiredFeature in userFeatures.features;
   };
 
-  // Filter navigation items based on user's enabled features
-  const accessibleNavigation = navigation.filter((item) =>
-    hasFeatureAccess(item.href)
-  );
+  // Filter navigation groups based on user's enabled features
+  const accessibleNavigationGroups = navigationGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => hasFeatureAccess(item.href))
+  })).filter(group => group.items.length > 0);
 
   const accessibleBottomNavigation = bottomNavigation.filter((item) =>
     hasFeatureAccess(item.href)
@@ -160,25 +203,47 @@ export default function DashboardLayout({
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-2 md:px-3 py-3 md:py-4 overflow-y-auto">
-            {accessibleNavigation.map((item) => {
-              const isActive = isNavItemActive(item.href);
-              const Icon = item.icon;
+            {accessibleNavigationGroups.map((group, groupIndex) => {
+              const isExpanded = group.key ? expandedGroups[group.key] : true;
 
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    'flex items-center px-3 py-2.5 md:py-2 text-sm md:text-sm font-medium rounded-lg transition-colors touch-manipulation',
-                    isActive
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600'
+                <div key={groupIndex} className={groupIndex > 0 ? 'mt-3' : ''}>
+                  {group.label && group.key && (
+                    <button
+                      onClick={() => toggleGroup(group.key!)}
+                      className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    >
+                      <span>{group.label}</span>
+                      <ChevronDown
+                        className={cn(
+                          'h-3.5 w-3.5 transition-transform duration-200',
+                          isExpanded ? '' : '-rotate-90'
+                        )}
+                      />
+                    </button>
                   )}
-                >
-                  <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  {item.name}
-                </Link>
+                  {isExpanded && group.items.map((item) => {
+                    const isActive = isNavItemActive(item.href);
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          'flex items-center px-3 py-2.5 md:py-2 text-sm md:text-sm font-medium rounded-lg transition-colors touch-manipulation',
+                          isActive
+                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                            : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600'
+                        )}
+                      >
+                        <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
               );
             })}
 

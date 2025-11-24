@@ -12,6 +12,12 @@
     "debts": "Crediti",
     "taxes": "Tasse"
   },
+  "groups": {
+    "incomeExpenses": "Entrate e Spese",
+    "savingsInvestments": "Risparmi e Investimenti",
+    "recurring": "Ricorrenti",
+    "liabilities": "Passività"
+  },
   "bottomNavigation": {
     "export": "Esporta",
     "backups": "Backup",
