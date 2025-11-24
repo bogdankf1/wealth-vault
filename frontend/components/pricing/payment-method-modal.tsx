@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CreditCard, Wallet } from 'lucide-react';
+import { CreditCard, Wallet, Banknote, Globe, Building2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 
-export type PaymentMethod = 'stripe' | 'paypal';
+export type PaymentMethod = 'stripe' | 'paypal' | 'mono' | 'payoneer' | 'bank_transfer';
 
 interface PaymentMethodModalProps {
   isOpen: boolean;
@@ -65,7 +65,28 @@ export function PaymentMethodModal({
       name: 'PayPal',
       description: t('paypal.description'),
       icon: Wallet,
-      available: false, // Will be enabled later
+      available: false,
+    },
+    {
+      id: 'mono' as PaymentMethod,
+      name: 'Plata by Mono',
+      description: t('mono.description'),
+      icon: Banknote,
+      available: false,
+    },
+    {
+      id: 'payoneer' as PaymentMethod,
+      name: 'Payoneer',
+      description: t('payoneer.description'),
+      icon: Globe,
+      available: false,
+    },
+    {
+      id: 'bank_transfer' as PaymentMethod,
+      name: t('bankTransfer.name'),
+      description: t('bankTransfer.description'),
+      icon: Building2,
+      available: false,
     },
   ];
 

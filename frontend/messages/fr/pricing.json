@@ -80,6 +80,16 @@
     },
     "paypal": {
       "description": "Payez avec votre compte PayPal"
+    },
+    "mono": {
+      "description": "Payez avec Monobank (Ukraine)"
+    },
+    "payoneer": {
+      "description": "Payez avec votre compte Payoneer"
+    },
+    "bankTransfer": {
+      "name": "Virement bancaire",
+      "description": "Paiement par virement bancaire direct"
     }
   }
 }

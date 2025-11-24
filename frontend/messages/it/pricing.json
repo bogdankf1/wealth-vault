@@ -80,6 +80,16 @@
     },
     "paypal": {
       "description": "Paghi con il Suo account PayPal"
+    },
+    "mono": {
+      "description": "Paghi con Monobank (Ucraina)"
+    },
+    "payoneer": {
+      "description": "Paghi con il Suo account Payoneer"
+    },
+    "bankTransfer": {
+      "name": "Bonifico bancario",
+      "description": "Pagamento tramite bonifico bancario diretto"
     }
   }
 }

@@ -80,6 +80,16 @@
     },
     "paypal": {
       "description": "Оплата через ваш обліковий запис PayPal"
+    },
+    "mono": {
+      "description": "Оплата через Monobank (Україна)"
+    },
+    "payoneer": {
+      "description": "Оплата через ваш обліковий запис Payoneer"
+    },
+    "bankTransfer": {
+      "name": "Банківський переказ",
+      "description": "Прямий банківський переказ"
     }
   }
 }
