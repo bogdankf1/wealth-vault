@@ -151,3 +151,22 @@ class ExpenseHistoryResponse(BaseModel):
     total_months: int
     overall_average: Decimal
     currency: str = "USD"
+
+
+# Schema for batch create
+class ExpenseBatchCreate(BaseModel):
+    expenses: List[ExpenseCreate] = Field(..., min_length=1, description="List of expenses to create")
+
+
+# Schema for batch create error
+class ExpenseBatchCreateError(BaseModel):
+    index: int = Field(..., description="Index of the expense that failed")
+    error: str = Field(..., description="Error message")
+
+
+# Schema for batch create response
+class ExpenseBatchCreateResponse(BaseModel):
+    created_count: int = Field(..., description="Number of expenses successfully created")
+    created_expenses: List[Expense] = Field(..., description="List of created expenses")
+    failed_count: int = Field(..., description="Number of expenses that failed to create")
+    errors: List[ExpenseBatchCreateError] = Field(default=[], description="List of errors for failed expenses")

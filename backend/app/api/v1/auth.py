@@ -183,7 +183,9 @@ async def get_current_user_features(
     result = await db.execute(
         select(User)
         .options(
-            selectinload(User.tier).selectinload(Tier.tier_features).selectinload(TierFeature.feature)
+            selectinload(User.tier)
+            .selectinload(Tier.tier_features.and_(TierFeature.deleted_at.is_(None)))
+            .selectinload(TierFeature.feature.and_(Feature.deleted_at.is_(None)))
         )
         .where(User.id == current_user.id)
     )
@@ -192,7 +194,11 @@ async def get_current_user_features(
     # Build a dictionary of enabled features
     enabled_features = {}
     for tier_feature in user.tier.tier_features:
-        if tier_feature.feature and tier_feature.enabled:
+        # Additional safety check for soft deletes
+        if (tier_feature.feature and
+            tier_feature.enabled and
+            tier_feature.deleted_at is None and
+            tier_feature.feature.deleted_at is None):
             enabled_features[tier_feature.feature.key] = {
                 "enabled": True,
                 "limit": tier_feature.limit_value,

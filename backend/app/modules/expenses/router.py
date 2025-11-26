@@ -20,6 +20,9 @@ from app.modules.expenses.schemas import (
     ExpenseStats,
     ExpenseBatchDelete,
     ExpenseBatchDeleteResponse,
+    ExpenseBatchCreate,
+    ExpenseBatchCreateResponse,
+    ExpenseBatchCreateError,
     ExpenseHistoryResponse
 )
 
@@ -213,6 +216,68 @@ async def delete_expense(
             detail="Expense not found"
         )
     return None
+
+
+@router.post("/batch-create", response_model=ExpenseBatchCreateResponse, status_code=status.HTTP_201_CREATED)
+@require_feature("batch_operations")
+async def batch_create_expenses(
+    batch_data: ExpenseBatchCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Create multiple expenses in a single request.
+
+    Requires: batch_operations feature (Growth/Wealth tier)
+
+    Returns the count of successfully created expenses and any errors for failed ones.
+    """
+    # Check current count
+    from sqlalchemy import select, func
+    from app.modules.expenses.models import Expense as ExpenseModel
+
+    count_query = select(func.count()).select_from(ExpenseModel).where(
+        ExpenseModel.user_id == current_user.id
+    )
+    count_result = await db.execute(count_query)
+    current_count = count_result.scalar_one()
+
+    # Check if user has capacity for all expenses
+    total_needed = current_count + len(batch_data.expenses)
+    has_capacity, limit = await check_usage_limit(
+        current_user,
+        "expense_tracking",
+        total_needed - 1,  # -1 because check_usage_limit checks if current+1 exceeds limit
+        db
+    )
+
+    if not has_capacity:
+        tier_name = current_user.tier.name if current_user.tier else "free"
+        raise TierLimitException(
+            message=f"Cannot create {len(batch_data.expenses)} expenses. Your {tier_name} tier allows {limit} expenses and you currently have {current_count}.",
+            current_tier=tier_name,
+            required_tier="growth" if tier_name == "starter" else "wealth"
+        )
+
+    created_expenses = []
+    errors = []
+
+    for index, expense_data in enumerate(batch_data.expenses):
+        try:
+            expense = await service.create_expense(db, current_user.id, expense_data)
+            created_expenses.append(expense)
+        except Exception as e:
+            errors.append(ExpenseBatchCreateError(
+                index=index,
+                error=str(e)
+            ))
+
+    return ExpenseBatchCreateResponse(
+        created_count=len(created_expenses),
+        created_expenses=created_expenses,
+        failed_count=len(errors),
+        errors=errors
+    )
 
 
 @router.post("/batch-delete", response_model=ExpenseBatchDeleteResponse)
