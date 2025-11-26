@@ -44,3 +44,10 @@ export const WIDGET_FEATURES: Record<string, string | null> = {
   'planned-expenses': 'expense_tracking',
   'planned-installments': 'installment_tracking',
 };
+
+/**
+ * Feature check utilities
+ */
+export const FEATURE_REQUIREMENTS = {
+  batch_operations: 'batch_operations', // Growth and Wealth tiers only
+};

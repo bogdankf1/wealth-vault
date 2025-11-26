@@ -14,6 +14,7 @@
     "title": "Vue d'ensemble des dépenses",
     "description": "Suivez et gérez vos dépenses",
     "addExpense": "Ajouter une dépense",
+    "batchAddExpense": "Ajout en Lot de Dépenses",
     "totalExpenses": "Dépenses totales",
     "periodSpending": "Dépenses de la période",
     "annualSpending": "Dépenses annuelles",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Actif",
     "inactive": "Inactif"
+  },
+  "batch": {
+    "title": "Ajout en Lot de Dépenses",
+    "description": "Ajoutez plusieurs dépenses à la fois",
+    "addRow": "Ajouter une Dépense",
+    "removeRow": "Supprimer",
+    "saving": "Création des dépenses...",
+    "successTitle": "Dépenses Créées",
+    "successDescription": "{count} dépense(s) créée(s) avec succès",
+    "partialSuccessTitle": "Partiellement Terminé",
+    "partialSuccessDescription": "{success} dépense(s) créée(s), {failed} échouée(s)",
+    "errorTitle": "Échec de Création des Dépenses",
+    "errorDescription": "Une erreur s'est produite lors de la création des dépenses",
+    "validationError": "Veuillez corriger les erreurs de validation avant de soumettre",
+    "emptyError": "Veuillez ajouter au moins une dépense",
+    "rowError": "Ligne {index}",
+    "upgrade": "Passez à Growth ou Wealth pour utiliser les opérations en lot",
+    "learnMore": "En Savoir Plus"
   },
   "form": {
     "addTitle": "Ajouter une dépense",

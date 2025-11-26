@@ -14,6 +14,7 @@
     "title": "Ausgabenübersicht",
     "description": "Verfolgen und verwalten Sie Ihre Ausgaben",
     "addExpense": "Ausgabe hinzufügen",
+    "batchAddExpense": "Ausgaben Stapelweise Hinzufügen",
     "totalExpenses": "Ausgaben insgesamt",
     "periodSpending": "Zeitraumausgaben",
     "annualSpending": "Jährliche Ausgaben",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Aktiv",
     "inactive": "Inaktiv"
+  },
+  "batch": {
+    "title": "Ausgaben Stapelweise Hinzufügen",
+    "description": "Mehrere Ausgaben gleichzeitig hinzufügen",
+    "addRow": "Ausgabe Hinzufügen",
+    "removeRow": "Entfernen",
+    "saving": "Erstelle Ausgaben...",
+    "successTitle": "Ausgaben Erstellt",
+    "successDescription": "{count} Ausgabe(n) erfolgreich erstellt",
+    "partialSuccessTitle": "Teilweise Abgeschlossen",
+    "partialSuccessDescription": "{success} Ausgabe(n) erstellt, {failed} fehlgeschlagen",
+    "errorTitle": "Fehler beim Erstellen von Ausgaben",
+    "errorDescription": "Beim Erstellen der Ausgaben ist ein Fehler aufgetreten",
+    "validationError": "Bitte beheben Sie Validierungsfehler vor dem Absenden",
+    "emptyError": "Bitte fügen Sie mindestens eine Ausgabe hinzu",
+    "rowError": "Zeile {index}",
+    "upgrade": "Upgrade auf Growth oder Wealth für Stapeloperationen",
+    "learnMore": "Mehr Erfahren"
   },
   "form": {
     "addTitle": "Ausgabe hinzufügen",

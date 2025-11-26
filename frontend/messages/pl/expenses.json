@@ -14,6 +14,7 @@
     "title": "Przegląd wydatków",
     "description": "Śledź i zarządzaj swoimi wydatkami",
     "addExpense": "Dodaj wydatek",
+    "batchAddExpense": "Dodaj Wydatki Masowo",
     "totalExpenses": "Wszystkie wydatki",
     "periodSpending": "Wydatki w okresie",
     "annualSpending": "Wydatki roczne",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Aktywny",
     "inactive": "Nieaktywny"
+  },
+  "batch": {
+    "title": "Dodaj Wydatki Masowo",
+    "description": "Dodaj wiele wydatków jednocześnie",
+    "addRow": "Dodaj Wydatek",
+    "removeRow": "Usuń",
+    "saving": "Tworzenie wydatków...",
+    "successTitle": "Wydatki Utworzone",
+    "successDescription": "Pomyślnie utworzono {count} wydatek/ów",
+    "partialSuccessTitle": "Częściowo Ukończone",
+    "partialSuccessDescription": "Utworzono {success} wydatek/ów, {failed} nie powiodło się",
+    "errorTitle": "Nie Udało Się Utworzyć Wydatków",
+    "errorDescription": "Wystąpił błąd podczas tworzenia wydatków",
+    "validationError": "Proszę naprawić błędy walidacji przed wysłaniem",
+    "emptyError": "Proszę dodać przynajmniej jeden wydatek",
+    "rowError": "Wiersz {index}",
+    "upgrade": "Zaktualizuj do Growth lub Wealth aby używać operacji masowych",
+    "learnMore": "Dowiedz Się Więcej"
   },
   "form": {
     "addTitle": "Dodaj wydatek",

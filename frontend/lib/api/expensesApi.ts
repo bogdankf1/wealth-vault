@@ -112,6 +112,20 @@ export interface ExpenseBatchDeleteResponse {
   failed_ids: string[];
 }
 
+export interface ExpenseBatchCreateRequest {
+  expenses: ExpenseCreate[];
+}
+
+export interface ExpenseBatchCreateResponse {
+  created_count: number;
+  created_expenses: Expense[];
+  failed_count: number;
+  errors: Array<{
+    index: number;
+    error: string;
+  }>;
+}
+
 export const expensesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Expense CRUD
@@ -197,6 +211,20 @@ export const expensesApi = apiSlice.injectEndpoints({
       },
     }),
 
+    batchCreateExpenses: builder.mutation<ExpenseBatchCreateResponse, ExpenseBatchCreateRequest>({
+      query: (data) => ({
+        url: '/api/v1/expenses/batch-create',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: [
+        { type: 'Expense', id: 'LIST' },
+        { type: 'Expense', id: 'STATS' },
+        { type: 'Expense', id: 'HISTORY' },
+        'Dashboard',
+      ],
+    }),
+
     // Expense Stats
     getExpenseStats: builder.query<ExpenseStats, { start_date?: string; end_date?: string } | void>({
       query: (params) => ({
@@ -224,6 +252,7 @@ export const {
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
   useBatchDeleteExpensesMutation,
+  useBatchCreateExpensesMutation,
   useGetExpenseStatsQuery,
   useGetExpenseHistoryQuery,
 } = expensesApi;

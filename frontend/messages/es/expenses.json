@@ -14,6 +14,7 @@
     "title": "Resumen de gastos",
     "description": "Rastrea y gestiona tus gastos",
     "addExpense": "Agregar gasto",
+    "batchAddExpense": "Añadir Gastos en Lote",
     "totalExpenses": "Total de gastos",
     "periodSpending": "Gasto del período",
     "annualSpending": "Gasto anual",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Activo",
     "inactive": "Inactivo"
+  },
+  "batch": {
+    "title": "Añadir Gastos en Lote",
+    "description": "Añade múltiples gastos a la vez",
+    "addRow": "Añadir Gasto",
+    "removeRow": "Eliminar",
+    "saving": "Creando gastos...",
+    "successTitle": "Gastos Creados",
+    "successDescription": "Se crearon exitosamente {count} gasto(s)",
+    "partialSuccessTitle": "Completado Parcialmente",
+    "partialSuccessDescription": "Se crearon {success} gasto(s), {failed} fallaron",
+    "errorTitle": "Error al Crear Gastos",
+    "errorDescription": "Ocurrió un error al crear los gastos",
+    "validationError": "Por favor corrija los errores de validación antes de enviar",
+    "emptyError": "Por favor añada al menos un gasto",
+    "rowError": "Fila {index}",
+    "upgrade": "Actualice a Growth o Wealth para usar operaciones por lotes",
+    "learnMore": "Más Información"
   },
   "form": {
     "addTitle": "Agregar gasto",

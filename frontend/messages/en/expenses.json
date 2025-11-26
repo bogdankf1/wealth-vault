@@ -14,6 +14,7 @@
     "title": "Expenses Overview",
     "description": "Track and manage your expenses",
     "addExpense": "Add Expense",
+    "batchAddExpense": "Batch Add Expenses",
     "totalExpenses": "Total Expenses",
     "periodSpending": "Period Spending",
     "annualSpending": "Annual Spending",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Active",
     "inactive": "Inactive"
+  },
+  "batch": {
+    "title": "Batch Add Expenses",
+    "description": "Add multiple expenses at once",
+    "addRow": "Add Expense",
+    "removeRow": "Remove",
+    "saving": "Creating expenses...",
+    "successTitle": "Expenses Created",
+    "successDescription": "Successfully created {count} expense(s)",
+    "partialSuccessTitle": "Partially Completed",
+    "partialSuccessDescription": "Created {success} expense(s), {failed} failed",
+    "errorTitle": "Failed to Create Expenses",
+    "errorDescription": "An error occurred while creating expenses",
+    "validationError": "Please fix validation errors before submitting",
+    "emptyError": "Please add at least one expense",
+    "rowError": "Row {index}",
+    "upgrade": "Upgrade to Growth or Wealth tier to use batch operations",
+    "learnMore": "Learn More"
   },
   "form": {
     "addTitle": "Add Expense",

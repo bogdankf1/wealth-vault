@@ -14,6 +14,7 @@
     "title": "Visão Geral de Despesas",
     "description": "Rastreie e gerencie suas despesas",
     "addExpense": "Adicionar Despesa",
+    "batchAddExpense": "Adicionar Despesas em Lote",
     "totalExpenses": "Total de Despesas",
     "periodSpending": "Gastos do Período",
     "annualSpending": "Gastos Anuais",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Ativo",
     "inactive": "Inativo"
+  },
+  "batch": {
+    "title": "Adicionar Despesas em Lote",
+    "description": "Adicione várias despesas de uma vez",
+    "addRow": "Adicionar Despesa",
+    "removeRow": "Remover",
+    "saving": "Criando despesas...",
+    "successTitle": "Despesas Criadas",
+    "successDescription": "{count} despesa(s) criada(s) com sucesso",
+    "partialSuccessTitle": "Parcialmente Concluído",
+    "partialSuccessDescription": "{success} despesa(s) criada(s), {failed} falharam",
+    "errorTitle": "Falha ao Criar Despesas",
+    "errorDescription": "Ocorreu um erro ao criar as despesas",
+    "validationError": "Por favor corrija os erros de validação antes de enviar",
+    "emptyError": "Por favor adicione pelo menos uma despesa",
+    "rowError": "Linha {index}",
+    "upgrade": "Atualize para Growth ou Wealth para usar operações em lote",
+    "learnMore": "Saiba Mais"
   },
   "form": {
     "addTitle": "Adicionar Despesa",

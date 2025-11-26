@@ -14,6 +14,7 @@
     "title": "Panoramica Spese",
     "description": "Tracci e gestisca le sue spese",
     "addExpense": "Aggiungi Spesa",
+    "batchAddExpense": "Aggiungi Spese in Blocco",
     "totalExpenses": "Spese Totali",
     "periodSpending": "Spesa Periodo",
     "annualSpending": "Spesa Annuale",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Attivo",
     "inactive": "Inattivo"
+  },
+  "batch": {
+    "title": "Aggiungi Spese in Blocco",
+    "description": "Aggiungi più spese contemporaneamente",
+    "addRow": "Aggiungi Spesa",
+    "removeRow": "Rimuovi",
+    "saving": "Creazione spese...",
+    "successTitle": "Spese Create",
+    "successDescription": "{count} spesa/e creata/e con successo",
+    "partialSuccessTitle": "Completato Parzialmente",
+    "partialSuccessDescription": "{success} spesa/e creata/e, {failed} non riuscita/e",
+    "errorTitle": "Impossibile Creare le Spese",
+    "errorDescription": "Si è verificato un errore durante la creazione delle spese",
+    "validationError": "Correggi gli errori di validazione prima di inviare",
+    "emptyError": "Aggiungi almeno una spesa",
+    "rowError": "Riga {index}",
+    "upgrade": "Passa a Growth o Wealth per usare operazioni in blocco",
+    "learnMore": "Scopri di Più"
   },
   "form": {
     "addTitle": "Aggiungi Spesa",

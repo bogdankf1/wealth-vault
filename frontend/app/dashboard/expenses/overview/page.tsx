@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -30,6 +30,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { ExpenseForm } from '@/components/expenses/expense-form';
+import { BatchExpenseForm } from '@/components/expenses/batch-expense-form';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
@@ -42,6 +43,8 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { ExpenseActionsContext } from '../context';
 import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
+import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
+import { FEATURE_REQUIREMENTS } from '@/lib/constants/feature-map';
 
 export default function ExpensesPage() {
   const tOverview = useTranslations('expenses.overview');
@@ -67,9 +70,14 @@ export default function ExpensesPage() {
     return category;
   };
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isBatchFormOpen, setIsBatchFormOpen] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+
+  // Get user features for batch operations check
+  const { data: userFeatures } = useGetUserFeaturesQuery();
+  const hasBatchOperations = userFeatures?.features[FEATURE_REQUIREMENTS.batch_operations]?.enabled ?? false;
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
@@ -121,6 +129,10 @@ export default function ExpensesPage() {
   const handleAddExpense = React.useCallback(() => {
     setEditingExpenseId(null);
     setIsFormOpen(true);
+  }, []);
+
+  const handleBatchAddExpense = React.useCallback(() => {
+    setIsBatchFormOpen(true);
   }, []);
 
   const handleEditExpense = (id: string) => {
@@ -302,12 +314,18 @@ export default function ExpensesPage() {
           <DollarSign className="mr-2 h-4 w-4" />
           <span className="truncate">{tOverview('addExpense')}</span>
         </Button>
+        {hasBatchOperations && (
+          <Button onClick={handleBatchAddExpense} variant="outline" size="default" className="w-full sm:w-auto">
+            <Layers className="mr-2 h-4 w-4" />
+            <span className="truncate">{tOverview('batchAddExpense')}</span>
+          </Button>
+        )}
       </>
     );
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, tOverview]);
+  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleBatchAddExpense, hasBatchOperations, tOverview]);
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats
@@ -830,6 +848,14 @@ export default function ExpensesPage() {
           expenseId={editingExpenseId}
           isOpen={isFormOpen}
           onClose={handleFormClose}
+        />
+      )}
+
+      {/* Batch Add Expense Form */}
+      {isBatchFormOpen && (
+        <BatchExpenseForm
+          isOpen={isBatchFormOpen}
+          onClose={() => setIsBatchFormOpen(false)}
         />
       )}
 

@@ -14,6 +14,7 @@
     "title": "Огляд витрат",
     "description": "Відстежуйте та керуйте своїми витратами",
     "addExpense": "Додати витрату",
+    "batchAddExpense": "Масове додавання витрат",
     "totalExpenses": "Всього витрат",
     "periodSpending": "Витрати за період",
     "annualSpending": "Річні витрати",
@@ -88,6 +89,24 @@
   "status": {
     "active": "Активна",
     "inactive": "Неактивна"
+  },
+  "batch": {
+    "title": "Масове додавання витрат",
+    "description": "Додайте кілька витрат одночасно",
+    "addRow": "Додати витрату",
+    "removeRow": "Видалити",
+    "saving": "Створення витрат...",
+    "successTitle": "Витрати створено",
+    "successDescription": "Успішно створено {count} витрат(и)",
+    "partialSuccessTitle": "Частково виконано",
+    "partialSuccessDescription": "Створено {success} витрат(и), {failed} не вдалося",
+    "errorTitle": "Не вдалося створити витрати",
+    "errorDescription": "Сталася помилка під час створення витрат",
+    "validationError": "Будь ласка, виправте помилки валідації перед відправкою",
+    "emptyError": "Будь ласка, додайте хоча б одну витрату",
+    "rowError": "Рядок {index}",
+    "upgrade": "Оновіться до тарифу Growth або Wealth для використання масових операцій",
+    "learnMore": "Дізнатися більше"
   },
   "form": {
     "addTitle": "Додати витрату",
