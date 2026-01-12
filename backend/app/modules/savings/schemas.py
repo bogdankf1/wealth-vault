@@ -2,12 +2,12 @@
 Savings module Pydantic schemas
 """
 from pydantic import BaseModel, Field, computed_field
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from app.modules.savings.models import AccountType
+from app.modules.savings.models import AccountType, InterestFrequency, InterestMethod, TransactionType, TransactionStatus
 
 
 # ============================================================================
@@ -22,6 +22,10 @@ class SavingsAccountBase(BaseModel):
     account_number_last4: Optional[str] = Field(None, min_length=4, max_length=4, description="Last 4 digits")
     current_balance: Decimal = Field(..., ge=0, description="Current balance")
     currency: str = Field(default="USD", min_length=3, max_length=3, description="Currency code")
+    # Interest settings
+    interest_rate: Optional[Decimal] = Field(None, ge=0, le=1, description="APY as decimal (0.045 = 4.5%)")
+    interest_frequency: str = Field(default="monthly", description="Interest calculation frequency")
+    interest_accrual_method: str = Field(default="compound", description="Interest accrual method")
     is_active: bool = Field(default=True, description="Whether account is active")
     notes: Optional[str] = Field(None, max_length=500, description="Optional notes")
 
@@ -42,6 +46,10 @@ class SavingsAccountUpdate(BaseModel):
     account_number_last4: Optional[str] = Field(None, min_length=4, max_length=4)
     current_balance: Optional[Decimal] = Field(None, ge=0)
     currency: Optional[str] = Field(None, min_length=3, max_length=3)
+    # Interest settings
+    interest_rate: Optional[Decimal] = Field(None, ge=0, le=1)
+    interest_frequency: Optional[str] = None
+    interest_accrual_method: Optional[str] = None
     is_active: Optional[bool] = None
     notes: Optional[str] = Field(None, max_length=500)
 
@@ -52,6 +60,9 @@ class SavingsAccountResponse(SavingsAccountBase):
     user_id: UUID
     created_at: datetime
     updated_at: datetime
+    # Interest tracking
+    last_interest_accrual: Optional[datetime] = None
+    accrued_interest: Decimal = Field(default=Decimal("0"))
     # Display currency fields
     display_current_balance: Optional[Decimal] = None
     display_currency: Optional[str] = None
@@ -72,6 +83,14 @@ class SavingsAccountResponse(SavingsAccountBase):
             "other": "Other"
         }
         return account_type_labels.get(self.account_type, self.account_type.title())
+
+    @computed_field
+    @property
+    def interest_rate_percent(self) -> Optional[float]:
+        """Get interest rate as percentage"""
+        if self.interest_rate:
+            return float(self.interest_rate * 100)
+        return None
 
 
 class SavingsAccountListResponse(BaseModel):
@@ -151,3 +170,135 @@ class SavingsAccountBatchDeleteResponse(BaseModel):
     """Schema for batch delete response."""
     deleted_count: int
     failed_ids: list[UUID] = []
+
+
+# ============================================================================
+# Transaction Schemas
+# ============================================================================
+
+class TransactionCreate(BaseModel):
+    """Schema for creating a transaction (deposit/withdrawal)"""
+    amount: Decimal = Field(..., gt=0, description="Transaction amount (positive)")
+    description: Optional[str] = Field(None, max_length=500, description="Transaction description")
+    category: Optional[str] = Field(None, max_length=50, description="Transaction category")
+    reference_number: Optional[str] = Field(None, max_length=100, description="Reference number")
+    transaction_date: Optional[datetime] = Field(None, description="Transaction date (defaults to now)")
+
+
+class DepositCreate(TransactionCreate):
+    """Schema for creating a deposit"""
+    source_type: str = Field(default="manual", description="Source type (manual, income, etc.)")
+    source_id: Optional[UUID] = Field(None, description="Source record ID")
+
+
+class WithdrawalCreate(TransactionCreate):
+    """Schema for creating a withdrawal"""
+    source_type: str = Field(default="manual", description="Source type (manual, expense, etc.)")
+    source_id: Optional[UUID] = Field(None, description="Source record ID")
+
+
+class TransactionResponse(BaseModel):
+    """Schema for transaction response"""
+    id: UUID
+    account_id: UUID
+    user_id: UUID
+    transaction_type: str
+    amount: Decimal
+    currency: str
+    balance_before: Decimal
+    balance_after: Decimal
+    source_type: Optional[str] = None
+    source_id: Optional[UUID] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    reference_number: Optional[str] = None
+    transaction_date: datetime
+    posted_date: Optional[datetime] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TransactionListResponse(BaseModel):
+    """Schema for paginated list of transactions"""
+    items: List[TransactionResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+# ============================================================================
+# Transfer Schemas
+# ============================================================================
+
+class TransferCreate(BaseModel):
+    """Schema for creating a transfer between accounts"""
+    from_account_id: UUID = Field(..., description="Source account ID")
+    to_account_id: UUID = Field(..., description="Destination account ID")
+    amount: Decimal = Field(..., gt=0, description="Transfer amount")
+    description: Optional[str] = Field(None, max_length=500, description="Transfer description")
+    exchange_rate: Optional[Decimal] = Field(None, gt=0, description="Exchange rate for cross-currency")
+    transfer_date: Optional[datetime] = Field(None, description="Transfer date (defaults to now)")
+
+
+class TransferResponse(BaseModel):
+    """Schema for transfer response"""
+    id: UUID
+    user_id: UUID
+    from_account_id: UUID
+    to_account_id: UUID
+    amount: Decimal
+    from_currency: str
+    to_currency: Optional[str] = None
+    exchange_rate: Optional[Decimal] = None
+    converted_amount: Optional[Decimal] = None
+    from_transaction_id: Optional[UUID] = None
+    to_transaction_id: Optional[UUID] = None
+    description: Optional[str] = None
+    transfer_date: datetime
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    # Include account names for display
+    from_account_name: Optional[str] = None
+    to_account_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TransferListResponse(BaseModel):
+    """Schema for paginated list of transfers"""
+    items: List[TransferResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+# ============================================================================
+# Interest Schemas
+# ============================================================================
+
+class InterestCalculation(BaseModel):
+    """Schema for interest calculation result"""
+    account_id: str
+    has_interest: bool
+    balance: Optional[float] = None
+    interest_rate: Optional[float] = None
+    accrual_method: Optional[str] = None
+    days_elapsed: Optional[int] = None
+    accrued_interest: float
+    pending_interest: float
+    total_after_posting: Optional[float] = None
+    last_accrual_date: Optional[str] = None
+    message: Optional[str] = None
+
+
+class PostInterestResponse(BaseModel):
+    """Schema for posting interest response"""
+    success: bool
+    transaction: Optional[TransactionResponse] = None
+    message: str

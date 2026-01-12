@@ -21,6 +21,39 @@ class AccountType(str, enum.Enum):
     OTHER = "other"
 
 
+class InterestFrequency(str, enum.Enum):
+    """Interest calculation frequency"""
+    DAILY = "daily"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    ANNUALLY = "annually"
+
+
+class InterestMethod(str, enum.Enum):
+    """Interest accrual method"""
+    SIMPLE = "simple"
+    COMPOUND = "compound"
+
+
+class TransactionType(str, enum.Enum):
+    """Types of account transactions"""
+    DEPOSIT = "deposit"
+    WITHDRAWAL = "withdrawal"
+    TRANSFER_IN = "transfer_in"
+    TRANSFER_OUT = "transfer_out"
+    INTEREST = "interest"
+    FEE = "fee"
+    ADJUSTMENT = "adjustment"
+
+
+class TransactionStatus(str, enum.Enum):
+    """Transaction status"""
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    REVERSED = "reversed"
+
+
 class SavingsAccount(Base):
     """Savings account model"""
     __tablename__ = "savings_accounts"
@@ -38,6 +71,13 @@ class SavingsAccount(Base):
     current_balance = Column(Numeric(12, 2), nullable=False, default=0)
     currency = Column(String(3), nullable=False, default="USD")
 
+    # Interest settings
+    interest_rate = Column(Numeric(5, 4), nullable=True)  # APY as decimal (0.0450 = 4.5%)
+    interest_frequency = Column(String(20), nullable=False, default="monthly")
+    interest_accrual_method = Column(String(20), nullable=False, default="compound")
+    last_interest_accrual = Column(DateTime(timezone=True), nullable=True)
+    accrued_interest = Column(Numeric(12, 2), nullable=False, default=0)
+
     # Status
     is_active = Column(Boolean, nullable=False, default=True)
 
@@ -49,6 +89,9 @@ class SavingsAccount(Base):
     # Relationships
     user = relationship("User", back_populates="savings_accounts")
     balance_history = relationship("BalanceHistory", back_populates="account", cascade="all, delete-orphan")
+    transactions = relationship("AccountTransaction", back_populates="account", cascade="all, delete-orphan")
+    transfers_from = relationship("AccountTransfer", foreign_keys="AccountTransfer.from_account_id", back_populates="from_account")
+    transfers_to = relationship("AccountTransfer", foreign_keys="AccountTransfer.to_account_id", back_populates="to_account")
 
     def __repr__(self):
         return f"<SavingsAccount(id={self.id}, name={self.name}, balance={self.current_balance})>"
@@ -76,3 +119,94 @@ class BalanceHistory(Base):
 
     def __repr__(self):
         return f"<BalanceHistory(account_id={self.account_id}, balance={self.balance}, date={self.date})>"
+
+
+class AccountTransaction(Base):
+    """Account transaction model for tracking deposits, withdrawals, etc."""
+    __tablename__ = "account_transactions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    account_id = Column(UUID(as_uuid=True), ForeignKey("savings_accounts.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # Transaction details
+    transaction_type = Column(String(20), nullable=False)  # deposit, withdrawal, transfer_in, transfer_out, interest, fee, adjustment
+    amount = Column(Numeric(12, 2), nullable=False)
+    currency = Column(String(3), nullable=False)
+
+    # Balance tracking
+    balance_before = Column(Numeric(12, 2), nullable=False)
+    balance_after = Column(Numeric(12, 2), nullable=False)
+
+    # Source linking (for integration with other modules)
+    source_type = Column(String(50), nullable=True)  # income, expense, subscription, installment, transfer, manual, interest
+    source_id = Column(UUID(as_uuid=True), nullable=True)
+
+    # Metadata
+    description = Column(String(500), nullable=True)
+    category = Column(String(50), nullable=True)
+    reference_number = Column(String(100), nullable=True)
+
+    # Dates
+    transaction_date = Column(DateTime(timezone=True), nullable=False)
+    posted_date = Column(DateTime(timezone=True), nullable=True)
+
+    # Status
+    status = Column(String(20), nullable=False, default="completed")
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    account = relationship("SavingsAccount", back_populates="transactions")
+    user = relationship("User")
+
+    def __repr__(self):
+        return f"<AccountTransaction(id={self.id}, type={self.transaction_type}, amount={self.amount})>"
+
+
+class AccountTransfer(Base):
+    """Account transfer model for tracking transfers between accounts"""
+    __tablename__ = "account_transfers"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # Accounts involved
+    from_account_id = Column(UUID(as_uuid=True), ForeignKey("savings_accounts.id", ondelete="CASCADE"), nullable=False)
+    to_account_id = Column(UUID(as_uuid=True), ForeignKey("savings_accounts.id", ondelete="CASCADE"), nullable=False)
+
+    # Amount
+    amount = Column(Numeric(12, 2), nullable=False)
+    from_currency = Column(String(3), nullable=False)
+
+    # Cross-currency support
+    to_currency = Column(String(3), nullable=True)
+    exchange_rate = Column(Numeric(12, 6), nullable=True)
+    converted_amount = Column(Numeric(12, 2), nullable=True)
+
+    # Transaction references
+    from_transaction_id = Column(UUID(as_uuid=True), ForeignKey("account_transactions.id", ondelete="SET NULL"), nullable=True)
+    to_transaction_id = Column(UUID(as_uuid=True), ForeignKey("account_transactions.id", ondelete="SET NULL"), nullable=True)
+
+    # Metadata
+    description = Column(String(500), nullable=True)
+    transfer_date = Column(DateTime(timezone=True), nullable=False)
+
+    # Status
+    status = Column(String(20), nullable=False, default="completed")
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+    from_account = relationship("SavingsAccount", foreign_keys=[from_account_id], back_populates="transfers_from")
+    to_account = relationship("SavingsAccount", foreign_keys=[to_account_id], back_populates="transfers_to")
+    from_transaction = relationship("AccountTransaction", foreign_keys=[from_transaction_id])
+    to_transaction = relationship("AccountTransaction", foreign_keys=[to_transaction_id])
+
+    def __repr__(self):
+        return f"<AccountTransfer(id={self.id}, amount={self.amount}, from={self.from_account_id}, to={self.to_account_id})>"
