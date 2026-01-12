@@ -1,0 +1,464 @@
+"""
+Event Handlers for Wealth Vault.
+
+This module registers all cross-module event handlers.
+Handlers are organized by the action they perform (notifications, account updates, etc.)
+
+These handlers are registered when the application starts.
+"""
+import logging
+from typing import Optional
+from uuid import UUID
+
+from app.core.events import (
+    event_dispatcher,
+    Event,
+    EventPriority,
+    # Event name constants
+    IncomeEvents,
+    ExpenseEvents,
+    SavingsEvents,
+    PortfolioEvents,
+    GoalEvents,
+    BudgetEvents,
+    SubscriptionEvents,
+    InstallmentEvents,
+    DebtEvents,
+    BillingEvents,
+    DashboardEvents,
+    TransactionEvents,
+)
+
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# NOTIFICATION HANDLERS
+# =============================================================================
+# These handlers create notifications when significant events occur
+
+@event_dispatcher.on(GoalEvents.MILESTONE_REACHED, EventPriority.NORMAL)
+async def notify_goal_milestone(event: Event) -> None:
+    """Send notification when user reaches a goal milestone."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    goal_name = event.payload.get("goal_name", "Your goal")
+    milestone = event.payload.get("milestone", 0)
+    current_amount = event.payload.get("current_amount", 0)
+    target_amount = event.payload.get("target_amount", 0)
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="achievement",
+        category="goal",
+        title=f"Milestone Reached: {milestone}%!",
+        message=f"Congratulations! You've reached {milestone}% of your goal '{goal_name}'. "
+                f"Current: {current_amount:.2f} / Target: {target_amount:.2f}",
+        priority=2,
+        action_url=f"/goals/{event.payload.get('goal_id')}",
+        extra_data={"goal_id": str(event.payload.get("goal_id")), "milestone": milestone}
+    )
+    logger.info(f"Goal milestone notification queued for user {user_id}")
+
+
+@event_dispatcher.on(GoalEvents.COMPLETED, EventPriority.NORMAL)
+async def notify_goal_completed(event: Event) -> None:
+    """Send notification when user completes a goal."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    goal_name = event.payload.get("goal_name", "Your goal")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="achievement",
+        category="goal",
+        title="Goal Completed!",
+        message=f"Amazing! You've completed your goal '{goal_name}'!",
+        priority=1,
+        action_url=f"/goals/{event.payload.get('goal_id')}",
+        extra_data={"goal_id": str(event.payload.get("goal_id"))}
+    )
+    logger.info(f"Goal completion notification queued for user {user_id}")
+
+
+@event_dispatcher.on(GoalEvents.DEADLINE_APPROACHING, EventPriority.NORMAL)
+async def notify_goal_deadline_approaching(event: Event) -> None:
+    """Send notification when goal deadline is approaching."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    goal_name = event.payload.get("goal_name", "Your goal")
+    days_remaining = event.payload.get("days_remaining", 0)
+    progress_percent = event.payload.get("progress_percent", 0)
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="reminder",
+        category="goal",
+        title=f"Goal Deadline in {days_remaining} Days",
+        message=f"Your goal '{goal_name}' deadline is approaching. "
+                f"You're at {progress_percent:.1f}% progress.",
+        priority=2 if days_remaining > 7 else 1,
+        action_url=f"/goals/{event.payload.get('goal_id')}",
+        extra_data={"goal_id": str(event.payload.get("goal_id")), "days_remaining": days_remaining}
+    )
+    logger.info(f"Goal deadline notification queued for user {user_id}")
+
+
+@event_dispatcher.on(BudgetEvents.THRESHOLD_WARNING, EventPriority.NORMAL)
+async def notify_budget_warning(event: Event) -> None:
+    """Send notification when budget reaches warning threshold (80%)."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    budget_name = event.payload.get("budget_name", "Your budget")
+    spent_percent = event.payload.get("spent_percent", 80)
+    remaining = event.payload.get("remaining", 0)
+    currency = event.payload.get("currency", "USD")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="warning",
+        category="budget",
+        title=f"Budget Alert: {spent_percent:.0f}% Spent",
+        message=f"You've spent {spent_percent:.0f}% of '{budget_name}'. "
+                f"Remaining: {remaining:.2f} {currency}",
+        priority=2,
+        action_url=f"/budgets/{event.payload.get('budget_id')}",
+        extra_data={"budget_id": str(event.payload.get("budget_id")), "spent_percent": spent_percent}
+    )
+    logger.info(f"Budget warning notification queued for user {user_id}")
+
+
+@event_dispatcher.on(BudgetEvents.THRESHOLD_EXCEEDED, EventPriority.HIGH)
+async def notify_budget_exceeded(event: Event) -> None:
+    """Send notification when budget is exceeded."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    budget_name = event.payload.get("budget_name", "Your budget")
+    spent_percent = event.payload.get("spent_percent", 100)
+    overspent = event.payload.get("overspent", 0)
+    currency = event.payload.get("currency", "USD")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="alert",
+        category="budget",
+        title=f"Budget Exceeded!",
+        message=f"You've exceeded '{budget_name}' by {overspent:.2f} {currency} "
+                f"({spent_percent:.0f}% of budget)",
+        priority=1,
+        action_url=f"/budgets/{event.payload.get('budget_id')}",
+        extra_data={"budget_id": str(event.payload.get("budget_id")), "spent_percent": spent_percent}
+    )
+    logger.info(f"Budget exceeded notification queued for user {user_id}")
+
+
+@event_dispatcher.on(SubscriptionEvents.RENEWAL_REMINDER, EventPriority.NORMAL)
+async def notify_subscription_renewal(event: Event) -> None:
+    """Send notification for upcoming subscription renewal."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    subscription_name = event.payload.get("subscription_name", "Your subscription")
+    days_until = event.payload.get("days_until", 0)
+    amount = event.payload.get("amount", 0)
+    currency = event.payload.get("currency", "USD")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="reminder",
+        category="subscription",
+        title=f"Subscription Renewal in {days_until} Days",
+        message=f"'{subscription_name}' will renew in {days_until} days for {amount:.2f} {currency}",
+        priority=3 if days_until > 3 else 2,
+        action_url=f"/subscriptions/{event.payload.get('subscription_id')}",
+        extra_data={"subscription_id": str(event.payload.get("subscription_id")), "days_until": days_until}
+    )
+    logger.info(f"Subscription renewal notification queued for user {user_id}")
+
+
+@event_dispatcher.on(InstallmentEvents.PAYMENT_DUE, EventPriority.NORMAL)
+async def notify_installment_due(event: Event) -> None:
+    """Send notification for upcoming installment payment."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    installment_name = event.payload.get("installment_name", "Your installment")
+    payment_number = event.payload.get("payment_number", 0)
+    total_payments = event.payload.get("total_payments", 0)
+    amount = event.payload.get("amount", 0)
+    currency = event.payload.get("currency", "USD")
+    days_until = event.payload.get("days_until", 0)
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="reminder",
+        category="installment",
+        title=f"Installment Payment Due",
+        message=f"Payment {payment_number}/{total_payments} for '{installment_name}' "
+                f"({amount:.2f} {currency}) is due in {days_until} days",
+        priority=2 if days_until > 3 else 1,
+        action_url=f"/installments/{event.payload.get('installment_id')}",
+        extra_data={"installment_id": str(event.payload.get("installment_id"))}
+    )
+    logger.info(f"Installment payment notification queued for user {user_id}")
+
+
+@event_dispatcher.on(InstallmentEvents.PAYMENT_LATE, EventPriority.HIGH)
+async def notify_installment_late(event: Event) -> None:
+    """Send notification for late installment payment."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    installment_name = event.payload.get("installment_name", "Your installment")
+    days_overdue = event.payload.get("days_overdue", 0)
+    amount = event.payload.get("amount", 0)
+    currency = event.payload.get("currency", "USD")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="alert",
+        category="installment",
+        title=f"Installment Payment Overdue",
+        message=f"Payment for '{installment_name}' is {days_overdue} days overdue. "
+                f"Amount due: {amount:.2f} {currency}",
+        priority=1,
+        action_url=f"/installments/{event.payload.get('installment_id')}",
+        extra_data={"installment_id": str(event.payload.get("installment_id")), "days_overdue": days_overdue}
+    )
+    logger.info(f"Installment late payment notification queued for user {user_id}")
+
+
+@event_dispatcher.on(DebtEvents.PAYMENT_DUE, EventPriority.NORMAL)
+async def notify_debt_payment_due(event: Event) -> None:
+    """Send notification for upcoming debt payment."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    debt_name = event.payload.get("debt_name", "Your debt")
+    amount = event.payload.get("minimum_payment", 0)
+    currency = event.payload.get("currency", "USD")
+    days_until = event.payload.get("days_until", 0)
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="reminder",
+        category="debt",
+        title=f"Debt Payment Due Soon",
+        message=f"Minimum payment of {amount:.2f} {currency} for '{debt_name}' is due in {days_until} days",
+        priority=2 if days_until > 3 else 1,
+        action_url=f"/debts/{event.payload.get('debt_id')}",
+        extra_data={"debt_id": str(event.payload.get("debt_id"))}
+    )
+    logger.info(f"Debt payment notification queued for user {user_id}")
+
+
+@event_dispatcher.on(DebtEvents.PAID_OFF, EventPriority.NORMAL)
+async def notify_debt_paid_off(event: Event) -> None:
+    """Send notification when debt is fully paid off."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    debt_name = event.payload.get("debt_name", "Your debt")
+    total_paid = event.payload.get("total_paid", 0)
+    currency = event.payload.get("currency", "USD")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="achievement",
+        category="debt",
+        title="Debt Paid Off!",
+        message=f"Congratulations! You've paid off '{debt_name}' "
+                f"(Total paid: {total_paid:.2f} {currency})",
+        priority=1,
+        action_url="/debts",
+        extra_data={"debt_id": str(event.payload.get("debt_id"))}
+    )
+    logger.info(f"Debt paid off notification queued for user {user_id}")
+
+
+@event_dispatcher.on(BillingEvents.TIER_DOWNGRADED, EventPriority.HIGH)
+async def notify_tier_downgrade(event: Event) -> None:
+    """Send notification when user tier is downgraded."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    from_tier = event.payload.get("from_tier", "")
+    to_tier = event.payload.get("to_tier", "")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="alert",
+        category="billing",
+        title="Subscription Tier Changed",
+        message=f"Your subscription has been changed from {from_tier.title()} to {to_tier.title()}. "
+                f"Some features may no longer be available.",
+        priority=1,
+        action_url="/settings/billing",
+        extra_data={"from_tier": from_tier, "to_tier": to_tier}
+    )
+    logger.info(f"Tier downgrade notification queued for user {user_id}")
+
+
+@event_dispatcher.on(BillingEvents.EXPIRATION_WARNING, EventPriority.NORMAL)
+async def notify_tier_expiration_warning(event: Event) -> None:
+    """Send notification when subscription is about to expire."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    tier = event.payload.get("tier", "")
+    days_until = event.payload.get("days_until", 0)
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="warning",
+        category="billing",
+        title=f"Subscription Expiring in {days_until} Days",
+        message=f"Your {tier.title()} subscription will expire in {days_until} days. "
+                f"Renew to keep your premium features.",
+        priority=2 if days_until > 3 else 1,
+        action_url="/settings/billing",
+        extra_data={"tier": tier, "days_until": days_until}
+    )
+    logger.info(f"Tier expiration warning notification queued for user {user_id}")
+
+
+@event_dispatcher.on(SavingsEvents.INTEREST_ACCRUED, EventPriority.LOW)
+async def notify_interest_accrued(event: Event) -> None:
+    """Send notification when significant interest is accrued (monthly)."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    account_name = event.payload.get("account_name", "Your account")
+    interest_amount = event.payload.get("interest_amount", 0)
+    currency = event.payload.get("currency", "USD")
+
+    # Only notify for significant interest (> 1.00)
+    if interest_amount < 1.0:
+        return
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="alert",
+        category="savings",
+        title="Interest Earned",
+        message=f"You earned {interest_amount:.2f} {currency} in interest on '{account_name}'",
+        priority=3,
+        action_url=f"/savings/{event.payload.get('account_id')}",
+        extra_data={"account_id": str(event.payload.get("account_id"))}
+    )
+    logger.info(f"Interest accrued notification queued for user {user_id}")
+
+
+@event_dispatcher.on(PortfolioEvents.DIVIDEND_RECEIVED, EventPriority.LOW)
+async def notify_dividend_received(event: Event) -> None:
+    """Send notification when dividend is received."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    symbol = event.payload.get("symbol", "")
+    amount = event.payload.get("amount", 0)
+    currency = event.payload.get("currency", "USD")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="alert",
+        category="portfolio",
+        title=f"Dividend Received: {symbol}",
+        message=f"You received a dividend of {amount:.2f} {currency} from {symbol}",
+        priority=3,
+        action_url="/portfolio",
+        extra_data={"symbol": symbol, "amount": amount}
+    )
+    logger.info(f"Dividend notification queued for user {user_id}")
+
+
+# =============================================================================
+# GOAL PROGRESS HANDLERS
+# =============================================================================
+# These handlers update goal progress when linked accounts change
+
+@event_dispatcher.on(SavingsEvents.DEPOSIT, EventPriority.NORMAL)
+async def update_goal_on_deposit(event: Event) -> None:
+    """Update goal progress when deposit is made to a linked savings account."""
+    # This will be implemented in Phase 9 when we add goal-account linking
+    account_id = event.payload.get("account_id")
+    amount = event.payload.get("amount", 0)
+    logger.debug(f"Savings deposit event received for account {account_id}, amount {amount}")
+    # TODO: Implement goal progress update in Phase 9
+
+
+@event_dispatcher.on(SavingsEvents.WITHDRAWAL, EventPriority.NORMAL)
+async def update_goal_on_withdrawal(event: Event) -> None:
+    """Update goal progress when withdrawal is made from a linked savings account."""
+    # This will be implemented in Phase 9 when we add goal-account linking
+    account_id = event.payload.get("account_id")
+    amount = event.payload.get("amount", 0)
+    logger.debug(f"Savings withdrawal event received for account {account_id}, amount {amount}")
+    # TODO: Implement goal progress update in Phase 9
+
+
+# =============================================================================
+# TRANSACTION HANDLERS
+# =============================================================================
+# These handlers create transactions when financial events occur
+
+@event_dispatcher.on(IncomeEvents.DEPOSITED, EventPriority.HIGH)
+async def create_income_transaction(event: Event) -> None:
+    """Create a transaction record when income is deposited."""
+    # This will be implemented in Phase 1 when we add the transaction system
+    user_id = event.user_id
+    amount = event.payload.get("amount", 0)
+    account_id = event.payload.get("account_id")
+    logger.debug(f"Income deposited event: user={user_id}, amount={amount}, account={account_id}")
+    # TODO: Implement transaction creation in Phase 1
+
+
+@event_dispatcher.on(ExpenseEvents.PAID, EventPriority.HIGH)
+async def create_expense_transaction(event: Event) -> None:
+    """Create a transaction record when expense is paid."""
+    # This will be implemented in Phase 1 when we add the transaction system
+    user_id = event.user_id
+    amount = event.payload.get("amount", 0)
+    account_id = event.payload.get("account_id")
+    logger.debug(f"Expense paid event: user={user_id}, amount={amount}, account={account_id}")
+    # TODO: Implement transaction creation in Phase 1
+
+
+# =============================================================================
+# BUDGET UPDATE HANDLERS
+# =============================================================================
+# These handlers update budgets when related events occur
+
+@event_dispatcher.on(ExpenseEvents.CREATED, EventPriority.NORMAL)
+async def update_budget_on_expense(event: Event) -> None:
+    """Update budget spent amount when expense is created."""
+    # This will be implemented in Phase 4 when we add budget integration
+    user_id = event.user_id
+    category_id = event.payload.get("category_id")
+    amount = event.payload.get("amount", 0)
+    logger.debug(f"Expense created event for budget update: user={user_id}, category={category_id}")
+    # TODO: Implement budget update in Phase 4
+
+
+# =============================================================================
+# HANDLER INITIALIZATION
+# =============================================================================
+
+def register_all_handlers() -> None:
+    """
+    Register all event handlers.
+
+    This function is called during application startup.
+    All handlers decorated with @event_dispatcher.on() are automatically
+    registered when this module is imported.
+    """
+    logger.info("Event handlers registered successfully")
+
+
+# Auto-register handlers when module is imported
+# The @event_dispatcher.on() decorators register handlers automatically
