@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Wallet, TrendingUp, PiggyBank, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Wallet, TrendingUp, PiggyBank, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, ArrowLeftRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -38,6 +39,8 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function SavingsPage() {
+  const router = useRouter();
+
   // Get context for setting actions
   const { setActions } = React.useContext(SavingsActionsContext);
 
@@ -486,6 +489,14 @@ export default function SavingsPage() {
 
                   <div className="flex flex-wrap gap-2 pt-2">
                     <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/savings/${account.id}`)}
+                    >
+                      <Eye className="mr-1 h-3 w-3" />
+                      {tActions('view')}
+                    </Button>
+                    <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(account.id)}
@@ -600,6 +611,14 @@ export default function SavingsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/savings/${account.id}`)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"

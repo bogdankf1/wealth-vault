@@ -353,13 +353,11 @@ export default function DashboardLayout({
               {t('logo.title')}
             </span>
           </Link>
-          <NotificationBell />
+          {/* Notification bell hidden - use Notifications page instead */}
+          <div className="w-10" /> {/* Spacer to maintain header balance */}
         </header>
 
-        {/* Desktop notification bell (absolute positioned) */}
-        <div className="hidden xl:block absolute top-4 right-6 z-30">
-          <NotificationBell />
-        </div>
+        {/* Desktop notification bell hidden - use Notifications page instead */}
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">

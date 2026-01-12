@@ -5,3 +5,4 @@
 
 export * from './subscription-renewal';
 export * from './installment-payment';
+export * from './currency';

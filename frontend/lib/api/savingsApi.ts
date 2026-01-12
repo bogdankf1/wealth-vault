@@ -5,6 +5,10 @@ import { apiSlice } from './apiSlice';
 
 // Types
 export type AccountType = 'crypto' | 'cash' | 'business' | 'personal' | 'fixed_deposit' | 'other';
+export type InterestFrequency = 'daily' | 'monthly' | 'quarterly' | 'annually';
+export type InterestMethod = 'simple' | 'compound';
+export type TransactionType = 'deposit' | 'withdrawal' | 'transfer_in' | 'transfer_out' | 'interest' | 'fee' | 'adjustment';
+export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'reversed';
 
 export interface SavingsAccount {
   id: string;
@@ -15,6 +19,12 @@ export interface SavingsAccount {
   account_number_last4?: string;
   current_balance: number;
   currency: string;
+  // Interest settings
+  interest_rate?: number;
+  interest_frequency: string;
+  interest_accrual_method: string;
+  last_interest_accrual?: string;
+  accrued_interest: number;
   is_active: boolean;
   notes?: string;
   created_at: string;
@@ -24,6 +34,8 @@ export interface SavingsAccount {
   display_currency?: string;
   // Account type display label
   account_type_label?: string;
+  // Interest rate as percentage (computed)
+  interest_rate_percent?: number;
 }
 
 export interface SavingsAccountCreate {
@@ -33,6 +45,10 @@ export interface SavingsAccountCreate {
   account_number_last4?: string;
   current_balance: number;
   currency?: string;
+  // Interest settings
+  interest_rate?: number;
+  interest_frequency?: string;
+  interest_accrual_method?: string;
   is_active?: boolean;
   notes?: string;
 }
@@ -44,8 +60,120 @@ export interface SavingsAccountUpdate {
   account_number_last4?: string;
   current_balance?: number;
   currency?: string;
+  // Interest settings
+  interest_rate?: number;
+  interest_frequency?: string;
+  interest_accrual_method?: string;
   is_active?: boolean;
   notes?: string;
+}
+
+// Transaction interfaces
+export interface AccountTransaction {
+  id: string;
+  account_id: string;
+  user_id: string;
+  transaction_type: TransactionType;
+  amount: number;
+  currency: string;
+  balance_before: number;
+  balance_after: number;
+  source_type?: string;
+  source_id?: string;
+  description?: string;
+  category?: string;
+  reference_number?: string;
+  transaction_date: string;
+  posted_date?: string;
+  status: TransactionStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TransactionListResponse {
+  items: AccountTransaction[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface DepositCreate {
+  amount: number;
+  description?: string;
+  category?: string;
+  reference_number?: string;
+  transaction_date?: string;
+  source_type?: string;
+  source_id?: string;
+}
+
+export interface WithdrawalCreate {
+  amount: number;
+  description?: string;
+  category?: string;
+  reference_number?: string;
+  transaction_date?: string;
+  source_type?: string;
+  source_id?: string;
+}
+
+// Transfer interfaces
+export interface AccountTransfer {
+  id: string;
+  user_id: string;
+  from_account_id: string;
+  to_account_id: string;
+  amount: number;
+  from_currency: string;
+  to_currency?: string;
+  exchange_rate?: number;
+  converted_amount?: number;
+  from_transaction_id?: string;
+  to_transaction_id?: string;
+  description?: string;
+  transfer_date: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  from_account_name?: string;
+  to_account_name?: string;
+}
+
+export interface TransferCreate {
+  from_account_id: string;
+  to_account_id: string;
+  amount: number;
+  description?: string;
+  exchange_rate?: number;
+  transfer_date?: string;
+}
+
+export interface TransferListResponse {
+  items: AccountTransfer[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+// Interest interfaces
+export interface InterestCalculation {
+  account_id: string;
+  has_interest: boolean;
+  balance?: number;
+  interest_rate?: number;
+  accrual_method?: string;
+  days_elapsed?: number;
+  accrued_interest: number;
+  pending_interest: number;
+  total_after_posting?: number;
+  last_accrual_date?: string;
+  message?: string;
+}
+
+export interface PostInterestResponse {
+  success: boolean;
+  transaction?: AccountTransaction;
+  message: string;
 }
 
 export interface SavingsAccountListResponse {
@@ -85,6 +213,21 @@ export interface ListAccountsParams {
   page_size?: number;
   account_type?: AccountType;
   is_active?: boolean;
+}
+
+export interface ListTransactionsParams {
+  accountId: string;
+  page?: number;
+  page_size?: number;
+  transaction_type?: TransactionType;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface ListTransfersParams {
+  account_id?: string;
+  page?: number;
+  page_size?: number;
 }
 
 
@@ -196,6 +339,114 @@ export const savingsApi = apiSlice.injectEndpoints({
         return tags;
       },
     }),
+
+    // ================== Transactions ==================
+
+    // Create deposit
+    createDeposit: builder.mutation<AccountTransaction, { accountId: string; data: DepositCreate }>({
+      query: ({ accountId, data }) => ({
+        url: `/api/v1/savings/accounts/${accountId}/deposit`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { accountId }) => [
+        { type: 'Saving', id: accountId },
+        { type: 'Saving', id: 'LIST' },
+        { type: 'Saving', id: 'STATS' },
+        { type: 'Saving', id: `TRANSACTIONS_${accountId}` },
+        'Dashboard',
+      ],
+    }),
+
+    // Create withdrawal
+    createWithdrawal: builder.mutation<AccountTransaction, { accountId: string; data: WithdrawalCreate }>({
+      query: ({ accountId, data }) => ({
+        url: `/api/v1/savings/accounts/${accountId}/withdraw`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { accountId }) => [
+        { type: 'Saving', id: accountId },
+        { type: 'Saving', id: 'LIST' },
+        { type: 'Saving', id: 'STATS' },
+        { type: 'Saving', id: `TRANSACTIONS_${accountId}` },
+        'Dashboard',
+      ],
+    }),
+
+    // List transactions for an account
+    listTransactions: builder.query<TransactionListResponse, ListTransactionsParams>({
+      query: ({ accountId, ...params }) => ({
+        url: `/api/v1/savings/accounts/${accountId}/transactions`,
+        params,
+      }),
+      providesTags: (result, error, { accountId }) => [
+        { type: 'Saving', id: `TRANSACTIONS_${accountId}` },
+      ],
+    }),
+
+    // ================== Transfers ==================
+
+    // Create transfer between accounts
+    createTransfer: builder.mutation<AccountTransfer, TransferCreate>({
+      query: (data) => ({
+        url: '/api/v1/savings/transfers',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result) => [
+        { type: 'Saving', id: result?.from_account_id },
+        { type: 'Saving', id: result?.to_account_id },
+        { type: 'Saving', id: 'LIST' },
+        { type: 'Saving', id: 'STATS' },
+        { type: 'Saving', id: 'TRANSFERS' },
+        { type: 'Saving', id: `TRANSACTIONS_${result?.from_account_id}` },
+        { type: 'Saving', id: `TRANSACTIONS_${result?.to_account_id}` },
+        'Dashboard',
+      ],
+    }),
+
+    // List transfers
+    listTransfers: builder.query<TransferListResponse, ListTransfersParams | void>({
+      query: (params) => ({
+        url: '/api/v1/savings/transfers',
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Saving', id: 'TRANSFERS' }],
+    }),
+
+    // ================== Interest ==================
+
+    // Calculate interest (preview)
+    calculateInterest: builder.query<InterestCalculation, string>({
+      query: (accountId) => `/api/v1/savings/accounts/${accountId}/interest`,
+    }),
+
+    // Accrue interest (add to pending)
+    accrueInterest: builder.mutation<InterestCalculation, string>({
+      query: (accountId) => ({
+        url: `/api/v1/savings/accounts/${accountId}/interest/accrue`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, accountId) => [
+        { type: 'Saving', id: accountId },
+      ],
+    }),
+
+    // Post interest (add to balance as transaction)
+    postInterest: builder.mutation<PostInterestResponse, string>({
+      query: (accountId) => ({
+        url: `/api/v1/savings/accounts/${accountId}/interest/post`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, accountId) => [
+        { type: 'Saving', id: accountId },
+        { type: 'Saving', id: 'LIST' },
+        { type: 'Saving', id: 'STATS' },
+        { type: 'Saving', id: `TRANSACTIONS_${accountId}` },
+        'Dashboard',
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -209,4 +460,15 @@ export const {
   useGetBalanceHistoryQuery,
   useGetSavingsStatsQuery,
   useBatchDeleteSavingsAccountsMutation,
+  // Transactions
+  useCreateDepositMutation,
+  useCreateWithdrawalMutation,
+  useListTransactionsQuery,
+  // Transfers
+  useCreateTransferMutation,
+  useListTransfersQuery,
+  // Interest
+  useCalculateInterestQuery,
+  useAccrueInterestMutation,
+  usePostInterestMutation,
 } = savingsApi;

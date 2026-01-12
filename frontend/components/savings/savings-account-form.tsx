@@ -51,6 +51,10 @@ const accountSchema = z.object({
       { message: 'Amount can have at most 2 decimal places' }
     ),
   currency: z.string().length(3),
+  // Interest settings
+  interest_rate_percent: z.number().min(0).max(100).optional(),
+  interest_frequency: z.enum(['daily', 'monthly', 'quarterly', 'annually']),
+  interest_accrual_method: z.enum(['simple', 'compound']),
   is_active: z.boolean(),
   notes: z.string().max(500).optional(),
 });
@@ -70,6 +74,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
   const tForm = useTranslations('savings.form');
   const tActions = useTranslations('savings.actions');
   const tAccountTypes = useTranslations('savings.accountTypes');
+  const tInterest = useTranslations('savings.interest');
 
   const ACCOUNT_TYPE_OPTIONS = [
     { value: 'personal', label: tAccountTypes('personal') },
@@ -80,8 +85,21 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
     { value: 'other', label: tAccountTypes('other') },
   ];
 
-  // Local state to track the string value of current_balance while user is typing
+  const INTEREST_FREQUENCY_OPTIONS = [
+    { value: 'monthly', label: tInterest('frequencyMonthly') },
+    { value: 'daily', label: tInterest('frequencyDaily') },
+    { value: 'quarterly', label: tInterest('frequencyQuarterly') },
+    { value: 'annually', label: tInterest('frequencyAnnually') },
+  ];
+
+  const INTEREST_METHOD_OPTIONS = [
+    { value: 'compound', label: tInterest('methodCompound') },
+    { value: 'simple', label: tInterest('methodSimple') },
+  ];
+
+  // Local state to track the string value while user is typing
   const [currentBalanceInput, setCurrentBalanceInput] = React.useState<string>('');
+  const [interestRateInput, setInterestRateInput] = React.useState<string>('');
 
   const {
     data: existingAccount,
@@ -105,6 +123,8 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
     defaultValues: {
       currency: 'USD',
       account_type: 'personal',
+      interest_frequency: 'monthly',
+      interest_accrual_method: 'compound',
       is_active: true,
     },
   });
@@ -112,6 +132,11 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
   // Load existing account data
   useEffect(() => {
     if (isEditing && existingAccount) {
+      // Convert interest rate from decimal to percentage
+      const interestRatePercent = existingAccount.interest_rate
+        ? existingAccount.interest_rate * 100
+        : undefined;
+
       reset({
         name: existingAccount.name,
         account_type: existingAccount.account_type as AccountType,
@@ -121,6 +146,9 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           ? parseFloat(existingAccount.current_balance)
           : existingAccount.current_balance,
         currency: existingAccount.currency,
+        interest_rate_percent: interestRatePercent,
+        interest_frequency: (existingAccount.interest_frequency || 'monthly') as 'daily' | 'monthly' | 'quarterly' | 'annually',
+        interest_accrual_method: (existingAccount.interest_accrual_method || 'compound') as 'simple' | 'compound',
         is_active: existingAccount.is_active,
         notes: existingAccount.notes || '',
       });
@@ -131,9 +159,18 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
         : existingAccount.current_balance;
       setCurrentBalanceInput(String(balanceNum));
 
+      // Set interest rate input string
+      if (interestRatePercent !== undefined) {
+        setInterestRateInput(String(interestRatePercent));
+      } else {
+        setInterestRateInput('');
+      }
+
       setTimeout(() => {
         setValue('account_type', existingAccount.account_type as AccountType, { shouldDirty: true });
         setValue('currency', existingAccount.currency, { shouldDirty: true });
+        setValue('interest_frequency', (existingAccount.interest_frequency || 'monthly') as 'daily' | 'monthly' | 'quarterly' | 'annually', { shouldDirty: true });
+        setValue('interest_accrual_method', (existingAccount.interest_accrual_method || 'compound') as 'simple' | 'compound', { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
@@ -143,19 +180,35 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
         account_number_last4: '',
         current_balance: 0,
         currency: 'USD',
+        interest_rate_percent: undefined,
+        interest_frequency: 'monthly',
+        interest_accrual_method: 'compound',
         is_active: true,
         notes: '',
       });
       setCurrentBalanceInput('');
+      setInterestRateInput('');
     }
   }, [isEditing, existingAccount, isOpen, reset, setValue]);
 
   const onSubmit = async (data: FormData) => {
     try {
+      // Convert interest rate from percentage to decimal (e.g., 4.5% -> 0.045)
+      const interestRateDecimal = data.interest_rate_percent
+        ? data.interest_rate_percent / 100
+        : undefined;
+
       const submitData = {
-        ...data,
+        name: data.name,
+        account_type: data.account_type,
         institution: data.institution || undefined,
         account_number_last4: data.account_number_last4 || undefined,
+        current_balance: data.current_balance,
+        currency: data.currency,
+        interest_rate: interestRateDecimal,
+        interest_frequency: data.interest_frequency,
+        interest_accrual_method: data.interest_accrual_method,
+        is_active: data.is_active,
         notes: data.notes || undefined,
       };
 
@@ -177,9 +230,12 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
   const handleClose = () => {
     onClose();
     setCurrentBalanceInput('');
+    setInterestRateInput('');
   };
 
   const accountType = watch('account_type');
+  const interestFrequency = watch('interest_frequency');
+  const interestMethod = watch('interest_accrual_method');
   const isActive = watch('is_active');
 
   return (
@@ -232,17 +288,17 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
           {/* Institution */}
           <div className="space-y-2">
-            <Label htmlFor="institution">{tForm('description')}</Label>
+            <Label htmlFor="institution">{tForm('institution')}</Label>
             <Input
               id="institution"
               {...register('institution')}
-              placeholder={tForm('descriptionPlaceholder')}
+              placeholder={tForm('institutionPlaceholder')}
             />
           </div>
 
           {/* Last 4 Digits */}
           <div className="space-y-2">
-            <Label htmlFor="account_number_last4">{tForm('description')}</Label>
+            <Label htmlFor="account_number_last4">{tForm('accountNumberLast4')}</Label>
             <Input
               id="account_number_last4"
               {...register('account_number_last4')}
@@ -279,13 +335,95 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
             error={errors.current_balance?.message}
           />
 
+          {/* Interest Settings Section */}
+          <div className="space-y-4 border-t pt-4 mt-4">
+            <h3 className="text-base font-semibold text-foreground">{tInterest('settings')}</h3>
+
+            {/* Interest Rate */}
+            <div className="space-y-2">
+              <Label htmlFor="interest_rate_percent">{tInterest('rate')}</Label>
+              <div className="relative">
+                <Input
+                  id="interest_rate_percent"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={interestRateInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setInterestRateInput(value);
+                    if (value === '') {
+                      setValue('interest_rate_percent', undefined, { shouldValidate: true });
+                    } else {
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue)) {
+                        setValue('interest_rate_percent', numValue, { shouldValidate: true });
+                      }
+                    }
+                  }}
+                  placeholder={tInterest('ratePlaceholder')}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
+              <p className="text-xs text-muted-foreground">{tInterest('rateHelp')}</p>
+              {errors.interest_rate_percent && (
+                <p className="text-sm text-red-500">{errors.interest_rate_percent.message}</p>
+              )}
+            </div>
+
+            {/* Interest Frequency and Method */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Interest Frequency */}
+              <div className="space-y-2">
+                <Label htmlFor="interest_frequency">{tInterest('frequency')}</Label>
+                <Select
+                  value={interestFrequency}
+                  onValueChange={(value) => setValue('interest_frequency', value as 'daily' | 'monthly' | 'quarterly' | 'annually')}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tInterest('frequencyPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INTEREST_FREQUENCY_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Interest Accrual Method */}
+              <div className="space-y-2">
+                <Label htmlFor="interest_accrual_method">{tInterest('method')}</Label>
+                <Select
+                  value={interestMethod}
+                  onValueChange={(value) => setValue('interest_accrual_method', value as 'simple' | 'compound')}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tInterest('methodPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INTEREST_METHOD_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">{tForm('description')}</Label>
+            <Label htmlFor="notes">{tForm('notes')}</Label>
             <Textarea
               id="notes"
               {...register('notes')}
-              placeholder={tForm('descriptionPlaceholder')}
+              placeholder={tForm('notesPlaceholder')}
               rows={3}
             />
           </div>
