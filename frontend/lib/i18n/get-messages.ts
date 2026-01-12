@@ -22,6 +22,7 @@ export async function getMessages(locale: Locale = defaultLocale) {
     const dashboardMessages = await import(`@/messages/${locale}/dashboard.json`);
     const analyticsMessages = await import(`@/messages/${locale}/analytics.json`);
     const sidebarMessages = await import(`@/messages/${locale}/sidebar.json`);
+    const notificationsMessages = await import(`@/messages/${locale}/notifications.json`);
 
     return {
       common: commonMessages.default,
@@ -44,6 +45,7 @@ export async function getMessages(locale: Locale = defaultLocale) {
       dashboard: dashboardMessages.default,
       analytics: analyticsMessages.default,
       sidebar: sidebarMessages.default,
+      notifications: notificationsMessages.default,
     };
   } catch (error) {
     // Fallback to default locale if loading fails
@@ -67,6 +69,7 @@ export async function getMessages(locale: Locale = defaultLocale) {
     const dashboardMessages = await import(`@/messages/${defaultLocale}/dashboard.json`);
     const analyticsMessages = await import(`@/messages/${defaultLocale}/analytics.json`);
     const sidebarMessages = await import(`@/messages/${defaultLocale}/sidebar.json`);
+    const notificationsMessages = await import(`@/messages/${defaultLocale}/notifications.json`);
 
     return {
       common: commonMessages.default,
@@ -89,6 +92,7 @@ export async function getMessages(locale: Locale = defaultLocale) {
       dashboard: dashboardMessages.default,
       analytics: analyticsMessages.default,
       sidebar: sidebarMessages.default,
+      notifications: notificationsMessages.default,
     };
   }
 }

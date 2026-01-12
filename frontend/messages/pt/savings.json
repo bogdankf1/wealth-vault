@@ -118,6 +118,7 @@
     "cash": "Conta em Dinheiro",
     "crypto": "Criptomoeda",
     "fixedDeposit": "Depósito a Prazo",
+    "cd": "Certificado de Depósito",
     "other": "Outro"
   },
   "status": {

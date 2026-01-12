@@ -84,6 +84,8 @@
     "allCategories": "Всі категорії",
     "purchasePrice": "Ціна покупки",
     "currentPrice": "Поточна ціна",
-    "quantity": "Кількість"
+    "quantity": "Кількість",
+    "institution": "Установа",
+    "accountNumber": "Номер рахунку"
   }
 }

@@ -48,6 +48,7 @@ export default getRequestConfig(async ({ locale }) => {
       dashboard: (await import(`./messages/${validatedLocale}/dashboard.json`)).default,
       analytics: (await import(`./messages/${validatedLocale}/analytics.json`)).default,
       sidebar: (await import(`./messages/${validatedLocale}/sidebar.json`)).default,
+      notifications: (await import(`./messages/${validatedLocale}/notifications.json`)).default,
     },
   };
 });

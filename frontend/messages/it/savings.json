@@ -118,6 +118,7 @@
     "cash": "Conto Contanti",
     "crypto": "Criptovaluta",
     "fixedDeposit": "Deposito Vincolato",
+    "cd": "Certificato di Deposito",
     "other": "Altro"
   },
   "status": {

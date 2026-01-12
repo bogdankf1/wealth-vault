@@ -118,6 +118,7 @@
     "cash": "Konto Gotówkowe",
     "crypto": "Kryptowaluta",
     "fixedDeposit": "Lokata Terminowa",
+    "cd": "Certyfikat Depozytowy",
     "other": "Inne"
   },
   "status": {

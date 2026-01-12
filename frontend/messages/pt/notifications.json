@@ -1,0 +1,62 @@
+{
+  "bell": {
+    "label": "Notifica\u00e7\u00f5es"
+  },
+  "dropdown": {
+    "title": "Notifica\u00e7\u00f5es",
+    "markAllRead": "Marcar todas como lidas",
+    "empty": "Nenhuma notifica\u00e7\u00e3o ainda",
+    "viewAll": "Ver todas ({count})"
+  },
+  "page": {
+    "title": "Notifica\u00e7\u00f5es",
+    "subtitle": "{total} no total, {unread} n\u00e3o lidas",
+    "selectAll": "Selecionar todas",
+    "deselectAll": "Desmarcar todas",
+    "markSelectedRead": "Marcar {count} como lidas",
+    "deleteSelected": "Excluir {count}",
+    "markAllRead": "Marcar todas como lidas",
+    "markAsRead": "Marcar como lida",
+    "viewDetails": "Ver detalhes",
+    "filterType": "Filtrar por tipo",
+    "filterCategory": "Filtrar por categoria",
+    "filterStatus": "Filtrar por status",
+    "allTypes": "Todos os tipos",
+    "allCategories": "Todas as categorias",
+    "allStatus": "Todas",
+    "unreadOnly": "N\u00e3o lidas",
+    "readOnly": "Lidas",
+    "empty": "Sem notifica\u00e7\u00f5es",
+    "emptyDescription": "Voc\u00ea est\u00e1 em dia! Volte mais tarde para novas notifica\u00e7\u00f5es.",
+    "urgent": "Urgente",
+    "previous": "Anterior",
+    "next": "Pr\u00f3xima",
+    "pageOf": "P\u00e1gina {current} de {total}",
+    "markReadSuccess": "{count} notifica\u00e7\u00e3o(\u00f5es) marcada(s) como lida(s)",
+    "markReadError": "Falha ao marcar notifica\u00e7\u00e3o como lida",
+    "markAllReadSuccess": "Todas as notifica\u00e7\u00f5es marcadas como lidas",
+    "markAllReadError": "Falha ao marcar todas as notifica\u00e7\u00f5es",
+    "deleteSuccess": "{count} notifica\u00e7\u00e3o(\u00f5es) exclu\u00edda(s)",
+    "deleteError": "Falha ao excluir notifica\u00e7\u00e3o(\u00f5es)"
+  },
+  "types": {
+    "alert": "Alerta",
+    "warning": "Aviso",
+    "reminder": "Lembrete",
+    "achievement": "Conquista",
+    "info": "Info"
+  },
+  "categories": {
+    "budget": "Or\u00e7amento",
+    "goal": "Meta",
+    "subscription": "Assinatura",
+    "installment": "Parcela",
+    "debt": "D\u00edvida",
+    "savings": "Poupan\u00e7a",
+    "portfolio": "Portf\u00f3lio",
+    "income": "Renda",
+    "expense": "Despesa",
+    "billing": "Cobran\u00e7a",
+    "system": "Sistema"
+  }
+}

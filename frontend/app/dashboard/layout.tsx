@@ -29,6 +29,7 @@ import {
   Download,
   Database,
   HelpCircle,
+  Bell,
   ChevronDown
 } from 'lucide-react';
 import { useState } from 'react';
@@ -39,6 +40,7 @@ import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
 import { NAVIGATION_FEATURES } from '@/lib/constants/feature-map';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
 import { AuthErrorHandler } from '@/components/auth/auth-error-handler';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 export default function DashboardLayout({
@@ -116,6 +118,7 @@ export default function DashboardLayout({
     { name: t('bottomNavigation.backups'), href: '/dashboard/backups', icon: Database },
     { name: t('bottomNavigation.pricing'), href: '/dashboard/pricing', icon: Sparkles },
     { name: t('bottomNavigation.helpCenter'), href: '/dashboard/help', icon: HelpCircle },
+    { name: t('bottomNavigation.notifications'), href: '/dashboard/notifications', icon: Bell },
     { name: t('bottomNavigation.settings'), href: '/dashboard/settings', icon: Settings },
   ];
 
@@ -350,8 +353,13 @@ export default function DashboardLayout({
               {t('logo.title')}
             </span>
           </Link>
-          <div className="w-10" /> {/* Spacer for centering */}
+          <NotificationBell />
         </header>
+
+        {/* Desktop notification bell (absolute positioned) */}
+        <div className="hidden xl:block absolute top-4 right-6 z-30">
+          <NotificationBell />
+        </div>
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">

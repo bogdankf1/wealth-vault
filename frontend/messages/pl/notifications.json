@@ -1,0 +1,62 @@
+{
+  "bell": {
+    "label": "Powiadomienia"
+  },
+  "dropdown": {
+    "title": "Powiadomienia",
+    "markAllRead": "Oznacz wszystkie jako przeczytane",
+    "empty": "Brak powiadomie\u0144",
+    "viewAll": "Zobacz wszystkie ({count})"
+  },
+  "page": {
+    "title": "Powiadomienia",
+    "subtitle": "\u0141\u0105cznie {total}, nieprzeczytanych {unread}",
+    "selectAll": "Zaznacz wszystkie",
+    "deselectAll": "Odznacz wszystkie",
+    "markSelectedRead": "Oznacz {count} jako przeczytane",
+    "deleteSelected": "Usu\u0144 {count}",
+    "markAllRead": "Oznacz wszystkie jako przeczytane",
+    "markAsRead": "Oznacz jako przeczytane",
+    "viewDetails": "Zobacz szczeg\u00f3\u0142y",
+    "filterType": "Filtruj wed\u0142ug typu",
+    "filterCategory": "Filtruj wed\u0142ug kategorii",
+    "filterStatus": "Filtruj wed\u0142ug statusu",
+    "allTypes": "Wszystkie typy",
+    "allCategories": "Wszystkie kategorie",
+    "allStatus": "Wszystkie",
+    "unreadOnly": "Nieprzeczytane",
+    "readOnly": "Przeczytane",
+    "empty": "Brak powiadomie\u0144",
+    "emptyDescription": "Jeste\u015b na bie\u017c\u0105co! Sprawd\u017a p\u00f3\u017aniej, czy s\u0105 nowe powiadomienia.",
+    "urgent": "Pilne",
+    "previous": "Poprzednia",
+    "next": "Nast\u0119pna",
+    "pageOf": "Strona {current} z {total}",
+    "markReadSuccess": "Oznaczono {count} powiadomie\u0144 jako przeczytane",
+    "markReadError": "Nie uda\u0142o si\u0119 oznaczy\u0107 powiadomienia jako przeczytane",
+    "markAllReadSuccess": "Wszystkie powiadomienia oznaczone jako przeczytane",
+    "markAllReadError": "Nie uda\u0142o si\u0119 oznaczy\u0107 wszystkich powiadomie\u0144",
+    "deleteSuccess": "Usuni\u0119to {count} powiadomie\u0144",
+    "deleteError": "Nie uda\u0142o si\u0119 usun\u0105\u0107 powiadomie\u0144"
+  },
+  "types": {
+    "alert": "Alert",
+    "warning": "Ostrze\u017cenie",
+    "reminder": "Przypomnienie",
+    "achievement": "Osi\u0105gni\u0119cie",
+    "info": "Info"
+  },
+  "categories": {
+    "budget": "Bud\u017cet",
+    "goal": "Cel",
+    "subscription": "Subskrypcja",
+    "installment": "Rata",
+    "debt": "D\u0142ug",
+    "savings": "Oszcz\u0119dno\u015bci",
+    "portfolio": "Portfel",
+    "income": "Doch\u00f3d",
+    "expense": "Wydatek",
+    "billing": "Rozliczenia",
+    "system": "System"
+  }
+}

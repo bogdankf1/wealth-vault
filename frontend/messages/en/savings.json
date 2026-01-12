@@ -119,6 +119,7 @@
     "cash": "Cash Account",
     "crypto": "Cryptocurrency",
     "fixedDeposit": "Fixed Deposit",
+    "cd": "Certificate of Deposit",
     "other": "Other"
   },
   "status": {

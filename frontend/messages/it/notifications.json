@@ -1,0 +1,62 @@
+{
+  "bell": {
+    "label": "Notifiche"
+  },
+  "dropdown": {
+    "title": "Notifiche",
+    "markAllRead": "Segna tutte come lette",
+    "empty": "Nessuna notifica ancora",
+    "viewAll": "Vedi tutte ({count})"
+  },
+  "page": {
+    "title": "Notifiche",
+    "subtitle": "{total} totali, {unread} non lette",
+    "selectAll": "Seleziona tutte",
+    "deselectAll": "Deseleziona tutte",
+    "markSelectedRead": "Segna {count} come lette",
+    "deleteSelected": "Elimina {count}",
+    "markAllRead": "Segna tutte come lette",
+    "markAsRead": "Segna come letta",
+    "viewDetails": "Vedi dettagli",
+    "filterType": "Filtra per tipo",
+    "filterCategory": "Filtra per categoria",
+    "filterStatus": "Filtra per stato",
+    "allTypes": "Tutti i tipi",
+    "allCategories": "Tutte le categorie",
+    "allStatus": "Tutte",
+    "unreadOnly": "Non lette",
+    "readOnly": "Lette",
+    "empty": "Nessuna notifica",
+    "emptyDescription": "Sei aggiornato! Torna pi\u00f9 tardi per nuove notifiche.",
+    "urgent": "Urgente",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "pageOf": "Pagina {current} di {total}",
+    "markReadSuccess": "{count} notifica/e segnata/e come letta/e",
+    "markReadError": "Impossibile segnare la notifica come letta",
+    "markAllReadSuccess": "Tutte le notifiche segnate come lette",
+    "markAllReadError": "Impossibile segnare tutte le notifiche",
+    "deleteSuccess": "{count} notifica/e eliminata/e",
+    "deleteError": "Impossibile eliminare la/e notifica/e"
+  },
+  "types": {
+    "alert": "Avviso",
+    "warning": "Attenzione",
+    "reminder": "Promemoria",
+    "achievement": "Traguardo",
+    "info": "Info"
+  },
+  "categories": {
+    "budget": "Budget",
+    "goal": "Obiettivo",
+    "subscription": "Abbonamento",
+    "installment": "Rata",
+    "debt": "Debito",
+    "savings": "Risparmi",
+    "portfolio": "Portafoglio",
+    "income": "Reddito",
+    "expense": "Spesa",
+    "billing": "Fatturazione",
+    "system": "Sistema"
+  }
+}

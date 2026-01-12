@@ -1,0 +1,62 @@
+{
+  "bell": {
+    "label": "Notificaciones"
+  },
+  "dropdown": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todas como le\u00eddas",
+    "empty": "A\u00fan no hay notificaciones",
+    "viewAll": "Ver todas ({count})"
+  },
+  "page": {
+    "title": "Notificaciones",
+    "subtitle": "{total} en total, {unread} sin leer",
+    "selectAll": "Seleccionar todas",
+    "deselectAll": "Deseleccionar todas",
+    "markSelectedRead": "Marcar {count} como le\u00eddas",
+    "deleteSelected": "Eliminar {count}",
+    "markAllRead": "Marcar todas como le\u00eddas",
+    "markAsRead": "Marcar como le\u00edda",
+    "viewDetails": "Ver detalles",
+    "filterType": "Filtrar por tipo",
+    "filterCategory": "Filtrar por categor\u00eda",
+    "filterStatus": "Filtrar por estado",
+    "allTypes": "Todos los tipos",
+    "allCategories": "Todas las categor\u00edas",
+    "allStatus": "Todas",
+    "unreadOnly": "Sin leer",
+    "readOnly": "Le\u00eddas",
+    "empty": "No hay notificaciones",
+    "emptyDescription": "\u00a1Est\u00e1s al d\u00eda! Vuelve m\u00e1s tarde para nuevas notificaciones.",
+    "urgent": "Urgente",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "pageOf": "P\u00e1gina {current} de {total}",
+    "markReadSuccess": "{count} notificaci\u00f3n(es) marcadas como le\u00eddas",
+    "markReadError": "Error al marcar la notificaci\u00f3n como le\u00edda",
+    "markAllReadSuccess": "Todas las notificaciones marcadas como le\u00eddas",
+    "markAllReadError": "Error al marcar todas las notificaciones",
+    "deleteSuccess": "{count} notificaci\u00f3n(es) eliminadas",
+    "deleteError": "Error al eliminar notificaci\u00f3n(es)"
+  },
+  "types": {
+    "alert": "Alerta",
+    "warning": "Advertencia",
+    "reminder": "Recordatorio",
+    "achievement": "Logro",
+    "info": "Info"
+  },
+  "categories": {
+    "budget": "Presupuesto",
+    "goal": "Meta",
+    "subscription": "Suscripci\u00f3n",
+    "installment": "Cuota",
+    "debt": "Deuda",
+    "savings": "Ahorros",
+    "portfolio": "Portafolio",
+    "income": "Ingreso",
+    "expense": "Gasto",
+    "billing": "Facturaci\u00f3n",
+    "system": "Sistema"
+  }
+}

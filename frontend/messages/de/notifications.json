@@ -1,0 +1,62 @@
+{
+  "bell": {
+    "label": "Benachrichtigungen"
+  },
+  "dropdown": {
+    "title": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "empty": "Noch keine Benachrichtigungen",
+    "viewAll": "Alle anzeigen ({count})"
+  },
+  "page": {
+    "title": "Benachrichtigungen",
+    "subtitle": "{total} insgesamt, {unread} ungelesen",
+    "selectAll": "Alle ausw\u00e4hlen",
+    "deselectAll": "Auswahl aufheben",
+    "markSelectedRead": "{count} als gelesen markieren",
+    "deleteSelected": "{count} l\u00f6schen",
+    "markAllRead": "Alle als gelesen markieren",
+    "markAsRead": "Als gelesen markieren",
+    "viewDetails": "Details anzeigen",
+    "filterType": "Nach Typ filtern",
+    "filterCategory": "Nach Kategorie filtern",
+    "filterStatus": "Nach Status filtern",
+    "allTypes": "Alle Typen",
+    "allCategories": "Alle Kategorien",
+    "allStatus": "Alle",
+    "unreadOnly": "Ungelesen",
+    "readOnly": "Gelesen",
+    "empty": "Keine Benachrichtigungen",
+    "emptyDescription": "Sie sind auf dem neuesten Stand! Schauen Sie sp\u00e4ter nach neuen Benachrichtigungen.",
+    "urgent": "Dringend",
+    "previous": "Zur\u00fcck",
+    "next": "Weiter",
+    "pageOf": "Seite {current} von {total}",
+    "markReadSuccess": "{count} Benachrichtigung(en) als gelesen markiert",
+    "markReadError": "Benachrichtigung konnte nicht als gelesen markiert werden",
+    "markAllReadSuccess": "Alle Benachrichtigungen als gelesen markiert",
+    "markAllReadError": "Benachrichtigungen konnten nicht als gelesen markiert werden",
+    "deleteSuccess": "{count} Benachrichtigung(en) gel\u00f6scht",
+    "deleteError": "Benachrichtigung(en) konnten nicht gel\u00f6scht werden"
+  },
+  "types": {
+    "alert": "Alarm",
+    "warning": "Warnung",
+    "reminder": "Erinnerung",
+    "achievement": "Erfolg",
+    "info": "Info"
+  },
+  "categories": {
+    "budget": "Budget",
+    "goal": "Ziel",
+    "subscription": "Abonnement",
+    "installment": "Ratenzahlung",
+    "debt": "Schulden",
+    "savings": "Ersparnisse",
+    "portfolio": "Portfolio",
+    "income": "Einkommen",
+    "expense": "Ausgabe",
+    "billing": "Abrechnung",
+    "system": "System"
+  }
+}

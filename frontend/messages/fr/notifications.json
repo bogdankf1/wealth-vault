@@ -1,0 +1,62 @@
+{
+  "bell": {
+    "label": "Notifications"
+  },
+  "dropdown": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "empty": "Aucune notification pour l'instant",
+    "viewAll": "Voir toutes ({count})"
+  },
+  "page": {
+    "title": "Notifications",
+    "subtitle": "{total} au total, {unread} non lues",
+    "selectAll": "Tout s\u00e9lectionner",
+    "deselectAll": "Tout d\u00e9s\u00e9lectionner",
+    "markSelectedRead": "Marquer {count} comme lues",
+    "deleteSelected": "Supprimer {count}",
+    "markAllRead": "Tout marquer comme lu",
+    "markAsRead": "Marquer comme lu",
+    "viewDetails": "Voir les d\u00e9tails",
+    "filterType": "Filtrer par type",
+    "filterCategory": "Filtrer par cat\u00e9gorie",
+    "filterStatus": "Filtrer par statut",
+    "allTypes": "Tous les types",
+    "allCategories": "Toutes les cat\u00e9gories",
+    "allStatus": "Toutes",
+    "unreadOnly": "Non lues",
+    "readOnly": "Lues",
+    "empty": "Pas de notifications",
+    "emptyDescription": "Vous \u00eates \u00e0 jour ! Revenez plus tard pour de nouvelles notifications.",
+    "urgent": "Urgent",
+    "previous": "Pr\u00e9c\u00e9dent",
+    "next": "Suivant",
+    "pageOf": "Page {current} sur {total}",
+    "markReadSuccess": "{count} notification(s) marqu\u00e9e(s) comme lue(s)",
+    "markReadError": "\u00c9chec du marquage de la notification comme lue",
+    "markAllReadSuccess": "Toutes les notifications marqu\u00e9es comme lues",
+    "markAllReadError": "\u00c9chec du marquage de toutes les notifications",
+    "deleteSuccess": "{count} notification(s) supprim\u00e9e(s)",
+    "deleteError": "\u00c9chec de la suppression de notification(s)"
+  },
+  "types": {
+    "alert": "Alerte",
+    "warning": "Avertissement",
+    "reminder": "Rappel",
+    "achievement": "R\u00e9ussite",
+    "info": "Info"
+  },
+  "categories": {
+    "budget": "Budget",
+    "goal": "Objectif",
+    "subscription": "Abonnement",
+    "installment": "Paiement \u00e9chelonn\u00e9",
+    "debt": "Dette",
+    "savings": "\u00c9pargne",
+    "portfolio": "Portefeuille",
+    "income": "Revenu",
+    "expense": "D\u00e9pense",
+    "billing": "Facturation",
+    "system": "Syst\u00e8me"
+  }
+}

@@ -118,6 +118,7 @@
     "cash": "Compte Espèces",
     "crypto": "Cryptomonnaie",
     "fixedDeposit": "Dépôt à Terme",
+    "cd": "Certificat de Dépôt",
     "other": "Autre"
   },
   "status": {

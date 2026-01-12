@@ -84,6 +84,8 @@
     "allCategories": "Alle Kategorien",
     "purchasePrice": "Kaufpreis",
     "currentPrice": "Aktueller Preis",
-    "quantity": "Menge"
+    "quantity": "Menge",
+    "institution": "Institut",
+    "accountNumber": "Kontonummer"
   }
 }

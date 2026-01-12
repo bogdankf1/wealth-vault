@@ -118,6 +118,7 @@
     "cash": "Bargeldkonto",
     "crypto": "Kryptowährung",
     "fixedDeposit": "Festgeld",
+    "cd": "Einlagenzertifikat",
     "other": "Sonstiges"
   },
   "status": {

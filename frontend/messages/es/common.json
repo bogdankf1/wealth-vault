@@ -84,6 +84,8 @@
     "allCategories": "Todas las categorías",
     "purchasePrice": "Precio de compra",
     "currentPrice": "Precio actual",
-    "quantity": "Cantidad"
+    "quantity": "Cantidad",
+    "institution": "Institución",
+    "accountNumber": "Número de cuenta"
   }
 }

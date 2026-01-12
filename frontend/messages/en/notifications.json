@@ -1,0 +1,62 @@
+{
+  "bell": {
+    "label": "Notifications"
+  },
+  "dropdown": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications yet",
+    "viewAll": "View all ({count})"
+  },
+  "page": {
+    "title": "Notifications",
+    "subtitle": "{total} total, {unread} unread",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "markSelectedRead": "Mark {count} read",
+    "deleteSelected": "Delete {count}",
+    "markAllRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "viewDetails": "View details",
+    "filterType": "Filter by type",
+    "filterCategory": "Filter by category",
+    "filterStatus": "Filter by status",
+    "allTypes": "All types",
+    "allCategories": "All categories",
+    "allStatus": "All",
+    "unreadOnly": "Unread",
+    "readOnly": "Read",
+    "empty": "No notifications",
+    "emptyDescription": "You're all caught up! Check back later for new notifications.",
+    "urgent": "Urgent",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {current} of {total}",
+    "markReadSuccess": "Marked {count} notification(s) as read",
+    "markReadError": "Failed to mark notification as read",
+    "markAllReadSuccess": "All notifications marked as read",
+    "markAllReadError": "Failed to mark all notifications as read",
+    "deleteSuccess": "Deleted {count} notification(s)",
+    "deleteError": "Failed to delete notification(s)"
+  },
+  "types": {
+    "alert": "Alert",
+    "warning": "Warning",
+    "reminder": "Reminder",
+    "achievement": "Achievement",
+    "info": "Info"
+  },
+  "categories": {
+    "budget": "Budget",
+    "goal": "Goal",
+    "subscription": "Subscription",
+    "installment": "Installment",
+    "debt": "Debt",
+    "savings": "Savings",
+    "portfolio": "Portfolio",
+    "income": "Income",
+    "expense": "Expense",
+    "billing": "Billing",
+    "system": "System"
+  }
+}
