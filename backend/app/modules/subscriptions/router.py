@@ -19,11 +19,21 @@ from app.modules.subscriptions.schemas import (
     SubscriptionStats,
     SubscriptionHistoryResponse,
     SubscriptionBatchDelete,
-    SubscriptionBatchDeleteResponse)
+    SubscriptionBatchDeleteResponse,
+    SubscriptionPaymentCreate,
+    SubscriptionPaymentResponse,
+    SubscriptionPaymentListResponse,
+    SubscriptionPauseRequest,
+)
 from app.modules.subscriptions.service import (
     convert_subscription_to_display_currency,
     get_user_display_currency,
-    get_subscription_history
+    get_subscription_history,
+    pause_subscription,
+    resume_subscription,
+    cancel_subscription,
+    get_subscription_payments,
+    process_subscription_payment,
 )
 
 router = APIRouter(prefix="/api/v1/subscriptions", tags=["subscriptions"])
@@ -104,8 +114,18 @@ async def list_subscriptions(
             "start_date": subscription.start_date.isoformat() if subscription.start_date else None,
             "end_date": subscription.end_date.isoformat() if subscription.end_date else None,
             "is_active": subscription.is_active,
+            "status": subscription.status or "active",
             "created_at": subscription.created_at,
             "updated_at": subscription.updated_at,
+            # Payment integration fields
+            "payment_account_id": str(subscription.payment_account_id) if subscription.payment_account_id else None,
+            "auto_pay": subscription.auto_pay,
+            "next_payment_date": subscription.next_payment_date.isoformat() if subscription.next_payment_date else None,
+            "last_payment_date": subscription.last_payment_date.isoformat() if subscription.last_payment_date else None,
+            "reminder_days_before": subscription.reminder_days_before,
+            "paused_at": subscription.paused_at.isoformat() if subscription.paused_at else None,
+            "resume_date": subscription.resume_date.isoformat() if subscription.resume_date else None,
+            # Display values
             "display_amount": float(subscription.display_amount) if hasattr(subscription, 'display_amount') and subscription.display_amount is not None else None,
             "display_currency": subscription.display_currency if hasattr(subscription, 'display_currency') and subscription.display_currency is not None else None,
             "display_monthly_equivalent": float(subscription.display_monthly_equivalent) if hasattr(subscription, 'display_monthly_equivalent') and subscription.display_monthly_equivalent is not None else None,
@@ -186,8 +206,18 @@ async def get_subscription(
         "start_date": subscription.start_date.isoformat() if subscription.start_date else None,
         "end_date": subscription.end_date.isoformat() if subscription.end_date else None,
         "is_active": subscription.is_active,
+        "status": subscription.status or "active",
         "created_at": subscription.created_at,
         "updated_at": subscription.updated_at,
+        # Payment integration fields
+        "payment_account_id": str(subscription.payment_account_id) if subscription.payment_account_id else None,
+        "auto_pay": subscription.auto_pay,
+        "next_payment_date": subscription.next_payment_date.isoformat() if subscription.next_payment_date else None,
+        "last_payment_date": subscription.last_payment_date.isoformat() if subscription.last_payment_date else None,
+        "reminder_days_before": subscription.reminder_days_before,
+        "paused_at": subscription.paused_at.isoformat() if subscription.paused_at else None,
+        "resume_date": subscription.resume_date.isoformat() if subscription.resume_date else None,
+        # Display values
         "display_amount": float(subscription.display_amount) if hasattr(subscription, 'display_amount') and subscription.display_amount is not None else None,
         "display_currency": subscription.display_currency if hasattr(subscription, 'display_currency') and subscription.display_currency is not None else None,
         "display_monthly_equivalent": float(subscription.display_monthly_equivalent) if hasattr(subscription, 'display_monthly_equivalent') and subscription.display_monthly_equivalent is not None else None,
@@ -263,3 +293,180 @@ async def batch_delete_subscriptions(
         deleted_count=deleted_count,
         failed_ids=failed_ids
     )
+
+
+# ============== Payment Integration Endpoints ==============
+
+@router.post("/{subscription_id}/pause", response_model=SubscriptionResponse)
+@require_feature("subscription_tracking")
+async def pause_subscription_endpoint(
+    subscription_id: UUID,
+    pause_data: SubscriptionPauseRequest = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Pause a subscription, optionally with a resume date"""
+    subscription = await service.get_subscription(db, current_user.id, subscription_id)
+    if not subscription:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subscription not found"
+        )
+
+    if subscription.status == "paused":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Subscription is already paused"
+        )
+
+    resume_date = pause_data.resume_date if pause_data else None
+    subscription = await pause_subscription(db, subscription, resume_date)
+
+    return subscription
+
+
+@router.post("/{subscription_id}/resume", response_model=SubscriptionResponse)
+@require_feature("subscription_tracking")
+async def resume_subscription_endpoint(
+    subscription_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Resume a paused subscription"""
+    subscription = await service.get_subscription(db, current_user.id, subscription_id)
+    if not subscription:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subscription not found"
+        )
+
+    if subscription.status != "paused":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Subscription is not paused"
+        )
+
+    subscription = await resume_subscription(db, subscription)
+
+    return subscription
+
+
+@router.post("/{subscription_id}/cancel", response_model=SubscriptionResponse)
+@require_feature("subscription_tracking")
+async def cancel_subscription_endpoint(
+    subscription_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Cancel a subscription"""
+    subscription = await service.get_subscription(db, current_user.id, subscription_id)
+    if not subscription:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subscription not found"
+        )
+
+    if subscription.status == "cancelled":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Subscription is already cancelled"
+        )
+
+    subscription = await cancel_subscription(db, subscription)
+
+    return subscription
+
+
+@router.get("/{subscription_id}/payments", response_model=SubscriptionPaymentListResponse)
+@require_feature("subscription_tracking")
+async def get_subscription_payments_endpoint(
+    subscription_id: UUID,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get payment history for a subscription"""
+    # Verify subscription exists and belongs to user
+    subscription = await service.get_subscription(db, current_user.id, subscription_id)
+    if not subscription:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subscription not found"
+        )
+
+    skip = (page - 1) * page_size
+    payments, total = await get_subscription_payments(
+        db, subscription_id, current_user.id, skip, page_size
+    )
+
+    payment_dicts = []
+    for payment in payments:
+        payment_dict = {
+            "id": str(payment.id),
+            "subscription_id": str(payment.subscription_id),
+            "user_id": str(payment.user_id),
+            "amount": float(payment.amount) if payment.amount else 0,
+            "currency": payment.currency,
+            "payment_date": payment.payment_date.isoformat() if payment.payment_date else None,
+            "period_start": payment.period_start.isoformat() if payment.period_start else None,
+            "period_end": payment.period_end.isoformat() if payment.period_end else None,
+            "expense_id": str(payment.expense_id) if payment.expense_id else None,
+            "account_transaction_id": str(payment.account_transaction_id) if payment.account_transaction_id else None,
+            "status": payment.status,
+            "notes": payment.notes,
+            "created_at": payment.created_at,
+        }
+        payment_dicts.append(payment_dict)
+
+    return SubscriptionPaymentListResponse(
+        items=payment_dicts,
+        total=total
+    )
+
+
+@router.post("/{subscription_id}/pay", response_model=SubscriptionPaymentResponse)
+@require_feature("subscription_tracking")
+async def record_subscription_payment(
+    subscription_id: UUID,
+    payment_data: SubscriptionPaymentCreate = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Manually record a subscription payment"""
+    subscription = await service.get_subscription(db, current_user.id, subscription_id)
+    if not subscription:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subscription not found"
+        )
+
+    payment_date = payment_data.payment_date if payment_data and payment_data.payment_date else None
+    notes = payment_data.notes if payment_data else None
+
+    try:
+        payment = await process_subscription_payment(
+            db, subscription, payment_date, notes
+        )
+        await db.commit()
+
+        return {
+            "id": str(payment.id),
+            "subscription_id": str(payment.subscription_id),
+            "user_id": str(payment.user_id),
+            "amount": float(payment.amount) if payment.amount else 0,
+            "currency": payment.currency,
+            "payment_date": payment.payment_date.isoformat() if payment.payment_date else None,
+            "period_start": payment.period_start.isoformat() if payment.period_start else None,
+            "period_end": payment.period_end.isoformat() if payment.period_end else None,
+            "expense_id": str(payment.expense_id) if payment.expense_id else None,
+            "account_transaction_id": str(payment.account_transaction_id) if payment.account_transaction_id else None,
+            "status": payment.status,
+            "notes": payment.notes,
+            "created_at": payment.created_at,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process payment: {str(e)}"
+        )

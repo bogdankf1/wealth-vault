@@ -207,21 +207,102 @@ async def notify_subscription_renewal(event: Event) -> None:
 
     user_id = str(event.user_id)
     subscription_name = event.payload.get("subscription_name", "Your subscription")
-    days_until = event.payload.get("days_until", 0)
+    days_until = event.payload.get("days_until_renewal", 0)
     amount = event.payload.get("amount", 0)
     currency = event.payload.get("currency", "USD")
+    auto_pay_enabled = event.payload.get("auto_pay_enabled", False)
+
+    if auto_pay_enabled:
+        message = f"'{subscription_name}' will auto-renew in {days_until} days for {amount:.2f} {currency}"
+    else:
+        message = f"'{subscription_name}' will renew in {days_until} days for {amount:.2f} {currency}"
 
     create_notification.delay(
         user_id=user_id,
         notification_type="reminder",
         category="subscription",
         title=f"Subscription Renewal in {days_until} Days",
-        message=f"'{subscription_name}' will renew in {days_until} days for {amount:.2f} {currency}",
+        message=message,
         priority=3 if days_until > 3 else 2,
         action_url=f"/subscriptions/{event.payload.get('subscription_id')}",
         extra_data={"subscription_id": str(event.payload.get("subscription_id")), "days_until": days_until}
     )
     logger.info(f"Subscription renewal notification queued for user {user_id}")
+
+
+@event_dispatcher.on(SubscriptionEvents.RENEWAL_PROCESSED, EventPriority.NORMAL)
+async def notify_subscription_renewed(event: Event) -> None:
+    """Send notification when subscription renewal is processed."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    subscription_name = event.payload.get("subscription_name", "Your subscription")
+    amount = event.payload.get("amount", 0)
+    currency = event.payload.get("currency", "USD")
+    auto_paid = event.payload.get("auto_paid", False)
+    next_payment_date = event.payload.get("next_payment_date", "")
+
+    if auto_paid:
+        message = f"'{subscription_name}' renewed and paid {amount:.2f} {currency} automatically"
+        title = "Subscription Auto-Renewed"
+    else:
+        message = f"'{subscription_name}' renewed for {amount:.2f} {currency}"
+        title = "Subscription Renewed"
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="info",
+        category="subscription",
+        title=title,
+        message=message,
+        priority=3,
+        action_url=f"/subscriptions/{event.payload.get('subscription_id')}",
+        extra_data={"subscription_id": str(event.payload.get("subscription_id")), "auto_paid": auto_paid}
+    )
+    logger.info(f"Subscription renewed notification queued for user {user_id}")
+
+
+@event_dispatcher.on(SubscriptionEvents.SUBSCRIPTION_EXPIRED, EventPriority.NORMAL)
+async def notify_subscription_expired(event: Event) -> None:
+    """Send notification when subscription expires."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    subscription_name = event.payload.get("subscription_name", "Your subscription")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="info",
+        category="subscription",
+        title="Subscription Expired",
+        message=f"'{subscription_name}' has expired and been marked as inactive",
+        priority=3,
+        action_url=f"/subscriptions/{event.payload.get('subscription_id')}",
+        extra_data={"subscription_id": str(event.payload.get("subscription_id"))}
+    )
+    logger.info(f"Subscription expired notification queued for user {user_id}")
+
+
+@event_dispatcher.on(SubscriptionEvents.SUBSCRIPTION_RESUMED, EventPriority.NORMAL)
+async def notify_subscription_resumed(event: Event) -> None:
+    """Send notification when subscription is auto-resumed."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    subscription_name = event.payload.get("subscription_name", "Your subscription")
+    next_payment_date = event.payload.get("next_payment_date", "")
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="info",
+        category="subscription",
+        title="Subscription Resumed",
+        message=f"'{subscription_name}' has been automatically resumed",
+        priority=3,
+        action_url=f"/subscriptions/{event.payload.get('subscription_id')}",
+        extra_data={"subscription_id": str(event.payload.get("subscription_id"))}
+    )
+    logger.info(f"Subscription resumed notification queued for user {user_id}")
 
 
 @event_dispatcher.on(InstallmentEvents.PAYMENT_DUE, EventPriority.NORMAL)

@@ -18,7 +18,7 @@ from app.models.configuration import AppConfiguration, EmailTemplate
 from app.modules.income.models import IncomeSource
 from app.modules.expenses.models import Expense
 from app.modules.savings.models import SavingsAccount, AccountTransaction, BalanceHistory
-from app.modules.subscriptions.models import Subscription
+from app.modules.subscriptions.models import Subscription, SubscriptionPayment
 from app.modules.installments.models import Installment
 from app.modules.goals.models import Goal
 from app.modules.portfolio.models import PortfolioAsset

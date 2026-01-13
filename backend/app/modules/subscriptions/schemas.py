@@ -9,6 +9,7 @@ from decimal import Decimal
 
 
 SubscriptionFrequency = Literal["monthly", "quarterly", "annually", "biannually"]
+SubscriptionStatus = Literal["active", "paused", "cancelled", "expired"]
 
 
 class SubscriptionCreate(BaseModel):
@@ -22,6 +23,12 @@ class SubscriptionCreate(BaseModel):
     start_date: datetime
     end_date: Optional[datetime] = None
     is_active: bool = True
+    # Payment integration fields
+    payment_account_id: Optional[UUID] = None
+    auto_pay: bool = False
+    reminder_days_before: int = Field(default=3, ge=0, le=30)
+    # For historical sync when linking account
+    sync_historical: bool = False
 
 
 class SubscriptionUpdate(BaseModel):
@@ -35,6 +42,12 @@ class SubscriptionUpdate(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     is_active: Optional[bool] = None
+    # Payment integration fields
+    payment_account_id: Optional[UUID] = None
+    auto_pay: Optional[bool] = None
+    reminder_days_before: Optional[int] = Field(None, ge=0, le=30)
+    # For historical sync when updating account link
+    sync_historical: bool = False
 
 
 class SubscriptionResponse(BaseModel):
@@ -50,8 +63,18 @@ class SubscriptionResponse(BaseModel):
     start_date: str
     end_date: Optional[str]
     is_active: bool
+    status: str = "active"
     created_at: datetime
     updated_at: datetime
+
+    # Payment integration fields
+    payment_account_id: Optional[str] = None
+    auto_pay: bool = False
+    next_payment_date: Optional[str] = None
+    last_payment_date: Optional[str] = None
+    reminder_days_before: int = 3
+    paused_at: Optional[str] = None
+    resume_date: Optional[str] = None
 
     # Display values (converted to user's preferred currency)
     display_amount: Optional[Decimal] = None
@@ -61,11 +84,11 @@ class SubscriptionResponse(BaseModel):
     class Config:
         from_attributes = True
 
-    @field_validator('id', 'user_id', mode='before')
+    @field_validator('id', 'user_id', 'payment_account_id', mode='before')
     def convert_uuid_to_str(cls, v):
         return str(v) if v else None
 
-    @field_validator('start_date', 'end_date', mode='before')
+    @field_validator('start_date', 'end_date', 'next_payment_date', 'last_payment_date', 'paused_at', 'resume_date', mode='before')
     def convert_datetime_to_str(cls, v):
         if v and isinstance(v, datetime):
             return v.isoformat()
@@ -117,3 +140,61 @@ class SubscriptionBatchDeleteResponse(BaseModel):
     """Schema for batch delete response."""
     deleted_count: int
     failed_ids: list[UUID] = []
+
+
+# Payment integration schemas
+class SubscriptionPaymentCreate(BaseModel):
+    """Schema for recording a subscription payment"""
+    amount: Optional[Decimal] = None  # If None, uses subscription amount
+    payment_date: Optional[datetime] = None  # If None, uses current date
+    notes: Optional[str] = None
+
+
+class SubscriptionPaymentResponse(BaseModel):
+    """Schema for subscription payment response"""
+    id: str
+    subscription_id: str
+    user_id: str
+    amount: Decimal
+    currency: str
+    payment_date: str
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None
+    expense_id: Optional[str] = None
+    account_transaction_id: Optional[str] = None
+    status: str
+    notes: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+    @field_validator('id', 'subscription_id', 'user_id', 'expense_id', 'account_transaction_id', mode='before')
+    def convert_uuid_to_str(cls, v):
+        return str(v) if v else None
+
+    @field_validator('payment_date', 'period_start', 'period_end', mode='before')
+    def convert_datetime_to_str(cls, v):
+        if v and isinstance(v, datetime):
+            return v.isoformat()
+        return v
+
+
+class SubscriptionPaymentListResponse(BaseModel):
+    """Schema for paginated payment history"""
+    items: list[SubscriptionPaymentResponse]
+    total: int
+
+
+class SubscriptionPauseRequest(BaseModel):
+    """Schema for pausing a subscription"""
+    resume_date: Optional[datetime] = None  # Optional date to auto-resume
+
+
+class SubscriptionPaymentSummary(BaseModel):
+    """Summary of subscription payments"""
+    total_paid: Decimal
+    payment_count: int
+    last_payment_date: Optional[str] = None
+    next_payment_date: Optional[str] = None
+    currency: str

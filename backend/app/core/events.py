@@ -137,9 +137,12 @@ class SubscriptionEvents:
     UPDATED = "subscription.updated"
     DELETED = "subscription.deleted"
     RENEWED = "subscription.renewed"
+    RENEWAL_PROCESSED = "subscription.renewal_processed"
     RENEWAL_REMINDER = "subscription.renewal_reminder"
-    EXPIRED = "subscription.expired"
+    SUBSCRIPTION_EXPIRED = "subscription.expired"
     CANCELLED = "subscription.cancelled"
+    PAUSED = "subscription.paused"
+    SUBSCRIPTION_RESUMED = "subscription.resumed"
 
 
 class InstallmentEvents:
