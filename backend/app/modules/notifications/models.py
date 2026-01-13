@@ -43,13 +43,23 @@ class Notification(BaseModel):
 
     # Notification content
     notification_type = Column(
-        Enum(NotificationType, native_enum=False, length=20),
+        Enum(
+            NotificationType,
+            native_enum=False,
+            length=20,
+            values_callable=lambda x: [e.value for e in x]
+        ),
         nullable=False,
         default=NotificationType.INFO,
         index=True
     )
     category = Column(
-        Enum(NotificationCategory, native_enum=False, length=20),
+        Enum(
+            NotificationCategory,
+            native_enum=False,
+            length=20,
+            values_callable=lambda x: [e.value for e in x]
+        ),
         nullable=False,
         default=NotificationCategory.SYSTEM,
         index=True

@@ -101,7 +101,7 @@ def create_notification(
 
     Args:
         user_id: UUID of the user
-        notification_type: Type (alert, reminder, achievement, warning)
+        notification_type: Type (alert, reminder, achievement, warning, info)
         category: Category (budget, goal, subscription, etc.)
         title: Notification title
         message: Full message
@@ -113,19 +113,57 @@ def create_notification(
         Dict with created notification info
     """
     import asyncio
+    from uuid import UUID as UUIDType
 
     async def _create():
         async with get_async_db_session() as db:
-            # TODO: Implement once Notification model exists
-            logger.info(f"Creating notification for user {user_id}: {title}")
-            return {
-                "success": True,
-                "user_id": user_id,
-                "notification_type": notification_type,
-                "category": category,
-                "title": title,
-                "timestamp": datetime.utcnow().isoformat()
-            }
+            from app.modules.notifications.models import (
+                Notification,
+                NotificationType,
+                NotificationCategory
+            )
+
+            try:
+                # Convert string to enum
+                notif_type = NotificationType(notification_type)
+                notif_category = NotificationCategory(category)
+                user_uuid = UUIDType(user_id)
+
+                # Create the notification
+                notification = Notification(
+                    user_id=user_uuid,
+                    notification_type=notif_type,
+                    category=notif_category,
+                    title=title,
+                    message=message,
+                    priority=priority,
+                    action_url=action_url,
+                    extra_data=extra_data
+                )
+
+                db.add(notification)
+                await db.commit()
+                await db.refresh(notification)
+
+                logger.info(f"Created notification for user {user_id}: {title}")
+                return {
+                    "success": True,
+                    "notification_id": str(notification.id),
+                    "user_id": user_id,
+                    "notification_type": notification_type,
+                    "category": category,
+                    "title": title,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            except Exception as e:
+                logger.error(f"Failed to create notification for user {user_id}: {e}")
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "user_id": user_id,
+                    "title": title,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
 
     return asyncio.get_event_loop().run_until_complete(_create())
 

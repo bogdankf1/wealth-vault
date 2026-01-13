@@ -157,6 +157,49 @@ async def notify_budget_exceeded(event: Event) -> None:
     logger.info(f"Budget exceeded notification queued for user {user_id}")
 
 
+@event_dispatcher.on(BudgetEvents.PERIOD_RESET, EventPriority.NORMAL)
+async def notify_budget_period_reset(event: Event) -> None:
+    """Send notification when budget period resets with rollover info."""
+    from app.tasks.notification_tasks import create_notification
+
+    user_id = str(event.user_id)
+    budget_name = event.payload.get("budget_name", "Your budget")
+    spent_amount = event.payload.get("spent_amount", 0)
+    budget_amount = event.payload.get("budget_amount", 0)
+    rollover_amount = event.payload.get("rollover_amount", 0)
+    currency = event.payload.get("currency", "USD")
+
+    # Build message based on whether there's rollover
+    if rollover_amount > 0:
+        message = (
+            f"'{budget_name}' has reset for a new period. "
+            f"You spent {spent_amount:.2f} of {budget_amount:.2f} {currency}. "
+            f"Rollover: {rollover_amount:.2f} {currency} added to your new budget!"
+        )
+        title = "Budget Reset + Rollover"
+    else:
+        message = (
+            f"'{budget_name}' has reset for a new period. "
+            f"Last period: spent {spent_amount:.2f} of {budget_amount:.2f} {currency}."
+        )
+        title = "Budget Period Reset"
+
+    create_notification.delay(
+        user_id=user_id,
+        notification_type="info",
+        category="budget",
+        title=title,
+        message=message,
+        priority=3,
+        action_url=f"/budgets/{event.payload.get('budget_id')}",
+        extra_data={
+            "budget_id": str(event.payload.get("budget_id")),
+            "rollover_amount": rollover_amount
+        }
+    )
+    logger.info(f"Budget period reset notification queued for user {user_id}")
+
+
 @event_dispatcher.on(SubscriptionEvents.RENEWAL_REMINDER, EventPriority.NORMAL)
 async def notify_subscription_renewal(event: Event) -> None:
     """Send notification for upcoming subscription renewal."""
@@ -435,14 +478,37 @@ async def create_expense_transaction(event: Event) -> None:
 # These handlers update budgets when related events occur
 
 @event_dispatcher.on(ExpenseEvents.CREATED, EventPriority.NORMAL)
-async def update_budget_on_expense(event: Event) -> None:
-    """Update budget spent amount when expense is created."""
-    # This will be implemented in Phase 4 when we add budget integration
+async def check_budget_on_expense_created(event: Event) -> None:
+    """Check budgets when an expense is created for real-time alerts."""
+    from app.tasks.budget_tasks import check_budget_for_category
+
     user_id = event.user_id
-    category_id = event.payload.get("category_id")
-    amount = event.payload.get("amount", 0)
-    logger.debug(f"Expense created event for budget update: user={user_id}, category={category_id}")
-    # TODO: Implement budget update in Phase 4
+    category = event.payload.get("category")
+
+    if not user_id or not category:
+        logger.debug(f"Skipping budget check: missing user_id or category")
+        return
+
+    # Trigger async budget check for this category
+    check_budget_for_category.delay(str(user_id), category)
+    logger.debug(f"Budget check queued for user={user_id}, category={category}")
+
+
+@event_dispatcher.on(ExpenseEvents.UPDATED, EventPriority.NORMAL)
+async def check_budget_on_expense_updated(event: Event) -> None:
+    """Check budgets when an expense is updated (amount/category changed)."""
+    from app.tasks.budget_tasks import check_budget_for_category
+
+    user_id = event.user_id
+    category = event.payload.get("category")
+
+    if not user_id or not category:
+        logger.debug(f"Skipping budget check: missing user_id or category")
+        return
+
+    # Trigger async budget check for this category
+    check_budget_for_category.delay(str(user_id), category)
+    logger.debug(f"Budget check queued (expense updated) for user={user_id}, category={category}")
 
 
 # =============================================================================

@@ -48,7 +48,13 @@ class Budget(BaseModel):
     # Status and settings
     is_active = Column(Boolean, default=True, nullable=False)
     rollover_unused = Column(Boolean, default=False, nullable=False)  # Rollover unused budget to next period
+    rollover_amount = Column(Numeric(12, 2), default=Decimal("0"), nullable=False)  # Accumulated rollover from previous periods
     alert_threshold = Column(Integer, default=80, nullable=False)  # Alert when X% of budget is spent
+
+    # Alert tracking - prevents duplicate notifications
+    last_alert_at = Column(DateTime, nullable=True)  # When the last alert was sent
+    last_alert_percentage = Column(Integer, nullable=True)  # Percentage when last alert was sent
+    current_period_start = Column(DateTime, nullable=True)  # Start of current tracking period (for recurring budgets)
 
     # Relationships
     user = relationship("User")
@@ -68,19 +74,24 @@ class Budget(BaseModel):
                         total += expense.amount
         return total
 
+    @property
+    def effective_amount(self) -> Decimal:
+        """Get total budget amount including rollover."""
+        return self.amount + (self.rollover_amount or Decimal("0"))
+
     def calculate_remaining(self, spent_amount: Decimal) -> Decimal:
-        """Calculate remaining budget amount."""
-        return self.amount - spent_amount
+        """Calculate remaining budget amount (includes rollover)."""
+        return self.effective_amount - spent_amount
 
     def calculate_percentage_used(self, spent_amount: Decimal) -> float:
-        """Calculate percentage of budget used."""
-        if self.amount == 0:
+        """Calculate percentage of budget used (based on effective amount with rollover)."""
+        if self.effective_amount == 0:
             return 0.0
-        return float((spent_amount / self.amount) * 100)
+        return float((spent_amount / self.effective_amount) * 100)
 
     def is_overspent(self, spent_amount: Decimal) -> bool:
-        """Check if budget is overspent."""
-        return spent_amount > self.amount
+        """Check if budget is overspent (includes rollover)."""
+        return spent_amount > self.effective_amount
 
     def should_alert(self, spent_amount: Decimal) -> bool:
         """Check if alert threshold has been reached."""

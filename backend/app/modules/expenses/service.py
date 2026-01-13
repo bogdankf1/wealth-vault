@@ -21,6 +21,7 @@ from app.modules.expenses.schemas import (
     ExpensePaymentSummary
 )
 from app.services.currency_service import CurrencyService
+from app.core.events import event_dispatcher, ExpenseEvents
 
 logger = logging.getLogger(__name__)
 
@@ -288,6 +289,17 @@ async def create_expense(
     if expense_data.auto_pay and expense_data.sync_historical and expense_data.payment_account_id:
         await backfill_expense_payments(db, user_id, expense)
 
+    # Dispatch expense created event for budget tracking
+    await event_dispatcher.dispatch(
+        ExpenseEvents.CREATED,
+        user_id=user_id,
+        expense_id=str(expense.id),
+        category=expense.category,
+        amount=float(expense.amount),
+        currency=expense.currency,
+        name=expense.name,
+    )
+
     return expense
 
 
@@ -392,6 +404,18 @@ async def update_expense(
     # If auto_pay was just enabled (without sync_historical), backfill missing payments
     elif is_auto_pay_enabled and not was_auto_pay_enabled:
         await backfill_expense_payments(db, user_id, expense, skip_existing=True)
+
+    # Dispatch expense updated event for budget tracking (if amount or category changed)
+    if 'amount' in update_data or 'category' in update_data:
+        await event_dispatcher.dispatch(
+            ExpenseEvents.UPDATED,
+            user_id=user_id,
+            expense_id=str(expense.id),
+            category=expense.category,
+            amount=float(expense.amount),
+            currency=expense.currency,
+            name=expense.name,
+        )
 
     return expense
 

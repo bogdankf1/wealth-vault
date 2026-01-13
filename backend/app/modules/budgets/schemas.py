@@ -65,11 +65,13 @@ class BudgetResponse(BaseModel):
     end_date: Optional[datetime]
     is_active: bool
     rollover_unused: bool
+    rollover_amount: Decimal = Decimal("0")  # Accumulated rollover from previous periods
     alert_threshold: int
     created_at: datetime
     updated_at: datetime
 
     # Calculated fields (populated by service layer)
+    effective_amount: Optional[Decimal] = None  # amount + rollover_amount
     spent: Optional[Decimal] = None
     remaining: Optional[Decimal] = None
     percentage_used: Optional[float] = None

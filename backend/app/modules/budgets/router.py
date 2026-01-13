@@ -47,6 +47,8 @@ async def create_budget(
         "end_date": budget.end_date,
         "is_active": budget.is_active,
         "rollover_unused": budget.rollover_unused,
+        "rollover_amount": budget.rollover_amount,
+        "effective_amount": budget.effective_amount,
         "alert_threshold": budget.alert_threshold,
         "created_at": budget.created_at,
         "updated_at": budget.updated_at
@@ -92,6 +94,8 @@ async def list_budgets(
             "end_date": budget.end_date,
             "is_active": budget.is_active,
             "rollover_unused": budget.rollover_unused,
+            "rollover_amount": budget.rollover_amount,
+            "effective_amount": budget.effective_amount,
             "alert_threshold": budget.alert_threshold,
             "created_at": budget.created_at,
             "updated_at": budget.updated_at,
@@ -165,6 +169,8 @@ async def update_budget(
         "end_date": budget.end_date,
         "is_active": budget.is_active,
         "rollover_unused": budget.rollover_unused,
+        "rollover_amount": budget.rollover_amount,
+        "effective_amount": budget.effective_amount,
         "alert_threshold": budget.alert_threshold,
         "created_at": budget.created_at,
         "updated_at": budget.updated_at

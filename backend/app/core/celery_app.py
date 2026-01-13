@@ -152,10 +152,15 @@ celery_app.conf.beat_schedule = {
         "options": {"queue": "default"},
     },
 
-    # Budget tasks
-    "check-budget-alerts": {
+    # Budget tasks - check twice daily for timely alerts
+    "check-budget-alerts-morning": {
         "task": "tasks.budget.check_alerts",
         "schedule": crontab(hour=8, minute=0),  # Morning alerts
+        "options": {"queue": "default"},
+    },
+    "check-budget-alerts-evening": {
+        "task": "tasks.budget.check_alerts",
+        "schedule": crontab(hour=20, minute=0),  # Evening alerts
         "options": {"queue": "default"},
     },
 

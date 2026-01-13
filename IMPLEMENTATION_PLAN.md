@@ -849,7 +849,47 @@ async def check_budget_alerts():
 - Show rollover badge on cards
 - Show next reset date
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added alert tracking fields to Budget model (last_alert_at, last_alert_percentage, current_period_start)
+- [x] Added rollover_amount field to Budget model
+- [x] Created effective_amount property for calculating base + rollover
+- [x] Implemented check_budget_alerts Celery task for periodic threshold checks
+- [x] Implemented check_budget_for_category Celery task for real-time alerts on expense changes
+- [x] Created budget event handlers (THRESHOLD_WARNING, THRESHOLD_EXCEEDED, PERIOD_RESET)
+- [x] Integrated budget alerts with notification system
+- [x] Updated frontend to display effective_amount when rollover is present
+- [x] Added rollover_amount and effective_amount to BudgetResponse schema
+- [x] Added translations for base/rollover in all 8 languages
+
+**Deferred Items:**
+- [ ] Budget rollover feature (process_period_resets task needs debugging)
+- [ ] Rollover toggle hidden in budget form until fixed
+- [ ] Budget history tracking (BudgetHistory table)
+
+**Key Features:**
+- Real-time budget alerts when expenses are created/updated
+- Configurable alert threshold (default 80%)
+- Budget exceeded alerts at 100%+
+- Alert tracking prevents duplicate notifications
+- Multi-currency support for budget calculations
+
+**Files Created:**
+- `backend/alembic/versions/20260113_add_budget_alert_tracking.py`
+- `backend/alembic/versions/20260113_add_budget_rollover_amount.py`
+
+**Files Modified:**
+- `backend/app/modules/budgets/models.py` - Added alert tracking and rollover fields
+- `backend/app/modules/budgets/schemas.py` - Added rollover_amount and effective_amount
+- `backend/app/modules/budgets/router.py` - Include rollover fields in responses
+- `backend/app/tasks/budget_tasks.py` - Implemented alert and period reset tasks
+- `backend/app/tasks/base.py` - Added model imports and event handlers import for Celery
+- `backend/app/core/event_handlers.py` - Added budget event notification handlers
+- `frontend/lib/api/budgetsApi.ts` - Added rollover types
+- `frontend/app/dashboard/budgets/overview/page.tsx` - Display effective amounts
+- `frontend/components/budgets/budget-form.tsx` - Hidden rollover toggle (temporarily)
+- `frontend/messages/*/budgets.json` - Added base/rollover translations (8 languages)
 
 ---
 
@@ -1704,7 +1744,7 @@ Functions:
 | 1 | COMPLETED | 2026-01-12 | 2026-01-12 | Savings transactions |
 | 2 | COMPLETED | 2026-01-12 | 2026-01-13 | Income integration |
 | 3 | COMPLETED | 2026-01-13 | 2026-01-13 | Expense integration with auto-pay |
-| 4 | NOT STARTED | - | - | Budget completion |
+| 4 | COMPLETED | 2026-01-13 | 2026-01-13 | Budget alerts (rollover deferred) |
 | 5 | NOT STARTED | - | - | Subscription automation |
 | 6 | NOT STARTED | - | - | Installment enhancement |
 | 7 | NOT STARTED | - | - | Debt enhancement |
@@ -1715,7 +1755,7 @@ Functions:
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 4 - Budget Module Completion
+**Next Phase to Start:** Phase 5 - Subscriptions Module Automation
 
 ### How to Continue
 When resuming work on this project:
@@ -1745,4 +1785,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 13, 2026 - Phase 3 (Expenses Integration) completed*
+*Last updated: January 13, 2026 - Phase 4 (Budget Module) completed (rollover deferred)*
