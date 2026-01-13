@@ -152,8 +152,12 @@ class InstallmentEvents:
     DELETED = "installment.deleted"
     PAYMENT_DUE = "installment.payment_due"
     PAYMENT_MADE = "installment.payment_made"
+    PAYMENT_PROCESSED = "installment.payment_processed"
+    PAYMENT_REMINDER = "installment.payment_reminder"
     PAYMENT_LATE = "installment.payment_late"
     COMPLETED = "installment.completed"
+    DEFAULTED = "installment.defaulted"
+    REACTIVATED = "installment.reactivated"
 
 
 class DebtEvents:

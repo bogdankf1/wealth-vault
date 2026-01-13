@@ -19,11 +19,21 @@ from app.modules.installments.schemas import (
     InstallmentStats,
     InstallmentHistoryResponse,
     InstallmentBatchDelete,
-    InstallmentBatchDeleteResponse)
+    InstallmentBatchDeleteResponse,
+    InstallmentPaymentCreate,
+    InstallmentPaymentResponse,
+    InstallmentPaymentListResponse,
+    InstallmentMarkDefaultedRequest,
+)
 from app.modules.installments.service import (
     convert_installment_to_display_currency,
     get_user_display_currency,
-    get_installment_history
+    get_installment_history,
+    mark_installment_completed,
+    mark_installment_defaulted,
+    reactivate_installment,
+    get_installment_payments,
+    process_installment_payment,
 )
 
 router = APIRouter(prefix="/api/v1/installments", tags=["installments"])
@@ -104,9 +114,17 @@ async def list_installments(
             "first_payment_date": installment.first_payment_date.isoformat() if installment.first_payment_date else None,
             "end_date": installment.end_date.isoformat() if installment.end_date else None,
             "is_active": installment.is_active,
+            "status": getattr(installment, 'status', 'active') or 'active',
             "remaining_balance": float(installment.remaining_balance) if installment.remaining_balance is not None else None,
             "created_at": installment.created_at,
             "updated_at": installment.updated_at,
+            # Payment integration fields
+            "payment_account_id": str(installment.payment_account_id) if installment.payment_account_id else None,
+            "auto_pay": getattr(installment, 'auto_pay', False),
+            "next_payment_date": installment.next_payment_date.isoformat() if getattr(installment, 'next_payment_date', None) else None,
+            "last_payment_date": installment.last_payment_date.isoformat() if getattr(installment, 'last_payment_date', None) else None,
+            "reminder_days_before": getattr(installment, 'reminder_days_before', 3),
+            # Display values
             "display_total_amount": float(installment.display_total_amount) if hasattr(installment, 'display_total_amount') and installment.display_total_amount is not None else None,
             "display_amount_per_payment": float(installment.display_amount_per_payment) if hasattr(installment, 'display_amount_per_payment') and installment.display_amount_per_payment is not None else None,
             "display_remaining_balance": float(installment.display_remaining_balance) if hasattr(installment, 'display_remaining_balance') and installment.display_remaining_balance is not None else None,
@@ -193,9 +211,17 @@ async def get_installment(
         "first_payment_date": installment.first_payment_date.isoformat() if installment.first_payment_date else None,
         "end_date": installment.end_date.isoformat() if installment.end_date else None,
         "is_active": installment.is_active,
+        "status": getattr(installment, 'status', 'active') or 'active',
         "remaining_balance": float(installment.remaining_balance) if installment.remaining_balance is not None else None,
         "created_at": installment.created_at,
         "updated_at": installment.updated_at,
+        # Payment integration fields
+        "payment_account_id": str(installment.payment_account_id) if installment.payment_account_id else None,
+        "auto_pay": getattr(installment, 'auto_pay', False),
+        "next_payment_date": installment.next_payment_date.isoformat() if getattr(installment, 'next_payment_date', None) else None,
+        "last_payment_date": installment.last_payment_date.isoformat() if getattr(installment, 'last_payment_date', None) else None,
+        "reminder_days_before": getattr(installment, 'reminder_days_before', 3),
+        # Display values
         "display_total_amount": float(installment.display_total_amount) if hasattr(installment, 'display_total_amount') and installment.display_total_amount is not None else None,
         "display_amount_per_payment": float(installment.display_amount_per_payment) if hasattr(installment, 'display_amount_per_payment') and installment.display_amount_per_payment is not None else None,
         "display_remaining_balance": float(installment.display_remaining_balance) if hasattr(installment, 'display_remaining_balance') and installment.display_remaining_balance is not None else None,
@@ -273,3 +299,195 @@ async def batch_delete_installments(
         deleted_count=deleted_count,
         failed_ids=failed_ids
     )
+
+
+# ============== Payment Integration Endpoints ==============
+
+@router.post("/{installment_id}/complete", response_model=InstallmentResponse)
+@require_feature("installment_tracking")
+async def complete_installment_endpoint(
+    installment_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Mark an installment as completed (all payments made)"""
+    installment = await service.get_installment(db, current_user.id, installment_id)
+    if not installment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Installment not found"
+        )
+
+    if getattr(installment, 'status', 'active') == "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Installment is already completed"
+        )
+
+    installment = await mark_installment_completed(db, installment)
+    return installment
+
+
+@router.post("/{installment_id}/default", response_model=InstallmentResponse)
+@require_feature("installment_tracking")
+async def default_installment_endpoint(
+    installment_id: UUID,
+    default_data: InstallmentMarkDefaultedRequest = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Mark an installment as defaulted"""
+    installment = await service.get_installment(db, current_user.id, installment_id)
+    if not installment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Installment not found"
+        )
+
+    if getattr(installment, 'status', 'active') == "defaulted":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Installment is already defaulted"
+        )
+
+    reason = default_data.reason if default_data else None
+    installment = await mark_installment_defaulted(db, installment, reason)
+    return installment
+
+
+@router.post("/{installment_id}/reactivate", response_model=InstallmentResponse)
+@require_feature("installment_tracking")
+async def reactivate_installment_endpoint(
+    installment_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Reactivate a completed or defaulted installment"""
+    installment = await service.get_installment(db, current_user.id, installment_id)
+    if not installment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Installment not found"
+        )
+
+    if getattr(installment, 'status', 'active') == "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Installment is already active"
+        )
+
+    installment = await reactivate_installment(db, installment)
+    return installment
+
+
+@router.get("/{installment_id}/payments", response_model=InstallmentPaymentListResponse)
+@require_feature("installment_tracking")
+async def get_installment_payments_endpoint(
+    installment_id: UUID,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get payment history for an installment"""
+    # Verify installment exists and belongs to user
+    installment = await service.get_installment(db, current_user.id, installment_id)
+    if not installment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Installment not found"
+        )
+
+    skip = (page - 1) * page_size
+    payments, total = await get_installment_payments(
+        db, installment_id, current_user.id, skip, page_size
+    )
+
+    payment_dicts = []
+    for payment in payments:
+        payment_dict = {
+            "id": str(payment.id),
+            "installment_id": str(payment.installment_id),
+            "user_id": str(payment.user_id),
+            "payment_number": payment.payment_number,
+            "scheduled_date": payment.scheduled_date.isoformat() if payment.scheduled_date else None,
+            "actual_payment_date": payment.actual_payment_date.isoformat() if payment.actual_payment_date else None,
+            "scheduled_amount": float(payment.scheduled_amount) if payment.scheduled_amount else 0,
+            "actual_amount": float(payment.actual_amount) if payment.actual_amount else None,
+            "principal_amount": float(payment.principal_amount) if payment.principal_amount else None,
+            "interest_amount": float(payment.interest_amount) if payment.interest_amount else None,
+            "currency": payment.currency,
+            "expense_id": str(payment.expense_id) if payment.expense_id else None,
+            "account_transaction_id": str(payment.account_transaction_id) if payment.account_transaction_id else None,
+            "status": payment.status,
+            "is_late": payment.is_late,
+            "days_late": payment.days_late,
+            "notes": payment.notes,
+            "created_at": payment.created_at,
+        }
+        payment_dicts.append(payment_dict)
+
+    return InstallmentPaymentListResponse(
+        items=payment_dicts,
+        total=total
+    )
+
+
+@router.post("/{installment_id}/pay", response_model=InstallmentPaymentResponse)
+@require_feature("installment_tracking")
+async def record_installment_payment(
+    installment_id: UUID,
+    payment_data: InstallmentPaymentCreate = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Manually record an installment payment"""
+    installment = await service.get_installment(db, current_user.id, installment_id)
+    if not installment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Installment not found"
+        )
+
+    if getattr(installment, 'status', 'active') == "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Installment is already completed"
+        )
+
+    payment_date = payment_data.payment_date if payment_data and payment_data.payment_date else None
+    amount = payment_data.amount if payment_data and payment_data.amount else None
+    payment_number = payment_data.payment_number if payment_data and payment_data.payment_number else None
+    notes = payment_data.notes if payment_data else None
+
+    try:
+        payment = await process_installment_payment(
+            db, installment, payment_number, payment_date, amount, notes
+        )
+        await db.commit()
+
+        return {
+            "id": str(payment.id),
+            "installment_id": str(payment.installment_id),
+            "user_id": str(payment.user_id),
+            "payment_number": payment.payment_number,
+            "scheduled_date": payment.scheduled_date.isoformat() if payment.scheduled_date else None,
+            "actual_payment_date": payment.actual_payment_date.isoformat() if payment.actual_payment_date else None,
+            "scheduled_amount": float(payment.scheduled_amount) if payment.scheduled_amount else 0,
+            "actual_amount": float(payment.actual_amount) if payment.actual_amount else None,
+            "principal_amount": float(payment.principal_amount) if payment.principal_amount else None,
+            "interest_amount": float(payment.interest_amount) if payment.interest_amount else None,
+            "currency": payment.currency,
+            "expense_id": str(payment.expense_id) if payment.expense_id else None,
+            "account_transaction_id": str(payment.account_transaction_id) if payment.account_transaction_id else None,
+            "status": payment.status,
+            "is_late": payment.is_late,
+            "days_late": payment.days_late,
+            "notes": payment.notes,
+            "created_at": payment.created_at,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process payment: {str(e)}"
+        )

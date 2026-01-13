@@ -1154,7 +1154,48 @@ async def check_late_payments():
 - Show payment status (on time, late, missed)
 - Show next payment date and amount
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added payment_account_id, auto_pay, reminder_days_before, status fields to Installment model
+- [x] Created InstallmentPayment model and table for payment history
+- [x] Created database migration for installment payment integration
+- [x] Updated installment service with payment processing functions (process_installment_payment, backfill_installment_payments, reverse_installment_payments)
+- [x] Implemented complete, default, reactivate status functions
+- [x] Updated installment router with /payments, /complete, /default, /reactivate endpoints
+- [x] Implemented Celery tasks for installment payment processing
+- [x] Updated frontend installment form with payment account selector, auto-pay toggle, sync historical checkbox
+- [x] Created installment detail page (/dashboard/installments/[id]) with full installment info
+- [x] Created InstallmentPaymentList component for payment history
+- [x] Added Mark Complete/Defaulted/Reactivate actions to detail page
+- [x] Added clickable installment names and Eye icon for navigation to detail page
+- [x] Fixed form pre-selection of payment account and auto-pay toggle
+- [x] Added translations for all 8 languages (en, uk, es, fr, de, it, pl, pt)
+
+**Key Features:**
+- Installments can be linked to payment accounts for automatic payments
+- Auto-pay feature automatically deducts from linked account when due (via Celery task)
+- Sync historical payments backfills past payments from first_payment_date to today
+- Installment detail page shows all info, payment history, and action buttons
+- Status management: Active → Completed (paid off), Active → Defaulted (failed), Reactivate
+- All installment payments appear in account transaction history
+
+**Files Created:**
+- `backend/alembic/versions/20260113_add_installment_payment_integration.py`
+- `frontend/app/dashboard/installments/[id]/page.tsx`
+- `frontend/components/installments/installment-payment-list.tsx`
+
+**Files Modified:**
+- `backend/app/modules/installments/models.py` - Added payment integration fields
+- `backend/app/modules/installments/schemas.py` - Added payment schemas
+- `backend/app/modules/installments/service.py` - Added payment functions
+- `backend/app/modules/installments/router.py` - Added payment endpoints
+- `backend/app/tasks/installment_tasks.py` - Implemented payment processing tasks
+- `frontend/lib/api/installmentsApi.ts` - Added payment types and endpoints
+- `frontend/components/installments/installment-form.tsx` - Added payment integration UI
+- `frontend/app/dashboard/installments/overview/page.tsx` - Added navigation to detail page
+- `frontend/messages/*/installments.json` - Added detail and payments translations (8 languages)
+- `frontend/messages/*/common.json` - Added view and actions translations (8 languages)
 
 ---
 

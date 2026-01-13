@@ -10,6 +10,7 @@ import pytz
 
 
 InstallmentFrequency = Literal["weekly", "biweekly", "monthly"]
+InstallmentStatus = Literal["active", "completed", "defaulted"]
 
 
 class InstallmentCreate(BaseModel):
@@ -28,6 +29,12 @@ class InstallmentCreate(BaseModel):
     first_payment_date: datetime
     end_date: Optional[datetime] = None
     is_active: bool = True
+    # Payment integration fields
+    payment_account_id: Optional[UUID] = None
+    auto_pay: bool = False
+    reminder_days_before: int = Field(default=3, ge=0, le=30)
+    # For historical sync when linking account
+    sync_historical: bool = False
 
     @model_validator(mode='after')
     def convert_to_naive_datetimes(self):
@@ -55,6 +62,12 @@ class InstallmentUpdate(BaseModel):
     first_payment_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     is_active: Optional[bool] = None
+    # Payment integration fields
+    payment_account_id: Optional[UUID] = None
+    auto_pay: Optional[bool] = None
+    reminder_days_before: Optional[int] = Field(None, ge=0, le=30)
+    # For historical sync when updating account link
+    sync_historical: bool = False
 
     @model_validator(mode='after')
     def convert_to_naive_datetimes(self):
@@ -84,9 +97,17 @@ class InstallmentResponse(BaseModel):
     first_payment_date: str
     end_date: Optional[str]
     is_active: bool
+    status: str = "active"
     remaining_balance: Optional[Decimal]
     created_at: datetime
     updated_at: datetime
+
+    # Payment integration fields
+    payment_account_id: Optional[str] = None
+    auto_pay: bool = False
+    next_payment_date: Optional[str] = None
+    last_payment_date: Optional[str] = None
+    reminder_days_before: int = 3
 
     # Display values (converted to user's preferred currency)
     display_total_amount: Optional[Decimal] = None
@@ -97,11 +118,11 @@ class InstallmentResponse(BaseModel):
     class Config:
         from_attributes = True
 
-    @field_validator('id', 'user_id', mode='before')
+    @field_validator('id', 'user_id', 'payment_account_id', mode='before')
     def convert_uuid_to_str(cls, v):
         return str(v) if v else None
 
-    @field_validator('start_date', 'first_payment_date', 'end_date', mode='before')
+    @field_validator('start_date', 'first_payment_date', 'end_date', 'next_payment_date', 'last_payment_date', mode='before')
     def convert_datetime_to_str(cls, v):
         if v and isinstance(v, datetime):
             return v.isoformat()
@@ -156,3 +177,72 @@ class InstallmentBatchDeleteResponse(BaseModel):
     """Schema for batch delete response."""
     deleted_count: int
     failed_ids: list[UUID] = []
+
+
+# Payment integration schemas
+class InstallmentPaymentCreate(BaseModel):
+    """Schema for recording an installment payment"""
+    amount: Optional[Decimal] = None  # If None, uses installment amount_per_payment
+    payment_date: Optional[datetime] = None  # If None, uses current date
+    payment_number: Optional[int] = None  # If None, auto-calculates based on payments_made
+    principal_amount: Optional[Decimal] = None
+    interest_amount: Optional[Decimal] = None
+    notes: Optional[str] = None
+
+
+class InstallmentPaymentResponse(BaseModel):
+    """Schema for installment payment response"""
+    id: str
+    installment_id: str
+    user_id: str
+    payment_number: int
+    scheduled_date: str
+    actual_payment_date: Optional[str] = None
+    scheduled_amount: Decimal
+    actual_amount: Optional[Decimal] = None
+    principal_amount: Optional[Decimal] = None
+    interest_amount: Optional[Decimal] = None
+    currency: str
+    expense_id: Optional[str] = None
+    account_transaction_id: Optional[str] = None
+    status: str
+    is_late: bool = False
+    days_late: Optional[int] = None
+    notes: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+    @field_validator('id', 'installment_id', 'user_id', 'expense_id', 'account_transaction_id', mode='before')
+    def convert_uuid_to_str(cls, v):
+        return str(v) if v else None
+
+    @field_validator('scheduled_date', 'actual_payment_date', mode='before')
+    def convert_datetime_to_str(cls, v):
+        if v and isinstance(v, datetime):
+            return v.isoformat()
+        return v
+
+
+class InstallmentPaymentListResponse(BaseModel):
+    """Schema for paginated payment history"""
+    items: list[InstallmentPaymentResponse]
+    total: int
+
+
+class InstallmentPaymentSummary(BaseModel):
+    """Summary of installment payments"""
+    total_paid: Decimal
+    payment_count: int
+    payments_remaining: int
+    last_payment_date: Optional[str] = None
+    next_payment_date: Optional[str] = None
+    on_track: bool = True  # Whether payments are on schedule
+    late_payments: int = 0
+    currency: str
+
+
+class InstallmentMarkDefaultedRequest(BaseModel):
+    """Schema for marking an installment as defaulted"""
+    reason: Optional[str] = None
