@@ -5,7 +5,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -49,6 +50,8 @@ import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
 export default function SubscriptionsPage() {
+  const router = useRouter();
+
   // Translation hooks
   const tOverview = useTranslations('subscriptions.overview');
   const tActions = useTranslations('subscriptions.actions');
@@ -783,7 +786,12 @@ export default function SubscriptionsPage() {
                         </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
-                            <p className="truncate">{subscription.name}</p>
+                            <button
+                              onClick={() => router.push(`/dashboard/subscriptions/${subscription.id}`)}
+                              className="truncate hover:underline text-left font-medium"
+                            >
+                              {subscription.name}
+                            </button>
                             <p className="text-xs text-muted-foreground md:hidden truncate">
                               {subscription.description}
                             </p>
@@ -849,6 +857,15 @@ export default function SubscriptionsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => router.push(`/dashboard/subscriptions/${subscription.id}`)}
+                              className="h-8 w-8 p-0"
+                              title="View details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"

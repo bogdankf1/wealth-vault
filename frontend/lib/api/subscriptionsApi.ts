@@ -5,6 +5,7 @@ import { apiSlice } from './apiSlice';
 
 // Types
 export type SubscriptionFrequency = 'monthly' | 'quarterly' | 'annually' | 'biannually';
+export type SubscriptionStatus = 'active' | 'paused' | 'cancelled' | 'expired';
 
 export interface Subscription {
   id: string;
@@ -18,8 +19,17 @@ export interface Subscription {
   start_date: string;
   end_date?: string;
   is_active: boolean;
+  status: SubscriptionStatus;
   created_at: string;
   updated_at: string;
+  // Payment integration fields
+  payment_account_id?: string | null;
+  auto_pay: boolean;
+  next_payment_date?: string | null;
+  last_payment_date?: string | null;
+  reminder_days_before: number;
+  paused_at?: string | null;
+  resume_date?: string | null;
   // Display values (converted to user's preferred currency)
   display_amount?: number | null;
   display_currency?: string | null;
@@ -36,6 +46,11 @@ export interface SubscriptionCreate {
   start_date: string;
   end_date?: string;
   is_active?: boolean;
+  // Payment integration fields
+  payment_account_id?: string | null;
+  auto_pay?: boolean;
+  reminder_days_before?: number;
+  sync_historical?: boolean;
 }
 
 export interface SubscriptionUpdate {
@@ -48,6 +63,36 @@ export interface SubscriptionUpdate {
   start_date?: string;
   end_date?: string;
   is_active?: boolean;
+  // Payment integration fields
+  payment_account_id?: string | null;
+  auto_pay?: boolean;
+  reminder_days_before?: number;
+  sync_historical?: boolean;
+}
+
+export interface SubscriptionPayment {
+  id: string;
+  subscription_id: string;
+  user_id: string;
+  amount: number;
+  currency: string;
+  payment_date: string;
+  period_start?: string | null;
+  period_end?: string | null;
+  expense_id?: string | null;
+  account_transaction_id?: string | null;
+  status: string;
+  notes?: string | null;
+  created_at: string;
+}
+
+export interface SubscriptionPaymentListResponse {
+  items: SubscriptionPayment[];
+  total: number;
+}
+
+export interface SubscriptionPauseRequest {
+  resume_date?: string;
 }
 
 export interface SubscriptionListResponse {
@@ -204,6 +249,75 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
         return tags;
       },
     }),
+
+    // Pause subscription
+    pauseSubscription: builder.mutation<Subscription, { id: string; data?: SubscriptionPauseRequest }>({
+      query: ({ id, data }) => ({
+        url: `/api/v1/subscriptions/${id}/pause`,
+        method: 'POST',
+        body: data || {},
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Subscriptions', id },
+        { type: 'Subscriptions', id: 'LIST' },
+        { type: 'Subscriptions', id: 'STATS' },
+      ],
+    }),
+
+    // Resume subscription
+    resumeSubscription: builder.mutation<Subscription, string>({
+      query: (id) => ({
+        url: `/api/v1/subscriptions/${id}/resume`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Subscriptions', id },
+        { type: 'Subscriptions', id: 'LIST' },
+        { type: 'Subscriptions', id: 'STATS' },
+      ],
+    }),
+
+    // Cancel subscription
+    cancelSubscription: builder.mutation<Subscription, string>({
+      query: (id) => ({
+        url: `/api/v1/subscriptions/${id}/cancel`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Subscriptions', id },
+        { type: 'Subscriptions', id: 'LIST' },
+        { type: 'Subscriptions', id: 'STATS' },
+      ],
+    }),
+
+    // Get subscription payments
+    getSubscriptionPayments: builder.query<SubscriptionPaymentListResponse, { subscriptionId: string; page?: number; page_size?: number }>({
+      query: ({ subscriptionId, ...params }) => ({
+        url: `/api/v1/subscriptions/${subscriptionId}/payments`,
+        params,
+      }),
+      providesTags: (result, error, { subscriptionId }) => [
+        { type: 'Subscriptions', id: `${subscriptionId}-payments` },
+      ],
+    }),
+
+    // Record manual payment
+    recordSubscriptionPayment: builder.mutation<SubscriptionPayment, { subscriptionId: string; data?: { payment_date?: string; notes?: string } }>({
+      query: ({ subscriptionId, data }) => ({
+        url: `/api/v1/subscriptions/${subscriptionId}/pay`,
+        method: 'POST',
+        body: data || {},
+      }),
+      invalidatesTags: (result, error, { subscriptionId }) => [
+        { type: 'Subscriptions', id: subscriptionId },
+        { type: 'Subscriptions', id: `${subscriptionId}-payments` },
+        { type: 'Subscriptions', id: 'LIST' },
+        { type: 'Subscriptions', id: 'STATS' },
+        'Dashboard',
+        'Expense',
+        'Saving',
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -217,4 +331,9 @@ export const {
   useGetSubscriptionStatsQuery,
   useGetSubscriptionHistoryQuery,
   useBatchDeleteSubscriptionsMutation,
+  usePauseSubscriptionMutation,
+  useResumeSubscriptionMutation,
+  useCancelSubscriptionMutation,
+  useGetSubscriptionPaymentsQuery,
+  useRecordSubscriptionPaymentMutation,
 } = subscriptionsApi;
