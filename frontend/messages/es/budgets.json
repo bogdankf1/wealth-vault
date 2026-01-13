@@ -60,7 +60,9 @@
     "original": "Original",
     "periodLabel": "Período",
     "ongoing": "continuo",
-    "to": "a"
+    "to": "a",
+    "base": "Base",
+    "rollover": "Transferido"
   },
   "analysis": {
     "title": "Análisis de Presupuestos",

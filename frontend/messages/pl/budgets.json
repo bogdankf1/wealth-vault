@@ -60,7 +60,9 @@
     "original": "Oryginalna",
     "periodLabel": "Okres",
     "ongoing": "bezterminowo",
-    "to": "do"
+    "to": "do",
+    "base": "Podstawa",
+    "rollover": "Przeniesienie"
   },
   "analysis": {
     "title": "Analiza budżetu",

@@ -362,6 +362,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
               )}
             />
 
+            {/* TODO: Rollover feature temporarily hidden - needs backend fix
             <FormField
               control={form.control}
               name="rollover_unused"
@@ -379,6 +380,7 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
                 </FormItem>
               )}
             />
+            */}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>

@@ -522,7 +522,18 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                 <Label htmlFor="payment_account_id">{tForm('paymentAccount')}</Label>
                 <Select
                   value={watch('payment_account_id') || 'none'}
-                  onValueChange={(value) => setValue('payment_account_id', value === 'none' ? null : value)}
+                  onValueChange={(value) => {
+                    const accountId = value === 'none' ? null : value;
+                    setValue('payment_account_id', accountId);
+                    // Auto-enable auto_pay and sync_historical when account is selected
+                    if (accountId) {
+                      setValue('auto_pay', true);
+                      setValue('sync_historical', true);
+                    } else {
+                      setValue('auto_pay', false);
+                      setValue('sync_historical', false);
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={tForm('paymentAccountPlaceholder')} />
@@ -571,7 +582,13 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                     <Switch
                       id="auto_pay"
                       checked={watch('auto_pay') || false}
-                      onCheckedChange={(checked: boolean) => setValue('auto_pay', checked)}
+                      onCheckedChange={(checked: boolean) => {
+                        setValue('auto_pay', checked);
+                        // Auto-enable sync_historical when auto_pay is turned on
+                        if (checked) {
+                          setValue('sync_historical', true);
+                        }
+                      }}
                     />
                   </div>
 

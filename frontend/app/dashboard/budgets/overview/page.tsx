@@ -546,7 +546,7 @@ export default function BudgetsPage() {
                     <div>
                       <div className="text-xl md:text-2xl font-bold">
                         <CurrencyDisplay
-                          amount={budget.display_amount ?? budget.amount}
+                          amount={budget.effective_amount ?? budget.display_amount ?? budget.amount}
                           currency={budget.display_currency ?? budget.currency}
                           showSymbol={true}
                           showCode={false}
@@ -556,7 +556,21 @@ export default function BudgetsPage() {
                         {PERIOD_LABELS[budget.period] || budget.period}
                       </p>
                       <div className="text-[10px] md:text-xs text-muted-foreground mt-1 min-h-[16px]">
-                        {budget.display_currency && budget.display_currency !== budget.currency && (
+                        {budget.rollover_unused && budget.rollover_amount > 0 ? (
+                          <span className="text-green-600 dark:text-green-400">
+                            {tOverview('base')}: <CurrencyDisplay
+                              amount={budget.amount}
+                              currency={budget.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            /> + {tOverview('rollover')}: <CurrencyDisplay
+                              amount={budget.rollover_amount}
+                              currency={budget.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </span>
+                        ) : budget.display_currency && budget.display_currency !== budget.currency ? (
                           <>
                             {tOverview('original')}: <CurrencyDisplay
                               amount={budget.amount}
@@ -565,7 +579,7 @@ export default function BudgetsPage() {
                               showCode={false}
                             />
                           </>
-                        )}
+                        ) : null}
                       </div>
                     </div>
 
@@ -670,12 +684,24 @@ export default function BudgetsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        <CurrencyDisplay
-                          amount={budget.display_amount ?? budget.amount}
-                          currency={budget.display_currency ?? budget.currency}
-                          showSymbol={true}
-                          showCode={false}
-                        />
+                        <div>
+                          <CurrencyDisplay
+                            amount={budget.effective_amount ?? budget.display_amount ?? budget.amount}
+                            currency={budget.display_currency ?? budget.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                          {budget.rollover_unused && budget.rollover_amount > 0 && (
+                            <div className="text-xs text-green-600 dark:text-green-400 font-normal">
+                              +<CurrencyDisplay
+                                amount={budget.rollover_amount}
+                                currency={budget.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              /> {tOverview('rollover')}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground">

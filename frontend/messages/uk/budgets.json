@@ -60,7 +60,9 @@
     "original": "Початкова",
     "periodLabel": "Період",
     "ongoing": "безстроково",
-    "to": "до"
+    "to": "до",
+    "base": "Базова",
+    "rollover": "Залишок"
   },
   "analysis": {
     "title": "Аналіз бюджетів",

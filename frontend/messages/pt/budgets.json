@@ -60,7 +60,9 @@
     "original": "Original",
     "periodLabel": "Período",
     "ongoing": "contínuo",
-    "to": "a"
+    "to": "a",
+    "base": "Base",
+    "rollover": "Transferência"
   },
   "analysis": {
     "title": "Análise de Orçamento",

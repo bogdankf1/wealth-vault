@@ -60,7 +60,9 @@
     "original": "Originale",
     "periodLabel": "Periodo",
     "ongoing": "in corso",
-    "to": "a"
+    "to": "a",
+    "base": "Base",
+    "rollover": "Riporto"
   },
   "analysis": {
     "title": "Analisi Budget",

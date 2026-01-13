@@ -16,10 +16,12 @@ export interface Budget {
   end_date?: string;
   is_active: boolean;
   rollover_unused: boolean;
+  rollover_amount: number;
   alert_threshold: number;
   created_at: string;
   updated_at: string;
   // Calculated fields
+  effective_amount?: number;
   spent?: number;
   remaining?: number;
   percentage_used?: number;
