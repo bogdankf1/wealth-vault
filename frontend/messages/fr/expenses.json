@@ -134,7 +134,27 @@
     "createSuccess": "Dépense créée avec succès",
     "updateSuccess": "Dépense mise à jour avec succès",
     "createError": "Échec de la création de la dépense",
-    "updateError": "Échec de la mise à jour de la dépense"
+    "updateError": "Échec de la mise à jour de la dépense",
+    "accountIntegration": "Intégration de Compte",
+    "paymentAccount": "Compte de Paiement",
+    "paymentAccountPlaceholder": "Sélectionner un compte d'épargne",
+    "noPaymentAccount": "Pas de compte de paiement",
+    "paymentAccountHelp": "Sélectionnez un compte pour payer automatiquement les dépenses",
+    "insufficientBalanceWarning": "Le montant de la dépense ({amount}) dépasse le solde du compte ({balance}). Le paiement échouera si le solde n'est pas suffisant.",
+    "autoPay": "Paiement automatique",
+    "autoPayHelp": "Payer automatiquement cette dépense depuis le compte lié à l'échéance",
+    "syncHistorical": "Remplir les paiements historiques",
+    "syncHistoricalHelp": "Créer des transactions de paiement pour toutes les périodes passées depuis la date de début. Cela déduira des montants de votre compte pour chaque période passée.",
+    "paymentMethod": "Méthode de Paiement",
+    "paymentMethodPlaceholder": "Sélectionner une méthode de paiement",
+    "noPaymentMethod": "Pas de méthode de paiement",
+    "paymentMethods": {
+      "cash": "Espèces",
+      "card": "Carte",
+      "transfer": "Virement Bancaire",
+      "check": "Chèque",
+      "other": "Autre"
+    }
   },
   "history": {
     "title": "Historique des dépenses",

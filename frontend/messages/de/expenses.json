@@ -134,7 +134,27 @@
     "createSuccess": "Ausgabe erfolgreich erstellt",
     "updateSuccess": "Ausgabe erfolgreich aktualisiert",
     "createError": "Ausgabe konnte nicht erstellt werden",
-    "updateError": "Ausgabe konnte nicht aktualisiert werden"
+    "updateError": "Ausgabe konnte nicht aktualisiert werden",
+    "accountIntegration": "Kontointegration",
+    "paymentAccount": "Zahlungskonto",
+    "paymentAccountPlaceholder": "Sparkonto auswählen",
+    "noPaymentAccount": "Kein Zahlungskonto",
+    "paymentAccountHelp": "Wählen Sie ein Konto für automatische Ausgabenzahlungen",
+    "insufficientBalanceWarning": "Ausgabenbetrag ({amount}) übersteigt Kontostand ({balance}). Zahlung wird fehlschlagen, wenn das Guthaben nicht ausreicht.",
+    "autoPay": "Automatische Zahlung",
+    "autoPayHelp": "Zahlen Sie diese Ausgabe automatisch vom verknüpften Konto, wenn sie fällig ist",
+    "syncHistorical": "Historische Zahlungen nachfüllen",
+    "syncHistoricalHelp": "Erstellen Sie Zahlungstransaktionen für alle vergangenen Zeiträume seit dem Startdatum. Dies wird Beträge von Ihrem Konto für jeden vergangenen Zeitraum abbuchen.",
+    "paymentMethod": "Zahlungsmethode",
+    "paymentMethodPlaceholder": "Zahlungsmethode auswählen",
+    "noPaymentMethod": "Keine Zahlungsmethode",
+    "paymentMethods": {
+      "cash": "Bargeld",
+      "card": "Karte",
+      "transfer": "Banküberweisung",
+      "check": "Scheck",
+      "other": "Andere"
+    }
   },
   "history": {
     "title": "Ausgabenverlauf",

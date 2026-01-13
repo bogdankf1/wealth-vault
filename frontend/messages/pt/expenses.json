@@ -134,7 +134,27 @@
     "createSuccess": "Despesa criada com sucesso",
     "updateSuccess": "Despesa atualizada com sucesso",
     "createError": "Falha ao criar despesa",
-    "updateError": "Falha ao atualizar despesa"
+    "updateError": "Falha ao atualizar despesa",
+    "accountIntegration": "Integração de Conta",
+    "paymentAccount": "Conta de Pagamento",
+    "paymentAccountPlaceholder": "Selecionar conta de poupança",
+    "noPaymentAccount": "Sem conta de pagamento",
+    "paymentAccountHelp": "Selecione uma conta para pagar despesas automaticamente",
+    "insufficientBalanceWarning": "O valor da despesa ({amount}) excede o saldo da conta ({balance}). O pagamento falhará se o saldo não for suficiente.",
+    "autoPay": "Pagamento automático",
+    "autoPayHelp": "Pagar automaticamente esta despesa da conta vinculada quando vencer",
+    "syncHistorical": "Preencher pagamentos históricos",
+    "syncHistoricalHelp": "Criar transações de pagamento para todos os períodos passados desde a data de início. Isso deduzirá valores da sua conta para cada período passado.",
+    "paymentMethod": "Método de Pagamento",
+    "paymentMethodPlaceholder": "Selecionar método de pagamento",
+    "noPaymentMethod": "Sem método de pagamento",
+    "paymentMethods": {
+      "cash": "Dinheiro",
+      "card": "Cartão",
+      "transfer": "Transferência Bancária",
+      "check": "Cheque",
+      "other": "Outro"
+    }
   },
   "history": {
     "title": "Histórico de Despesas",

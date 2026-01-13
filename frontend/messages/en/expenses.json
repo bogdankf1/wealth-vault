@@ -134,7 +134,27 @@
     "createSuccess": "Expense created successfully",
     "updateSuccess": "Expense updated successfully",
     "createError": "Failed to create expense",
-    "updateError": "Failed to update expense"
+    "updateError": "Failed to update expense",
+    "accountIntegration": "Account Integration",
+    "paymentAccount": "Payment Account",
+    "paymentAccountPlaceholder": "Select a savings account",
+    "noPaymentAccount": "No payment account",
+    "paymentAccountHelp": "Select an account to pay expenses from",
+    "insufficientBalanceWarning": "Expense amount ({amount}) exceeds account balance ({balance}). Payment will fail if balance is not sufficient.",
+    "autoPay": "Auto-pay",
+    "autoPayHelp": "Automatically pay this expense from the linked account when due",
+    "syncHistorical": "Backfill historical payments",
+    "syncHistoricalHelp": "Create payment transactions for all past periods since the start date. This will deduct amounts from your account for each past period.",
+    "paymentMethod": "Payment Method",
+    "paymentMethodPlaceholder": "Select payment method",
+    "noPaymentMethod": "No payment method",
+    "paymentMethods": {
+      "cash": "Cash",
+      "card": "Card",
+      "transfer": "Bank Transfer",
+      "check": "Check",
+      "other": "Other"
+    }
   },
   "history": {
     "title": "Expense History",

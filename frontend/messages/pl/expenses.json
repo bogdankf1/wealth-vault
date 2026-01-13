@@ -134,7 +134,27 @@
     "createSuccess": "Wydatek utworzony pomyślnie",
     "updateSuccess": "Wydatek zaktualizowany pomyślnie",
     "createError": "Nie udało się utworzyć wydatku",
-    "updateError": "Nie udało się zaktualizować wydatku"
+    "updateError": "Nie udało się zaktualizować wydatku",
+    "accountIntegration": "Integracja z Kontem",
+    "paymentAccount": "Konto Płatności",
+    "paymentAccountPlaceholder": "Wybierz konto oszczędnościowe",
+    "noPaymentAccount": "Brak konta płatności",
+    "paymentAccountHelp": "Wybierz konto do automatycznego opłacania wydatków",
+    "insufficientBalanceWarning": "Kwota wydatku ({amount}) przekracza saldo konta ({balance}). Płatność nie powiedzie się, jeśli saldo będzie niewystarczające.",
+    "autoPay": "Automatyczna płatność",
+    "autoPayHelp": "Automatycznie opłacaj ten wydatek z połączonego konta w terminie",
+    "syncHistorical": "Uzupełnij historyczne płatności",
+    "syncHistoricalHelp": "Utwórz transakcje płatności dla wszystkich przeszłych okresów od daty rozpoczęcia. Spowoduje to pobranie kwot z konta za każdy przeszły okres.",
+    "paymentMethod": "Metoda Płatności",
+    "paymentMethodPlaceholder": "Wybierz metodę płatności",
+    "noPaymentMethod": "Brak metody płatności",
+    "paymentMethods": {
+      "cash": "Gotówka",
+      "card": "Karta",
+      "transfer": "Przelew Bankowy",
+      "check": "Czek",
+      "other": "Inne"
+    }
   },
   "history": {
     "title": "Historia wydatków",

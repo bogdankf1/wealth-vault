@@ -134,7 +134,27 @@
     "createSuccess": "Spesa creata con successo",
     "updateSuccess": "Spesa aggiornata con successo",
     "createError": "Impossibile creare la spesa",
-    "updateError": "Impossibile aggiornare la spesa"
+    "updateError": "Impossibile aggiornare la spesa",
+    "accountIntegration": "Integrazione Account",
+    "paymentAccount": "Conto di Pagamento",
+    "paymentAccountPlaceholder": "Seleziona un conto di risparmio",
+    "noPaymentAccount": "Nessun conto di pagamento",
+    "paymentAccountHelp": "Seleziona un conto per pagare automaticamente le spese",
+    "insufficientBalanceWarning": "L'importo della spesa ({amount}) supera il saldo del conto ({balance}). Il pagamento fallirà se il saldo non è sufficiente.",
+    "autoPay": "Pagamento automatico",
+    "autoPayHelp": "Paga automaticamente questa spesa dal conto collegato alla scadenza",
+    "syncHistorical": "Compilare pagamenti storici",
+    "syncHistoricalHelp": "Crea transazioni di pagamento per tutti i periodi passati dalla data di inizio. Questo dedurrà importi dal tuo conto per ogni periodo passato.",
+    "paymentMethod": "Metodo di Pagamento",
+    "paymentMethodPlaceholder": "Seleziona metodo di pagamento",
+    "noPaymentMethod": "Nessun metodo di pagamento",
+    "paymentMethods": {
+      "cash": "Contanti",
+      "card": "Carta",
+      "transfer": "Bonifico Bancario",
+      "check": "Assegno",
+      "other": "Altro"
+    }
   },
   "history": {
     "title": "Storico Spese",

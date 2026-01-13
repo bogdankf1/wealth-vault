@@ -134,7 +134,27 @@
     "createSuccess": "Gasto creado exitosamente",
     "updateSuccess": "Gasto actualizado exitosamente",
     "createError": "Error al crear el gasto",
-    "updateError": "Error al actualizar el gasto"
+    "updateError": "Error al actualizar el gasto",
+    "accountIntegration": "Integración de Cuenta",
+    "paymentAccount": "Cuenta de Pago",
+    "paymentAccountPlaceholder": "Seleccionar cuenta de ahorro",
+    "noPaymentAccount": "Sin cuenta de pago",
+    "paymentAccountHelp": "Seleccione una cuenta para pagar gastos automáticamente",
+    "insufficientBalanceWarning": "El monto del gasto ({amount}) excede el saldo de la cuenta ({balance}). El pago fallará si el saldo no es suficiente.",
+    "autoPay": "Pago automático",
+    "autoPayHelp": "Pagar automáticamente este gasto desde la cuenta vinculada cuando venza",
+    "syncHistorical": "Rellenar pagos históricos",
+    "syncHistoricalHelp": "Crear transacciones de pago para todos los períodos pasados desde la fecha de inicio. Esto deducirá montos de su cuenta para cada período pasado.",
+    "paymentMethod": "Método de Pago",
+    "paymentMethodPlaceholder": "Seleccionar método de pago",
+    "noPaymentMethod": "Sin método de pago",
+    "paymentMethods": {
+      "cash": "Efectivo",
+      "card": "Tarjeta",
+      "transfer": "Transferencia Bancaria",
+      "check": "Cheque",
+      "other": "Otro"
+    }
   },
   "history": {
     "title": "Historial de gastos",

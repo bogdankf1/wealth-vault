@@ -13,6 +13,10 @@ export type ExpenseFrequency =
   | 'quarterly'
   | 'annually';
 
+export type ExpenseStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
+
+export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'check' | 'other';
+
 export interface Expense {
   id: string;
   user_id: string;
@@ -34,6 +38,16 @@ export interface Expense {
   display_amount?: number | null;
   display_currency?: string | null;
   display_monthly_equivalent?: number | null;
+  // Payment integration fields
+  payment_account_id?: string | null;
+  payment_method?: PaymentMethod | null;
+  status: ExpenseStatus;
+  paid_date?: string | null;
+  paid_amount?: number | null;
+  account_transaction_id?: string | null;
+  receipt_url?: string | null;
+  payment_account_name?: string | null;
+  auto_pay: boolean;
 }
 
 export interface ExpenseCreate {
@@ -48,6 +62,11 @@ export interface ExpenseCreate {
   end_date?: string;
   is_active: boolean;
   tags?: string[];
+  // Payment integration fields
+  payment_account_id?: string | null;
+  payment_method?: PaymentMethod;
+  auto_pay?: boolean;
+  sync_historical?: boolean;
 }
 
 export interface ExpenseUpdate {
@@ -62,6 +81,11 @@ export interface ExpenseUpdate {
   end_date?: string;
   is_active?: boolean;
   tags?: string[];
+  // Payment integration fields
+  payment_account_id?: string | null;
+  payment_method?: PaymentMethod;
+  auto_pay?: boolean;
+  sync_historical?: boolean;
 }
 
 export interface ExpenseListResponse {
@@ -101,6 +125,34 @@ export interface ListExpensesParams {
   page_size?: number;
   category?: string;
   is_active?: boolean;
+  status?: ExpenseStatus;
+}
+
+// Payment integration types
+export interface PayExpenseRequest {
+  account_id?: string;
+  amount?: number;
+  payment_method?: PaymentMethod;
+  description?: string;
+}
+
+export interface PayExpenseResponse {
+  expense_id: string;
+  account_transaction_id?: string | null;
+  paid_amount: number;
+  paid_date: string;
+  status: string;
+  message: string;
+}
+
+export interface ExpensePaymentSummary {
+  total_pending: number;
+  total_paid: number;
+  total_overdue: number;
+  pending_amount: number;
+  paid_amount: number;
+  overdue_amount: number;
+  currency: string;
 }
 
 export interface ExpenseBatchDeleteRequest {
@@ -242,6 +294,70 @@ export const expensesApi = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: 'Expense', id: 'HISTORY' }],
     }),
+
+    // ============================================================
+    // Payment Integration Endpoints
+    // ============================================================
+
+    // Pay expense
+    payExpense: builder.mutation<PayExpenseResponse, { id: string; data: PayExpenseRequest }>({
+      query: ({ id, data }) => ({
+        url: `/api/v1/expenses/${id}/pay`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Expense', id },
+        { type: 'Expense', id: 'LIST' },
+        { type: 'Expense', id: 'STATS' },
+        { type: 'Expense', id: 'PENDING' },
+        { type: 'Expense', id: 'OVERDUE' },
+        { type: 'Expense', id: 'PAYMENT_SUMMARY' },
+        { type: 'Saving', id: 'LIST' },
+        { type: 'Saving', id: 'TRANSACTIONS' },
+        'Dashboard',
+      ],
+    }),
+
+    // Cancel expense
+    cancelExpense: builder.mutation<Expense, string>({
+      query: (id) => ({
+        url: `/api/v1/expenses/${id}/cancel`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Expense', id },
+        { type: 'Expense', id: 'LIST' },
+        { type: 'Expense', id: 'STATS' },
+        { type: 'Expense', id: 'PENDING' },
+        { type: 'Expense', id: 'PAYMENT_SUMMARY' },
+        'Dashboard',
+      ],
+    }),
+
+    // Get pending expenses
+    getPendingExpenses: builder.query<ExpenseListResponse, { page?: number; page_size?: number } | void>({
+      query: (params) => ({
+        url: '/api/v1/expenses/pending',
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Expense', id: 'PENDING' }],
+    }),
+
+    // Get overdue expenses
+    getOverdueExpenses: builder.query<ExpenseListResponse, { page?: number; page_size?: number } | void>({
+      query: (params) => ({
+        url: '/api/v1/expenses/overdue',
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Expense', id: 'OVERDUE' }],
+    }),
+
+    // Get payment summary
+    getExpensePaymentSummary: builder.query<ExpensePaymentSummary, void>({
+      query: () => '/api/v1/expenses/payment-summary',
+      providesTags: [{ type: 'Expense', id: 'PAYMENT_SUMMARY' }],
+    }),
   }),
 });
 
@@ -255,4 +371,10 @@ export const {
   useBatchCreateExpensesMutation,
   useGetExpenseStatsQuery,
   useGetExpenseHistoryQuery,
+  // Payment integration hooks
+  usePayExpenseMutation,
+  useCancelExpenseMutation,
+  useGetPendingExpensesQuery,
+  useGetOverdueExpensesQuery,
+  useGetExpensePaymentSummaryQuery,
 } = expensesApi;
