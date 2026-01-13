@@ -134,7 +134,16 @@
     "createSuccess": "Fuente de ingresos creada exitosamente",
     "updateSuccess": "Fuente de ingresos actualizada exitosamente",
     "createError": "Error al crear la fuente de ingresos",
-    "updateError": "Error al actualizar la fuente de ingresos"
+    "updateError": "Error al actualizar la fuente de ingresos",
+    "accountIntegration": "Integración de cuenta",
+    "targetAccount": "Cuenta de destino",
+    "targetAccountPlaceholder": "Seleccionar una cuenta de ahorro",
+    "noTargetAccount": "Sin cuenta de destino",
+    "targetAccountHelp": "Seleccione una cuenta para depositar automáticamente los ingresos",
+    "autoDeposit": "Depósito automático",
+    "autoDepositHelp": "Depositar automáticamente los ingresos en la cuenta de destino cuando se reciban",
+    "syncHistorical": "Sincronizar transacciones históricas",
+    "syncHistoricalHelp": "Eliminar depósitos existentes y recrearlos con el nuevo monto/fechas. Usar cuando cambies el monto o la fecha de inicio."
   },
   "history": {
     "title": "Historial de ingresos",

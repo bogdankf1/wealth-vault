@@ -134,7 +134,16 @@
     "createSuccess": "Income source created successfully",
     "updateSuccess": "Income source updated successfully",
     "createError": "Failed to create income source",
-    "updateError": "Failed to update income source"
+    "updateError": "Failed to update income source",
+    "accountIntegration": "Account Integration",
+    "targetAccount": "Target Account",
+    "targetAccountPlaceholder": "Select a savings account",
+    "noTargetAccount": "No target account",
+    "targetAccountHelp": "Select an account to automatically deposit income to",
+    "autoDeposit": "Auto Deposit",
+    "autoDepositHelp": "Automatically deposit income to the target account when received",
+    "syncHistorical": "Sync Historical Transactions",
+    "syncHistoricalHelp": "Delete existing deposits and recreate them with the new amount/dates. Use when you change amount or start date."
   },
   "history": {
     "title": "Income History",

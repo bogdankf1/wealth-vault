@@ -134,7 +134,16 @@
     "createSuccess": "Fonte de receita criada com sucesso",
     "updateSuccess": "Fonte de receita atualizada com sucesso",
     "createError": "Falha ao criar fonte de receita",
-    "updateError": "Falha ao atualizar fonte de receita"
+    "updateError": "Falha ao atualizar fonte de receita",
+    "accountIntegration": "Integração com conta",
+    "targetAccount": "Conta de destino",
+    "targetAccountPlaceholder": "Selecionar uma conta poupança",
+    "noTargetAccount": "Sem conta de destino",
+    "targetAccountHelp": "Selecione uma conta para depositar automaticamente a renda",
+    "autoDeposit": "Depósito automático",
+    "autoDepositHelp": "Depositar automaticamente a renda na conta de destino quando recebida",
+    "syncHistorical": "Sincronizar Transações Históricas",
+    "syncHistoricalHelp": "Excluir depósitos existentes e recriá-los com o novo valor/datas. Use quando você alterar o valor ou a data de início."
   },
   "history": {
     "title": "Histórico de Receitas",

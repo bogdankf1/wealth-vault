@@ -15,6 +15,7 @@ import {
   useGetIncomeSourceQuery,
   IncomeFrequency,
 } from '@/lib/api/incomeApi';
+import { useListAccountsQuery } from '@/lib/api/savingsApi';
 import {
   Dialog,
   DialogContent,
@@ -70,6 +71,11 @@ const incomeSourceSchema = z.object({
   date: z.string().optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
+  // Account integration fields
+  target_account_id: z.string().optional().nullable(),
+  auto_deposit: z.boolean(),
+  // Sync historical - when enabled, recreates all transactions with new values
+  sync_historical: z.boolean(),
 });
 
 type FormData = z.infer<typeof incomeSourceSchema>;
@@ -100,6 +106,12 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
 
+  // Get savings accounts for target account dropdown
+  const { data: accountsData } = useListAccountsQuery({
+    is_active: true,
+    page_size: 100,
+  });
+
   const {
     data: existingSource,
     isLoading: isLoadingSource,
@@ -128,6 +140,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
       frequency: 'monthly',
       is_active: true,
       date: new Date().toISOString().split('T')[0],
+      target_account_id: null,
+      auto_deposit: false,
+      sync_historical: false,
     },
   });
 
@@ -168,6 +183,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         end_date: !isOneTime && existingSource.end_date
           ? existingSource.end_date.split('T')[0]
           : '',
+        // Account integration fields
+        target_account_id: existingSource.target_account_id || null,
+        auto_deposit: existingSource.auto_deposit || false,
+        sync_historical: false, // Always start with sync disabled
       };
 
       // Reset the form with the data
@@ -179,7 +198,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         : existingSource.amount;
       setAmountInput(String(amountNum));
 
-      // Explicitly set category, frequency, and currency to ensure Select components update
+      // Explicitly set category, frequency, currency, and target_account_id to ensure Select components update
       // Use setTimeout to ensure this happens after render
       setTimeout(() => {
         if (categoryKey) {
@@ -187,6 +206,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         }
         setValue('frequency', existingSource.frequency as IncomeFrequency, { shouldDirty: true });
         setValue('currency', existingSource.currency, { shouldDirty: true });
+        if (existingSource.target_account_id) {
+          setValue('target_account_id', existingSource.target_account_id, { shouldDirty: true });
+        }
       }, 0);
     } else if (!isEditing && isOpen) {
       // Reset to defaults when creating new source
@@ -201,6 +223,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         date: '',
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
+        target_account_id: null,
+        auto_deposit: false,
+        sync_historical: false,
       });
       setAmountInput('');
     }
@@ -222,6 +247,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         date?: string;
         start_date?: string;
         end_date?: string;
+        target_account_id?: string | null;
+        auto_deposit: boolean;
+        sync_historical?: boolean;
       } = {
         name: data.name,
         description: data.description,
@@ -230,7 +258,14 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         currency: data.currency,
         frequency: data.frequency,
         is_active: data.is_active,
+        target_account_id: data.target_account_id || null,
+        auto_deposit: data.auto_deposit,
       };
+
+      // Only include sync_historical when editing
+      if (isEditing && data.sync_historical) {
+        submitData.sync_historical = true;
+      }
 
       if (isOneTime) {
         // For one-time: use date field (keep date-only format to avoid timezone issues)
@@ -264,6 +299,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
       frequency: 'monthly',
       is_active: true,
       date: new Date().toISOString().split('T')[0],
+      target_account_id: null,
+      auto_deposit: false,
+      sync_historical: false,
     });
   };
 
@@ -430,6 +468,73 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                 checked={watch('is_active')}
                 onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
               />
+            </div>
+
+            {/* Account Integration Section */}
+            <div className="border-t pt-4 mt-4 space-y-4">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {tForm('accountIntegration')}
+              </h4>
+
+              {/* Target Account */}
+              <div className="space-y-2">
+                <Label htmlFor="target_account_id">{tForm('targetAccount')}</Label>
+                <Select
+                  value={watch('target_account_id') || 'none'}
+                  onValueChange={(value) => setValue('target_account_id', value === 'none' ? null : value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tForm('targetAccountPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{tForm('noTargetAccount')}</SelectItem>
+                    {accountsData?.items?.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name} ({account.currency})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {tForm('targetAccountHelp')}
+                </p>
+              </div>
+
+              {/* Auto Deposit */}
+              {watch('target_account_id') && watch('target_account_id') !== 'none' && (
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="auto_deposit">{tForm('autoDeposit')}</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {tForm('autoDepositHelp')}
+                    </p>
+                  </div>
+                  <Switch
+                    id="auto_deposit"
+                    checked={watch('auto_deposit')}
+                    onCheckedChange={(checked: boolean) => setValue('auto_deposit', checked)}
+                  />
+                </div>
+              )}
+
+              {/* Sync Historical - only show when editing with auto_deposit enabled */}
+              {isEditing && watch('auto_deposit') && watch('target_account_id') && watch('target_account_id') !== 'none' && (
+                <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="sync_historical" className="text-amber-800 dark:text-amber-200">
+                      {tForm('syncHistorical')}
+                    </Label>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      {tForm('syncHistoricalHelp')}
+                    </p>
+                  </div>
+                  <Switch
+                    id="sync_historical"
+                    checked={watch('sync_historical')}
+                    onCheckedChange={(checked: boolean) => setValue('sync_historical', checked)}
+                  />
+                </div>
+              )}
             </div>
 
             <DialogFooter>

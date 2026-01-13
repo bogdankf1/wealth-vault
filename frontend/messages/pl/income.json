@@ -134,7 +134,16 @@
     "createSuccess": "Źródło dochodu utworzone pomyślnie",
     "updateSuccess": "Źródło dochodu zaktualizowane pomyślnie",
     "createError": "Nie udało się utworzyć źródła dochodu",
-    "updateError": "Nie udało się zaktualizować źródła dochodu"
+    "updateError": "Nie udało się zaktualizować źródła dochodu",
+    "accountIntegration": "Integracja z kontem",
+    "targetAccount": "Konto docelowe",
+    "targetAccountPlaceholder": "Wybierz konto oszczędnościowe",
+    "noTargetAccount": "Brak konta docelowego",
+    "targetAccountHelp": "Wybierz konto, na które automatycznie wpłacane będą dochody",
+    "autoDeposit": "Automatyczna wpłata",
+    "autoDepositHelp": "Automatycznie wpłacaj dochody na konto docelowe po ich otrzymaniu",
+    "syncHistorical": "Synchronizuj transakcje historyczne",
+    "syncHistoricalHelp": "Usuń istniejące wpłaty i utwórz je ponownie z nową kwotą/datami. Użyj, gdy zmienisz kwotę lub datę rozpoczęcia."
   },
   "history": {
     "title": "Historia dochodów",

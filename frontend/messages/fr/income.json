@@ -134,7 +134,16 @@
     "createSuccess": "Source de revenus créée avec succès",
     "updateSuccess": "Source de revenus mise à jour avec succès",
     "createError": "Échec de la création de la source de revenus",
-    "updateError": "Échec de la mise à jour de la source de revenus"
+    "updateError": "Échec de la mise à jour de la source de revenus",
+    "accountIntegration": "Intégration de compte",
+    "targetAccount": "Compte cible",
+    "targetAccountPlaceholder": "Sélectionner un compte d'épargne",
+    "noTargetAccount": "Pas de compte cible",
+    "targetAccountHelp": "Sélectionnez un compte pour y déposer automatiquement les revenus",
+    "autoDeposit": "Dépôt automatique",
+    "autoDepositHelp": "Déposer automatiquement les revenus sur le compte cible lors de leur réception",
+    "syncHistorical": "Synchroniser les transactions historiques",
+    "syncHistoricalHelp": "Supprimer les dépôts existants et les recréer avec le nouveau montant/dates. Utilisez cette option lorsque vous modifiez le montant ou la date de début."
   },
   "history": {
     "title": "Historique des revenus",

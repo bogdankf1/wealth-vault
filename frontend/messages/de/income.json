@@ -134,7 +134,16 @@
     "createSuccess": "Einkommensquelle erfolgreich erstellt",
     "updateSuccess": "Einkommensquelle erfolgreich aktualisiert",
     "createError": "Einkommensquelle konnte nicht erstellt werden",
-    "updateError": "Einkommensquelle konnte nicht aktualisiert werden"
+    "updateError": "Einkommensquelle konnte nicht aktualisiert werden",
+    "accountIntegration": "Kontointegration",
+    "targetAccount": "Zielkonto",
+    "targetAccountPlaceholder": "Ein Sparkonto auswählen",
+    "noTargetAccount": "Kein Zielkonto",
+    "targetAccountHelp": "Wählen Sie ein Konto aus, auf das die Einnahmen automatisch eingezahlt werden",
+    "autoDeposit": "Automatische Einzahlung",
+    "autoDepositHelp": "Einnahmen automatisch auf das Zielkonto einzahlen, wenn sie eingehen",
+    "syncHistorical": "Historische Transaktionen synchronisieren",
+    "syncHistoricalHelp": "Vorhandene Einzahlungen löschen und mit dem neuen Betrag/Datum neu erstellen. Verwenden Sie dies, wenn Sie den Betrag oder das Startdatum ändern."
   },
   "history": {
     "title": "Einkommensverlauf",

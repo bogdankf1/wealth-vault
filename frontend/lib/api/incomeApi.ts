@@ -15,6 +15,10 @@ export type IncomeFrequency =
   | 'quarterly'
   | 'annually';
 
+export type IncomeTransactionStatus = 'expected' | 'received' | 'deposited';
+
+export type DistributionType = 'percentage' | 'fixed_amount' | 'remainder';
+
 export interface IncomeSource {
   id: string;
   user_id: string;
@@ -35,6 +39,10 @@ export interface IncomeSource {
   display_amount?: number | null;
   display_currency?: string | null;
   display_monthly_equivalent?: number | null;
+  // Account integration fields
+  target_account_id?: string | null;
+  auto_deposit: boolean;
+  target_account_name?: string | null;
 }
 
 export interface IncomeTransaction {
@@ -49,6 +57,63 @@ export interface IncomeTransaction {
   notes?: string | null;
   created_at: string;
   updated_at: string;
+  // Account integration fields
+  deposited_to_account_id?: string | null;
+  account_transaction_id?: string | null;
+  status: IncomeTransactionStatus;
+  deposited_to_account_name?: string | null;
+}
+
+export interface IncomeDistributionRule {
+  id: string;
+  user_id: string;
+  income_source_id?: string | null;
+  target_account_id?: string | null;
+  target_goal_id?: string | null;
+  distribution_type: DistributionType;
+  amount?: number | null;
+  percentage?: number | null;
+  priority: number;
+  name?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Related entity names for display
+  income_source_name?: string | null;
+  target_account_name?: string | null;
+  target_goal_name?: string | null;
+}
+
+export interface DistributionPreview {
+  rule_id: string;
+  rule_name?: string | null;
+  target_type: 'account' | 'goal';
+  target_id: string;
+  target_name: string;
+  amount: number;
+  currency: string;
+}
+
+export interface IncomeDistributionPreviewResponse {
+  income_amount: number;
+  currency: string;
+  distributions: DistributionPreview[];
+  remaining_amount: number;
+  total_distributed: number;
+}
+
+export interface IncomeDepositRequest {
+  account_id: string;
+  description?: string | null;
+}
+
+export interface IncomeDepositResponse {
+  income_transaction_id: string;
+  account_transaction_id: string;
+  deposited_to_account_id: string;
+  amount: number;
+  currency: string;
+  message: string;
 }
 
 export interface IncomeStats {
@@ -89,6 +154,8 @@ export interface IncomeSourceCreate {
   is_active?: boolean;
   start_date?: string | null;
   end_date?: string | null;
+  target_account_id?: string | null;
+  auto_deposit?: boolean;
 }
 
 export interface IncomeSourceUpdate {
@@ -101,6 +168,40 @@ export interface IncomeSourceUpdate {
   is_active?: boolean;
   start_date?: string | null;
   end_date?: string | null;
+  target_account_id?: string | null;
+  auto_deposit?: boolean;
+  // When true, deletes existing income transactions and deposits,
+  // then recreates them with the new values
+  sync_historical?: boolean;
+}
+
+export interface IncomeDistributionRuleCreate {
+  income_source_id?: string | null;
+  target_account_id?: string | null;
+  target_goal_id?: string | null;
+  distribution_type: DistributionType;
+  amount?: number | null;
+  percentage?: number | null;
+  priority?: number;
+  name?: string | null;
+  is_active?: boolean;
+}
+
+export interface IncomeDistributionRuleUpdate {
+  income_source_id?: string | null;
+  target_account_id?: string | null;
+  target_goal_id?: string | null;
+  distribution_type?: DistributionType;
+  amount?: number | null;
+  percentage?: number | null;
+  priority?: number;
+  name?: string | null;
+  is_active?: boolean;
+}
+
+export interface IncomeDistributionRuleListResponse {
+  items: IncomeDistributionRule[];
+  total: number;
 }
 
 export interface IncomeTransactionCreate {
@@ -152,6 +253,25 @@ export interface IncomeSourceBatchDeleteRequest {
 export interface IncomeSourceBatchDeleteResponse {
   deleted_count: number;
   failed_ids: string[];
+}
+
+export interface ListDistributionRulesParams {
+  income_source_id?: string;
+  is_active?: boolean;
+}
+
+export interface DistributionPreviewParams {
+  income_amount: number;
+  currency?: string;
+  income_source_id?: string;
+}
+
+export interface ApplyDistributionResponse {
+  message: string;
+  deposits: Array<{
+    account_transaction_id: string;
+    amount: number;
+  }>;
 }
 
 // ============================================================================
@@ -273,6 +393,92 @@ export const incomeApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Income', id: 'LIST' }, { type: 'Income', id: 'STATS' }, { type: 'Income', id: 'HISTORY' }, 'Dashboard'],
     }),
+
+    // Income Deposit
+    depositIncomeToAccount: builder.mutation<IncomeDepositResponse, { transactionId: string; data: IncomeDepositRequest }>({
+      query: ({ transactionId, data }) => ({
+        url: `/api/v1/income/transactions/${transactionId}/deposit`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: [
+        { type: 'Income', id: 'TRANSACTION_LIST' },
+        { type: 'Saving', id: 'LIST' },
+        { type: 'Saving', id: 'TRANSACTIONS' },
+        'Dashboard',
+      ],
+    }),
+
+    // Distribution Rules
+    listDistributionRules: builder.query<IncomeDistributionRuleListResponse, ListDistributionRulesParams | void>({
+      query: (params) => ({
+        url: '/api/v1/income/distribution-rules',
+        params: params || undefined,
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.items.map(({ id }) => ({ type: 'Income' as const, id: `rule-${id}` })),
+              { type: 'Income', id: 'RULE_LIST' },
+            ]
+          : [{ type: 'Income', id: 'RULE_LIST' }],
+    }),
+
+    getDistributionRule: builder.query<IncomeDistributionRule, string>({
+      query: (id) => `/api/v1/income/distribution-rules/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Income', id: `rule-${id}` }],
+    }),
+
+    createDistributionRule: builder.mutation<IncomeDistributionRule, IncomeDistributionRuleCreate>({
+      query: (data) => ({
+        url: '/api/v1/income/distribution-rules',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: [{ type: 'Income', id: 'RULE_LIST' }],
+    }),
+
+    updateDistributionRule: builder.mutation<IncomeDistributionRule, { id: string; data: IncomeDistributionRuleUpdate }>({
+      query: ({ id, data }) => ({
+        url: `/api/v1/income/distribution-rules/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Income', id: `rule-${id}` },
+        { type: 'Income', id: 'RULE_LIST' },
+      ],
+    }),
+
+    deleteDistributionRule: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/api/v1/income/distribution-rules/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Income', id: 'RULE_LIST' }],
+    }),
+
+    // Distribution Preview
+    previewDistribution: builder.query<IncomeDistributionPreviewResponse, DistributionPreviewParams>({
+      query: (params) => ({
+        url: '/api/v1/income/distribution-preview',
+        params,
+      }),
+    }),
+
+    // Apply Distribution
+    applyDistribution: builder.mutation<ApplyDistributionResponse, string>({
+      query: (transactionId) => ({
+        url: `/api/v1/income/transactions/${transactionId}/distribute`,
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        { type: 'Income', id: 'TRANSACTION_LIST' },
+        { type: 'Saving', id: 'LIST' },
+        { type: 'Saving', id: 'TRANSACTIONS' },
+        'Dashboard',
+      ],
+    }),
   }),
 });
 
@@ -287,4 +493,17 @@ export const {
   useCreateIncomeTransactionMutation,
   useGetIncomeStatsQuery,
   useGetIncomeHistoryQuery,
+  // Income Deposit
+  useDepositIncomeToAccountMutation,
+  // Distribution Rules
+  useListDistributionRulesQuery,
+  useGetDistributionRuleQuery,
+  useCreateDistributionRuleMutation,
+  useUpdateDistributionRuleMutation,
+  useDeleteDistributionRuleMutation,
+  // Distribution Preview
+  usePreviewDistributionQuery,
+  useLazyPreviewDistributionQuery,
+  // Apply Distribution
+  useApplyDistributionMutation,
 } = incomeApi;

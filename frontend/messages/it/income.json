@@ -134,7 +134,16 @@
     "createSuccess": "Fonte di reddito creata con successo",
     "updateSuccess": "Fonte di reddito aggiornata con successo",
     "createError": "Impossibile creare la fonte di reddito",
-    "updateError": "Impossibile aggiornare la fonte di reddito"
+    "updateError": "Impossibile aggiornare la fonte di reddito",
+    "accountIntegration": "Integrazione conto",
+    "targetAccount": "Conto di destinazione",
+    "targetAccountPlaceholder": "Seleziona un conto di risparmio",
+    "noTargetAccount": "Nessun conto di destinazione",
+    "targetAccountHelp": "Seleziona un conto per depositare automaticamente i redditi",
+    "autoDeposit": "Deposito automatico",
+    "autoDepositHelp": "Deposita automaticamente i redditi sul conto di destinazione quando ricevuti",
+    "syncHistorical": "Sincronizza Transazioni Storiche",
+    "syncHistoricalHelp": "Elimina i depositi esistenti e ricreali con il nuovo importo/date. Usa quando cambi importo o data di inizio."
   },
   "history": {
     "title": "Storico Entrate",
