@@ -70,9 +70,11 @@ def calculate_daily_interest(self) -> Dict[str, Any]:
                     if last_accrual.tzinfo is None:
                         last_accrual = last_accrual.replace(tzinfo=timezone.utc)
 
-                    days_elapsed = (now - last_accrual).days
+                    # Calculate days elapsed (use total_seconds for fractional days)
+                    time_elapsed = now - last_accrual
+                    days_elapsed = time_elapsed.total_seconds() / 86400  # Fractional days
 
-                    if days_elapsed <= 0:
+                    if days_elapsed < 0.5:  # At least half a day must pass
                         continue
 
                     # Calculate interest
@@ -88,16 +90,17 @@ def calculate_daily_interest(self) -> Dict[str, Any]:
 
                     # Daily interest rate (APY / 365)
                     daily_rate = rate / Decimal("365")
-                    interest = principal * daily_rate * days_elapsed
+                    interest = principal * daily_rate * Decimal(str(days_elapsed))
 
                     # Round to 2 decimal places
                     interest = interest.quantize(Decimal("0.01"))
 
                     if interest > 0:
-                        # Update account
+                        # Update account (use naive datetime for DB compatibility)
+                        now_naive = now.replace(tzinfo=None)
                         account.accrued_interest = accrued + interest
-                        account.last_interest_accrual = now
-                        account.updated_at = now
+                        account.last_interest_accrual = now_naive
+                        account.updated_at = now_naive
 
                         accounts_processed += 1
                         total_interest_accrued += interest

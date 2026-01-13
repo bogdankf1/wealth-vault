@@ -505,13 +505,18 @@ class TransactionService:
                 "message": "Account has no interest rate configured"
             }
 
-        now = datetime.utcnow()
-        # Use naive UTC datetimes for comparison
+        now = datetime.now(timezone.utc)
+        # Use timezone-aware datetimes for comparison
         last_accrual = account.last_interest_accrual or account.created_at
 
-        # Calculate days since last accrual
-        days_elapsed = (now - last_accrual).days
-        if days_elapsed <= 0:
+        # Ensure timezone awareness
+        if last_accrual.tzinfo is None:
+            last_accrual = last_accrual.replace(tzinfo=timezone.utc)
+
+        # Calculate days since last accrual (use fractional days)
+        time_elapsed = now - last_accrual
+        days_elapsed = time_elapsed.total_seconds() / 86400
+        if days_elapsed < 0.5:
             return {
                 "account_id": str(account_id),
                 "has_interest": True,
@@ -535,7 +540,7 @@ class TransactionService:
 
         # Daily interest rate (APY / 365)
         daily_rate = rate / Decimal("365")
-        pending_interest = principal * daily_rate * days_elapsed
+        pending_interest = principal * daily_rate * Decimal(str(days_elapsed))
 
         return {
             "account_id": str(account_id),

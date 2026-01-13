@@ -100,8 +100,8 @@ def get_async_db_session():
     Note: This creates a new session that must be properly closed.
     Use with async context manager in tasks.
     """
-    from app.core.database import async_session_maker
-    return async_session_maker()
+    from app.core.database import AsyncSessionLocal
+    return AsyncSessionLocal()
 
 
 async def run_in_session(coro_func, *args, **kwargs):
