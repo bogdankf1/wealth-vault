@@ -14,7 +14,11 @@ import {
   useUpdateInstallmentMutation,
   useGetInstallmentQuery,
   InstallmentFrequency,
+  InstallmentCreate,
+  InstallmentUpdate,
 } from '@/lib/api/installmentsApi';
+import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { formatCurrency } from '@/lib/utils/currency';
 import {
   Dialog,
   DialogContent,
@@ -78,6 +82,11 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
     start_date: z.string().min(1, tForm('startDateRequired')),
     first_payment_date: z.string().min(1, tForm('firstPaymentDateRequired')),
     end_date: z.string().optional(),
+    // Payment integration fields
+    payment_account_id: z.string().nullable().optional(),
+    auto_pay: z.boolean().optional(),
+    reminder_days_before: z.number().min(0).max(30).optional(),
+    sync_historical: z.boolean().optional(),
   });
 
   type FormData = z.infer<typeof installmentSchema>;
@@ -113,6 +122,9 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
     skip: !installmentId,
   });
 
+  // Fetch user's savings accounts for payment integration
+  const { data: accountsData } = useListAccountsQuery({ page_size: 100 });
+
   const [createInstallment, { isLoading: isCreating, error: createError }] =
     useCreateInstallmentMutation();
 
@@ -134,6 +146,11 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       is_active: true,
       start_date: new Date().toISOString().split('T')[0],
       first_payment_date: new Date().toISOString().split('T')[0],
+      // Payment integration defaults
+      payment_account_id: null,
+      auto_pay: false,
+      reminder_days_before: 3,
+      sync_historical: false,
     },
   });
 
@@ -198,6 +215,11 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         end_date: existingInstallment.end_date
           ? existingInstallment.end_date.split('T')[0]
           : '',
+        // Payment integration fields
+        payment_account_id: existingInstallment.payment_account_id || null,
+        auto_pay: existingInstallment.auto_pay || false,
+        reminder_days_before: existingInstallment.reminder_days_before || 3,
+        sync_historical: false, // Always false when editing - don't re-sync by default
       };
 
       reset(formData);
@@ -212,6 +234,12 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         }
         setValue('frequency', existingInstallment.frequency as InstallmentFrequency, { shouldDirty: true });
         setValue('currency', existingInstallment.currency, { shouldDirty: true });
+        // Set payment integration fields - requires accountsData to be loaded for Select to work
+        if (existingInstallment.payment_account_id && accountsData?.items) {
+          setValue('payment_account_id', existingInstallment.payment_account_id, { shouldDirty: true });
+        }
+        // Explicitly set auto_pay to ensure the Switch picks up the value
+        setValue('auto_pay', existingInstallment.auto_pay || false, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
@@ -228,32 +256,22 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         start_date: new Date().toISOString().split('T')[0],
         first_payment_date: new Date().toISOString().split('T')[0],
         end_date: '',
+        payment_account_id: null,
+        auto_pay: false,
+        reminder_days_before: 3,
+        sync_historical: false,
       });
       setTotalAmountInput('');
       setPaymentAmountInput('');
     }
-  }, [isEditing, existingInstallment, isOpen, reset, setValue]);
+  }, [isEditing, existingInstallment, isOpen, reset, setValue, accountsData]);
 
   const onSubmit = async (data: FormData) => {
     try {
       // Ensure number_of_payments is set (should be auto-calculated)
       const finalNumberOfPayments = data.number_of_payments || Math.ceil(data.total_amount / data.amount_per_payment);
 
-      const submitData: {
-        name: string;
-        description?: string;
-        category?: string;
-        total_amount: number;
-        amount_per_payment: number;
-        currency: string;
-        interest_rate?: number;
-        frequency: InstallmentFrequency;
-        number_of_payments: number;
-        is_active: boolean;
-        start_date: string;
-        first_payment_date: string;
-        end_date?: string;
-      } = {
+      const submitData: InstallmentCreate | InstallmentUpdate = {
         name: data.name,
         description: data.description,
         category: data.category,
@@ -268,13 +286,18 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         start_date: `${data.start_date}T00:00:00`,
         first_payment_date: `${data.first_payment_date}T00:00:00`,
         end_date: data.end_date ? `${data.end_date}T00:00:00` : undefined,
+        // Payment integration fields
+        payment_account_id: data.payment_account_id || null,
+        auto_pay: data.auto_pay || false,
+        reminder_days_before: data.reminder_days_before || 3,
+        sync_historical: data.sync_historical || false,
       };
 
       if (isEditing && installmentId) {
-        await updateInstallment({ id: installmentId, data: submitData }).unwrap();
+        await updateInstallment({ id: installmentId, data: submitData as InstallmentUpdate }).unwrap();
         toast.success(tForm('updateSuccess'));
       } else {
-        await createInstallment(submitData).unwrap();
+        await createInstallment(submitData as InstallmentCreate).unwrap();
         toast.success(tForm('createSuccess'));
       }
 
@@ -295,6 +318,10 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       is_active: true,
       start_date: new Date().toISOString().split('T')[0],
       first_payment_date: new Date().toISOString().split('T')[0],
+      payment_account_id: null,
+      auto_pay: false,
+      reminder_days_before: 3,
+      sync_historical: false,
     });
   };
 
@@ -556,6 +583,112 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                 checked={watch('is_active')}
                 onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
               />
+            </div>
+
+            {/* Payment Integration Section */}
+            <div className="space-y-4 border-t pt-4 mt-4">
+              <h3 className="text-base font-semibold text-foreground">{tForm('accountIntegration')}</h3>
+
+              {/* Payment Account */}
+              <div className="space-y-2">
+                <Label htmlFor="payment_account_id">{tForm('paymentAccount')}</Label>
+                <Select
+                  value={watch('payment_account_id') || 'none'}
+                  onValueChange={(value) => {
+                    const accountId = value === 'none' ? null : value;
+                    setValue('payment_account_id', accountId);
+                    // Auto-enable auto_pay and sync_historical when account is selected
+                    if (accountId) {
+                      setValue('auto_pay', true);
+                      setValue('sync_historical', true);
+                    } else {
+                      setValue('auto_pay', false);
+                      setValue('sync_historical', false);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tForm('paymentAccountPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{tForm('noPaymentAccount')}</SelectItem>
+                    {accountsData?.items?.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        <div className="flex justify-between items-center w-full gap-2">
+                          <span>{account.name}</span>
+                          <span className="text-muted-foreground text-xs">
+                            {formatCurrency(account.current_balance || 0, account.currency)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {tForm('paymentAccountHelp')}
+                </p>
+              </div>
+
+              {/* Auto Pay Toggle - only visible when payment account is selected */}
+              {watch('payment_account_id') && watch('payment_account_id') !== 'none' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="auto_pay">{tForm('autoPay')}</Label>
+                      <p className="text-xs text-muted-foreground">
+                        {tForm('autoPayHelp')}
+                      </p>
+                    </div>
+                    <Switch
+                      id="auto_pay"
+                      checked={watch('auto_pay') || false}
+                      onCheckedChange={(checked: boolean) => {
+                        setValue('auto_pay', checked);
+                        // Auto-enable sync_historical when auto_pay is turned on
+                        if (checked) {
+                          setValue('sync_historical', true);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Sync Historical Checkbox - only visible when auto_pay is enabled */}
+                  {watch('auto_pay') && (
+                    <div className="flex items-start gap-2 p-3 rounded-md bg-muted/50">
+                      <input
+                        type="checkbox"
+                        id="sync_historical"
+                        checked={watch('sync_historical') || false}
+                        onChange={(e) => setValue('sync_historical', e.target.checked)}
+                        className="mt-1"
+                      />
+                      <div className="space-y-0.5">
+                        <Label htmlFor="sync_historical" className="text-sm font-normal cursor-pointer">
+                          {tForm('syncHistorical')}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {tForm('syncHistoricalHelp')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reminder Days Before */}
+                  <div className="space-y-2">
+                    <Label htmlFor="reminder_days_before">{tForm('reminderDaysBefore')}</Label>
+                    <Input
+                      id="reminder_days_before"
+                      type="number"
+                      min={0}
+                      max={30}
+                      {...register('reminder_days_before', { valueAsNumber: true })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {tForm('reminderDaysBeforeHelp')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <DialogFooter>

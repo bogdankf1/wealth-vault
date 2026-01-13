@@ -5,7 +5,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays } from 'lucide-react';
+import Link from 'next/link';
+import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -619,7 +620,9 @@ export default function InstallmentsPage() {
                           className="mt-1"
                         />
                         <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base md:text-lg truncate">{installment.name}</CardTitle>
+                        <Link href={`/dashboard/installments/${installment.id}`}>
+                          <CardTitle className="text-base md:text-lg truncate hover:underline cursor-pointer">{installment.name}</CardTitle>
+                        </Link>
                         <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                           {installment.description || <>&nbsp;</>}
                         </CardDescription>
@@ -728,6 +731,12 @@ export default function InstallmentsPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 pt-2">
+                        <Link href={`/dashboard/installments/${installment.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Eye className="mr-1 h-3 w-3" />
+                            {tCommon('common.view')}
+                          </Button>
+                        </Link>
                         <Button
                           variant="outline"
                           size="sm"
@@ -812,7 +821,9 @@ export default function InstallmentsPage() {
                         </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
-                            <p className="truncate">{installment.name}</p>
+                            <Link href={`/dashboard/installments/${installment.id}`} className="hover:underline">
+                              <p className="truncate">{installment.name}</p>
+                            </Link>
                             <p className="text-xs text-muted-foreground md:hidden truncate">
                               {installment.description}
                             </p>
@@ -890,6 +901,15 @@ export default function InstallmentsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
+                            <Link href={`/dashboard/installments/${installment.id}`}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
                             <Button
                               variant="ghost"
                               size="sm"

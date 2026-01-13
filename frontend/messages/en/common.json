@@ -86,6 +86,8 @@
     "currentPrice": "Current Price",
     "quantity": "Quantity",
     "institution": "Institution",
-    "accountNumber": "Account Number"
+    "accountNumber": "Account Number",
+    "view": "View",
+    "actions": "Actions"
   }
 }

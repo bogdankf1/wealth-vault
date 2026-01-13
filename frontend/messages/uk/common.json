@@ -86,6 +86,8 @@
     "currentPrice": "Поточна ціна",
     "quantity": "Кількість",
     "institution": "Установа",
-    "accountNumber": "Номер рахунку"
+    "accountNumber": "Номер рахунку",
+    "view": "Переглянути",
+    "actions": "Дії"
   }
 }

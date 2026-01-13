@@ -5,6 +5,8 @@ import { apiSlice } from './apiSlice';
 
 // Types
 export type InstallmentFrequency = 'weekly' | 'biweekly' | 'monthly';
+export type InstallmentStatus = 'active' | 'completed' | 'defaulted';
+export type InstallmentPaymentStatus = 'pending' | 'completed' | 'failed' | 'skipped';
 
 export interface Installment {
   id: string;
@@ -23,14 +25,42 @@ export interface Installment {
   first_payment_date: string;
   end_date?: string;
   is_active: boolean;
+  status: InstallmentStatus;
   remaining_balance?: number;
   created_at: string;
   updated_at: string;
+  // Payment integration fields
+  payment_account_id?: string | null;
+  auto_pay: boolean;
+  next_payment_date?: string | null;
+  last_payment_date?: string | null;
+  reminder_days_before: number;
   // Display values (converted to user's preferred currency)
   display_total_amount?: number | null;
   display_amount_per_payment?: number | null;
   display_remaining_balance?: number | null;
   display_currency?: string | null;
+}
+
+export interface InstallmentPayment {
+  id: string;
+  installment_id: string;
+  user_id: string;
+  payment_number: number;
+  scheduled_date: string;
+  actual_payment_date?: string | null;
+  scheduled_amount: number;
+  actual_amount?: number | null;
+  principal_amount?: number | null;
+  interest_amount?: number | null;
+  currency: string;
+  expense_id?: string | null;
+  account_transaction_id?: string | null;
+  status: InstallmentPaymentStatus;
+  is_late: boolean;
+  days_late?: number | null;
+  notes?: string | null;
+  created_at: string;
 }
 
 export interface InstallmentCreate {
@@ -48,6 +78,11 @@ export interface InstallmentCreate {
   first_payment_date: string;
   end_date?: string;
   is_active?: boolean;
+  // Payment integration fields
+  payment_account_id?: string | null;
+  auto_pay?: boolean;
+  reminder_days_before?: number;
+  sync_historical?: boolean;
 }
 
 export interface InstallmentUpdate {
@@ -65,6 +100,29 @@ export interface InstallmentUpdate {
   first_payment_date?: string;
   end_date?: string;
   is_active?: boolean;
+  // Payment integration fields
+  payment_account_id?: string | null;
+  auto_pay?: boolean;
+  reminder_days_before?: number;
+  sync_historical?: boolean;
+}
+
+export interface InstallmentPaymentCreate {
+  amount?: number;
+  payment_date?: string;
+  payment_number?: number;
+  principal_amount?: number;
+  interest_amount?: number;
+  notes?: string;
+}
+
+export interface InstallmentPaymentListResponse {
+  items: InstallmentPayment[];
+  total: number;
+}
+
+export interface InstallmentMarkDefaultedRequest {
+  reason?: string;
 }
 
 export interface InstallmentListResponse {
@@ -226,6 +284,81 @@ export const installmentsApi = apiSlice.injectEndpoints({
         return tags;
       },
     }),
+
+    // ============== Payment Integration Endpoints ==============
+
+    // Mark installment as completed
+    completeInstallment: builder.mutation<Installment, string>({
+      query: (id) => ({
+        url: `/api/v1/installments/${id}/complete`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Installments', id },
+        { type: 'Installments', id: 'LIST' },
+        { type: 'Installments', id: 'STATS' },
+        'Dashboard',
+        'Saving',
+      ],
+    }),
+
+    // Mark installment as defaulted
+    defaultInstallment: builder.mutation<Installment, { id: string; reason?: string }>({
+      query: ({ id, reason }) => ({
+        url: `/api/v1/installments/${id}/default`,
+        method: 'POST',
+        body: reason ? { reason } : undefined,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Installments', id },
+        { type: 'Installments', id: 'LIST' },
+        { type: 'Installments', id: 'STATS' },
+        'Dashboard',
+      ],
+    }),
+
+    // Reactivate a completed or defaulted installment
+    reactivateInstallment: builder.mutation<Installment, string>({
+      query: (id) => ({
+        url: `/api/v1/installments/${id}/reactivate`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Installments', id },
+        { type: 'Installments', id: 'LIST' },
+        { type: 'Installments', id: 'STATS' },
+        'Dashboard',
+      ],
+    }),
+
+    // Get payment history for an installment
+    getInstallmentPayments: builder.query<InstallmentPaymentListResponse, { installmentId: string; page?: number; page_size?: number }>({
+      query: ({ installmentId, page = 1, page_size = 50 }) => ({
+        url: `/api/v1/installments/${installmentId}/payments`,
+        params: { page, page_size },
+      }),
+      providesTags: (result, error, { installmentId }) => [
+        { type: 'Installments', id: `${installmentId}-PAYMENTS` },
+      ],
+    }),
+
+    // Record a payment for an installment
+    recordInstallmentPayment: builder.mutation<InstallmentPayment, { installmentId: string; data?: InstallmentPaymentCreate }>({
+      query: ({ installmentId, data }) => ({
+        url: `/api/v1/installments/${installmentId}/pay`,
+        method: 'POST',
+        body: data || {},
+      }),
+      invalidatesTags: (result, error, { installmentId }) => [
+        { type: 'Installments', id: installmentId },
+        { type: 'Installments', id: `${installmentId}-PAYMENTS` },
+        { type: 'Installments', id: 'LIST' },
+        { type: 'Installments', id: 'STATS' },
+        { type: 'Installments', id: 'HISTORY' },
+        'Dashboard',
+        'Saving',
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -239,4 +372,10 @@ export const {
   useGetInstallmentStatsQuery,
   useGetInstallmentHistoryQuery,
   useBatchDeleteInstallmentsMutation,
+  // Payment integration hooks
+  useCompleteInstallmentMutation,
+  useDefaultInstallmentMutation,
+  useReactivateInstallmentMutation,
+  useGetInstallmentPaymentsQuery,
+  useRecordInstallmentPaymentMutation,
 } = installmentsApi;

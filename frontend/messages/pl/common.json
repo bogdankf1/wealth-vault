@@ -86,6 +86,8 @@
     "currentPrice": "Cena obecna",
     "quantity": "Ilość",
     "institution": "Instytucja",
-    "accountNumber": "Numer konta"
+    "accountNumber": "Numer konta",
+    "view": "Zobacz",
+    "actions": "Akcje"
   }
 }
