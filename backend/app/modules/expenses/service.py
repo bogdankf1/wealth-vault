@@ -3,20 +3,26 @@ Expenses service layer
 """
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, and_
 from typing import Optional, List
 from uuid import UUID
 from decimal import Decimal
+import logging
 
-from app.modules.expenses.models import Expense, ExpenseFrequency
+from app.modules.expenses.models import Expense, ExpenseFrequency, ExpenseStatus
 from app.modules.expenses.schemas import (
     ExpenseCreate,
     ExpenseUpdate,
     ExpenseStats,
     ExpenseHistoryResponse,
-    MonthlyExpenseHistory
+    MonthlyExpenseHistory,
+    PayExpenseRequest,
+    PayExpenseResponse,
+    ExpensePaymentSummary
 )
 from app.services.currency_service import CurrencyService
+
+logger = logging.getLogger(__name__)
 
 
 async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
@@ -92,12 +98,164 @@ def calculate_monthly_equivalent(amount: Decimal, frequency: ExpenseFrequency) -
     return Decimal(0)
 
 
+def get_frequency_interval(frequency: ExpenseFrequency):
+    """Get the relativedelta interval for a given frequency."""
+    from dateutil.relativedelta import relativedelta
+
+    if frequency == ExpenseFrequency.DAILY:
+        return relativedelta(days=1)
+    elif frequency == ExpenseFrequency.WEEKLY:
+        return relativedelta(weeks=1)
+    elif frequency == ExpenseFrequency.BIWEEKLY:
+        return relativedelta(weeks=2)
+    elif frequency == ExpenseFrequency.MONTHLY:
+        return relativedelta(months=1)
+    elif frequency == ExpenseFrequency.QUARTERLY:
+        return relativedelta(months=3)
+    elif frequency == ExpenseFrequency.ANNUALLY:
+        return relativedelta(years=1)
+    return relativedelta(months=1)
+
+
+async def backfill_expense_payments(
+    db: AsyncSession,
+    user_id: UUID,
+    expense: Expense,
+    skip_existing: bool = False
+) -> int:
+    """
+    Backfill historical payments for a recurring expense.
+
+    Creates withdrawal transactions for all past periods since start_date.
+    Updates the expense with the most recent payment details.
+
+    Args:
+        db: Database session
+        user_id: User ID
+        expense: The expense to backfill
+        skip_existing: If True, skip dates that already have transactions
+
+    Returns:
+        Number of payments created
+    """
+    from dateutil.relativedelta import relativedelta
+    from app.modules.savings.transaction_service import TransactionService
+    from app.modules.savings.models import AccountTransaction
+
+    if not expense.payment_account_id:
+        return 0
+
+    if expense.frequency == ExpenseFrequency.ONE_TIME:
+        # For one-time expenses, just pay if date is in the past
+        if expense.date and expense.date.date() <= datetime.utcnow().date():
+            if expense.status != ExpenseStatus.PAID.value:
+                try:
+                    transaction_service = TransactionService(db)
+                    transaction = await transaction_service.create_withdrawal(
+                        account_id=expense.payment_account_id,
+                        user_id=user_id,
+                        amount=Decimal(str(expense.amount)),
+                        description=f"Payment for expense: {expense.name}",
+                        source_type="expense",
+                        source_id=expense.id,
+                        transaction_date=expense.date,
+                        category=expense.category,
+                    )
+
+                    expense.status = ExpenseStatus.PAID.value
+                    expense.paid_date = expense.date
+                    expense.paid_amount = expense.amount
+                    expense.account_transaction_id = transaction.id
+                    await db.commit()
+                    return 1
+                except Exception as e:
+                    logger.warning(f"Failed to backfill one-time expense {expense.id}: {e}")
+                    return 0
+        return 0
+
+    # For recurring expenses
+    if not expense.start_date:
+        return 0
+
+    today = datetime.utcnow().date()
+    start_date = expense.start_date.replace(tzinfo=None) if expense.start_date.tzinfo else expense.start_date
+    end_date = expense.end_date.replace(tzinfo=None) if expense.end_date and expense.end_date.tzinfo else expense.end_date
+
+    # Get existing transaction dates to avoid duplicates
+    existing_dates = set()
+    if skip_existing:
+        result = await db.execute(
+            select(AccountTransaction.transaction_date).where(
+                AccountTransaction.source_type == "expense",
+                AccountTransaction.source_id == expense.id
+            )
+        )
+        existing_dates = {txn_date.date() for txn_date in result.scalars().all() if txn_date}
+
+    interval = get_frequency_interval(expense.frequency)
+    current_date = start_date
+    payments_created = 0
+    transaction_service = TransactionService(db)
+
+    last_payment_date = None
+    last_payment_amount = None
+    last_transaction_id = None
+
+    while current_date.date() <= today:
+        if end_date and current_date.date() > end_date.date():
+            break
+
+        # Skip if transaction already exists
+        if current_date.date() in existing_dates:
+            current_date = current_date + interval
+            continue
+
+        try:
+            transaction = await transaction_service.create_withdrawal(
+                account_id=expense.payment_account_id,
+                user_id=user_id,
+                amount=Decimal(str(expense.amount)),
+                description=f"Payment for expense: {expense.name}",
+                source_type="expense",
+                source_id=expense.id,
+                transaction_date=current_date,
+                category=expense.category,
+            )
+
+            payments_created += 1
+            last_payment_date = current_date
+            last_payment_amount = expense.amount
+            last_transaction_id = transaction.id
+
+            logger.info(f"Created historical payment for expense {expense.id} on {current_date.date()}")
+
+        except Exception as e:
+            logger.warning(f"Failed to create payment for expense {expense.id} on {current_date.date()}: {e}")
+            # Continue with next date even if one fails
+
+        current_date = current_date + interval
+
+    # Update expense with most recent payment details
+    if payments_created > 0:
+        expense.status = ExpenseStatus.PAID.value
+        expense.paid_date = last_payment_date
+        expense.paid_amount = last_payment_amount
+        expense.account_transaction_id = last_transaction_id
+        await db.commit()
+
+    logger.info(f"Backfilled {payments_created} payments for expense {expense.id}")
+    return payments_created
+
+
 async def create_expense(
     db: AsyncSession,
     user_id: UUID,
     expense_data: ExpenseCreate
 ) -> Expense:
     """Create a new expense"""
+    from dateutil.relativedelta import relativedelta
+    from app.modules.savings.transaction_service import TransactionService
+
     # Calculate monthly equivalent
     monthly_equiv = calculate_monthly_equivalent(expense_data.amount, expense_data.frequency)
 
@@ -114,12 +272,22 @@ async def create_expense(
         end_date=expense_data.end_date,
         is_active=expense_data.is_active,
         tags=expense_data.tags,
-        monthly_equivalent=monthly_equiv
+        monthly_equivalent=monthly_equiv,
+        # Payment integration fields
+        payment_account_id=expense_data.payment_account_id,
+        payment_method=expense_data.payment_method,
+        auto_pay=expense_data.auto_pay,
+        status=ExpenseStatus.PENDING.value
     )
 
     db.add(expense)
     await db.commit()
     await db.refresh(expense)
+
+    # If auto_pay and sync_historical are enabled, backfill historical payments
+    if expense_data.auto_pay and expense_data.sync_historical and expense_data.payment_account_id:
+        await backfill_expense_payments(db, user_id, expense)
+
     return expense
 
 
@@ -194,8 +362,14 @@ async def update_expense(
     if not expense:
         return None
 
-    # Update fields
-    update_data = expense_data.model_dump(exclude_unset=True)
+    # Track previous auto_pay state to detect if it's being enabled
+    was_auto_pay_enabled = expense.auto_pay and expense.payment_account_id
+
+    # Extract sync_historical before updating fields (it's not a model field)
+    sync_historical = expense_data.sync_historical
+
+    # Update fields (excluding sync_historical which is not a model field)
+    update_data = expense_data.model_dump(exclude_unset=True, exclude={'sync_historical'})
 
     for field, value in update_data.items():
         setattr(expense, field, value)
@@ -208,6 +382,17 @@ async def update_expense(
 
     await db.commit()
     await db.refresh(expense)
+
+    # Check if auto_pay is now enabled
+    is_auto_pay_enabled = expense.auto_pay and expense.payment_account_id
+
+    # If sync_historical is True and auto_pay is enabled, backfill all payments
+    if sync_historical and is_auto_pay_enabled:
+        await backfill_expense_payments(db, user_id, expense, skip_existing=False)
+    # If auto_pay was just enabled (without sync_historical), backfill missing payments
+    elif is_auto_pay_enabled and not was_auto_pay_enabled:
+        await backfill_expense_payments(db, user_id, expense, skip_existing=True)
+
     return expense
 
 
@@ -533,3 +718,409 @@ async def get_expense_history(
         overall_average=overall_average,
         currency=display_currency
     )
+
+
+# ============================================================================
+# Payment Integration Functions (Phase 3)
+# ============================================================================
+
+async def pay_expense(
+    db: AsyncSession,
+    user_id: UUID,
+    expense_id: UUID,
+    pay_request: PayExpenseRequest
+) -> PayExpenseResponse:
+    """
+    Mark expense as paid and optionally deduct from linked account.
+
+    Args:
+        db: Database session
+        user_id: User ID
+        expense_id: Expense ID to pay
+        pay_request: Payment request with optional account_id, amount, payment_method
+
+    Returns:
+        PayExpenseResponse with payment details
+
+    Raises:
+        ValueError: If expense not found or already paid
+        InsufficientFundsError: If account has insufficient balance
+    """
+    from app.modules.savings.transaction_service import TransactionService, InsufficientFundsError
+
+    # Get expense
+    result = await db.execute(
+        select(Expense).where(
+            Expense.id == expense_id,
+            Expense.user_id == user_id
+        )
+    )
+    expense = result.scalar_one_or_none()
+
+    if not expense:
+        raise ValueError("Expense not found")
+
+    if expense.status == ExpenseStatus.PAID.value:
+        raise ValueError("Expense is already paid")
+
+    # Determine payment details
+    account_id = pay_request.account_id or expense.payment_account_id
+    amount = pay_request.amount or expense.amount
+    payment_method = pay_request.payment_method or expense.payment_method
+
+    now = datetime.utcnow()
+    account_transaction_id = None
+
+    # If account specified, create withdrawal transaction
+    if account_id:
+        transaction_service = TransactionService(db)
+
+        try:
+            # Create withdrawal from the linked account
+            transaction = await transaction_service.create_withdrawal(
+                account_id=account_id,
+                user_id=user_id,
+                amount=Decimal(str(amount)),
+                description=pay_request.description or f"Payment for expense: {expense.name}",
+                source_type="expense",
+                source_id=expense_id,
+                transaction_date=now,
+                category=expense.category,
+            )
+            account_transaction_id = transaction.id
+            logger.info(f"Created withdrawal transaction {transaction.id} for expense {expense_id}")
+        except InsufficientFundsError as e:
+            raise InsufficientFundsError(str(e))
+
+    # Update expense status
+    expense.status = ExpenseStatus.PAID.value
+    expense.paid_date = now
+    expense.paid_amount = amount
+    expense.account_transaction_id = account_transaction_id
+    expense.payment_method = payment_method
+    expense.updated_at = now
+
+    await db.commit()
+    await db.refresh(expense)
+
+    logger.info(f"Expense {expense_id} marked as paid")
+
+    return PayExpenseResponse(
+        expense_id=expense_id,
+        account_transaction_id=account_transaction_id,
+        paid_amount=amount,
+        paid_date=now,
+        status=ExpenseStatus.PAID.value,
+        message="Expense paid successfully" + (
+            " and deducted from account" if account_transaction_id else ""
+        )
+    )
+
+
+async def get_pending_expenses(
+    db: AsyncSession,
+    user_id: UUID,
+    skip: int = 0,
+    limit: int = 100
+) -> tuple[List[Expense], int]:
+    """Get all pending expenses for a user."""
+    query = select(Expense).where(
+        and_(
+            Expense.user_id == user_id,
+            Expense.status == ExpenseStatus.PENDING.value,
+            Expense.is_active == True,
+            Expense.deleted_at.is_(None)
+        )
+    )
+
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    total = await db.scalar(count_query)
+
+    # Apply pagination and ordering
+    query = query.order_by(
+        func.coalesce(Expense.date, Expense.start_date).asc()
+    ).offset(skip).limit(limit)
+
+    result = await db.execute(query)
+    expenses = result.scalars().all()
+
+    # Convert to display currency
+    for expense in expenses:
+        await convert_expense_to_display_currency(db, user_id, expense)
+
+    return list(expenses), total or 0
+
+
+async def get_overdue_expenses(
+    db: AsyncSession,
+    user_id: UUID,
+    skip: int = 0,
+    limit: int = 100
+) -> tuple[List[Expense], int]:
+    """Get all overdue expenses for a user."""
+    query = select(Expense).where(
+        and_(
+            Expense.user_id == user_id,
+            Expense.status == ExpenseStatus.OVERDUE.value,
+            Expense.is_active == True,
+            Expense.deleted_at.is_(None)
+        )
+    )
+
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    total = await db.scalar(count_query)
+
+    # Apply pagination and ordering
+    query = query.order_by(
+        func.coalesce(Expense.date, Expense.start_date).asc()
+    ).offset(skip).limit(limit)
+
+    result = await db.execute(query)
+    expenses = result.scalars().all()
+
+    # Convert to display currency
+    for expense in expenses:
+        await convert_expense_to_display_currency(db, user_id, expense)
+
+    return list(expenses), total or 0
+
+
+async def mark_expenses_overdue(db: AsyncSession) -> int:
+    """
+    Mark pending expenses as overdue if their due date has passed.
+    This is typically called by a Celery task.
+
+    Returns:
+        Number of expenses marked as overdue
+    """
+    now = datetime.utcnow()
+
+    # Find pending expenses where the due date has passed
+    result = await db.execute(
+        select(Expense).where(
+            and_(
+                Expense.status == ExpenseStatus.PENDING.value,
+                Expense.is_active == True,
+                Expense.deleted_at.is_(None),
+                # For one-time expenses, check date
+                # For recurring expenses, check start_date
+                func.coalesce(Expense.date, Expense.start_date) < now
+            )
+        )
+    )
+    expenses = result.scalars().all()
+
+    count = 0
+    for expense in expenses:
+        expense.status = ExpenseStatus.OVERDUE.value
+        expense.updated_at = now
+        count += 1
+
+    if count > 0:
+        await db.commit()
+        logger.info(f"Marked {count} expenses as overdue")
+
+    return count
+
+
+async def get_expense_payment_summary(
+    db: AsyncSession,
+    user_id: UUID
+) -> ExpensePaymentSummary:
+    """Get payment summary for a user's expenses."""
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # Get all active expenses
+    result = await db.execute(
+        select(Expense).where(
+            and_(
+                Expense.user_id == user_id,
+                Expense.is_active == True,
+                Expense.deleted_at.is_(None)
+            )
+        )
+    )
+    expenses = result.scalars().all()
+
+    total_pending = 0
+    total_paid = 0
+    total_overdue = 0
+    pending_amount = Decimal(0)
+    paid_amount = Decimal(0)
+    overdue_amount = Decimal(0)
+
+    for expense in expenses:
+        # Convert amount to display currency
+        if expense.currency == display_currency:
+            amount = expense.amount
+            paid = expense.paid_amount or Decimal(0)
+        else:
+            amount = await currency_service.convert_amount(
+                expense.amount,
+                expense.currency,
+                display_currency
+            )
+            if amount is None:
+                amount = expense.amount
+
+            if expense.paid_amount:
+                paid = await currency_service.convert_amount(
+                    expense.paid_amount,
+                    expense.currency,
+                    display_currency
+                )
+                if paid is None:
+                    paid = expense.paid_amount
+            else:
+                paid = Decimal(0)
+
+        if expense.status == ExpenseStatus.PENDING.value:
+            total_pending += 1
+            pending_amount += amount
+        elif expense.status == ExpenseStatus.PAID.value:
+            total_paid += 1
+            paid_amount += paid
+        elif expense.status == ExpenseStatus.OVERDUE.value:
+            total_overdue += 1
+            overdue_amount += amount
+
+    return ExpensePaymentSummary(
+        total_pending=total_pending,
+        total_paid=total_paid,
+        total_overdue=total_overdue,
+        pending_amount=pending_amount,
+        paid_amount=paid_amount,
+        overdue_amount=overdue_amount,
+        currency=display_currency
+    )
+
+
+async def cancel_expense(
+    db: AsyncSession,
+    user_id: UUID,
+    expense_id: UUID
+) -> Optional[Expense]:
+    """Cancel an expense (set status to cancelled)."""
+    result = await db.execute(
+        select(Expense).where(
+            Expense.id == expense_id,
+            Expense.user_id == user_id
+        )
+    )
+    expense = result.scalar_one_or_none()
+
+    if not expense:
+        return None
+
+    expense.status = ExpenseStatus.CANCELLED.value
+    expense.updated_at = datetime.utcnow()
+
+    await db.commit()
+    await db.refresh(expense)
+
+    return expense
+
+
+async def get_expense_with_account_name(
+    db: AsyncSession,
+    user_id: UUID,
+    expense_id: UUID
+) -> Optional[Expense]:
+    """
+    Get expense with joined payment account name for display.
+    """
+    from app.modules.savings.models import SavingsAccount
+
+    result = await db.execute(
+        select(Expense, SavingsAccount.name.label('payment_account_name'))
+        .outerjoin(SavingsAccount, Expense.payment_account_id == SavingsAccount.id)
+        .where(
+            Expense.id == expense_id,
+            Expense.user_id == user_id
+        )
+    )
+    row = result.first()
+
+    if not row:
+        return None
+
+    expense = row[0]
+    expense.payment_account_name = row[1]
+
+    # Convert to user's display currency
+    await convert_expense_to_display_currency(db, user_id, expense)
+
+    return expense
+
+
+async def list_expenses_with_account_names(
+    db: AsyncSession,
+    user_id: UUID,
+    skip: int = 0,
+    limit: int = 100,
+    category: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    status: Optional[str] = None
+) -> tuple[List[Expense], int]:
+    """
+    List expenses with pagination, filters, and joined account names.
+    """
+    from app.modules.savings.models import SavingsAccount
+
+    # Build query with join
+    query = (
+        select(Expense, SavingsAccount.name.label('payment_account_name'))
+        .outerjoin(SavingsAccount, Expense.payment_account_id == SavingsAccount.id)
+        .where(
+            Expense.user_id == user_id,
+            Expense.deleted_at.is_(None)
+        )
+    )
+
+    # Apply filters
+    if category:
+        query = query.where(Expense.category == category)
+    if is_active is not None:
+        query = query.where(Expense.is_active == is_active)
+    if status:
+        query = query.where(Expense.status == status)
+
+    # Get total count
+    count_query = select(func.count()).select_from(
+        select(Expense).where(
+            Expense.user_id == user_id,
+            Expense.deleted_at.is_(None)
+        ).subquery()
+    )
+
+    if category:
+        count_query = select(func.count()).select_from(
+            select(Expense).where(
+                Expense.user_id == user_id,
+                Expense.category == category,
+                Expense.deleted_at.is_(None)
+            ).subquery()
+        )
+
+    total = await db.scalar(count_query)
+
+    # Apply pagination and ordering
+    query = query.order_by(
+        func.coalesce(Expense.date, Expense.start_date).desc(),
+        Expense.created_at.desc()
+    ).offset(skip).limit(limit)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    expenses = []
+    for row in rows:
+        expense = row[0]
+        expense.payment_account_name = row[1]
+        await convert_expense_to_display_currency(db, user_id, expense)
+        expenses.append(expense)
+
+    return expenses, total or 0

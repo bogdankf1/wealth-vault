@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from app.modules.expenses.models import ExpenseFrequency
+from app.modules.expenses.models import ExpenseFrequency, ExpenseStatus, PaymentMethod
 
 
 # Base schema with common fields
@@ -25,6 +25,11 @@ class ExpenseBase(BaseModel):
     date: Optional[datetime] = Field(None, description="Date of expense (for one-time expenses)")
     start_date: Optional[datetime] = Field(None, description="Start date (for recurring expenses)")
     end_date: Optional[datetime] = Field(None, description="End date (for recurring expenses)")
+
+    # Payment integration fields (Phase 3)
+    payment_account_id: Optional[UUID] = Field(None, description="Linked savings account for payment")
+    payment_method: Optional[str] = Field(None, description="Payment method (cash, card, transfer, check, other)")
+    auto_pay: bool = Field(default=False, description="Whether to automatically pay from linked account when due")
 
     @field_validator('currency')
     @classmethod
@@ -50,7 +55,11 @@ class ExpenseBase(BaseModel):
 
 # Schema for creating expense
 class ExpenseCreate(ExpenseBase):
-    pass
+    # Sync historical payments during creation
+    sync_historical: Optional[bool] = Field(
+        None,
+        description="If True, create payment transactions for past periods since start_date"
+    )
 
 
 # Schema for updating expense
@@ -66,6 +75,18 @@ class ExpenseUpdate(BaseModel):
     date: Optional[datetime] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
+
+    # Payment integration fields (Phase 3)
+    payment_account_id: Optional[UUID] = None
+    payment_method: Optional[str] = None
+    auto_pay: Optional[bool] = None
+
+    # Sync historical payments - when True, backfills payments for past periods
+    # Similar to income's sync_historical
+    sync_historical: Optional[bool] = Field(
+        None,
+        description="If True, create payment transactions for past periods since start_date"
+    )
 
     @field_validator('currency')
     @classmethod
@@ -101,6 +122,15 @@ class Expense(ExpenseBase):
     display_amount: Optional[Decimal] = None
     display_currency: Optional[str] = None
     display_monthly_equivalent: Optional[Decimal] = None
+
+    # Payment integration fields (Phase 3)
+    status: str = "pending"
+    paid_date: Optional[datetime] = None
+    paid_amount: Optional[Decimal] = None
+    account_transaction_id: Optional[UUID] = None
+    receipt_url: Optional[str] = None
+    payment_account_name: Optional[str] = None  # Joined field for display
+    auto_pay: bool = False  # Whether auto-pay is enabled
 
     class Config:
         from_attributes = True
@@ -170,3 +200,36 @@ class ExpenseBatchCreateResponse(BaseModel):
     created_expenses: List[Expense] = Field(..., description="List of created expenses")
     failed_count: int = Field(..., description="Number of expenses that failed to create")
     errors: List[ExpenseBatchCreateError] = Field(default=[], description="List of errors for failed expenses")
+
+
+# ============================================================================
+# Payment Integration Schemas (Phase 3)
+# ============================================================================
+
+class PayExpenseRequest(BaseModel):
+    """Request to pay an expense"""
+    account_id: Optional[UUID] = Field(None, description="Account to pay from (optional, uses expense's payment_account_id if not provided)")
+    amount: Optional[Decimal] = Field(None, description="Amount to pay (optional, uses expense amount if not provided)")
+    payment_method: Optional[str] = Field(None, description="Payment method (cash, card, transfer, check, other)")
+    description: Optional[str] = Field(None, description="Optional payment description")
+
+
+class PayExpenseResponse(BaseModel):
+    """Response after paying an expense"""
+    expense_id: UUID
+    account_transaction_id: Optional[UUID] = None
+    paid_amount: Decimal
+    paid_date: datetime
+    status: str
+    message: str
+
+
+class ExpensePaymentSummary(BaseModel):
+    """Summary of expense payments"""
+    total_pending: int
+    total_paid: int
+    total_overdue: int
+    pending_amount: Decimal
+    paid_amount: Decimal
+    overdue_amount: Decimal
+    currency: str

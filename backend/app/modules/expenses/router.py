@@ -23,7 +23,10 @@ from app.modules.expenses.schemas import (
     ExpenseBatchCreate,
     ExpenseBatchCreateResponse,
     ExpenseBatchCreateError,
-    ExpenseHistoryResponse
+    ExpenseHistoryResponse,
+    PayExpenseRequest,
+    PayExpenseResponse,
+    ExpensePaymentSummary
 )
 
 router = APIRouter(prefix="/api/v1/expenses", tags=["expenses"])
@@ -82,18 +85,20 @@ async def list_expenses(
     page_size: int = Query(50, ge=1, le=100),
     category: Optional[str] = None,
     is_active: Optional[bool] = None,
+    expense_status: Optional[str] = Query(None, alias="status"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """List expenses with pagination and filters"""
     skip = (page - 1) * page_size
-    expenses, total = await service.list_expenses(
+    expenses, total = await service.list_expenses_with_account_names(
         db,
         current_user.id,
         skip=skip,
         limit=page_size,
         category=category,
-        is_active=is_active
+        is_active=is_active,
+        status=expense_status
     )
 
     # Convert to dict and include display fields
@@ -119,6 +124,16 @@ async def list_expenses(
             "display_amount": float(expense.display_amount) if hasattr(expense, 'display_amount') and expense.display_amount is not None else None,
             "display_currency": expense.display_currency if hasattr(expense, 'display_currency') and expense.display_currency is not None else None,
             "display_monthly_equivalent": float(expense.display_monthly_equivalent) if hasattr(expense, 'display_monthly_equivalent') and expense.display_monthly_equivalent is not None else None,
+            # Payment integration fields
+            "payment_account_id": str(expense.payment_account_id) if expense.payment_account_id else None,
+            "payment_method": expense.payment_method,
+            "status": expense.status,
+            "paid_date": expense.paid_date.isoformat() if expense.paid_date else None,
+            "paid_amount": float(expense.paid_amount) if expense.paid_amount else None,
+            "account_transaction_id": str(expense.account_transaction_id) if expense.account_transaction_id else None,
+            "receipt_url": expense.receipt_url,
+            "payment_account_name": expense.payment_account_name if hasattr(expense, 'payment_account_name') else None,
+            "auto_pay": expense.auto_pay if hasattr(expense, 'auto_pay') else False,
         }
         expense_dicts.append(expense_dict)
 
@@ -309,3 +324,121 @@ async def batch_delete_expenses(
         deleted_count=deleted_count,
         failed_ids=failed_ids
     )
+
+
+# ============================================================================
+# Payment Integration Endpoints (Phase 3)
+# ============================================================================
+
+@router.get("/pending", response_model=ExpenseListResponse)
+@require_feature("expense_tracking")
+async def list_pending_expenses(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """List all pending expenses for the current user."""
+    skip = (page - 1) * page_size
+    expenses, total = await service.get_pending_expenses(
+        db,
+        current_user.id,
+        skip=skip,
+        limit=page_size
+    )
+
+    return ExpenseListResponse(
+        items=expenses,
+        total=total,
+        page=page,
+        page_size=page_size
+    )
+
+
+@router.get("/overdue", response_model=ExpenseListResponse)
+@require_feature("expense_tracking")
+async def list_overdue_expenses(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """List all overdue expenses for the current user."""
+    skip = (page - 1) * page_size
+    expenses, total = await service.get_overdue_expenses(
+        db,
+        current_user.id,
+        skip=skip,
+        limit=page_size
+    )
+
+    return ExpenseListResponse(
+        items=expenses,
+        total=total,
+        page=page,
+        page_size=page_size
+    )
+
+
+@router.get("/payment-summary", response_model=ExpensePaymentSummary)
+@require_feature("expense_tracking")
+async def get_payment_summary(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get expense payment summary for the current user."""
+    summary = await service.get_expense_payment_summary(db, current_user.id)
+    return summary
+
+
+@router.post("/{expense_id}/pay", response_model=PayExpenseResponse)
+@require_feature("expense_tracking")
+async def pay_expense(
+    expense_id: UUID,
+    pay_request: PayExpenseRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Mark an expense as paid and optionally deduct from a linked account.
+
+    If account_id is provided (or expense has payment_account_id),
+    the amount will be deducted from that account as a withdrawal.
+    """
+    from app.modules.savings.transaction_service import InsufficientFundsError
+
+    try:
+        response = await service.pay_expense(
+            db,
+            current_user.id,
+            expense_id,
+            pay_request
+        )
+        return response
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except InsufficientFundsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.post("/{expense_id}/cancel", response_model=Expense)
+@require_feature("expense_tracking")
+async def cancel_expense(
+    expense_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Cancel an expense (set status to cancelled)."""
+    expense = await service.cancel_expense(db, current_user.id, expense_id)
+    if not expense:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Expense not found"
+        )
+    return expense

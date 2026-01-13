@@ -2,7 +2,7 @@
 
 > **Document Purpose**: This document contains the complete implementation plan to address all functionality gaps identified in the January 2026 audit. Reference this file when continuing work on any phase.
 
-> **Last Updated**: January 12, 2026
+> **Last Updated**: January 13, 2026
 
 ---
 
@@ -446,7 +446,27 @@ async def accrue_monthly_interest():
 ### 1.4 Populate Balance History
 Create migration/task to start using BalanceHistory table that already exists but is unused.
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added interest rate fields to SavingsAccount model
+- [x] Created AccountTransaction model for transaction history
+- [x] Created AccountTransfer model for transfers between accounts
+- [x] Created transaction service with deposit, withdrawal, transfer, and reverse functions
+- [x] Updated Savings API with transaction endpoints
+- [x] Created account detail page with transaction history
+- [x] Added deposit, withdrawal, and transfer dialogs
+- [x] Added interest rate configuration to account form
+- [x] Added translations for all 8 languages
+
+**Files Created:**
+- `backend/alembic/versions/20260112_savings_transactions_and_interest.py`
+- `backend/alembic/versions/20260112_account_transfers.py`
+- `backend/app/modules/savings/transaction_service.py`
+- `frontend/app/dashboard/savings/[id]/page.tsx`
+- `frontend/components/savings/deposit-dialog.tsx`
+- `frontend/components/savings/withdraw-dialog.tsx`
+- `frontend/components/savings/transfer-dialog.tsx`
 
 ---
 
@@ -572,7 +592,37 @@ async def process_recurring_income():
 - Add distribution rules endpoints
 - Add deposit endpoint
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added target_account_id and auto_deposit fields to IncomeSource model
+- [x] Added deposit tracking fields to IncomeTransaction model
+- [x] Created IncomeDistributionRule model and table
+- [x] Created distribution service for applying distribution rules
+- [x] Updated Income API with deposit and distribution endpoints
+- [x] Implemented auto-deposit on income source creation (with historical backfill)
+- [x] Implemented auto-deposit on income source update (with sync_historical option)
+- [x] Updated income-source-form with target account selector, auto-deposit toggle, and sync historical toggle
+- [x] Implemented Celery task for recurring income deposits (process_recurring_income)
+- [x] Added translations for all 8 languages
+
+**Key Features:**
+- When creating income with auto-deposit, all historical deposits from start_date to today are created
+- When editing income with sync_historical enabled, old deposits are reversed and recreated with new values
+- Celery task runs daily to process recurring income based on frequency (weekly, biweekly, monthly, quarterly, annually)
+
+**Files Created:**
+- `backend/alembic/versions/20260112_add_income_account_integration.py`
+- `backend/app/modules/income/distribution_service.py`
+
+**Files Modified:**
+- `backend/app/modules/income/models.py` - Added new fields and enums
+- `backend/app/modules/income/schemas.py` - Added sync_historical parameter
+- `backend/app/modules/income/api.py` - Added deposit endpoints and auto-deposit logic
+- `backend/app/tasks/income_tasks.py` - Implemented recurring income processing
+- `frontend/lib/api/incomeApi.ts` - Added new types and endpoints
+- `frontend/components/income/income-source-form.tsx` - Added account integration UI
+- `frontend/messages/*/income.json` - Added translations (all 8 languages)
 
 ---
 
@@ -661,7 +711,43 @@ async def check_overdue_expenses():
 - Add receipt upload endpoint
 - Add pending/overdue query params
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added payment_account_id, status, paid_date, paid_amount, account_transaction_id, receipt_url, payment_method fields to Expense model
+- [x] Added auto_pay field for automatic payment from linked account
+- [x] Created database migration for expense payment integration
+- [x] Created database migration for auto_pay field
+- [x] Updated expense service with pay_expense, get_pending_expenses, get_overdue_expenses, mark_expenses_overdue functions
+- [x] Added backfill_expense_payments function for historical payment sync (similar to income's sync_historical)
+- [x] Updated expense router with /pay, /cancel, /pending, /overdue, /payment-summary endpoints
+- [x] Updated Celery task to only process expenses with auto_pay enabled
+- [x] Updated frontend expense form with payment account selector, payment method dropdown
+- [x] Added balance display in account dropdown with currency formatting
+- [x] Added InsufficientBalanceWarning component with currency conversion
+- [x] Added auto_pay toggle and sync_historical checkbox to expense form
+- [x] Added translations for all 8 languages (en, de, es, fr, it, pl, pt, uk)
+
+**Key Features:**
+- Expenses can be linked to payment accounts
+- Auto-pay feature automatically pays expenses when due (via Celery task)
+- Historical backfill creates withdrawal transactions for all past periods since start_date
+- Account balance warning shows when expense amount exceeds account balance (with currency conversion)
+- All expense payments appear in account transaction history
+
+**Files Created:**
+- `backend/alembic/versions/20260113_add_expense_payment_integration.py`
+- `backend/alembic/versions/20260113_add_expense_auto_pay.py`
+
+**Files Modified:**
+- `backend/app/modules/expenses/models.py` - Added payment integration and auto_pay fields
+- `backend/app/modules/expenses/schemas.py` - Added payment and auto_pay schemas
+- `backend/app/modules/expenses/service.py` - Added payment functions and backfill logic
+- `backend/app/modules/expenses/router.py` - Added payment endpoints
+- `backend/app/tasks/expense_tasks.py` - Updated to use auto_pay field
+- `frontend/lib/api/expensesApi.ts` - Added payment types and endpoints
+- `frontend/components/expenses/expense-form.tsx` - Added payment account, auto_pay, sync_historical UI
+- `frontend/messages/*/expenses.json` - Added translations (all 8 languages)
 
 ---
 
@@ -1615,9 +1701,9 @@ Functions:
 | Phase | Status | Start Date | Completion Date | Notes |
 |-------|--------|------------|-----------------|-------|
 | 0 | COMPLETED | 2026-01-12 | 2026-01-12 | Foundation infrastructure |
-| 1 | NOT STARTED | - | - | Savings transactions |
-| 2 | NOT STARTED | - | - | Income integration |
-| 3 | NOT STARTED | - | - | Expense integration |
+| 1 | COMPLETED | 2026-01-12 | 2026-01-12 | Savings transactions |
+| 2 | COMPLETED | 2026-01-12 | 2026-01-13 | Income integration |
+| 3 | COMPLETED | 2026-01-13 | 2026-01-13 | Expense integration with auto-pay |
 | 4 | NOT STARTED | - | - | Budget completion |
 | 5 | NOT STARTED | - | - | Subscription automation |
 | 6 | NOT STARTED | - | - | Installment enhancement |
@@ -1629,7 +1715,7 @@ Functions:
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 0 - Foundation Infrastructure
+**Next Phase to Start:** Phase 4 - Budget Module Completion
 
 ### How to Continue
 When resuming work on this project:
@@ -1659,4 +1745,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 12, 2026*
+*Last updated: January 13, 2026 - Phase 3 (Expenses Integration) completed*

@@ -22,6 +22,23 @@ class ExpenseFrequency(str, enum.Enum):
     ANNUALLY = "annually"
 
 
+class ExpenseStatus(str, enum.Enum):
+    """Expense payment status"""
+    PENDING = "pending"
+    PAID = "paid"
+    OVERDUE = "overdue"
+    CANCELLED = "cancelled"
+
+
+class PaymentMethod(str, enum.Enum):
+    """Payment method types"""
+    CASH = "cash"
+    CARD = "card"
+    TRANSFER = "transfer"
+    CHECK = "check"
+    OTHER = "other"
+
+
 class Expense(Base):
     """Expense model"""
     __tablename__ = "expenses"
@@ -55,12 +72,27 @@ class Expense(Base):
     # Calculated field (stored for performance)
     monthly_equivalent = Column(Numeric(12, 2), nullable=True)
 
+    # Payment integration fields (Phase 3)
+    payment_account_id = Column(UUID(as_uuid=True), ForeignKey("savings_accounts.id", ondelete="SET NULL"), nullable=True, index=True)
+    status = Column(String(20), nullable=False, default="pending")  # pending, paid, overdue, cancelled
+    paid_date = Column(DateTime, nullable=True)
+    paid_amount = Column(Numeric(12, 2), nullable=True)
+    account_transaction_id = Column(UUID(as_uuid=True), ForeignKey("account_transactions.id", ondelete="SET NULL"), nullable=True)
+    receipt_url = Column(String(500), nullable=True)
+    payment_method = Column(String(50), nullable=True)  # cash, card, transfer, check, other
+
+    # Auto-pay settings (similar to income's auto_deposit)
+    auto_pay = Column(Boolean, default=False, nullable=False)  # Whether to automatically pay from linked account
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at = Column(DateTime, nullable=True)  # Soft delete
 
     # Relationships
     user = relationship("User", back_populates="expenses")
+    payment_account = relationship("SavingsAccount", foreign_keys=[payment_account_id])
+    account_transaction = relationship("AccountTransaction", foreign_keys=[account_transaction_id])
 
     def __repr__(self):
         return f"<Expense {self.name} (${self.amount} {self.frequency.value})>"
