@@ -1,16 +1,25 @@
 """
-Income service layer with currency conversion
+Income service layer with currency conversion and account integration.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import Optional
+from sqlalchemy import select, and_
+from typing import Optional, Tuple, List
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
+import logging
 
-from app.modules.income.models import IncomeSource
-from app.modules.income.schemas import MonthlyIncomeHistory, IncomeHistoryResponse
+from app.modules.income.models import IncomeSource, IncomeTransaction, IncomeTransactionStatus
+from app.modules.income.schemas import (
+    MonthlyIncomeHistory,
+    IncomeHistoryResponse,
+    IncomeDepositResponse,
+)
 from app.services.currency_service import CurrencyService
+from app.modules.savings.models import SavingsAccount
+from app.modules.savings.transaction_service import TransactionService
+
+logger = logging.getLogger(__name__)
 
 
 async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
@@ -229,3 +238,202 @@ async def get_income_history(
         overall_average=overall_average,
         currency=display_currency
     )
+
+
+class IncomeDepositError(Exception):
+    """Raised when income deposit fails."""
+    pass
+
+
+class IncomeService:
+    """Service for income operations including account deposits."""
+
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    async def deposit_income_to_account(
+        self,
+        income_transaction_id: UUID,
+        user_id: UUID,
+        account_id: UUID,
+        description: Optional[str] = None,
+    ) -> IncomeDepositResponse:
+        """
+        Deposit an income transaction to a savings account.
+
+        Args:
+            income_transaction_id: Income transaction to deposit
+            user_id: User UUID
+            account_id: Target savings account UUID
+            description: Optional deposit description
+
+        Returns:
+            IncomeDepositResponse with deposit details
+
+        Raises:
+            IncomeDepositError: If deposit fails
+        """
+        # Get the income transaction
+        result = await self.db.execute(
+            select(IncomeTransaction).where(
+                and_(
+                    IncomeTransaction.id == income_transaction_id,
+                    IncomeTransaction.user_id == user_id,
+                )
+            )
+        )
+        income_txn = result.scalar_one_or_none()
+        if not income_txn:
+            raise IncomeDepositError("Income transaction not found")
+
+        # Check if already deposited
+        if income_txn.status == IncomeTransactionStatus.DEPOSITED:
+            raise IncomeDepositError("Income has already been deposited")
+
+        # Verify the target account exists and belongs to user
+        account = await self.db.get(SavingsAccount, account_id)
+        if not account or account.user_id != user_id:
+            raise IncomeDepositError("Invalid target account")
+
+        # Create deposit to savings account
+        transaction_service = TransactionService(self.db)
+        try:
+            account_txn = await transaction_service.create_deposit(
+                account_id=account_id,
+                user_id=user_id,
+                amount=income_txn.amount,
+                source_type="income",
+                source_id=income_transaction_id,
+                description=description or f"Income deposit: {income_txn.description or 'Income'}",
+                category=income_txn.category,
+            )
+        except Exception as e:
+            logger.error(f"Failed to create deposit for income {income_transaction_id}: {e}")
+            raise IncomeDepositError(f"Failed to create deposit: {str(e)}")
+
+        # Update income transaction status
+        income_txn.status = IncomeTransactionStatus.DEPOSITED
+        income_txn.deposited_to_account_id = account_id
+        income_txn.account_transaction_id = account_txn.id
+        income_txn.updated_at = datetime.utcnow()
+
+        await self.db.commit()
+
+        logger.info(f"Deposited income {income_transaction_id} to account {account_id}")
+
+        return IncomeDepositResponse(
+            income_transaction_id=income_transaction_id,
+            account_transaction_id=account_txn.id,
+            deposited_to_account_id=account_id,
+            amount=income_txn.amount,
+            currency=income_txn.currency,
+            message=f"Successfully deposited {income_txn.amount} {income_txn.currency} to account",
+        )
+
+    async def create_income_with_auto_deposit(
+        self,
+        user_id: UUID,
+        source_id: Optional[UUID],
+        amount: Decimal,
+        currency: str,
+        date: datetime,
+        description: Optional[str] = None,
+        category: Optional[str] = None,
+        notes: Optional[str] = None,
+        deposit_to_account_id: Optional[UUID] = None,
+    ) -> Tuple[IncomeTransaction, Optional[IncomeDepositResponse]]:
+        """
+        Create an income transaction and optionally auto-deposit to account.
+
+        If deposit_to_account_id is provided, deposits immediately.
+        If source has auto_deposit enabled, uses the source's target account.
+
+        Args:
+            user_id: User UUID
+            source_id: Optional income source ID
+            amount: Income amount
+            currency: Currency code
+            date: Transaction date
+            description: Optional description
+            category: Optional category
+            notes: Optional notes
+            deposit_to_account_id: Optional account to deposit to
+
+        Returns:
+            Tuple of (IncomeTransaction, Optional IncomeDepositResponse)
+        """
+        # Determine target account for auto-deposit
+        target_account_id = deposit_to_account_id
+
+        if not target_account_id and source_id:
+            # Check if source has auto_deposit enabled
+            source = await self.db.get(IncomeSource, source_id)
+            if source and source.auto_deposit and source.target_account_id:
+                target_account_id = source.target_account_id
+
+        # Create the income transaction
+        income_txn = IncomeTransaction(
+            user_id=user_id,
+            source_id=source_id,
+            amount=amount,
+            currency=currency,
+            date=date,
+            description=description,
+            category=category,
+            notes=notes,
+            status=IncomeTransactionStatus.RECEIVED,
+        )
+
+        self.db.add(income_txn)
+        await self.db.flush()  # Get the ID
+
+        deposit_response = None
+
+        # Auto-deposit if target account specified
+        if target_account_id:
+            try:
+                deposit_response = await self.deposit_income_to_account(
+                    income_transaction_id=income_txn.id,
+                    user_id=user_id,
+                    account_id=target_account_id,
+                    description=description,
+                )
+            except IncomeDepositError as e:
+                logger.warning(f"Auto-deposit failed for income {income_txn.id}: {e}")
+                # Transaction is still created, just not deposited
+
+        await self.db.commit()
+        await self.db.refresh(income_txn)
+
+        return income_txn, deposit_response
+
+    async def get_income_transaction(
+        self,
+        transaction_id: UUID,
+        user_id: UUID,
+    ) -> Optional[IncomeTransaction]:
+        """Get an income transaction by ID."""
+        result = await self.db.execute(
+            select(IncomeTransaction).where(
+                and_(
+                    IncomeTransaction.id == transaction_id,
+                    IncomeTransaction.user_id == user_id,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_undepositied_income(
+        self,
+        user_id: UUID,
+    ) -> List[IncomeTransaction]:
+        """Get all income transactions that haven't been deposited yet."""
+        result = await self.db.execute(
+            select(IncomeTransaction).where(
+                and_(
+                    IncomeTransaction.user_id == user_id,
+                    IncomeTransaction.status == IncomeTransactionStatus.RECEIVED,
+                )
+            ).order_by(IncomeTransaction.date.desc())
+        )
+        return list(result.scalars().all())

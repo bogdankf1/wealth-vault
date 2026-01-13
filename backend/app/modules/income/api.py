@@ -13,7 +13,11 @@ from app.core.database import get_db
 from app.core.permissions import get_current_user, require_feature, check_usage_limit
 from app.core.exceptions import TierLimitException, NotFoundException
 from app.models.user import User
-from app.modules.income.models import IncomeSource, IncomeTransaction, IncomeFrequency
+from app.modules.income.models import IncomeSource, IncomeTransaction, IncomeFrequency, IncomeTransactionStatus
+from app.modules.savings.transaction_service import TransactionService
+import logging
+
+logger = logging.getLogger(__name__)
 from app.modules.income.schemas import (
     IncomeSourceCreate,
     IncomeSourceUpdate,
@@ -26,8 +30,27 @@ from app.modules.income.schemas import (
     IncomeHistoryResponse,
     IncomeSourceBatchDelete,
     IncomeSourceBatchDeleteResponse,
+    IncomeDepositRequest,
+    IncomeDepositResponse,
+    IncomeDistributionRuleCreate,
+    IncomeDistributionRuleUpdate,
+    IncomeDistributionRuleResponse,
+    IncomeDistributionRuleListResponse,
+    IncomeDistributionPreviewResponse,
 )
-from app.modules.income.service import convert_income_to_display_currency, get_user_display_currency, get_income_history
+from app.modules.income.service import (
+    convert_income_to_display_currency,
+    get_user_display_currency,
+    get_income_history,
+    IncomeService,
+    IncomeDepositError,
+)
+from app.modules.income.distribution_service import (
+    DistributionService,
+    DistributionServiceError,
+    RuleNotFoundError,
+    InvalidRuleError,
+)
 
 router = APIRouter(prefix="/income", tags=["Income Tracking"])
 
@@ -99,6 +122,9 @@ async def list_income_sources(
             "end_date": source.end_date.isoformat() if source.end_date else None,
             "created_at": source.created_at.isoformat(),
             "updated_at": source.updated_at.isoformat(),
+            # Account integration fields
+            "target_account_id": str(source.target_account_id) if source.target_account_id else None,
+            "auto_deposit": source.auto_deposit,
             "monthly_equivalent": float(source.calculate_monthly_amount()) if source.calculate_monthly_amount() else None,
             "display_amount": float(source.display_amount) if hasattr(source, 'display_amount') and source.display_amount is not None else None,
             "display_currency": source.display_currency if hasattr(source, 'display_currency') and source.display_currency is not None else None,
@@ -164,6 +190,118 @@ async def create_income_source(
     await db.commit()
     await db.refresh(income_source)
 
+    # Auto-deposit: If auto_deposit is enabled and target account is set, create deposits
+    # For recurring income, backfill all historical deposits from start_date to today
+    if income_source.auto_deposit and income_source.target_account_id:
+        try:
+            from dateutil.relativedelta import relativedelta
+
+            today = datetime.utcnow().date()
+            transaction_service = TransactionService(db)
+            deposits_created = 0
+
+            if income_source.frequency == IncomeFrequency.ONE_TIME:
+                # One-time income: create single deposit if date is today or in the past
+                income_date = income_source.date or datetime.utcnow()
+                if income_date.date() <= today:
+                    income_txn = IncomeTransaction(
+                        user_id=current_user.id,
+                        source_id=income_source.id,
+                        amount=income_source.amount,
+                        currency=income_source.currency,
+                        date=income_date,
+                        description=f"Income: {income_source.name}",
+                        category=income_source.category,
+                        status=IncomeTransactionStatus.RECEIVED,
+                    )
+                    db.add(income_txn)
+                    await db.flush()
+
+                    account_txn = await transaction_service.create_deposit(
+                        account_id=income_source.target_account_id,
+                        user_id=current_user.id,
+                        amount=income_source.amount,
+                        source_type="income",
+                        source_id=income_txn.id,
+                        description=f"Income: {income_source.name}",
+                        transaction_date=income_date,
+                        category=income_source.category or "income",
+                    )
+
+                    income_txn.status = IncomeTransactionStatus.DEPOSITED
+                    income_txn.deposited_to_account_id = income_source.target_account_id
+                    income_txn.account_transaction_id = account_txn.id
+                    deposits_created = 1
+            else:
+                # Recurring income: backfill all past deposits
+                start_date = income_source.start_date
+                if start_date and start_date.date() <= today:
+                    # Calculate all due dates from start_date to today
+                    current_date = start_date
+                    end_date = income_source.end_date.date() if income_source.end_date else None
+
+                    # Determine the interval based on frequency
+                    if income_source.frequency == IncomeFrequency.WEEKLY:
+                        interval = relativedelta(weeks=1)
+                    elif income_source.frequency == IncomeFrequency.BIWEEKLY:
+                        interval = relativedelta(weeks=2)
+                    elif income_source.frequency == IncomeFrequency.MONTHLY:
+                        interval = relativedelta(months=1)
+                    elif income_source.frequency == IncomeFrequency.QUARTERLY:
+                        interval = relativedelta(months=3)
+                    elif income_source.frequency == IncomeFrequency.ANNUALLY:
+                        interval = relativedelta(years=1)
+                    else:
+                        interval = relativedelta(months=1)  # Default to monthly
+
+                    # Create deposits for each due date
+                    while current_date.date() <= today:
+                        # Check end_date if set
+                        if end_date and current_date.date() > end_date:
+                            break
+
+                        # Create income transaction for this date
+                        income_txn = IncomeTransaction(
+                            user_id=current_user.id,
+                            source_id=income_source.id,
+                            amount=income_source.amount,
+                            currency=income_source.currency,
+                            date=current_date,
+                            description=f"Income: {income_source.name}",
+                            category=income_source.category,
+                            status=IncomeTransactionStatus.RECEIVED,
+                        )
+                        db.add(income_txn)
+                        await db.flush()
+
+                        # Create deposit to savings account with the historical date
+                        account_txn = await transaction_service.create_deposit(
+                            account_id=income_source.target_account_id,
+                            user_id=current_user.id,
+                            amount=income_source.amount,
+                            source_type="income",
+                            source_id=income_txn.id,
+                            description=f"Income: {income_source.name}",
+                            transaction_date=current_date,
+                            category=income_source.category or "income",
+                        )
+
+                        # Update income transaction with deposit info
+                        income_txn.status = IncomeTransactionStatus.DEPOSITED
+                        income_txn.deposited_to_account_id = income_source.target_account_id
+                        income_txn.account_transaction_id = account_txn.id
+
+                        deposits_created += 1
+                        current_date = current_date + interval
+
+            if deposits_created > 0:
+                await db.commit()
+                logger.info(f"Auto-deposited {deposits_created} transactions for income source {income_source.id} to account {income_source.target_account_id}")
+        except Exception as e:
+            logger.error(f"Failed to auto-deposit income source {income_source.id}: {e}")
+            await db.rollback()
+            # Don't fail the income source creation, just log the error
+
     # Prepare response with monthly equivalent
     response_dict = IncomeSourceResponse.model_validate(income_source).model_dump()
     response_dict["monthly_equivalent"] = income_source.calculate_monthly_amount()
@@ -214,6 +352,9 @@ async def get_income_source(
         "end_date": source.end_date.isoformat() if source.end_date else None,
         "created_at": source.created_at.isoformat(),
         "updated_at": source.updated_at.isoformat(),
+        # Account integration fields
+        "target_account_id": str(source.target_account_id) if source.target_account_id else None,
+        "auto_deposit": source.auto_deposit,
         "monthly_equivalent": float(source.calculate_monthly_amount()) if source.calculate_monthly_amount() else None,
         "display_amount": float(source.display_amount) if hasattr(source, 'display_amount') and source.display_amount is not None else None,
         "display_currency": source.display_currency if hasattr(source, 'display_currency') and source.display_currency is not None else None,
@@ -234,8 +375,17 @@ async def update_income_source(
     """
     Update an income source.
 
+    If auto_deposit is enabled and target_account is set, backfills historical deposits
+    for any dates that don't already have transactions.
+
+    If sync_historical is True, deletes all existing income transactions and their
+    account deposits, then recreates them with the new values.
+
     Requires: income_tracking feature
     """
+    from dateutil.relativedelta import relativedelta
+    from app.modules.savings.models import AccountTransaction
+
     query = select(IncomeSource).where(
         IncomeSource.id == source_id,
         IncomeSource.user_id == current_user.id,
@@ -248,13 +398,234 @@ async def update_income_source(
     if not source:
         raise NotFoundException(message="Income source not found")
 
-    # Update fields
-    update_data = source_data.model_dump(exclude_unset=True)
+    # Track previous auto_deposit state to detect if it's being enabled
+    was_auto_deposit_enabled = source.auto_deposit and source.target_account_id
+
+    # Extract sync_historical before updating fields
+    sync_historical = source_data.sync_historical
+
+    # Update fields (excluding sync_historical which is not a model field)
+    update_data = source_data.model_dump(exclude_unset=True, exclude={'sync_historical'})
     for field, value in update_data.items():
         setattr(source, field, value)
 
     await db.commit()
     await db.refresh(source)
+
+    # Check if auto_deposit is now enabled
+    is_auto_deposit_enabled = source.auto_deposit and source.target_account_id
+
+    # Helper function to get frequency interval
+    def get_frequency_interval(frequency: IncomeFrequency):
+        if frequency == IncomeFrequency.WEEKLY:
+            return relativedelta(weeks=1)
+        elif frequency == IncomeFrequency.BIWEEKLY:
+            return relativedelta(weeks=2)
+        elif frequency == IncomeFrequency.MONTHLY:
+            return relativedelta(months=1)
+        elif frequency == IncomeFrequency.QUARTERLY:
+            return relativedelta(months=3)
+        elif frequency == IncomeFrequency.ANNUALLY:
+            return relativedelta(years=1)
+        return relativedelta(months=1)
+
+    # Helper function to create deposits for date range
+    async def create_historical_deposits(transaction_service, start_dt, end_dt, interval, existing_dates=None):
+        deposits_created = 0
+        today = datetime.utcnow().date()
+        current_date = start_dt
+
+        while current_date.date() <= today:
+            if end_dt and current_date.date() > end_dt:
+                break
+
+            # Skip if transaction already exists for this date (when not syncing)
+            if existing_dates and current_date.date() in existing_dates:
+                current_date = current_date + interval
+                continue
+
+            income_txn = IncomeTransaction(
+                user_id=current_user.id,
+                source_id=source.id,
+                amount=source.amount,
+                currency=source.currency,
+                date=current_date,
+                description=f"Income: {source.name}",
+                category=source.category,
+                status=IncomeTransactionStatus.RECEIVED,
+            )
+            db.add(income_txn)
+            await db.flush()
+
+            account_txn = await transaction_service.create_deposit(
+                account_id=source.target_account_id,
+                user_id=current_user.id,
+                amount=source.amount,
+                source_type="income",
+                source_id=income_txn.id,
+                description=f"Income: {source.name}",
+                transaction_date=current_date,
+                category=source.category or "income",
+            )
+
+            income_txn.status = IncomeTransactionStatus.DEPOSITED
+            income_txn.deposited_to_account_id = source.target_account_id
+            income_txn.account_transaction_id = account_txn.id
+
+            deposits_created += 1
+            current_date = current_date + interval
+
+        return deposits_created
+
+    # Handle sync_historical - delete existing and recreate
+    if sync_historical and is_auto_deposit_enabled:
+        try:
+            transaction_service = TransactionService(db)
+
+            # Get all existing income transactions for this source
+            existing_txns_query = select(IncomeTransaction).where(
+                IncomeTransaction.source_id == source.id,
+                IncomeTransaction.deleted_at.is_(None)
+            )
+            existing_result = await db.execute(existing_txns_query)
+            existing_txns = existing_result.scalars().all()
+
+            # Reverse the account deposits and delete income transactions
+            reversed_count = 0
+            for income_txn in existing_txns:
+                # Reverse the account transaction if it exists
+                if income_txn.account_transaction_id and income_txn.deposited_to_account_id:
+                    try:
+                        await transaction_service.reverse_transaction(
+                            transaction_id=income_txn.account_transaction_id,
+                            user_id=current_user.id,
+                            reason=f"Sync historical: Income source updated",
+                        )
+                        reversed_count += 1
+                    except Exception as e:
+                        logger.warning(f"Could not reverse transaction {income_txn.account_transaction_id}: {e}")
+
+                # Soft delete the income transaction
+                income_txn.deleted_at = datetime.utcnow()
+
+            await db.commit()
+            logger.info(f"Reversed {reversed_count} account transactions for income source {source.id}")
+
+            # Recreate all transactions with new values
+            deposits_created = 0
+            today = datetime.utcnow().date()
+
+            if source.frequency == IncomeFrequency.ONE_TIME:
+                income_date = source.date or datetime.utcnow()
+                if income_date.date() <= today:
+                    income_txn = IncomeTransaction(
+                        user_id=current_user.id,
+                        source_id=source.id,
+                        amount=source.amount,
+                        currency=source.currency,
+                        date=income_date,
+                        description=f"Income: {source.name}",
+                        category=source.category,
+                        status=IncomeTransactionStatus.RECEIVED,
+                    )
+                    db.add(income_txn)
+                    await db.flush()
+
+                    account_txn = await transaction_service.create_deposit(
+                        account_id=source.target_account_id,
+                        user_id=current_user.id,
+                        amount=source.amount,
+                        source_type="income",
+                        source_id=income_txn.id,
+                        description=f"Income: {source.name}",
+                        transaction_date=income_date,
+                        category=source.category or "income",
+                    )
+
+                    income_txn.status = IncomeTransactionStatus.DEPOSITED
+                    income_txn.deposited_to_account_id = source.target_account_id
+                    income_txn.account_transaction_id = account_txn.id
+                    deposits_created = 1
+            else:
+                start_date = source.start_date
+                if start_date and start_date.date() <= today:
+                    end_date = source.end_date.date() if source.end_date else None
+                    interval = get_frequency_interval(source.frequency)
+                    deposits_created = await create_historical_deposits(
+                        transaction_service, start_date, end_date, interval
+                    )
+
+            if deposits_created > 0:
+                await db.commit()
+                logger.info(f"Recreated {deposits_created} deposits for income source {source.id}")
+
+        except Exception as e:
+            logger.error(f"Failed to sync historical deposits for income source {source.id}: {e}")
+            await db.rollback()
+
+    # Backfill historical deposits if auto_deposit was just enabled (without sync)
+    elif is_auto_deposit_enabled and not was_auto_deposit_enabled:
+        try:
+            today = datetime.utcnow().date()
+            transaction_service = TransactionService(db)
+
+            # Get existing income transactions for this source to avoid duplicates
+            existing_txns_query = select(IncomeTransaction.date).where(
+                IncomeTransaction.source_id == source.id,
+                IncomeTransaction.deleted_at.is_(None)
+            )
+            existing_result = await db.execute(existing_txns_query)
+            existing_dates = {txn_date.date() for txn_date in existing_result.scalars().all()}
+
+            deposits_created = 0
+
+            if source.frequency == IncomeFrequency.ONE_TIME:
+                income_date = source.date or datetime.utcnow()
+                if income_date.date() <= today and income_date.date() not in existing_dates:
+                    income_txn = IncomeTransaction(
+                        user_id=current_user.id,
+                        source_id=source.id,
+                        amount=source.amount,
+                        currency=source.currency,
+                        date=income_date,
+                        description=f"Income: {source.name}",
+                        category=source.category,
+                        status=IncomeTransactionStatus.RECEIVED,
+                    )
+                    db.add(income_txn)
+                    await db.flush()
+
+                    account_txn = await transaction_service.create_deposit(
+                        account_id=source.target_account_id,
+                        user_id=current_user.id,
+                        amount=source.amount,
+                        source_type="income",
+                        source_id=income_txn.id,
+                        description=f"Income: {source.name}",
+                        transaction_date=income_date,
+                        category=source.category or "income",
+                    )
+
+                    income_txn.status = IncomeTransactionStatus.DEPOSITED
+                    income_txn.deposited_to_account_id = source.target_account_id
+                    income_txn.account_transaction_id = account_txn.id
+                    deposits_created = 1
+            else:
+                start_date = source.start_date
+                if start_date and start_date.date() <= today:
+                    end_date = source.end_date.date() if source.end_date else None
+                    interval = get_frequency_interval(source.frequency)
+                    deposits_created = await create_historical_deposits(
+                        transaction_service, start_date, end_date, interval, existing_dates
+                    )
+
+            if deposits_created > 0:
+                await db.commit()
+                logger.info(f"Backfilled {deposits_created} deposits for income source {source.id}")
+
+        except Exception as e:
+            logger.error(f"Failed to backfill deposits for income source {source.id}: {e}")
+            await db.rollback()
 
     # Prepare response with monthly equivalent
     response_dict = IncomeSourceResponse.model_validate(source).model_dump()
@@ -740,3 +1111,223 @@ async def get_income_history_endpoint(
     """
     history = await get_income_history(db, current_user.id, start_date, end_date)
     return history
+
+
+# ============================================================================
+# Income Deposit Endpoints
+# ============================================================================
+
+@router.post("/transactions/{transaction_id}/deposit", response_model=IncomeDepositResponse)
+@require_feature("income_tracking")
+async def deposit_income_to_account(
+    transaction_id: UUID,
+    deposit_data: IncomeDepositRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Deposit an income transaction to a savings account.
+
+    This creates a deposit transaction in the target savings account
+    and updates the income transaction status to 'deposited'.
+
+    Requires: income_tracking feature
+    """
+    income_service = IncomeService(db)
+    try:
+        response = await income_service.deposit_income_to_account(
+            income_transaction_id=transaction_id,
+            user_id=current_user.id,
+            account_id=deposit_data.account_id,
+            description=deposit_data.description,
+        )
+        return response
+    except IncomeDepositError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+# ============================================================================
+# Distribution Rules Endpoints
+# ============================================================================
+
+@router.get("/distribution-rules", response_model=IncomeDistributionRuleListResponse)
+@require_feature("income_tracking")
+async def list_distribution_rules(
+    income_source_id: Optional[UUID] = Query(None, description="Filter by income source"),
+    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    List user's income distribution rules.
+
+    Requires: income_tracking feature
+    """
+    distribution_service = DistributionService(db)
+    rules = await distribution_service.get_rules(
+        user_id=current_user.id,
+        income_source_id=income_source_id,
+        is_active=is_active,
+    )
+
+    # Enrich rules with related entity names
+    enriched_rules = []
+    for rule in rules:
+        enriched = await distribution_service.enrich_rule_response(rule)
+        enriched_rules.append(enriched)
+
+    return IncomeDistributionRuleListResponse(
+        items=enriched_rules,
+        total=len(enriched_rules),
+    )
+
+
+@router.post("/distribution-rules", response_model=IncomeDistributionRuleResponse, status_code=status.HTTP_201_CREATED)
+@require_feature("income_tracking")
+async def create_distribution_rule(
+    rule_data: IncomeDistributionRuleCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Create a new income distribution rule.
+
+    Distribution rules define how income is automatically distributed
+    to savings accounts and goals.
+
+    Requires: income_tracking feature
+    """
+    distribution_service = DistributionService(db)
+    try:
+        rule = await distribution_service.create_rule(
+            user_id=current_user.id,
+            rule_data=rule_data,
+        )
+        return await distribution_service.enrich_rule_response(rule)
+    except InvalidRuleError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/distribution-rules/{rule_id}", response_model=IncomeDistributionRuleResponse)
+@require_feature("income_tracking")
+async def get_distribution_rule(
+    rule_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get a distribution rule by ID.
+
+    Requires: income_tracking feature
+    """
+    distribution_service = DistributionService(db)
+    try:
+        rule = await distribution_service.get_rule(rule_id, current_user.id)
+        return await distribution_service.enrich_rule_response(rule)
+    except RuleNotFoundError:
+        raise NotFoundException(message="Distribution rule not found")
+
+
+@router.put("/distribution-rules/{rule_id}", response_model=IncomeDistributionRuleResponse)
+@require_feature("income_tracking")
+async def update_distribution_rule(
+    rule_id: UUID,
+    rule_data: IncomeDistributionRuleUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Update a distribution rule.
+
+    Requires: income_tracking feature
+    """
+    distribution_service = DistributionService(db)
+    try:
+        rule = await distribution_service.update_rule(
+            rule_id=rule_id,
+            user_id=current_user.id,
+            rule_data=rule_data,
+        )
+        return await distribution_service.enrich_rule_response(rule)
+    except RuleNotFoundError:
+        raise NotFoundException(message="Distribution rule not found")
+    except InvalidRuleError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.delete("/distribution-rules/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
+@require_feature("income_tracking")
+async def delete_distribution_rule(
+    rule_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete a distribution rule (soft delete).
+
+    Requires: income_tracking feature
+    """
+    distribution_service = DistributionService(db)
+    try:
+        await distribution_service.delete_rule(rule_id, current_user.id)
+        return None
+    except RuleNotFoundError:
+        raise NotFoundException(message="Distribution rule not found")
+
+
+@router.post("/distribution-preview", response_model=IncomeDistributionPreviewResponse)
+@require_feature("income_tracking")
+async def preview_distribution(
+    income_amount: Decimal = Query(..., description="Amount to distribute"),
+    currency: str = Query("USD", description="Currency code"),
+    income_source_id: Optional[UUID] = Query(None, description="Income source ID for source-specific rules"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Preview how income would be distributed based on active rules.
+
+    This does not actually apply the distribution, just shows what would happen.
+
+    Requires: income_tracking feature
+    """
+    distribution_service = DistributionService(db)
+    preview = await distribution_service.preview_distribution(
+        user_id=current_user.id,
+        income_amount=income_amount,
+        currency=currency,
+        income_source_id=income_source_id,
+    )
+    return preview
+
+
+@router.post("/transactions/{transaction_id}/distribute", response_model=dict)
+@require_feature("income_tracking")
+async def apply_distribution(
+    transaction_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Apply distribution rules to an income transaction.
+
+    This creates deposit transactions to the target accounts based on
+    the user's distribution rules.
+
+    Requires: income_tracking feature
+    """
+    distribution_service = DistributionService(db)
+    try:
+        created_deposits = await distribution_service.apply_distribution(
+            user_id=current_user.id,
+            income_transaction_id=transaction_id,
+        )
+        return {
+            "message": f"Successfully distributed income to {len(created_deposits)} account(s)",
+            "deposits": [
+                {"account_transaction_id": str(txn_id), "amount": float(amount)}
+                for txn_id, amount in created_deposits
+            ]
+        }
+    except DistributionServiceError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
