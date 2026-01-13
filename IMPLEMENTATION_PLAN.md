@@ -995,7 +995,47 @@ async def send_renewal_reminders():
 - Show payment account
 - Show auto-pay status
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added payment_account_id, auto_pay, reminder_days_before, last_payment_date, next_payment_date, status, paused_at, resume_date fields to Subscription model
+- [x] Created SubscriptionPayment model and table for payment history
+- [x] Created database migration for subscription payment integration
+- [x] Updated subscription service with payment processing functions (process_subscription_payment, backfill_subscription_payments, reverse_subscription_payments)
+- [x] Implemented pause_subscription, resume_subscription, cancel_subscription functions
+- [x] Updated subscription router with /pause, /resume, /cancel, /payments, /pay endpoints
+- [x] Implemented Celery tasks for subscription renewals and reminders
+- [x] Updated frontend subscription form with payment account selector, auto-pay toggle, sync historical checkbox
+- [x] Created subscription detail page (/dashboard/subscriptions/[id]) with full subscription info
+- [x] Created SubscriptionPaymentList component for payment history
+- [x] Added Pause/Resume/Cancel actions to subscription detail page
+- [x] Added clickable subscription names and Eye icon for navigation to detail page
+- [x] Fixed TransactionService import issue (was importing as function instead of class)
+- [x] Added translations for all 8 languages (en, uk, es, fr, de, it, pl, pt)
+
+**Key Features:**
+- Subscriptions can be linked to payment accounts for automatic payments
+- Auto-pay feature automatically deducts from linked account on renewal
+- Sync historical payments backfills past payments from start_date to today
+- Subscription detail page shows all info, payment history, and action buttons
+- Pause/Resume for temporary stops, Cancel for permanent end (data preserved)
+- All subscription payments appear in account transaction history
+
+**Files Created:**
+- `backend/alembic/versions/20260113_add_subscription_payment_integration.py`
+- `frontend/app/dashboard/subscriptions/[id]/page.tsx`
+- `frontend/components/subscriptions/subscription-payment-list.tsx`
+
+**Files Modified:**
+- `backend/app/modules/subscriptions/models.py` - Added payment integration fields
+- `backend/app/modules/subscriptions/schemas.py` - Added payment schemas
+- `backend/app/modules/subscriptions/service.py` - Added payment functions, fixed TransactionService usage
+- `backend/app/modules/subscriptions/router.py` - Added payment endpoints
+- `backend/app/tasks/subscription_tasks.py` - Implemented renewal and reminder tasks
+- `frontend/lib/api/subscriptionsApi.ts` - Added payment types and endpoints
+- `frontend/components/subscriptions/subscription-form.tsx` - Added payment integration UI
+- `frontend/app/dashboard/subscriptions/overview/page.tsx` - Added navigation to detail page
+- `frontend/messages/*/subscriptions.json` - Added detail and payments translations (8 languages)
 
 ---
 
@@ -1745,7 +1785,7 @@ Functions:
 | 2 | COMPLETED | 2026-01-12 | 2026-01-13 | Income integration |
 | 3 | COMPLETED | 2026-01-13 | 2026-01-13 | Expense integration with auto-pay |
 | 4 | COMPLETED | 2026-01-13 | 2026-01-13 | Budget alerts (rollover deferred) |
-| 5 | NOT STARTED | - | - | Subscription automation |
+| 5 | COMPLETED | 2026-01-13 | 2026-01-13 | Subscription automation with detail page |
 | 6 | NOT STARTED | - | - | Installment enhancement |
 | 7 | NOT STARTED | - | - | Debt enhancement |
 | 8 | NOT STARTED | - | - | Portfolio enhancement |
@@ -1755,7 +1795,7 @@ Functions:
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 5 - Subscriptions Module Automation
+**Next Phase to Start:** Phase 6 - Installments Module Enhancement
 
 ### How to Continue
 When resuming work on this project:
@@ -1785,4 +1825,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 13, 2026 - Phase 4 (Budget Module) completed (rollover deferred)*
+*Last updated: January 13, 2026 - Phase 5 (Subscriptions Module) completed with detail page and payment history*
