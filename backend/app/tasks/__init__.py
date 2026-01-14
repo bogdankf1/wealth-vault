@@ -20,6 +20,7 @@ from app.tasks import (
     billing_tasks,
     dashboard_tasks,
     notification_tasks,
+    tax_tasks,
 )
 
 __all__ = [
@@ -36,4 +37,5 @@ __all__ = [
     "billing_tasks",
     "dashboard_tasks",
     "notification_tasks",
+    "tax_tasks",
 ]

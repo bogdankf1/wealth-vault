@@ -9,6 +9,41 @@ from uuid import UUID
 
 
 # ============================================================================
+# Linked Info Schemas
+# ============================================================================
+
+class LinkedIncomeSourceInfo(BaseModel):
+    """Basic income source info for display in tax responses"""
+    id: str
+    name: str
+    amount: Decimal
+    currency: str
+    frequency: str
+
+    class Config:
+        from_attributes = True
+
+    @field_validator('id', mode='before')
+    def convert_uuid_to_str(cls, v):
+        return str(v) if v else None
+
+
+class LinkedPaymentAccountInfo(BaseModel):
+    """Basic account info for display in tax responses"""
+    id: str
+    name: str
+    current_balance: Decimal
+    currency: str
+
+    class Config:
+        from_attributes = True
+
+    @field_validator('id', mode='before')
+    def convert_uuid_to_str(cls, v):
+        return str(v) if v else None
+
+
+# ============================================================================
 # Tax Schemas
 # ============================================================================
 
@@ -25,6 +60,16 @@ class TaxBase(BaseModel):
 
     # For percentage-based taxes
     percentage: Optional[Decimal] = Field(None, ge=0, le=100, description="Percentage of income (0-100)")
+
+    # Income source linking (NULL = applies to ALL income sources)
+    income_source_id: Optional[UUID] = Field(None, description="Specific income source this tax applies to (null = all income)")
+
+    # Payment account (which account to pay from)
+    payment_account_id: Optional[UUID] = Field(None, description="Account to pay tax from")
+
+    # Auto-pay settings
+    auto_pay: bool = Field(default=False, description="Whether to auto-pay this tax")
+    next_payment_date: Optional[datetime] = Field(None, description="Next scheduled payment date")
 
     is_active: bool = Field(default=True, description="Whether tax is active")
     notes: Optional[str] = Field(None, description="Additional notes")
@@ -61,6 +106,10 @@ class TaxUpdate(BaseModel):
     fixed_amount: Optional[Decimal] = Field(None, ge=0)
     currency: Optional[str] = Field(None, min_length=3, max_length=3)
     percentage: Optional[Decimal] = Field(None, ge=0, le=100)
+    income_source_id: Optional[UUID] = None
+    payment_account_id: Optional[UUID] = None
+    auto_pay: Optional[bool] = None
+    next_payment_date: Optional[datetime] = None
     is_active: Optional[bool] = None
     notes: Optional[str] = None
 
@@ -90,6 +139,32 @@ class TaxResponse(TaxBase):
     display_currency: Optional[str] = None
     # Computed field for calculated amount
     calculated_amount: Optional[Decimal] = None
+    # Linked income source info
+    income_source: Optional[LinkedIncomeSourceInfo] = None
+    # Linked payment account info
+    payment_account: Optional[LinkedPaymentAccountInfo] = None
+    # Payment status for current period
+    is_paid_current_period: Optional[bool] = None
+    current_period_start: Optional[datetime] = None
+    current_period_end: Optional[datetime] = None
+    last_payment_date: Optional[datetime] = None
+    last_payment_amount: Optional[Decimal] = None
+
+    @field_validator('tax_type', mode='before')
+    @classmethod
+    def convert_tax_type(cls, v):
+        """Convert enum to string if needed"""
+        if hasattr(v, 'value'):
+            return v.value
+        return v
+
+    @field_validator('frequency', mode='before')
+    @classmethod
+    def convert_frequency(cls, v):
+        """Convert enum to string if needed"""
+        if hasattr(v, 'value'):
+            return v.value
+        return v
 
     class Config:
         from_attributes = True
@@ -98,6 +173,49 @@ class TaxResponse(TaxBase):
 class TaxListResponse(BaseModel):
     """Schema for paginated list of taxes"""
     items: List[TaxResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+# ============================================================================
+# Tax Payment Schemas
+# ============================================================================
+
+class TaxPaymentCreate(BaseModel):
+    """Schema for creating a tax payment"""
+    tax_id: UUID
+    amount: Decimal = Field(..., gt=0, description="Payment amount")
+    currency: str = Field(default="USD", min_length=3, max_length=3)
+    payment_date: datetime
+    period_start: Optional[datetime] = None
+    period_end: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+class TaxPaymentResponse(BaseModel):
+    """Schema for tax payment response"""
+    id: UUID
+    tax_id: UUID
+    user_id: UUID
+    amount: Decimal
+    currency: str
+    payment_date: datetime
+    period_start: Optional[datetime] = None
+    period_end: Optional[datetime] = None
+    account_transaction_id: Optional[UUID] = None
+    status: str
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TaxPaymentListResponse(BaseModel):
+    """Schema for paginated list of tax payments"""
+    items: List[TaxPaymentResponse]
     total: int
     page: int
     page_size: int
@@ -126,3 +244,21 @@ class TaxRecordBatchDeleteResponse(BaseModel):
     """Schema for batch delete response."""
     deleted_count: int
     failed_ids: list[UUID] = []
+
+
+# ============================================================================
+# Pay Tax Schemas
+# ============================================================================
+
+class PayTaxRequest(BaseModel):
+    """Schema for manually paying a tax"""
+    account_id: Optional[UUID] = Field(None, description="Account to pay from (overrides tax's payment_account_id)")
+    amount: Optional[Decimal] = Field(None, gt=0, description="Custom amount (overrides calculated amount)")
+    notes: Optional[str] = Field(None, description="Notes for this payment")
+
+
+class PayTaxResponse(BaseModel):
+    """Schema for pay tax response"""
+    payment: TaxPaymentResponse
+    transaction_id: Optional[UUID] = None
+    message: str

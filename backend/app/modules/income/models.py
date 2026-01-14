@@ -71,6 +71,7 @@ class IncomeSource(BaseModel):
     transactions = relationship("IncomeTransaction", back_populates="source", cascade="all, delete-orphan")
     target_account = relationship("SavingsAccount", foreign_keys=[target_account_id])
     distribution_rules = relationship("IncomeDistributionRule", back_populates="income_source", cascade="all, delete-orphan")
+    taxes = relationship("Tax", back_populates="income_source")
 
     def __repr__(self) -> str:
         return f"<IncomeSource(id={self.id}, name={self.name}, amount={self.amount})>"

@@ -152,6 +152,18 @@ celery_app.conf.beat_schedule = {
         "options": {"queue": "default"},
     },
 
+    # Tax tasks
+    "process-tax-auto-payments": {
+        "task": "tasks.tax.process_auto_pay",
+        "schedule": crontab(hour=0, minute=50),  # Daily at midnight
+        "options": {"queue": "default"},
+    },
+    "send-tax-payment-reminders": {
+        "task": "tasks.tax.send_payment_reminders",
+        "schedule": crontab(hour=9, minute=30),  # Morning reminders
+        "options": {"queue": "default"},
+    },
+
     # Budget tasks - check twice daily for timely alerts
     "check-budget-alerts-morning": {
         "task": "tasks.budget.check_alerts",
