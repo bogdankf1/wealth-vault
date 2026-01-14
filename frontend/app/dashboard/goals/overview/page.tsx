@@ -5,7 +5,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Target, TrendingUp, DollarSign, Edit, Trash2, Archive, CheckCircle2, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Target, TrendingUp, DollarSign, Edit, Trash2, Archive, CheckCircle2, LayoutGrid, List, Grid3x3, Rows3, Eye, Link2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -43,6 +44,8 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function GoalsPage() {
+  const router = useRouter();
+
   // Translations
   const tOverview = useTranslations('goals.overview');
   const tActions = useTranslations('goals.actions');
@@ -523,7 +526,15 @@ export default function GoalsPage() {
                           className="mt-1"
                         />
                         <div className="flex-1">
-                        <CardTitle className="text-lg">{goal.name}</CardTitle>
+                        <CardTitle
+                          className="text-lg cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => router.push(`/dashboard/goals/${goal.id}`)}
+                        >
+                          {goal.name}
+                          {goal.auto_track_progress && (
+                            <Link2 className="h-3 w-3 inline ml-2 text-blue-500" />
+                          )}
+                        </CardTitle>
                         <CardDescription className="mt-1 min-h-[20px]">
                           {goal.description || <>&nbsp;</>}
                         </CardDescription>
@@ -639,6 +650,14 @@ export default function GoalsPage() {
 
                       <div className="flex flex-wrap gap-2 pt-2">
                         <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/goals/${goal.id}`)}
+                        >
+                          <Eye className="mr-1 h-3 w-3" />
+                          {tActions('view')}
+                        </Button>
+                        <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditGoal(goal.id)}
@@ -714,7 +733,15 @@ export default function GoalsPage() {
                         </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
-                            <p className="truncate">{goal.name}</p>
+                            <p
+                              className="truncate cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => router.push(`/dashboard/goals/${goal.id}`)}
+                            >
+                              {goal.name}
+                              {goal.auto_track_progress && (
+                                <Link2 className="h-3 w-3 inline ml-2 text-blue-500" />
+                              )}
+                            </p>
                             <p className="text-xs text-muted-foreground md:hidden truncate">
                               {goal.description}
                             </p>
@@ -802,8 +829,18 @@ export default function GoalsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => router.push(`/dashboard/goals/${goal.id}`)}
+                              className="h-8 w-8 p-0"
+                              title={tActions('view')}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleEditGoal(goal.id)}
                               className="h-8 w-8 p-0"
+                              title={tActions('edit')}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -812,6 +849,7 @@ export default function GoalsPage() {
                               size="sm"
                               onClick={() => handleArchiveGoal(goal.id)}
                               className="h-8 w-8 p-0"
+                              title={tActions('archive')}
                             >
                               <Archive className="h-4 w-4" />
                             </Button>
@@ -821,6 +859,7 @@ export default function GoalsPage() {
                               onClick={() => handleDeleteGoal(goal.id)}
                               disabled={isDeleting}
                               className="h-8 w-8 p-0"
+                              title={tActions('delete')}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

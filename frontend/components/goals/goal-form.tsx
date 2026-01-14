@@ -4,7 +4,7 @@
  */
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -13,7 +13,12 @@ import {
   useCreateGoalMutation,
   useUpdateGoalMutation,
   useGetGoalQuery,
+  useGetLinkedAccountsQuery,
+  useLinkAccountToGoalMutation,
+  useUnlinkAccountFromGoalMutation,
+  useRefreshGoalProgressMutation,
 } from '@/lib/api/goalsApi';
+import { useListAccountsQuery } from '@/lib/api/savingsApi';
 import {
   Dialog,
   DialogContent,
@@ -37,7 +42,10 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { Badge } from '@/components/ui/badge';
+import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils/currency';
 
 // Form validation schema
 const goalSchema = z.object({
@@ -59,6 +67,7 @@ const goalSchema = z.object({
   currency: z.string().length(3),
   monthly_contribution: z.number().min(0).optional(),
   is_active: z.boolean(),
+  auto_track_progress: z.boolean(),
   start_date: z.string().min(1, 'Start date is required'),
   target_date: z.string().optional(),
 });
@@ -142,6 +151,30 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
   const [updateGoal, { isLoading: isUpdating, error: updateError }] =
     useUpdateGoalMutation();
 
+  // Account linking hooks
+  const { data: linkedAccounts = [] } = useGetLinkedAccountsQuery(
+    goalId!,
+    { skip: !goalId }
+  );
+
+  // Always load accounts (for both new and edit)
+  const { data: savingsAccountsData } = useListAccountsQuery(
+    { page_size: 100, is_active: true }
+  );
+
+  const [linkAccount, { isLoading: isLinking }] = useLinkAccountToGoalMutation();
+  const [unlinkAccount, { isLoading: isUnlinking }] = useUnlinkAccountFromGoalMutation();
+  const [refreshProgress] = useRefreshGoalProgressMutation();
+
+  // Selected account for new goals (will be linked after creation)
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+
+  // State for adding accounts with allocation options (edit mode)
+  const [addingAccountId, setAddingAccountId] = useState<string>('');
+  const [addingAllocationType, setAddingAllocationType] = useState<'full' | 'percentage' | 'fixed'>('full');
+  const [addingPercentage, setAddingPercentage] = useState<string>('100');
+  const [addingFixedAmount, setAddingFixedAmount] = useState<string>('');
+
   const {
     register,
     handleSubmit,
@@ -154,6 +187,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
     defaultValues: {
       currency: 'USD',
       is_active: true,
+      auto_track_progress: true,
       current_amount: 0,
       start_date: new Date().toISOString().split('T')[0],
     },
@@ -180,6 +214,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             : existingGoal.monthly_contribution)
           : 0,
         is_active: existingGoal.is_active,
+        auto_track_progress: existingGoal.auto_track_progress || false,
         // Extract date directly from string to avoid timezone conversion
         start_date: existingGoal.start_date.split('T')[0],
         target_date: existingGoal.target_date
@@ -223,14 +258,23 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         currency: 'USD',
         monthly_contribution: 0,
         is_active: true,
+        auto_track_progress: true,
         start_date: new Date().toISOString().split('T')[0],
         target_date: '',
       });
       setTargetAmountInput('');
       setCurrentAmountInput('');
       setMonthlyContributionInput('');
+      setSelectedAccountId('');
     }
   }, [isEditing, existingGoal, isOpen, reset, setValue]);
+
+  // Set selected account from linked accounts when editing
+  useEffect(() => {
+    if (isEditing && linkedAccounts.length > 0) {
+      setSelectedAccountId(linkedAccounts[0].account_id);
+    }
+  }, [isEditing, linkedAccounts]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -243,6 +287,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         currency: string;
         monthly_contribution?: number;
         is_active: boolean;
+        auto_track_progress: boolean;
         start_date: string;
         target_date?: string;
       } = {
@@ -254,6 +299,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         currency: data.currency,
         monthly_contribution: data.monthly_contribution,
         is_active: data.is_active,
+        auto_track_progress: data.auto_track_progress,
         // Keep date-only format to avoid timezone issues
         start_date: `${data.start_date}T00:00:00`,
         target_date: data.target_date ? `${data.target_date}T00:00:00` : undefined,
@@ -263,13 +309,35 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         await updateGoal({ id: goalId, data: submitData }).unwrap();
         toast.success(tForm('updateSuccess'));
       } else {
-        await createGoal(submitData).unwrap();
+        // Create goal and link account if selected
+        const newGoal = await createGoal(submitData).unwrap();
+
+        // Link account after goal creation if auto-track is enabled and account selected
+        if (data.auto_track_progress && selectedAccountId && selectedAccountId !== 'none') {
+          try {
+            await linkAccount({
+              goalId: newGoal.id,
+              data: {
+                account_id: selectedAccountId,
+                allocation_type: 'full',
+              },
+            }).unwrap();
+
+            // Refresh progress to update current amount from linked account
+            await refreshProgress(newGoal.id).catch(() => {});
+          } catch {
+            // Goal created but account linking failed - show warning
+            toast.warning(tForm('createSuccessLinkFailed'));
+          }
+        }
+
         toast.success(tForm('createSuccess'));
       }
 
       onClose();
       reset();
-    } catch (error) {
+      setSelectedAccountId('');
+    } catch {
       toast.error(isEditing ? tForm('updateError') : tForm('createError'));
     }
   };
@@ -279,9 +347,11 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
     setTargetAmountInput('');
     setCurrentAmountInput('');
     setMonthlyContributionInput('');
+    setSelectedAccountId('');
     reset({
       currency: 'USD',
       is_active: true,
+      auto_track_progress: true,
       current_amount: 0,
       start_date: new Date().toISOString().split('T')[0],
     });
@@ -289,6 +359,66 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
   const isLoading = isCreating || isUpdating;
   const error = createError || updateError || loadError;
+
+  // Get all available savings accounts
+  const allAccounts = savingsAccountsData?.items || [];
+
+  // Get linked account IDs for editing mode
+  const linkedAccountIds = linkedAccounts.map(link => link.account_id);
+
+  // Handle unlinking an account (for edit mode)
+  const handleUnlinkAccount = async (accountId: string) => {
+    if (!goalId) return;
+
+    try {
+      await unlinkAccount({ goalId, accountId }).unwrap();
+      toast.success(tForm('accountUnlinked'));
+      // Clear selection if it was the unlinked account
+      if (selectedAccountId === accountId) {
+        setSelectedAccountId('');
+      }
+    } catch {
+      toast.error(tForm('unlinkError'));
+    }
+  };
+
+  // Handle adding a new linked account (for edit mode)
+  const handleAddLinkedAccount = async () => {
+    if (!goalId || !addingAccountId || addingAccountId === 'none') return;
+
+    try {
+      const linkData: {
+        account_id: string;
+        allocation_type: 'full' | 'percentage' | 'fixed';
+        allocation_percentage?: number;
+        allocation_amount?: number;
+      } = {
+        account_id: addingAccountId,
+        allocation_type: addingAllocationType,
+      };
+
+      if (addingAllocationType === 'percentage') {
+        linkData.allocation_percentage = parseFloat(addingPercentage) || 100;
+      } else if (addingAllocationType === 'fixed') {
+        linkData.allocation_amount = parseFloat(addingFixedAmount) || 0;
+      }
+
+      await linkAccount({ goalId, data: linkData }).unwrap();
+
+      // Refresh progress to update current amount from linked accounts
+      await refreshProgress(goalId).catch(() => {});
+
+      toast.success(tForm('accountLinked'));
+
+      // Reset adding state
+      setAddingAccountId('');
+      setAddingAllocationType('full');
+      setAddingPercentage('100');
+      setAddingFixedAmount('');
+    } catch {
+      toast.error(tForm('linkError'));
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -380,53 +510,56 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
               error={errors.target_amount?.message}
             />
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="current_amount">{tForm('currentAmountSaved')}</Label>
-                <Input
-                  id="current_amount"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={tForm('currentAmountPlaceholder')}
-                  value={currentAmountInput}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                      setCurrentAmountInput(value);
-                      const numValue = value === '' ? 0 : parseFloat(value);
-                      setValue('current_amount', isNaN(numValue) ? 0 : numValue, { shouldValidate: true });
-                    }
-                  }}
-                />
-                {errors.current_amount && (
-                  <p className="text-sm text-destructive">{errors.current_amount.message}</p>
-                )}
-              </div>
+            {/* Only show Current Amount and Monthly Contribution when auto-track is disabled */}
+            {!watch('auto_track_progress') && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="current_amount">{tForm('currentAmountSaved')}</Label>
+                  <Input
+                    id="current_amount"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={tForm('currentAmountPlaceholder')}
+                    value={currentAmountInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                        setCurrentAmountInput(value);
+                        const numValue = value === '' ? 0 : parseFloat(value);
+                        setValue('current_amount', isNaN(numValue) ? 0 : numValue, { shouldValidate: true });
+                      }
+                    }}
+                  />
+                  {errors.current_amount && (
+                    <p className="text-sm text-destructive">{errors.current_amount.message}</p>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="monthly_contribution">{tForm('monthlyContribution')}</Label>
-                <Input
-                  id="monthly_contribution"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={tForm('monthlyContributionPlaceholder')}
-                  value={monthlyContributionInput}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                      setMonthlyContributionInput(value);
-                      const numValue = value === '' ? 0 : parseFloat(value);
-                      setValue('monthly_contribution', isNaN(numValue) ? 0 : numValue, { shouldValidate: true });
-                    }
-                  }}
-                />
-                {errors.monthly_contribution && (
-                  <p className="text-sm text-destructive">
-                    {errors.monthly_contribution.message}
-                  </p>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="monthly_contribution">{tForm('monthlyContribution')}</Label>
+                  <Input
+                    id="monthly_contribution"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={tForm('monthlyContributionPlaceholder')}
+                    value={monthlyContributionInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                        setMonthlyContributionInput(value);
+                        const numValue = value === '' ? 0 : parseFloat(value);
+                        setValue('monthly_contribution', isNaN(numValue) ? 0 : numValue, { shouldValidate: true });
+                      }
+                    }}
+                  />
+                  {errors.monthly_contribution && (
+                    <p className="text-sm text-destructive">
+                      {errors.monthly_contribution.message}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -467,6 +600,165 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                 checked={watch('is_active')}
                 onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
               />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="auto_track_progress">{tForm('autoTrackProgress')}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {tForm('autoTrackProgressDescription')}
+                  </p>
+                </div>
+                <Switch
+                  id="auto_track_progress"
+                  checked={watch('auto_track_progress')}
+                  onCheckedChange={(checked: boolean) => setValue('auto_track_progress', checked)}
+                />
+              </div>
+
+              {/* Savings Account Selection - shows when auto-track is enabled */}
+              {watch('auto_track_progress') && (
+                <div className="space-y-2">
+                  <Label>{tForm('savingsAccount')}</Label>
+
+                  {/* For new goals: simple dropdown */}
+                  {!isEditing && (
+                    <Select
+                      value={selectedAccountId}
+                      onValueChange={setSelectedAccountId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={tForm('selectAccountPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{tForm('noAccountSelected')}</SelectItem>
+                        {allAccounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.name} ({formatCurrency(account.current_balance, account.currency)})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {/* For editing: show linked accounts with ability to add/remove */}
+                  {isEditing && (
+                    <div className="space-y-2">
+                      {/* Show currently linked accounts */}
+                      {linkedAccounts.length > 0 && (
+                        <div className="space-y-1">
+                          {linkedAccounts.map((link) => (
+                            <div
+                              key={link.id}
+                              className="flex items-center justify-between p-2 bg-muted/50 rounded border"
+                            >
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <span className="text-sm truncate">
+                                  {link.account?.name || tForm('unknownAccount')}
+                                </span>
+                                <Badge variant="secondary" className="text-xs shrink-0">
+                                  {link.allocation_type === 'full'
+                                    ? '100%'
+                                    : link.allocation_type === 'percentage'
+                                    ? `${link.allocation_percentage}%`
+                                    : formatCurrency(link.allocation_amount || 0, existingGoal?.currency || 'USD')}
+                                </Badge>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleUnlinkAccount(link.account_id)}
+                                disabled={isUnlinking}
+                                className="h-6 w-6 p-0 shrink-0 ml-2"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Form to add more accounts with allocation options */}
+                      {allAccounts.filter(a => !linkedAccountIds.includes(a.id)).length > 0 && (
+                        <div className="space-y-2 p-2 border rounded bg-muted/30">
+                          <Select
+                            value={addingAccountId}
+                            onValueChange={setAddingAccountId}
+                          >
+                            <SelectTrigger className="h-8 text-sm">
+                              <SelectValue placeholder={tForm('addAnotherAccount')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allAccounts
+                                .filter(account => !linkedAccountIds.includes(account.id))
+                                .map((account) => (
+                                  <SelectItem key={account.id} value={account.id}>
+                                    {account.name} ({formatCurrency(account.current_balance, account.currency)})
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+
+                          {/* Show allocation options when account is selected */}
+                          {addingAccountId && (
+                            <div className="space-y-2">
+                              <Select
+                                value={addingAllocationType}
+                                onValueChange={(v) => setAddingAllocationType(v as 'full' | 'percentage' | 'fixed')}
+                              >
+                                <SelectTrigger className="h-8 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="full">{tForm('allocationFull')}</SelectItem>
+                                  <SelectItem value="percentage">{tForm('allocationPercentage')}</SelectItem>
+                                  <SelectItem value="fixed">{tForm('allocationFixed')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              {addingAllocationType === 'percentage' && (
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  max="100"
+                                  placeholder={tForm('percentageValue')}
+                                  value={addingPercentage}
+                                  onChange={(e) => setAddingPercentage(e.target.value)}
+                                  className="h-8 text-sm"
+                                />
+                              )}
+
+                              {addingAllocationType === 'fixed' && (
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder={tForm('fixedAmount')}
+                                  value={addingFixedAmount}
+                                  onChange={(e) => setAddingFixedAmount(e.target.value)}
+                                  className="h-8 text-sm"
+                                />
+                              )}
+
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={handleAddLinkedAccount}
+                                disabled={isLinking}
+                                className="w-full h-8 text-sm"
+                              >
+                                {tForm('linkAccount')}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <DialogFooter>
