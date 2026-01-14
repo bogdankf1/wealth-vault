@@ -17,11 +17,23 @@ from app.modules.portfolio.schemas import (
     PortfolioAssetListResponse,
     PortfolioStats,
     AssetBatchDelete,
-    AssetBatchDeleteResponse)
+    AssetBatchDeleteResponse,
+    PortfolioTransactionResponse,
+    PortfolioTransactionListResponse,
+    BuyAssetRequest,
+    SellAssetRequest,
+    SellAssetResponse,
+    RecordDividendRequest,
+    UpdatePriceRequest,
+    PriceUpdateResponse,
+    BulkPriceUpdateResponse,
+)
 from app.modules.portfolio.service import convert_asset_to_display_currency
 
 router = APIRouter(prefix="/api/v1/portfolio", tags=["portfolio"])
 
+
+# ==================== Asset CRUD ====================
 
 @router.post("", response_model=PortfolioAssetResponse, status_code=status.HTTP_201_CREATED)
 @require_feature("portfolio_tracking")
@@ -94,6 +106,60 @@ async def get_portfolio_stats(
 ):
     """Get portfolio statistics"""
     return await service.get_portfolio_stats(db, current_user.id)
+
+
+# ==================== Ticker Validation ====================
+# NOTE: These routes must come BEFORE /{asset_id} routes to avoid path conflicts
+
+@router.get("/validate-ticker/{ticker}")
+@require_feature("portfolio_tracking")
+async def validate_ticker(
+    ticker: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Validate a ticker symbol and get current price"""
+    from app.services.price_service import PriceService
+
+    result = await PriceService.get_price(ticker)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticker '{ticker}' not found or no price data available"
+        )
+
+    return {
+        "ticker": ticker.upper(),
+        "price": result.get("price"),
+        "currency": result.get("currency"),
+        "name": result.get("name"),
+        "change": result.get("change"),
+        "change_percent": result.get("change_percent"),
+        "valid": True
+    }
+
+
+@router.get("/ticker-dividend-info/{ticker}")
+@require_feature("portfolio_tracking")
+async def get_ticker_dividend_info(
+    ticker: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get dividend information for a ticker"""
+    from app.services.price_service import PriceService
+
+    result = await PriceService.get_dividend_info(ticker)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dividend info for ticker '{ticker}' not found"
+        )
+
+    return {
+        "ticker": ticker.upper(),
+        **result
+    }
 
 
 @router.get("/{asset_id}", response_model=PortfolioAssetResponse)
@@ -184,4 +250,161 @@ async def batch_delete_portfolio(
     return AssetBatchDeleteResponse(
         deleted_count=deleted_count,
         failed_ids=failed_ids
+    )
+
+
+# ==================== Transactions ====================
+
+@router.get("/{asset_id}/transactions", response_model=PortfolioTransactionListResponse)
+@require_feature("portfolio_tracking")
+async def get_asset_transactions(
+    asset_id: UUID,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    transaction_type: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get transaction history for an asset"""
+    # Verify asset exists and belongs to user
+    asset = await service.get_asset(db, current_user.id, asset_id)
+    if not asset:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Portfolio asset not found"
+        )
+
+    transactions, total = await service.get_transactions(
+        db,
+        current_user.id,
+        asset_id,
+        page=page,
+        page_size=page_size,
+        transaction_type=transaction_type
+    )
+
+    return PortfolioTransactionListResponse(
+        items=transactions,
+        total=total,
+        page=page,
+        page_size=page_size
+    )
+
+
+@router.post("/{asset_id}/buy", response_model=PortfolioTransactionResponse)
+@require_feature("portfolio_tracking")
+async def buy_asset(
+    asset_id: UUID,
+    buy_data: BuyAssetRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Record a buy transaction for an existing asset"""
+    transaction = await service.record_buy(db, current_user.id, asset_id, buy_data)
+    if not transaction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Portfolio asset not found"
+        )
+    return transaction
+
+
+@router.post("/{asset_id}/sell", response_model=SellAssetResponse)
+@require_feature("portfolio_tracking")
+async def sell_asset(
+    asset_id: UUID,
+    sell_data: SellAssetRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Record a sell transaction for an existing asset"""
+    try:
+        result = await service.record_sell(db, current_user.id, asset_id, sell_data)
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Portfolio asset not found"
+            )
+        return SellAssetResponse(
+            transaction=result["transaction"],
+            proceeds=result["proceeds"],
+            cost_basis_sold=result["cost_basis_sold"],
+            realized_gain_loss=result["realized_gain_loss"],
+            is_gain=result["is_gain"]
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.post("/{asset_id}/dividend", response_model=PortfolioTransactionResponse)
+@require_feature("portfolio_tracking")
+async def record_dividend(
+    asset_id: UUID,
+    dividend_data: RecordDividendRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Record a dividend payment for an asset"""
+    transaction = await service.record_dividend(db, current_user.id, asset_id, dividend_data)
+    if not transaction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Portfolio asset not found"
+        )
+    return transaction
+
+
+# ==================== Price Updates ====================
+
+@router.post("/{asset_id}/update-price", response_model=PriceUpdateResponse)
+@require_feature("portfolio_tracking")
+async def update_asset_price_manual(
+    asset_id: UUID,
+    price_data: UpdatePriceRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Manually update asset price"""
+    result = await service.update_price_manual(db, current_user.id, asset_id, price_data.current_price)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Portfolio asset not found"
+        )
+    return result
+
+
+@router.post("/{asset_id}/refresh-price", response_model=PriceUpdateResponse)
+@require_feature("portfolio_tracking")
+async def refresh_asset_price(
+    asset_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Refresh asset price from API (requires ticker)"""
+    result = await service.update_price_from_api(db, current_user.id, asset_id)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Portfolio asset not found or no ticker set"
+        )
+    return result
+
+
+@router.post("/refresh-all-prices", response_model=BulkPriceUpdateResponse)
+@require_feature("portfolio_tracking")
+async def refresh_all_prices(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Refresh prices for all assets with dynamic pricing enabled"""
+    result = await service.update_all_prices(db, current_user.id)
+    return BulkPriceUpdateResponse(
+        updated_count=result["updated_count"],
+        failed_count=result["failed_count"],
+        updates=result["updates"],
+        errors=result["errors"]
     )

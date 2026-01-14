@@ -1470,7 +1470,61 @@ async def process_dividends():
 - Dividend history
 - Performance chart
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added dynamic pricing fields to PortfolioAsset model (ticker, use_dynamic_pricing, last_price_update, price_source)
+- [x] Added payment account integration fields (payment_account_id, auto_transact)
+- [x] Added dividend tracking fields (is_dividend_paying, dividend_yield, dividend_per_share, dividend_frequency, next_dividend_date, last_dividend_date, total_dividends_received, dividend_account_id, auto_deposit_dividends)
+- [x] Added cost basis tracking (cost_basis, cost_basis_method)
+- [x] Created PortfolioTransaction model and table for buy/sell/dividend history
+- [x] Created database migration for portfolio payment integration
+- [x] Created yfinance price service with caching for dynamic price fetching
+- [x] Updated portfolio service with transaction functions (record_buy, record_sell, record_dividend)
+- [x] Added price update functions (update_price_manual, update_price_from_api, update_all_prices)
+- [x] Updated portfolio router with new endpoints (/buy, /sell, /dividend, /refresh-price, /refresh-all-prices, /validate-ticker/{ticker}, /ticker-dividend-info/{ticker})
+- [x] Implemented Celery tasks for dividend processing and price updates
+- [x] Updated frontend portfolioApi.ts with new types and RTK Query hooks
+- [x] Updated portfolio-form.tsx with Dynamic Pricing, Payment Integration, and Dividend Settings sections
+- [x] Created portfolio detail page (/dashboard/portfolio/[id]) with:
+  - Overview cards (Total Invested, Current Value, Total Return, Total Dividends)
+  - Investment progress bar
+  - Buy More / Sell / Record Dividend dialogs
+  - Transaction history table
+  - Price refresh button for dynamic pricing assets
+  - Edit and Delete functionality
+- [x] Added View button and clickable asset names to overview page for navigation to detail page
+- [x] Fixed Select component preselection when editing (asset_type, payment_account, dividend_frequency, etc.)
+- [x] Fixed asset type translation mapping ("Real Estate" → "realEstate")
+- [x] Fixed sell transaction success message (Number conversion for realized_gain_loss)
+- [x] Added translations for all 8 languages (en, uk, es, fr, de, it, pl, pt)
+- [x] Added yfinance to requirements.txt
+
+**Key Features:**
+- Dynamic pricing with yfinance API - enter ticker symbol and price auto-updates
+- Toggle between dynamic pricing and manual current price entry
+- Payment account integration for buy/sell transactions
+- Dividend tracking with yield, frequency, and auto-deposit to linked accounts
+- Full transaction history (buy, sell, dividend) on detail page
+- Realized gain/loss calculation on sell transactions
+- Ticker validation before enabling dynamic pricing
+
+**Files Created:**
+- `backend/alembic/versions/20260114_add_portfolio_payment_integration.py`
+- `backend/app/services/price_service.py`
+- `frontend/app/dashboard/portfolio/[id]/page.tsx`
+
+**Files Modified:**
+- `backend/app/modules/portfolio/models.py` - Added payment, pricing, dividend, transaction fields
+- `backend/app/modules/portfolio/schemas.py` - Added transaction and price update schemas
+- `backend/app/modules/portfolio/service.py` - Added buy/sell/dividend/price functions
+- `backend/app/modules/portfolio/router.py` - Added transaction and price endpoints (fixed route ordering)
+- `backend/app/tasks/portfolio_tasks.py` - Implemented dividend and price update tasks
+- `backend/requirements.txt` - Added yfinance dependency
+- `frontend/lib/api/portfolioApi.ts` - Added transaction types and hooks
+- `frontend/components/portfolio/portfolio-form.tsx` - Added dynamic pricing, payment, dividend UI
+- `frontend/app/dashboard/portfolio/overview/page.tsx` - Added navigation to detail page, fixed asset type translation
+- `frontend/messages/*/portfolio.json` - Added 100+ translation keys across form, detail, and transactions sections (8 languages)
 
 ---
 
@@ -1888,14 +1942,14 @@ Functions:
 | 5 | COMPLETED | 2026-01-13 | 2026-01-13 | Subscription automation with detail page |
 | 6 | COMPLETED | 2026-01-13 | 2026-01-13 | Installment payment integration with detail page |
 | 7 | COMPLETED | 2026-01-13 | 2026-01-14 | Debt payment tracking (receivables) with detail page |
-| 8 | NOT STARTED | - | - | Portfolio enhancement |
+| 8 | COMPLETED | 2026-01-14 | 2026-01-14 | Portfolio with dynamic pricing (yfinance), dividends, transactions |
 | 9 | NOT STARTED | - | - | Goals integration |
 | 10 | NOT STARTED | - | - | Tax enhancement |
 | 11 | NOT STARTED | - | - | Dashboard enhancement |
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 8 - Portfolio Module Enhancement
+**Next Phase to Start:** Phase 9 - Goals Module Integration
 
 ### How to Continue
 When resuming work on this project:
@@ -1925,4 +1979,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 14, 2026 - Phase 7 (Debt Module) completed with payment tracking for receivables*
+*Last updated: January 14, 2026 - Phase 8 (Portfolio Module) completed with dynamic pricing via yfinance, dividend tracking, buy/sell transactions, and asset detail pages*
