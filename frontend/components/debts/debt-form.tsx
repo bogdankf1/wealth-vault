@@ -1,6 +1,6 @@
 /**
  * Debt Form Component
- * Form for creating and editing debts
+ * Form for creating and editing debts with payment integration
  */
 'use client';
 
@@ -22,15 +22,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { formatCurrency } from '@/lib/utils/currency';
 import { toast } from 'sonner';
 import {
   useCreateDebtMutation,
   useUpdateDebtMutation,
   useGetDebtQuery,
+  DebtCreate,
 } from '@/lib/api/debtsApi';
+import { useListAccountsQuery } from '@/lib/api/savingsApi';
 
 interface DebtFormProps {
   debtId?: string | null;
@@ -42,10 +52,19 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
   const isEditing = Boolean(debtId);
   const [amountInput, setAmountInput] = React.useState<string>('');
   const [amountPaidInput, setAmountPaidInput] = React.useState<string>('');
+  const [expectedPaymentInput, setExpectedPaymentInput] = React.useState<string>('');
 
   // Translation hooks
   const tForm = useTranslations('debts.form');
   const tActions = useTranslations('debts.actions');
+
+  const FREQUENCY_OPTIONS = [
+    { value: 'weekly', label: 'Weekly' },
+    { value: 'biweekly', label: 'Bi-weekly' },
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'quarterly', label: 'Quarterly' },
+    { value: 'annually', label: 'Annually' },
+  ];
 
   // Form validation schema with translated error messages
   const debtSchema = z.object({
@@ -74,6 +93,15 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
     due_date: z.string().optional(),
     paid_date: z.string().optional(),
     notes: z.string().max(500).optional(),
+    // Payment integration fields
+    deposit_account_id: z.string().nullable().optional(),
+    auto_deposit: z.boolean().optional(),
+    interest_rate: z.number().min(0).max(100).nullable().optional(),
+    reminder_days_before: z.number().min(0).max(30).optional(),
+    next_payment_date: z.string().optional(),
+    payment_frequency: z.string().optional(),
+    expected_payment_amount: z.number().min(0).nullable().optional(),
+    sync_historical: z.boolean().optional(),
   });
 
   type FormData = z.infer<typeof debtSchema>;
@@ -85,6 +113,9 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
   } = useGetDebtQuery(debtId!, {
     skip: !debtId,
   });
+
+  // Fetch user's savings accounts for payment integration
+  const { data: accountsData } = useListAccountsQuery({ page_size: 100 });
 
   const [createDebt, { isLoading: isCreating, error: createError }] =
     useCreateDebtMutation();
@@ -105,6 +136,11 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
       currency: 'USD',
       is_paid: false,
       amount_paid: 0,
+      // Payment integration defaults
+      deposit_account_id: null,
+      auto_deposit: false,
+      reminder_days_before: 3,
+      sync_historical: false,
     },
   });
 
@@ -125,6 +161,15 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
         due_date: existingDebt.due_date ? existingDebt.due_date.split('T')[0] : '',
         paid_date: existingDebt.paid_date ? existingDebt.paid_date.split('T')[0] : '',
         notes: existingDebt.notes || '',
+        // Payment integration fields
+        deposit_account_id: existingDebt.deposit_account_id || null,
+        auto_deposit: existingDebt.auto_deposit || false,
+        interest_rate: existingDebt.interest_rate || null,
+        reminder_days_before: existingDebt.reminder_days_before || 3,
+        next_payment_date: existingDebt.next_payment_date ? existingDebt.next_payment_date.split('T')[0] : '',
+        payment_frequency: existingDebt.payment_frequency || '',
+        expected_payment_amount: existingDebt.expected_payment_amount || null,
+        sync_historical: false,
       };
 
       reset(formData);
@@ -139,8 +184,20 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
         : existingDebt.amount_paid;
       setAmountPaidInput(String(amountPaidNum));
 
+      if (existingDebt.expected_payment_amount) {
+        setExpectedPaymentInput(String(existingDebt.expected_payment_amount));
+      }
+
+      // Set Select values after reset
       setTimeout(() => {
         setValue('currency', existingDebt.currency, { shouldDirty: true });
+        if (existingDebt.payment_frequency) {
+          setValue('payment_frequency', existingDebt.payment_frequency, { shouldDirty: true });
+        }
+        if (existingDebt.deposit_account_id && accountsData?.items) {
+          setValue('deposit_account_id', existingDebt.deposit_account_id, { shouldDirty: true });
+        }
+        setValue('auto_deposit', existingDebt.auto_deposit || false, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
@@ -153,32 +210,39 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
         due_date: '',
         paid_date: '',
         notes: '',
+        deposit_account_id: null,
+        auto_deposit: false,
+        interest_rate: null,
+        reminder_days_before: 3,
+        next_payment_date: '',
+        payment_frequency: '',
+        expected_payment_amount: null,
+        sync_historical: false,
       });
       setAmountInput('');
       setAmountPaidInput('');
+      setExpectedPaymentInput('');
     }
-  }, [isEditing, existingDebt, isOpen, reset, setValue]);
+  }, [isEditing, existingDebt, isOpen, reset, setValue, accountsData]);
 
   const onSubmit = async (data: FormData) => {
     try {
-      const submitData: {
-        debtor_name: string;
-        description?: string;
-        amount: number;
-        amount_paid?: number;
-        currency: string;
-        is_paid: boolean;
-        notes?: string;
-        due_date?: string;
-        paid_date?: string;
-      } = {
+      const submitData: DebtCreate = {
         debtor_name: data.debtor_name,
-        description: data.description,
+        description: data.description || undefined,
         amount: data.amount,
         amount_paid: data.amount_paid,
         currency: data.currency,
         is_paid: data.is_paid,
-        notes: data.notes,
+        notes: data.notes || undefined,
+        // Payment integration fields
+        deposit_account_id: data.deposit_account_id || undefined,
+        auto_deposit: data.auto_deposit || false,
+        interest_rate: data.interest_rate || undefined,
+        reminder_days_before: data.reminder_days_before || 3,
+        payment_frequency: data.payment_frequency || undefined,
+        expected_payment_amount: data.expected_payment_amount || undefined,
+        sync_historical: data.sync_historical || false,
       };
 
       // Add dates if provided
@@ -187,6 +251,9 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
       }
       if (data.paid_date) {
         submitData.paid_date = `${data.paid_date}T00:00:00`;
+      }
+      if (data.next_payment_date) {
+        submitData.next_payment_date = `${data.next_payment_date}T00:00:00`;
       }
 
       if (isEditing && debtId) {
@@ -208,6 +275,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
     onClose();
     setAmountInput('');
     setAmountPaidInput('');
+    setExpectedPaymentInput('');
     reset({
       currency: 'USD',
       is_paid: false,
@@ -332,6 +400,141 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                   className="cursor-pointer"
                   style={{ colorScheme: 'light' }}
                 />
+              </div>
+            </div>
+
+            {/* Payment Integration Section */}
+            <div className="space-y-4 border-t pt-4 mt-4">
+              <h3 className="text-base font-semibold text-foreground">{tForm('paymentIntegration')}</h3>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="deposit_account_id">{tForm('depositAccount')}</Label>
+                  <Select
+                    value={watch('deposit_account_id') || 'none'}
+                    onValueChange={(value) => setValue('deposit_account_id', value === 'none' ? null : value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={tForm('depositAccountPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{tForm('noDepositAccount')}</SelectItem>
+                      {accountsData?.items?.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name} ({formatCurrency(account.current_balance, account.currency)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{tForm('depositAccountHelp')}</p>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="auto_deposit">{tForm('autoDeposit')}</Label>
+                    <p className="text-xs text-muted-foreground">{tForm('autoDepositHelp')}</p>
+                  </div>
+                  <Switch
+                    id="auto_deposit"
+                    checked={watch('auto_deposit') || false}
+                    onCheckedChange={(checked: boolean) => setValue('auto_deposit', checked)}
+                    disabled={!watch('deposit_account_id')}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="sync_historical">{tForm('syncHistorical')}</Label>
+                    <p className="text-xs text-muted-foreground">{tForm('syncHistoricalHelp')}</p>
+                  </div>
+                  <Switch
+                    id="sync_historical"
+                    checked={watch('sync_historical') || false}
+                    onCheckedChange={(checked: boolean) => setValue('sync_historical', checked)}
+                    disabled={!watch('deposit_account_id')}
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="interest_rate">{tForm('interestRate')}</Label>
+                    <Input
+                      id="interest_rate"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      placeholder="0.00"
+                      {...register('interest_rate', { valueAsNumber: true })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reminder_days_before">{tForm('reminderDaysBefore')}</Label>
+                    <Input
+                      id="reminder_days_before"
+                      type="number"
+                      min="0"
+                      max="30"
+                      {...register('reminder_days_before', { valueAsNumber: true })}
+                    />
+                    <p className="text-xs text-muted-foreground">{tForm('reminderDaysBeforeHelp')}</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="payment_frequency">{tForm('paymentFrequency')}</Label>
+                    <Select
+                      value={watch('payment_frequency') || ''}
+                      onValueChange={(value) => setValue('payment_frequency', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={tForm('paymentFrequencyPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FREQUENCY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="next_payment_date">{tForm('nextPaymentDate')}</Label>
+                    <Input
+                      id="next_payment_date"
+                      type="date"
+                      {...register('next_payment_date')}
+                      className="cursor-pointer"
+                      style={{ colorScheme: 'light' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="expected_payment_amount">{tForm('expectedPaymentAmount')}</Label>
+                  <Input
+                    id="expected_payment_amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={expectedPaymentInput}
+                    onChange={(e) => {
+                      setExpectedPaymentInput(e.target.value);
+                      if (e.target.value === '') {
+                        setValue('expected_payment_amount', null, { shouldValidate: true });
+                      } else {
+                        const numValue = parseFloat(e.target.value);
+                        if (!isNaN(numValue)) {
+                          setValue('expected_payment_amount', numValue, { shouldValidate: true });
+                        }
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">{tForm('expectedPaymentAmountHelp')}</p>
+                </div>
               </div>
             </div>
 

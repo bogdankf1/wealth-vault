@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { UserMinus, AlertCircle, Edit, Trash2, Archive, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3, DollarSign } from 'lucide-react';
+import Link from 'next/link';
+import { UserMinus, AlertCircle, Edit, Trash2, Archive, CheckCircle2, Clock, LayoutGrid, List, Grid3x3, Rows3, DollarSign, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
@@ -445,9 +446,11 @@ export default function DebtsPage() {
                       className="mt-1"
                     />
                     <div className="flex-1">
-                    <CardTitle className="text-base md:text-lg truncate">
-                      {debt.debtor_name}
-                    </CardTitle>
+                    <Link href={`/dashboard/debts/${debt.id}`}>
+                      <CardTitle className="text-base md:text-lg truncate hover:text-primary hover:underline cursor-pointer">
+                        {debt.debtor_name}
+                      </CardTitle>
+                    </Link>
                     <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
                       {debt.description || ' '}
                     </CardDescription>
@@ -552,6 +555,16 @@ export default function DebtsPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      asChild
+                    >
+                      <Link href={`/dashboard/debts/${debt.id}`}>
+                        <Eye className="mr-1 h-3 w-3" />
+                        {tActions('view')}
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleEdit(debt.id)}
                     >
                       <Edit className="mr-1 h-3 w-3" />
@@ -616,7 +629,9 @@ export default function DebtsPage() {
                     </TableCell>
                     <TableCell className="font-medium">
                       <div className="max-w-[200px]">
-                        <p className="truncate">{debt.debtor_name}</p>
+                        <Link href={`/dashboard/debts/${debt.id}`} className="hover:text-primary hover:underline">
+                          <p className="truncate">{debt.debtor_name}</p>
+                        </Link>
                         <p className="text-xs text-muted-foreground md:hidden truncate">
                           {debt.description}
                         </p>
@@ -694,6 +709,16 @@ export default function DebtsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          className="h-8 w-8 p-0"
+                        >
+                          <Link href={`/dashboard/debts/${debt.id}`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"

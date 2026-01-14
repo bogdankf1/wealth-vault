@@ -19,6 +19,15 @@ export interface Debt {
   notes?: string;
   created_at: string;
   updated_at: string;
+  // Payment integration fields
+  deposit_account_id?: string;
+  auto_deposit: boolean;
+  interest_rate?: number;
+  accrued_interest: number;
+  reminder_days_before: number;
+  next_payment_date?: string;
+  payment_frequency?: string;
+  expected_payment_amount?: number;
   // Display currency fields
   display_amount?: number;
   display_amount_paid?: number;
@@ -27,6 +36,7 @@ export interface Debt {
   is_overdue?: boolean;
   progress_percentage?: number;
   amount_remaining?: number;
+  total_with_interest?: number;
 }
 
 export interface DebtCreate {
@@ -40,6 +50,15 @@ export interface DebtCreate {
   due_date?: string;
   paid_date?: string;
   notes?: string;
+  // Payment integration fields
+  deposit_account_id?: string;
+  auto_deposit?: boolean;
+  interest_rate?: number;
+  reminder_days_before?: number;
+  next_payment_date?: string;
+  payment_frequency?: string;
+  expected_payment_amount?: number;
+  sync_historical?: boolean;
 }
 
 export interface DebtUpdate {
@@ -53,6 +72,15 @@ export interface DebtUpdate {
   due_date?: string;
   paid_date?: string;
   notes?: string;
+  // Payment integration fields
+  deposit_account_id?: string;
+  auto_deposit?: boolean;
+  interest_rate?: number;
+  reminder_days_before?: number;
+  next_payment_date?: string;
+  payment_frequency?: string;
+  expected_payment_amount?: number;
+  sync_historical?: boolean;
 }
 
 export interface DebtListResponse {
@@ -89,6 +117,36 @@ export interface DebtBatchDeleteResponse {
   failed_ids: string[];
 }
 
+// Payment types
+export interface DebtPayment {
+  id: string;
+  debt_id: string;
+  user_id: string;
+  amount: number;
+  currency: string;
+  payment_date: string;
+  principal_amount?: number;
+  interest_amount?: number;
+  balance_before: number;
+  balance_after: number;
+  account_transaction_id?: string;
+  status: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface DebtPaymentListResponse {
+  items: DebtPayment[];
+  total: number;
+}
+
+export interface RecordDebtPayment {
+  amount: number;
+  payment_date?: string;
+  notes?: string;
+  deposit_to_account?: boolean;
+}
+
 export const debtsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List debts with pagination and filters
@@ -122,6 +180,7 @@ export const debtsApi = apiSlice.injectEndpoints({
       invalidatesTags: [
         { type: 'Debt', id: 'LIST' },
         { type: 'Debt', id: 'STATS' },
+        { type: 'Saving', id: 'LIST' },
       ],
     }),
 
@@ -136,6 +195,7 @@ export const debtsApi = apiSlice.injectEndpoints({
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
         { type: 'Debt', id: 'STATS' },
+        { type: 'Saving', id: 'LIST' },
       ],
     }),
 
@@ -176,6 +236,58 @@ export const debtsApi = apiSlice.injectEndpoints({
         return tags;
       },
     }),
+
+    // ============================================================================
+    // Payment Endpoints
+    // ============================================================================
+
+    // Record a payment received
+    recordDebtPayment: builder.mutation<DebtPayment, { debtId: string; data: RecordDebtPayment }>({
+      query: ({ debtId, data }) => ({
+        url: `/api/v1/debts/${debtId}/payments`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { debtId }) => [
+        { type: 'Debt', id: debtId },
+        { type: 'Debt', id: 'LIST' },
+        { type: 'Debt', id: 'STATS' },
+        { type: 'Debt', id: `PAYMENTS-${debtId}` },
+        { type: 'Saving', id: 'LIST' },
+      ],
+    }),
+
+    // Get payments for a debt
+    getDebtPayments: builder.query<DebtPaymentListResponse, string>({
+      query: (debtId) => `/api/v1/debts/${debtId}/payments`,
+      providesTags: (result, error, debtId) => [{ type: 'Debt', id: `PAYMENTS-${debtId}` }],
+    }),
+
+    // Mark debt as fully paid
+    markDebtPaid: builder.mutation<Debt, string>({
+      query: (debtId) => ({
+        url: `/api/v1/debts/${debtId}/mark-paid`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, debtId) => [
+        { type: 'Debt', id: debtId },
+        { type: 'Debt', id: 'LIST' },
+        { type: 'Debt', id: 'STATS' },
+      ],
+    }),
+
+    // Forgive debt (write off remaining balance)
+    forgiveDebt: builder.mutation<Debt, string>({
+      query: (debtId) => ({
+        url: `/api/v1/debts/${debtId}/forgive`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, debtId) => [
+        { type: 'Debt', id: debtId },
+        { type: 'Debt', id: 'LIST' },
+        { type: 'Debt', id: 'STATS' },
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -188,4 +300,9 @@ export const {
   useDeleteDebtMutation,
   useGetDebtStatsQuery,
   useBatchDeleteDebtsMutation,
+  // Payment hooks
+  useRecordDebtPaymentMutation,
+  useGetDebtPaymentsQuery,
+  useMarkDebtPaidMutation,
+  useForgiveDebtMutation,
 } = debtsApi;
