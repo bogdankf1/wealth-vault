@@ -2,7 +2,7 @@
 
 > **Document Purpose**: This document contains the complete implementation plan to address all functionality gaps identified in the January 2026 audit. Reference this file when continuing work on any phase.
 
-> **Last Updated**: January 13, 2026
+> **Last Updated**: January 14, 2026
 
 ---
 
@@ -1306,7 +1306,66 @@ Functions:
 - Add "Record Payment" button
 - Show projected payoff date
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added payment integration fields to Debt model (deposit_account_id, auto_deposit, interest_rate, accrued_interest, reminder_days_before, payment_frequency, expected_payment_amount, next_payment_date, last_reminder_at)
+- [x] Created DebtPayment model and table for tracking payments received from debtors
+- [x] Created database migration for debt payment integration
+- [x] Updated debt service with payment recording and balance tracking (record_payment, mark_paid, forgive_debt)
+- [x] Updated debt router with /payments, /mark-paid, /forgive endpoints
+- [x] Implemented Celery tasks for debt reminders (send_payment_reminders), overdue checking (check_overdue_debts), and monthly interest calculation (calculate_monthly_interest)
+- [x] Updated frontend debt form with payment integration UI:
+  - Deposit account selector with balance display
+  - Auto-deposit toggle
+  - Sync historical payments checkbox
+  - Interest rate input
+  - Reminder days before input
+  - Payment frequency dropdown (Weekly/Bi-weekly/Monthly/Quarterly)
+  - Next payment date picker
+  - Expected payment amount input
+- [x] Created debt detail page (/dashboard/debts/[id]) with:
+  - Collection progress bar with percentage
+  - Stats cards (Total Amount, Amount Collected, Amount Remaining, Interest Rate)
+  - Debt details section (debtor, created date, payment frequency, notes)
+  - Linked account section with auto-deposit status and reminder days
+  - Record Payment dialog with deposit-to-account option
+  - Mark as Paid confirmation dialog
+  - Forgive debt confirmation dialog
+- [x] Created DebtPaymentList component for payment history table
+- [x] Added clickable debtor names and Eye icon for navigation to detail page from overview
+- [x] Added comprehensive translations for all 8 languages (en, uk, es, fr, de, it, pl, pt):
+  - Form section: 25+ keys for payment integration fields
+  - Detail section: 50+ keys for debt detail page
+  - Payments section: table headers and status labels
+- [x] Fixed type errors (progressPercent.toFixed, DebtCreate type, SavingsAccount.current_balance)
+- [x] Fixed savings interest endpoint (days_elapsed int conversion)
+
+**Key Features (Debts track money owed TO the user - receivables):**
+- Debts represent money owed to the user (not user's debts to others)
+- Payments are deposits - money received from debtors goes into linked savings accounts
+- Interest tracking on outstanding balances with monthly accrual
+- Payment reminders sent N days before due dates
+- Overdue notifications for late payments (daily + weekly reminders)
+- Mark as paid or forgive debt options with confirmation dialogs
+- Full payment history with balance before/after tracking
+
+**Files Created:**
+- `backend/alembic/versions/20260114_add_debt_payment_integration.py`
+- `frontend/app/dashboard/debts/[id]/page.tsx`
+- `frontend/components/debts/debt-payment-list.tsx`
+
+**Files Modified:**
+- `backend/app/modules/debts/models.py` - Added payment integration fields and DebtPayment model
+- `backend/app/modules/debts/schemas.py` - Added payment schemas and response types
+- `backend/app/modules/debts/service.py` - Added payment functions (record_payment, mark_paid, forgive)
+- `backend/app/modules/debts/router.py` - Added payment endpoints (/payments, /mark-paid, /forgive)
+- `backend/app/tasks/debt_tasks.py` - Implemented 3 Celery tasks (reminders, overdue, interest)
+- `backend/app/modules/savings/transaction_service.py` - Fixed days_elapsed type conversion
+- `frontend/lib/api/debtsApi.ts` - Added payment types, hooks, and cache invalidation
+- `frontend/components/debts/debt-form.tsx` - Added full payment integration UI with styled section
+- `frontend/app/dashboard/debts/overview/page.tsx` - Added navigation links to detail page
+- `frontend/messages/*/debts.json` - Added 75+ translation keys across form, detail, and payments sections (8 languages)
 
 ---
 
@@ -1827,8 +1886,8 @@ Functions:
 | 3 | COMPLETED | 2026-01-13 | 2026-01-13 | Expense integration with auto-pay |
 | 4 | COMPLETED | 2026-01-13 | 2026-01-13 | Budget alerts (rollover deferred) |
 | 5 | COMPLETED | 2026-01-13 | 2026-01-13 | Subscription automation with detail page |
-| 6 | NOT STARTED | - | - | Installment enhancement |
-| 7 | NOT STARTED | - | - | Debt enhancement |
+| 6 | COMPLETED | 2026-01-13 | 2026-01-13 | Installment payment integration with detail page |
+| 7 | COMPLETED | 2026-01-13 | 2026-01-14 | Debt payment tracking (receivables) with detail page |
 | 8 | NOT STARTED | - | - | Portfolio enhancement |
 | 9 | NOT STARTED | - | - | Goals integration |
 | 10 | NOT STARTED | - | - | Tax enhancement |
@@ -1836,7 +1895,7 @@ Functions:
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 6 - Installments Module Enhancement
+**Next Phase to Start:** Phase 8 - Portfolio Module Enhancement
 
 ### How to Continue
 When resuming work on this project:
@@ -1866,4 +1925,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 13, 2026 - Phase 5 (Subscriptions Module) completed with detail page and payment history*
+*Last updated: January 14, 2026 - Phase 7 (Debt Module) completed with payment tracking for receivables*

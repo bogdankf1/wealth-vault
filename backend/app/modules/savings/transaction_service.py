@@ -548,7 +548,7 @@ class TransactionService:
             "balance": float(balance),
             "interest_rate": float(rate),
             "accrual_method": account.interest_accrual_method,
-            "days_elapsed": days_elapsed,
+            "days_elapsed": int(days_elapsed),
             "accrued_interest": float(accrued),
             "pending_interest": float(pending_interest),
             "total_after_posting": float(accrued + pending_interest),

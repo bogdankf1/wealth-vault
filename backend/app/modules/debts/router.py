@@ -17,7 +17,11 @@ from app.modules.debts.schemas import (
     DebtListResponse,
     DebtStats,
     DebtBatchDelete,
-    DebtBatchDeleteResponse)
+    DebtBatchDeleteResponse,
+    DebtPaymentResponse,
+    DebtPaymentListResponse,
+    RecordDebtPayment,
+)
 
 router = APIRouter(prefix="/debts", tags=["debts"])
 
@@ -160,3 +164,79 @@ async def batch_delete_debts(
         deleted_count=deleted_count,
         failed_ids=failed_ids
     )
+
+
+# ============================================================================
+# Payment Endpoints
+# ============================================================================
+
+@router.post("/{debt_id}/payments", response_model=DebtPaymentResponse, status_code=201)
+@require_feature("debt_tracking")
+async def record_payment(
+    debt_id: UUID,
+    payment_data: RecordDebtPayment,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Record a payment received for a debt"""
+    debt = await service.get_debt(db, debt_id, current_user.id)
+    if not debt:
+        raise HTTPException(status_code=404, detail="Debt not found")
+
+    payment = await service.record_debt_payment(db, debt, payment_data)
+    await db.commit()
+    await db.refresh(payment)
+
+    return payment
+
+
+@router.get("/{debt_id}/payments", response_model=DebtPaymentListResponse)
+@require_feature("debt_tracking")
+async def get_payments(
+    debt_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all payments for a debt"""
+    debt = await service.get_debt(db, debt_id, current_user.id)
+    if not debt:
+        raise HTTPException(status_code=404, detail="Debt not found")
+
+    payments = await service.get_debt_payments(db, debt_id, current_user.id)
+
+    return DebtPaymentListResponse(
+        items=payments,
+        total=len(payments)
+    )
+
+
+@router.post("/{debt_id}/mark-paid", response_model=DebtResponse)
+@require_feature("debt_tracking")
+async def mark_paid(
+    debt_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Mark a debt as fully paid"""
+    debt = await service.mark_debt_paid(db, debt_id, current_user.id)
+    if not debt:
+        raise HTTPException(status_code=404, detail="Debt not found")
+
+    await service.convert_debt_to_display_currency(db, current_user.id, debt)
+    return debt
+
+
+@router.post("/{debt_id}/forgive", response_model=DebtResponse)
+@require_feature("debt_tracking")
+async def forgive_debt(
+    debt_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Forgive a debt (write off remaining balance)"""
+    debt = await service.mark_debt_forgiven(db, debt_id, current_user.id)
+    if not debt:
+        raise HTTPException(status_code=404, detail="Debt not found")
+
+    await service.convert_debt_to_display_currency(db, current_user.id, debt)
+    return debt
