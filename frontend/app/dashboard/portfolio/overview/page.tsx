@@ -5,7 +5,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Grid3x3, Rows3, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   useListPortfolioAssetsQuery,
@@ -42,6 +43,8 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function PortfolioPage() {
+  const router = useRouter();
+
   // Get context for setting actions
   const { setActions } = React.useContext(PortfolioActionsContext);
 
@@ -55,9 +58,16 @@ export default function PortfolioPage() {
   // Helper to translate asset type
   const translateAssetType = (assetType: string | undefined | null): string => {
     if (!assetType) return '';
-    // Convert to camelCase: first letter lowercase, then handle snake_case
-    let key = assetType.charAt(0).toLowerCase() + assetType.slice(1);
-    key = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    // Convert to camelCase: handle spaces and snake_case
+    // "Real Estate" -> "realEstate", "mutual_funds" -> "mutualFunds"
+    const key = assetType
+      .split(/[\s_]+/) // Split by spaces or underscores
+      .map((word, index) =>
+        index === 0
+          ? word.toLowerCase()
+          : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      )
+      .join('');
     try {
       return tAssetTypes(key as Parameters<typeof tAssetTypes>[0]);
     } catch {
@@ -123,6 +133,10 @@ export default function PortfolioPage() {
     } catch (error) {
       toast.error(tOverview('archiveError'));
     }
+  };
+
+  const handleViewAsset = (id: string) => {
+    router.push(`/dashboard/portfolio/${id}`);
   };
 
   const handleBatchArchive = useCallback(async () => {
@@ -495,7 +509,12 @@ export default function PortfolioPage() {
                           className="mt-1"
                         />
                         <div className="flex-1">
-                        <CardTitle className="text-lg">{asset.asset_name}</CardTitle>
+                        <CardTitle
+                          className="text-lg cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => handleViewAsset(asset.id)}
+                        >
+                          {asset.asset_name}
+                        </CardTitle>
                         <CardDescription className="mt-1 min-h-[20px]">
                           {asset.symbol ? (
                             <span className="font-mono font-semibold">{asset.symbol}</span>
@@ -638,6 +657,14 @@ export default function PortfolioPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handleViewAsset(asset.id)}
+                        >
+                          <Eye className="mr-1 h-3 w-3" />
+                          {tActions('view')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleEditAsset(asset.id)}
                         >
                           <Edit className="mr-1 h-3 w-3" />
@@ -712,7 +739,12 @@ export default function PortfolioPage() {
                         </TableCell>
                         <TableCell className="font-medium">
                           <div className="max-w-[200px]">
-                            <p className="truncate">{asset.asset_name}</p>
+                            <p
+                              className="truncate cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => handleViewAsset(asset.id)}
+                            >
+                              {asset.asset_name}
+                            </p>
                             {asset.symbol && (
                               <p className="text-xs text-muted-foreground font-mono truncate">
                                 {asset.symbol}
@@ -781,6 +813,14 @@ export default function PortfolioPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewAsset(asset.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
