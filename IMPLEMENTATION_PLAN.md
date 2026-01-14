@@ -1631,7 +1631,58 @@ async def update_goal_progress_from_accounts():
 - Show auto-calculated vs manual badge
 - Show progress chart thumbnail
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Added auto_track_progress field to Goal model
+- [x] Created GoalAccountLink model and table for multiple accounts per goal
+- [x] Created GoalProgressHistory model and table for progress snapshots
+- [x] Created database migration for goal account linking
+- [x] Updated goal service with account linking functions (link_account_to_goal, unlink_account_from_goal, get_goal_linked_accounts)
+- [x] Added progress calculation from linked accounts with currency conversion (calculate_progress_from_accounts, get_goal_with_linked_accounts_total)
+- [x] Added progress snapshot recording with deduplication (record_progress_snapshot)
+- [x] Updated goal router with /link-account, /unlink-account, /linked-accounts, /refresh-progress, /progress-history endpoints
+- [x] Implemented Celery task for daily goal progress updates (update_goal_progress_from_accounts)
+- [x] Updated frontend goal form with:
+  - Auto-track progress toggle (defaults to ON)
+  - Savings account dropdown when auto-track is enabled
+  - Hidden Current Amount Saved and Monthly Contribution fields when auto-track is enabled
+  - Linked accounts display with allocation badges (100%, X%, or fixed amount)
+  - Add/remove accounts with allocation types (Full Balance, Percentage, Fixed Amount)
+- [x] Updated goal detail page with:
+  - Linked accounts section showing allocations
+  - Auto-refresh progress on page load
+  - Progress history with deduplication (prevents duplicate entries within 60 seconds)
+- [x] Added progress refresh after linking accounts
+- [x] Added multi-currency support (converts linked account balances to goal's currency)
+- [x] Fixed UUID serialization in LinkedAccountInfo schema
+- [x] Fixed timezone-aware datetime comparison in progress snapshot deduplication
+- [x] Added translations for all 8 languages (en, uk, es, fr, de, it, pl, pt)
+
+**Key Features:**
+- Goals can track progress automatically from linked savings accounts
+- Multiple accounts can be linked to a single goal with different allocation types:
+  - Full Balance (100% of account balance)
+  - Percentage (X% of account balance)
+  - Fixed Amount (specific amount, capped at account balance)
+- Multi-currency support - accounts in different currencies are converted to goal's currency
+- Progress history with snapshot deduplication prevents duplicate entries
+- Auto-refresh on page load ensures data is always fresh
+- Celery task runs daily to update all auto-tracked goals
+
+**Files Created:**
+- `backend/alembic/versions/20260114_add_goal_account_links.py`
+
+**Files Modified:**
+- `backend/app/modules/goals/models.py` - Added GoalAccountLink, GoalProgressHistory models
+- `backend/app/modules/goals/schemas.py` - Added link schemas, LinkedAccountInfo with UUID validator
+- `backend/app/modules/goals/service.py` - Added account linking, progress calculation, currency conversion
+- `backend/app/modules/goals/router.py` - Added link/unlink/refresh/history endpoints
+- `backend/app/tasks/goal_tasks.py` - Implemented daily progress update task
+- `frontend/lib/api/goalsApi.ts` - Added link/unlink/refresh hooks and types
+- `frontend/components/goals/goal-form.tsx` - Added auto-track toggle, account linking, allocation options
+- `frontend/app/dashboard/goals/[id]/page.tsx` - Added auto-refresh, linked accounts display
+- `frontend/messages/*/goals.json` - Added 20+ translation keys for form and detail sections (8 languages)
 
 ---
 
@@ -1943,13 +1994,13 @@ Functions:
 | 6 | COMPLETED | 2026-01-13 | 2026-01-13 | Installment payment integration with detail page |
 | 7 | COMPLETED | 2026-01-13 | 2026-01-14 | Debt payment tracking (receivables) with detail page |
 | 8 | COMPLETED | 2026-01-14 | 2026-01-14 | Portfolio with dynamic pricing (yfinance), dividends, transactions |
-| 9 | NOT STARTED | - | - | Goals integration |
+| 9 | COMPLETED | 2026-01-14 | 2026-01-14 | Goals with auto-tracking from linked savings accounts, multi-currency support |
 | 10 | NOT STARTED | - | - | Tax enhancement |
 | 11 | NOT STARTED | - | - | Dashboard enhancement |
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 9 - Goals Module Integration
+**Next Phase to Start:** Phase 10 - Tax Module Enhancement
 
 ### How to Continue
 When resuming work on this project:
@@ -1979,4 +2030,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 14, 2026 - Phase 8 (Portfolio Module) completed with dynamic pricing via yfinance, dividend tracking, buy/sell transactions, and asset detail pages*
+*Last updated: January 14, 2026 - Phase 9 (Goals Module) completed with auto-tracking from linked savings accounts, multi-currency support, allocation types, and progress history deduplication*
