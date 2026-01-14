@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, CheckCircle, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
@@ -39,6 +40,8 @@ import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
 
 export default function TaxesPage() {
+  const router = useRouter();
+
   // Translation hooks
   const tOverview = useTranslations('taxes.overview');
   const tCommon = useTranslations('common');
@@ -46,6 +49,7 @@ export default function TaxesPage() {
   const tStatus = useTranslations('taxes.status');
   const tTypes = useTranslations('taxes.types');
   const tFrequencies = useTranslations('taxes.frequencies');
+  const tPayment = useTranslations('taxes.paymentStatus');
 
   // Get context for setting actions
   const { setActions } = React.useContext(TaxesActionsContext);
@@ -77,6 +81,10 @@ export default function TaxesPage() {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingTaxId(null);
+  };
+
+  const handleView = (taxId: string) => {
+    router.push(`/dashboard/taxes/${taxId}`);
   };
 
   const handleDeleteClick = (tax: Tax) => {
@@ -471,7 +479,7 @@ export default function TaxesPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="space-y-2 md:space-y-3">
-                  {/* Tax Type and Frequency Badges */}
+                  {/* Tax Type, Frequency, and Payment Status Badges */}
                   <div className="flex items-center gap-2 flex-wrap">
                     {tax.tax_type === 'fixed' ? (
                       <Badge variant="outline" className="text-xs">
@@ -487,6 +495,18 @@ export default function TaxesPage() {
                     <Badge variant="secondary" className="text-xs capitalize">
                       {tFrequencies(tax.frequency as 'monthly' | 'quarterly' | 'annually')}
                     </Badge>
+                    {/* Payment Status Badge */}
+                    {tax.is_paid_current_period ? (
+                      <Badge variant="default" className="text-xs bg-emerald-600">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        {tPayment('paid')}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {tPayment('due')}
+                      </Badge>
+                    )}
                   </div>
 
                   {/* Tax Amount */}
@@ -545,6 +565,14 @@ export default function TaxesPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleView(tax.id)}
+                    >
+                      <Eye className="mr-1 h-3 w-3" />
+                      {tActions('view')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleEdit(tax.id)}
                     >
                       <Edit className="mr-1 h-3 w-3" />
@@ -593,7 +621,8 @@ export default function TaxesPage() {
                 <TableHead className="hidden xl:table-cell">{tCommon('common.description')}</TableHead>
                 <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
                 <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
-                <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
+                <TableHead className="hidden md:table-cell">{tPayment('periodStatus')}</TableHead>
+                <TableHead className="text-right w-[200px]">{tOverview('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -688,8 +717,29 @@ export default function TaxesPage() {
                       </Badge>
                     )}
                   </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {tax.is_paid_current_period ? (
+                      <Badge variant="default" className="text-xs bg-emerald-600">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        {tPayment('paid')}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {tPayment('due')}
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleView(tax.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"

@@ -1689,119 +1689,103 @@ async def update_goal_progress_from_accounts():
 ## Phase 10: Tax Module Enhancement
 
 ### Overview
-Add tax brackets, deductions, and better income integration.
+Add tax payment integration, auto-pay functionality, and period-based payment status tracking.
 
-### 10.1 Database Changes
+### 10.1 Backend Changes
 
-#### 10.1.1 Create Tax Bracket Table
-**Migration:** Create `tax_brackets` table
-```python
-class TaxBracket(Base):
-    __tablename__ = "tax_brackets"
-
-    id = Column(UUID, primary_key=True)
-    user_id = Column(UUID, ForeignKey("users.id"))
-
-    name = Column(String(100))  # e.g., "Federal 2025", "California State"
-    jurisdiction = Column(String(50))  # federal, state, local
-    tax_year = Column(Integer)
-    filing_status = Column(String(30))  # single, married_joint, married_separate, head_of_household
-
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime)
-```
-
-#### 10.1.2 Create Tax Bracket Rate Table
-**Migration:** Create `tax_bracket_rates` table
-```python
-class TaxBracketRate(Base):
-    __tablename__ = "tax_bracket_rates"
-
-    id = Column(UUID, primary_key=True)
-    bracket_id = Column(UUID, ForeignKey("tax_brackets.id"))
-
-    min_income = Column(Numeric(12, 2))
-    max_income = Column(Numeric(12, 2), nullable=True)  # null = no upper limit
-    rate = Column(Numeric(5, 2))  # Percentage
-
-    order = Column(Integer)  # For sorting brackets
-```
-
-#### 10.1.3 Create Tax Deduction Table
-**Migration:** Create `tax_deductions` table
-```python
-class TaxDeduction(Base):
-    __tablename__ = "tax_deductions"
-
-    id = Column(UUID, primary_key=True)
-    user_id = Column(UUID, ForeignKey("users.id"))
-
-    name = Column(String(100))
-    category = Column(String(50))  # standard, itemized, above_the_line
-    deduction_type = Column(String(50))  # mortgage_interest, charitable, medical, etc.
-
-    amount = Column(Numeric(12, 2))
-    tax_year = Column(Integer)
-
-    # Link to expense if applicable
-    expense_id = Column(UUID, ForeignKey("expenses.id"), nullable=True)
-
-    notes = Column(Text, nullable=True)
-    created_at = Column(DateTime)
-```
-
-#### 10.1.4 Update Expense Model
-**Migration:** Add columns to `expenses`
-```python
-is_tax_deductible = Column(Boolean, default=False)
-tax_category = Column(String(50), nullable=True)
-```
-
-### 10.2 Backend Changes
-
-#### 10.2.1 Create Tax Calculation Service
-**File to create:** `backend/app/modules/taxes/calculation_service.py`
-```python
-Functions:
-- calculate_tax_with_brackets(income, brackets)
-- calculate_effective_tax_rate(income, brackets)
-- calculate_taxable_income(gross_income, deductions)
-- get_standard_deduction(filing_status, tax_year)
-- estimate_quarterly_payment(annual_tax)
-```
-
-#### 10.2.2 Update Tax Service
+#### 10.1.1 Tax Payment Integration
 **File:** `backend/app/modules/taxes/service.py`
-- Add bracket management functions
-- Add deduction management functions
-- Update tax calculation to use brackets
+- Added `get_current_period_range()` function for calculating payment periods (monthly/quarterly/annually)
+- Added `get_tax_payment_status()` function for checking if tax is paid for current period
+- Updated `pay_tax()` function to include balance_before/balance_after tracking for AccountTransaction
+- Added auto-pay support with next_payment_date calculation
 
-#### 10.2.3 Update Tax Router
-**File:** `backend/app/modules/taxes/router.py`
-- Add CRUD for tax brackets
-- Add CRUD for deductions
-- Add GET `/taxes/calculate` - Calculate tax with brackets
-- Add GET `/taxes/summary/{year}` - Annual tax summary
+#### 10.1.2 Tax Payment Status Fields
+**File:** `backend/app/modules/taxes/schemas.py`
+- Added payment status fields to TaxResponse:
+  - `is_paid_current_period` - Boolean indicating if tax is paid for current frequency period
+  - `current_period_start` - Start date of current payment period
+  - `current_period_end` - End date of current payment period
+  - `last_payment_date` - Date of most recent payment
+  - `last_payment_amount` - Amount of most recent payment
 
-### 10.3 Frontend Changes
+#### 10.1.3 Celery Tasks for Tax Auto-Pay
+**File:** `backend/app/core/celery_app.py`
+- Added `process-tax-auto-payments` task (daily at 00:50)
+- Added `send-tax-payment-reminders` task (daily at 09:30)
 
-#### 10.3.1 Create Tax Bracket Management
-**Files to create:**
-- `frontend/components/taxes/tax-bracket-form.tsx`
-- `frontend/app/dashboard/taxes/brackets/page.tsx`
+**File:** `backend/app/tasks/tax_tasks.py`
+- Implemented `process_auto_pay()` for automatic tax payments
+- Implemented `send_payment_reminders()` for due date reminders
+- Auto-pay calculates next_payment_date based on frequency
 
-#### 10.3.2 Create Deduction Management
-**Files to create:**
-- `frontend/components/taxes/deduction-form.tsx`
-- `frontend/app/dashboard/taxes/deductions/page.tsx`
+### 10.2 Frontend Changes
 
-#### 10.3.3 Update Tax Overview
+#### 10.2.1 Tax Payment Status UI
 **File:** `frontend/app/dashboard/taxes/overview/page.tsx`
-- Show effective tax rate
-- Show bracket visualization
-- Show deductions summary
+- Added payment status badges to tax cards and table
+- Green "Paid" badge when `is_paid_current_period` is true
+- Orange "Due" badge when payment is pending
+- Uses CheckCircle and Clock icons for visual distinction
 
-### Status: NOT STARTED
+#### 10.2.2 Tax Detail Page Enhancement
+**File:** `frontend/app/dashboard/taxes/[id]/page.tsx`
+- Added payment status badge to status row
+- Smart Pay button: "Pay Now" when due, "Pay Again" (outline) when already paid
+- Added RotateCcw icon for "Pay Again" button
+
+#### 10.2.3 RTK Query Configuration
+**File:** `frontend/lib/api/apiSlice.ts`
+- Added `TaxPayment` and `Account` to tagTypes for cache invalidation
+
+#### 10.2.4 Tax API Types
+**File:** `frontend/lib/api/taxesApi.ts`
+- Added payment status fields to Tax interface
+
+### 10.3 Translations
+
+**Files updated:** `frontend/messages/*/taxes.json` (all 8 languages: en, de, es, fr, it, pl, pt, uk)
+- Added `paymentStatus` section with keys: periodStatus, paid, due, paidFor, dueFor, lastPayment, neverPaid
+- Added `payAgain` key to detail section
+
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Period-based payment status calculation (monthly/quarterly/annually)
+- [x] Tax payment with proper balance tracking (balance_before/balance_after)
+- [x] Auto-pay functionality with Celery tasks for scheduled payments
+- [x] Payment reminders via Celery task
+- [x] Payment status UI on overview page (Paid/Due badges)
+- [x] Payment status badge on tax detail page
+- [x] Smart Pay button that shows "Pay Now" or "Pay Again" based on payment status
+- [x] RTK Query tag types for TaxPayment and Account cache invalidation
+- [x] Multi-language translations for payment status (8 languages)
+
+**Key Features:**
+- Taxes track whether they've been paid for the current period based on frequency
+- Monthly taxes check if paid this calendar month
+- Quarterly taxes check if paid this quarter
+- Annual taxes check if paid this year
+- Auto-pay automatically processes tax payments on scheduled dates
+- Payment reminders sent before due dates
+- "Pay Again" allows re-payment even if already paid (with outline button styling)
+
+**Files Modified:**
+- `backend/app/modules/taxes/service.py` - Added payment status calculation and balance tracking
+- `backend/app/modules/taxes/schemas.py` - Added payment status fields to TaxResponse
+- `backend/app/core/celery_app.py` - Added tax auto-pay and reminder tasks to beat schedule
+- `backend/app/tasks/tax_tasks.py` - Implemented auto-pay and reminder tasks
+- `frontend/lib/api/apiSlice.ts` - Added TaxPayment and Account tag types
+- `frontend/lib/api/taxesApi.ts` - Added payment status fields to Tax interface
+- `frontend/app/dashboard/taxes/overview/page.tsx` - Added payment status badges
+- `frontend/app/dashboard/taxes/[id]/page.tsx` - Added payment status badge and smart Pay button
+- `frontend/messages/*/taxes.json` - Added paymentStatus translations (8 languages)
+
+**Deferred Items (moved to future phase):**
+- Tax brackets and progressive tax rates
+- Tax deductions management
+- Tax calculation with brackets
+- Expense tax deductibility tracking
 
 ---
 
@@ -1995,12 +1979,12 @@ Functions:
 | 7 | COMPLETED | 2026-01-13 | 2026-01-14 | Debt payment tracking (receivables) with detail page |
 | 8 | COMPLETED | 2026-01-14 | 2026-01-14 | Portfolio with dynamic pricing (yfinance), dividends, transactions |
 | 9 | COMPLETED | 2026-01-14 | 2026-01-14 | Goals with auto-tracking from linked savings accounts, multi-currency support |
-| 10 | NOT STARTED | - | - | Tax enhancement |
+| 10 | COMPLETED | 2026-01-14 | 2026-01-14 | Tax payment integration, auto-pay, period-based payment status |
 | 11 | NOT STARTED | - | - | Dashboard enhancement |
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 10 - Tax Module Enhancement
+**Next Phase to Start:** Phase 11 - Dashboard & Analytics Enhancement
 
 ### How to Continue
 When resuming work on this project:
@@ -2030,4 +2014,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 14, 2026 - Phase 9 (Goals Module) completed with auto-tracking from linked savings accounts, multi-currency support, allocation types, and progress history deduplication*
+*Last updated: January 14, 2026 - Phase 10 (Tax Module) completed with payment integration, auto-pay functionality, period-based payment status tracking (monthly/quarterly/annually), and smart Pay Now/Pay Again button*

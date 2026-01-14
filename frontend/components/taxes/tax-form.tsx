@@ -38,6 +38,8 @@ import {
   useUpdateTaxMutation,
   useGetTaxQuery,
 } from '@/lib/api/taxesApi';
+import { useListIncomeSourcesQuery } from '@/lib/api/incomeApi';
+import { useListAccountsQuery } from '@/lib/api/savingsApi';
 
 interface TaxFormProps {
   taxId?: string | null;
@@ -52,6 +54,14 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
   const isEditing = Boolean(taxId);
   const [amountInput, setAmountInput] = React.useState<string>('');
 
+  // Fetch income sources for linking
+  const { data: incomeSourcesData } = useListIncomeSourcesQuery({ is_active: true });
+  const incomeSources = incomeSourcesData?.items || [];
+
+  // Fetch savings accounts for payment account selection
+  const { data: accountsData } = useListAccountsQuery({ is_active: true });
+  const accounts = accountsData?.items || [];
+
   // Form validation schema (moved inside component to access translations)
   const taxSchema = z.object({
     name: z.string().min(1, tForm('taxNameRequired')).max(100),
@@ -61,6 +71,9 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
     fixed_amount: z.number().min(0, tForm('amountNegativeError')).optional(),
     currency: z.string().length(3).or(z.literal('')).optional(),
     percentage: z.number().min(0, tForm('percentageNegativeError')).max(100, tForm('percentageMaxError')).optional(),
+    income_source_id: z.string().optional().nullable(),
+    payment_account_id: z.string().optional().nullable(),
+    auto_pay: z.boolean(),
     is_active: z.boolean(),
     notes: z.string().max(500).optional(),
   }).refine(
@@ -75,6 +88,18 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
     {
       message: tForm('fixedAmountOrPercentageError'),
       path: ['fixed_amount'],
+    }
+  ).refine(
+    (data) => {
+      // If auto_pay is enabled, payment_account_id is required
+      if (data.auto_pay) {
+        return data.payment_account_id && data.payment_account_id !== 'none';
+      }
+      return true;
+    },
+    {
+      message: tForm('paymentAccountRequiredForAutoPay'),
+      path: ['payment_account_id'],
     }
   );
 
@@ -110,10 +135,14 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
       is_active: true,
       fixed_amount: undefined,
       percentage: undefined,
+      income_source_id: null,
+      payment_account_id: null,
+      auto_pay: false,
     },
   });
 
   const taxType = watch('tax_type');
+  const autoPay = watch('auto_pay');
 
   // Load existing tax data or reset for new tax
   useEffect(() => {
@@ -134,6 +163,9 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
               ? parseFloat(existingTax.percentage)
               : existingTax.percentage)
           : undefined,
+        income_source_id: existingTax.income_source_id || null,
+        payment_account_id: existingTax.payment_account_id || null,
+        auto_pay: existingTax.auto_pay || false,
         is_active: existingTax.is_active,
         notes: existingTax.notes || '',
       };
@@ -147,8 +179,18 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
         setAmountInput(String(amountNum));
       }
 
+      // Explicitly set Select values after reset to ensure they update
       setTimeout(() => {
         setValue('currency', existingTax.currency, { shouldDirty: true });
+        setValue('tax_type', existingTax.tax_type as 'fixed' | 'percentage', { shouldDirty: true });
+        setValue('frequency', existingTax.frequency as 'monthly' | 'quarterly' | 'annually', { shouldDirty: true });
+        if (existingTax.income_source_id) {
+          setValue('income_source_id', existingTax.income_source_id, { shouldDirty: true });
+        }
+        if (existingTax.payment_account_id) {
+          setValue('payment_account_id', existingTax.payment_account_id, { shouldDirty: true });
+        }
+        setValue('auto_pay', existingTax.auto_pay || false, { shouldDirty: true });
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
@@ -159,6 +201,9 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
         fixed_amount: undefined,
         currency: 'USD',
         percentage: undefined,
+        income_source_id: null,
+        payment_account_id: null,
+        auto_pay: false,
         is_active: true,
         notes: '',
       });
@@ -178,6 +223,9 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
         notes?: string;
         fixed_amount?: number;
         percentage?: number;
+        income_source_id?: string | null;
+        payment_account_id?: string | null;
+        auto_pay?: boolean;
       } = {
         name: data.name,
         description: data.description,
@@ -186,15 +234,20 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
         currency: data.currency || 'USD', // Default to USD for percentage taxes
         is_active: data.is_active,
         notes: data.notes,
+        payment_account_id: data.payment_account_id === 'none' ? null : data.payment_account_id,
+        auto_pay: data.auto_pay,
       };
 
       // Add fixed amount or percentage based on type
       if (data.tax_type === 'fixed') {
         submitData.fixed_amount = data.fixed_amount;
         submitData.percentage = undefined;
+        submitData.income_source_id = null; // Fixed taxes don't link to income source
       } else if (data.tax_type === 'percentage') {
         submitData.percentage = data.percentage;
         submitData.fixed_amount = undefined;
+        // Convert "all" to null for API
+        submitData.income_source_id = data.income_source_id === 'all' ? null : data.income_source_id;
       }
 
       if (isEditing && taxId) {
@@ -223,6 +276,9 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
       is_active: true,
       fixed_amount: undefined,
       percentage: undefined,
+      income_source_id: null,
+      payment_account_id: null,
+      auto_pay: false,
     });
   };
 
@@ -344,31 +400,55 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                 error={errors.fixed_amount?.message}
               />
             ) : (
-              <div className="space-y-2">
-                <Label htmlFor="percentage">{tForm('percentageLabel')} *</Label>
-                <div className="relative">
-                  <Input
-                    id="percentage"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    placeholder={tForm('percentagePlaceholder')}
-                    {...register('percentage', { valueAsNumber: true })}
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    %
-                  </span>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="percentage">{tForm('percentageLabel')} *</Label>
+                  <div className="relative">
+                    <Input
+                      id="percentage"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      placeholder={tForm('percentagePlaceholder')}
+                      {...register('percentage', { valueAsNumber: true })}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      %
+                    </span>
+                  </div>
+                  {errors.percentage && (
+                    <p className="text-sm text-destructive">
+                      {errors.percentage.message}
+                    </p>
+                  )}
                 </div>
-                {errors.percentage && (
-                  <p className="text-sm text-destructive">
-                    {errors.percentage.message}
+
+                <div className="space-y-2">
+                  <Label htmlFor="income_source_id">{tForm('incomeSourceLabel')}</Label>
+                  <Select
+                    value={watch('income_source_id') || 'all'}
+                    onValueChange={(value) => {
+                      setValue('income_source_id', value === 'all' ? null : value);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={tForm('incomeSourcePlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{tForm('allIncome')}</SelectItem>
+                      {incomeSources.map((source) => (
+                        <SelectItem key={source.id} value={source.id}>
+                          {source.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {tForm('incomeSourceHelp')}
                   </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  {tForm('percentageHelp')}
-                </p>
-              </div>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -384,6 +464,60 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                   {errors.notes.message}
                 </p>
               )}
+            </div>
+
+            {/* Payment Settings Section */}
+            <div className="border-t pt-4 space-y-4">
+              <h4 className="font-medium text-sm">{tForm('paymentSettings')}</h4>
+
+              <div className="space-y-2">
+                <Label htmlFor="payment_account_id">{tForm('paymentAccountLabel')}</Label>
+                <Select
+                  value={watch('payment_account_id') || 'none'}
+                  onValueChange={(value) => {
+                    setValue('payment_account_id', value === 'none' ? null : value);
+                    // If no account selected, disable auto-pay
+                    if (value === 'none') {
+                      setValue('auto_pay', false);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tForm('paymentAccountPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{tForm('noPaymentAccount')}</SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name} ({account.currency})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {tForm('paymentAccountHelp')}
+                </p>
+                {errors.payment_account_id && (
+                  <p className="text-sm text-destructive">
+                    {errors.payment_account_id.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="auto_pay">{tForm('autoPayLabel')}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {tForm('autoPayHelp')}
+                  </p>
+                </div>
+                <Switch
+                  id="auto_pay"
+                  checked={autoPay}
+                  disabled={!watch('payment_account_id') || watch('payment_account_id') === 'none'}
+                  onCheckedChange={(checked: boolean) => setValue('auto_pay', checked)}
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
