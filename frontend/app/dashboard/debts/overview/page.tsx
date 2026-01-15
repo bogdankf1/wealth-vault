@@ -457,7 +457,7 @@ export default function DebtsPage() {
                     </div>
                   </div>
                   {debt.is_paid ? (
-                    <Badge variant="default" className="bg-green-600 text-xs flex-shrink-0">
+                    <Badge variant="default" className="bg-green-600 dark:bg-green-500 text-xs flex-shrink-0">
                       {tStatus('paid')}
                     </Badge>
                   ) : debt.is_overdue ? (
@@ -694,7 +694,7 @@ export default function DebtsPage() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       {debt.is_paid ? (
-                        <Badge variant="default" className="bg-green-600 text-xs">
+                        <Badge variant="default" className="bg-green-600 dark:bg-green-500 text-xs">
                           {tStatus('paid')}
                         </Badge>
                       ) : debt.is_overdue ? (

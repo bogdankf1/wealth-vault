@@ -388,8 +388,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                   type="date"
                   {...register('due_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="paid_date">{tForm('paidDate')}</Label>
@@ -398,8 +397,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                   type="date"
                   {...register('paid_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
               </div>
             </div>
 
@@ -507,8 +505,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                       type="date"
                       {...register('next_payment_date')}
                       className="cursor-pointer"
-                      style={{ colorScheme: 'light' }}
-                    />
+                                          />
                   </div>
                 </div>
 

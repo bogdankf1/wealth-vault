@@ -521,13 +521,13 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{tForm('totalReturn')}</span>
-                    <span className={totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span className={totalReturn >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                       <CurrencyDisplay amount={totalReturn} currency={selectedCurrency} showSymbol showCode={false} />
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{tForm('returnPercentage')}</span>
-                    <span className={returnPercentage >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span className={returnPercentage >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                       {returnPercentage >= 0 ? '+' : ''}{returnPercentage.toFixed(2)}%
                     </span>
                   </div>
@@ -571,9 +571,9 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                       {tickerValidationState === 'loading' ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : tickerValidationState === 'valid' ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                       ) : tickerValidationState === 'invalid' ? (
-                        <XCircle className="h-4 w-4 text-red-600" />
+                        <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                       ) : (
                         <RefreshCw className="h-4 w-4" />
                       )}
@@ -584,7 +584,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                     <p className="text-sm text-destructive">{errors.ticker.message}</p>
                   )}
                   {tickerPrice && (
-                    <p className="text-sm text-green-600">
+                    <p className="text-sm text-green-600 dark:text-green-400">
                       {tForm('currentApiPrice')}: {formatCurrency(tickerPrice, selectedCurrency)}
                     </p>
                   )}

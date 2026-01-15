@@ -532,7 +532,7 @@ export default function GoalsPage() {
                         >
                           {goal.name}
                           {goal.auto_track_progress && (
-                            <Link2 className="h-3 w-3 inline ml-2 text-blue-500" />
+                            <Link2 className="h-3 w-3 inline ml-2 text-blue-500 dark:text-blue-400" />
                           )}
                         </CardTitle>
                         <CardDescription className="mt-1 min-h-[20px]">
@@ -739,7 +739,7 @@ export default function GoalsPage() {
                             >
                               {goal.name}
                               {goal.auto_track_progress && (
-                                <Link2 className="h-3 w-3 inline ml-2 text-blue-500" />
+                                <Link2 className="h-3 w-3 inline ml-2 text-blue-500 dark:text-blue-400" />
                               )}
                             </p>
                             <p className="text-xs text-muted-foreground md:hidden truncate">

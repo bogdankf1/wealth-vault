@@ -401,8 +401,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                   type="date"
                   {...register('start_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
                 {errors.start_date && (
                   <p className="text-sm text-destructive">
                     {errors.start_date.message}
@@ -416,8 +415,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                   type="date"
                   {...register('end_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
                 <p className="text-xs text-muted-foreground">{tForm('endDateDescription')}</p>
               </div>
             </div>

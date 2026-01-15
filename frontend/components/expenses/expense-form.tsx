@@ -476,8 +476,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                   type="date"
                   {...register('date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
@@ -488,8 +487,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                     type="date"
                     {...register('start_date')}
                     className="cursor-pointer"
-                    style={{ colorScheme: 'light' }}
-                  />
+                                      />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="end_date">{tForm('endDate')} (Optional)</Label>
@@ -498,8 +496,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                     type="date"
                     {...register('end_date')}
                     className="cursor-pointer"
-                    style={{ colorScheme: 'light' }}
-                  />
+                                      />
                 </div>
               </div>
             )}

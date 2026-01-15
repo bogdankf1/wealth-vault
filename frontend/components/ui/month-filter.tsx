@@ -42,8 +42,7 @@ export function MonthFilter({
         min="2020-01"
         max="2030-12"
         className="h-9 rounded-md border border-input bg-background px-3 text-sm cursor-pointer ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        style={{ colorScheme: 'light' }}
-      />
+              />
     </div>
   );
 }

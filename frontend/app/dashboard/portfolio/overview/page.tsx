@@ -554,7 +554,7 @@ export default function PortfolioPage() {
                             />
                             <span>{tOverview('invested')}</span>
                           </span>
-                          <span className={`text-sm font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                          <span className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {formatPercentage(returnPercentage)}
                           </span>
                         </div>
@@ -571,17 +571,17 @@ export default function PortfolioPage() {
                       </div>
 
                       {/* Return Display */}
-                      <div className={`rounded-lg p-3 ${isPositive ? 'bg-green-50' : 'bg-red-50'}`}>
+                      <div className={`rounded-lg p-3 ${isPositive ? 'bg-green-50 dark:bg-green-950' : 'bg-red-50 dark:bg-red-950'}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {isPositive ? (
-                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
                             ) : (
-                              <TrendingDown className="h-4 w-4 text-red-600" />
+                              <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
                             )}
                             <span className="text-xs text-muted-foreground">{tOverview('totalReturn')}</span>
                           </div>
-                          <span className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                          <span className={`font-bold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             <CurrencyDisplay
                               amount={displayTotalReturn}
                               currency={displayCurrency}
@@ -769,7 +769,7 @@ export default function PortfolioPage() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-right">
                           <div className="flex flex-col items-end">
-                            <span className={`font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            <span className={`font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                               <CurrencyDisplay
                                 amount={displayTotalReturn}
                                 currency={displayCurrency}
@@ -777,7 +777,7 @@ export default function PortfolioPage() {
                                 showCode={false}
                               />
                             </span>
-                            <span className={`text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            <span className={`text-xs ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                               {formatPercentage(returnPercentage)}
                             </span>
                           </div>

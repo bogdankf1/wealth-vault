@@ -569,8 +569,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   type="date"
                   {...register('start_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
                 {errors.start_date && (
                   <p className="text-sm text-destructive">
                     {errors.start_date.message}
@@ -585,8 +584,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   type="date"
                   {...register('target_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
                 <p className="text-xs text-muted-foreground">
                   {tForm('targetDateDescription')}
                 </p>

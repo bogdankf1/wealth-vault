@@ -536,8 +536,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                   type="date"
                   {...register('start_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
                 {errors.start_date && (
                   <p className="text-sm text-destructive">
                     {errors.start_date.message}
@@ -552,8 +551,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                   type="date"
                   {...register('first_payment_date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
                 {errors.first_payment_date && (
                   <p className="text-sm text-destructive">
                     {errors.first_payment_date.message}
@@ -569,8 +567,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                 type="date"
                 {...register('end_date')}
                 className="cursor-pointer"
-                style={{ colorScheme: 'light' }}
-              />
+                              />
               <p className="text-xs text-muted-foreground">
                 {tForm('payoffDateDescription')}
               </p>

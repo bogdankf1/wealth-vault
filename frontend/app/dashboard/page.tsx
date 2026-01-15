@@ -680,7 +680,7 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{tCashFlow('income.period')}</p>
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('income.period')}</p>
         </Card>
         )}
 
@@ -718,7 +718,7 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{getPeriodLabel()}</p>
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{getPeriodLabel()}</p>
         </Card>
         )}
 
@@ -753,7 +753,7 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{tCashFlow('subscriptions.period')}</p>
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('subscriptions.period')}</p>
         </Card>
         )}
 
@@ -788,7 +788,7 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{tCashFlow('installments.period')}</p>
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('installments.period')}</p>
         </Card>
         )}
 
@@ -821,7 +821,7 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{taxStats?.active_taxes || 0} {tCashFlow('taxes.active')}</p>
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{taxStats?.active_taxes || 0} {tCashFlow('taxes.active')}</p>
         </Card>
         )}
 
@@ -854,7 +854,7 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">{debtStats?.active_debts || 0} {tCashFlow('debtsOwed.active')}</p>
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{debtStats?.active_debts || 0} {tCashFlow('debtsOwed.active')}</p>
         </Card>
         )}
 
@@ -892,7 +892,7 @@ export default function DashboardPage() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500">
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
             {tCashFlow('netCashFlow.savingsRateLabel')}: {formatPercentage(cash_flow.savings_rate)}
           </p>
         </Card>
@@ -905,7 +905,7 @@ export default function DashboardPage() {
       <Card className="p-4 md:p-6">
         <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">{tRecentActivity('title')}</h2>
         {recent_activity.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
             {tRecentActivity('emptyState')}
           </p>
         ) : (

@@ -432,8 +432,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                   type="date"
                   {...register('date')}
                   className="cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
+                                  />
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
@@ -444,8 +443,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                     type="date"
                     {...register('start_date')}
                     className="cursor-pointer"
-                    style={{ colorScheme: 'light' }}
-                  />
+                                      />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="end_date">{tForm('endDate')}</Label>
@@ -454,8 +452,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                     type="date"
                     {...register('end_date')}
                     className="cursor-pointer"
-                    style={{ colorScheme: 'light' }}
-                  />
+                                      />
                 </div>
               </div>
             )}

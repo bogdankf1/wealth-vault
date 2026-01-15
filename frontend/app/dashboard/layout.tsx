@@ -200,7 +200,7 @@ export default function DashboardLayout({
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden"
             >
-              <X className="h-6 w-6 text-gray-500" />
+              <X className="h-6 w-6 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
 
