@@ -2,19 +2,34 @@
 AI Insights Service
 Generate intelligent financial insights using AI
 """
+import logging
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta
+from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from openai import OpenAI
 import os
 from uuid import UUID
 
+logger = logging.getLogger(__name__)
+
 from app.modules.ai.models import AIInsight
 from app.modules.expenses.models import Expense
 from app.modules.income.models import IncomeSource
 from app.modules.savings.models import SavingsAccount
 from app.modules.subscriptions.models import Subscription
+from app.services.currency_service import CurrencyService
+
+
+async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
+    """Get user's preferred display currency."""
+    from app.models.user_preferences import UserPreferences
+    prefs_result = await db.execute(
+        select(UserPreferences).where(UserPreferences.user_id == user_id)
+    )
+    user_prefs = prefs_result.scalar_one_or_none()
+    return user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
 
 
 class AIInsightsService:
@@ -64,13 +79,35 @@ class AIInsightsService:
         if not expenses:
             return []
 
-        # Calculate statistics
-        total_spending = sum(exp.amount for exp in expenses)
-        category_spending: Dict[str, float] = {}
+        # Get user's display currency and convert all amounts
+        display_currency = await get_user_display_currency(db, user_id)
+        currency_service = CurrencyService(db)
+
+        # Convert all expense amounts to display currency before summing
+        total_spending = Decimal("0")
+        category_spending: Dict[str, Decimal] = {}
 
         for expense in expenses:
+            # Convert amount to display currency
+            converted_amount = await currency_service.convert_amount(
+                Decimal(str(expense.amount)),
+                expense.currency,
+                display_currency
+            )
+            # Use converted amount or original if conversion fails
+            if converted_amount is not None:
+                amount_in_display = converted_amount
+            else:
+                logger.warning(
+                    f"Currency conversion failed for expense {expense.id}: "
+                    f"could not convert {expense.currency} to {display_currency}"
+                )
+                amount_in_display = Decimal(str(expense.amount))
+
+            total_spending += amount_in_display
+
             category = expense.category or "Other"
-            category_spending[category] = category_spending.get(category, 0) + expense.amount
+            category_spending[category] = category_spending.get(category, Decimal("0")) + amount_in_display
 
         # Find top categories
         top_categories = sorted(
@@ -80,13 +117,13 @@ class AIInsightsService:
         # Prepare data summary for AI
         data_summary = f"""
 Spending Analysis ({period_days} days):
-- Total Spending: ${total_spending:.2f}
+- Total Spending: {display_currency} {total_spending:.2f}
 - Number of Expenses: {len(expenses)}
 - Top Categories:
 """
         for category, amount in top_categories:
-            percentage = (amount / total_spending) * 100
-            data_summary += f"  * {category}: ${amount:.2f} ({percentage:.1f}%)\n"
+            percentage = (float(amount) / float(total_spending)) * 100 if total_spending > 0 else 0
+            data_summary += f"  * {category}: {display_currency} {amount:.2f} ({percentage:.1f}%)\n"
 
         # Generate insights using AI
         prompt = f"""You are a financial advisor. Based on this user's spending data, provide 2-3 brief, actionable insights.
@@ -161,19 +198,49 @@ Be specific and actionable."""
         if not accounts:
             return []
 
-        # Calculate statistics
-        total_balance = sum(account.current_balance for account in accounts)
+        # Get user's display currency and convert all amounts
+        display_currency = await get_user_display_currency(db, user_id)
+        currency_service = CurrencyService(db)
+
+        # Convert all account balances to display currency before summing
+        total_balance = Decimal("0")
+        account_balances: List[Dict] = []
+
+        for account in accounts:
+            # Convert balance to display currency
+            converted_balance = await currency_service.convert_amount(
+                Decimal(str(account.current_balance)),
+                account.currency,
+                display_currency
+            )
+            # Use converted balance or original if conversion fails
+            if converted_balance is not None:
+                balance_in_display = converted_balance
+            else:
+                logger.warning(
+                    f"Currency conversion failed for savings account {account.id}: "
+                    f"could not convert {account.currency} to {display_currency}"
+                )
+                balance_in_display = Decimal(str(account.current_balance))
+
+            total_balance += balance_in_display
+            account_balances.append({
+                "name": account.name,
+                "type": account.account_type,
+                "balance": balance_in_display,
+                "original_currency": account.currency
+            })
 
         # Prepare data summary
         data_summary = f"""
 Savings Accounts Analysis:
 - Number of Active Accounts: {len(accounts)}
-- Total Balance: ${total_balance:.2f}
+- Total Balance: {display_currency} {total_balance:.2f}
 
 Accounts:
 """
-        for account in accounts:
-            data_summary += f"  * {account.name} ({account.account_type}): ${account.current_balance:.2f}\n"
+        for acc in account_balances:
+            data_summary += f"  * {acc['name']} ({acc['type']}): {display_currency} {acc['balance']:.2f}\n"
 
         # Generate insights using AI
         prompt = f"""You are a financial advisor. Based on this user's savings accounts, provide 2-3 brief, actionable insights.
@@ -254,13 +321,33 @@ Be encouraging and actionable."""
         if len(expenses) < 5:  # Not enough data
             return []
 
-        # Group by category
+        # Get user's display currency and convert all amounts
+        display_currency = await get_user_display_currency(db, user_id)
+        currency_service = CurrencyService(db)
+
+        # Group by category with converted amounts
         category_data: Dict[str, List[float]] = {}
         for expense in expenses:
+            # Convert amount to display currency
+            converted_amount = await currency_service.convert_amount(
+                Decimal(str(expense.amount)),
+                expense.currency,
+                display_currency
+            )
+            # Use converted amount or original if conversion fails
+            if converted_amount is not None:
+                amount_in_display = float(converted_amount)
+            else:
+                logger.warning(
+                    f"Currency conversion failed for expense {expense.id} in anomaly detection: "
+                    f"could not convert {expense.currency} to {display_currency}"
+                )
+                amount_in_display = float(expense.amount)
+
             category = expense.category or "Other"
             if category not in category_data:
                 category_data[category] = []
-            category_data[category].append(expense.amount)
+            category_data[category].append(amount_in_display)
 
         # Find categories with high variance or unusual amounts
         anomalies = []
@@ -274,7 +361,7 @@ Be encouraging and actionable."""
             # If max is more than 2x the average, it's an anomaly
             if max_amount > avg_amount * 2:
                 anomalies.append(
-                    f"Unusual {category} expense detected: ${max_amount:.2f} (avg: ${avg_amount:.2f})"
+                    f"Unusual {category} expense detected: {display_currency} {max_amount:.2f} (avg: {display_currency} {avg_amount:.2f})"
                 )
 
         # Save anomalies to database

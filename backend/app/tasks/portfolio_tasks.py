@@ -274,9 +274,13 @@ def calculate_portfolio_performance(self) -> Dict[str, Any]:
 
     async def _calculate():
         from app.modules.portfolio.models import PortfolioAsset
+        from app.models.user_preferences import UserPreferences
+        from app.services.currency_service import CurrencyService
         from sqlalchemy import func
 
         async with get_async_db_session() as db:
+            currency_service = CurrencyService(db)
+
             # Get all users with portfolio assets
             user_query = select(PortfolioAsset.user_id).where(
                 PortfolioAsset.is_active == True
@@ -288,6 +292,13 @@ def calculate_portfolio_performance(self) -> Dict[str, Any]:
 
             for user_id in user_ids:
                 try:
+                    # Get user's display currency
+                    prefs_result = await db.execute(
+                        select(UserPreferences).where(UserPreferences.user_id == user_id)
+                    )
+                    user_prefs = prefs_result.scalar_one_or_none()
+                    display_currency = user_prefs.display_currency if user_prefs and user_prefs.display_currency else "USD"
+
                     # Get user's active assets
                     assets_query = select(PortfolioAsset).where(
                         and_(
@@ -301,19 +312,49 @@ def calculate_portfolio_performance(self) -> Dict[str, Any]:
                     if not assets:
                         continue
 
-                    # Calculate aggregates
-                    total_invested = sum(asset.total_invested or Decimal('0') for asset in assets)
-                    current_value = sum(asset.current_value or Decimal('0') for asset in assets)
-                    total_return = current_value - total_invested
-                    total_dividends = sum(asset.total_dividends_received or Decimal('0') for asset in assets)
+                    # Calculate aggregates with currency conversion
+                    total_invested = Decimal('0')
+                    current_value = Decimal('0')
+                    total_dividends = Decimal('0')
+                    by_asset_type: Dict[str, Decimal] = {}
 
-                    # Calculate by asset type
-                    by_asset_type = {}
                     for asset in assets:
+                        # Convert amounts to display currency
+                        invested = asset.total_invested or Decimal('0')
+                        value = asset.current_value or Decimal('0')
+                        dividends = asset.total_dividends_received or Decimal('0')
+
+                        if asset.currency != display_currency:
+                            # Convert to display currency
+                            converted_invested = await currency_service.convert_amount(
+                                invested, asset.currency, display_currency
+                            )
+                            converted_value = await currency_service.convert_amount(
+                                value, asset.currency, display_currency
+                            )
+                            converted_dividends = await currency_service.convert_amount(
+                                dividends, asset.currency, display_currency
+                            )
+                            if converted_invested is None or converted_value is None:
+                                logger.warning(
+                                    f"Currency conversion failed for asset {asset.id}: "
+                                    f"could not convert {asset.currency} to {display_currency}"
+                                )
+                            invested = converted_invested if converted_invested is not None else invested
+                            value = converted_value if converted_value is not None else value
+                            dividends = converted_dividends if converted_dividends is not None else dividends
+
+                        total_invested += invested
+                        current_value += value
+                        total_dividends += dividends
+
+                        # Calculate by asset type
                         asset_type = asset.asset_type or "Other"
                         if asset_type not in by_asset_type:
                             by_asset_type[asset_type] = Decimal('0')
-                        by_asset_type[asset_type] += asset.current_value or Decimal('0')
+                        by_asset_type[asset_type] += value
+
+                    total_return = current_value - total_invested
 
                     # Log performance summary
                     logger.info(

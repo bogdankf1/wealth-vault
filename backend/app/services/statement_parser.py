@@ -2,11 +2,14 @@
 Bank Statement Parser Service
 Parses CSV, Excel, and PDF bank statements to extract transactions
 """
+import logging
 import pandas as pd
 import pdfplumber
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import re
+
+logger = logging.getLogger(__name__)
 
 
 class Transaction:
@@ -122,6 +125,8 @@ class StatementParser:
                     currency = "USD"  # default
                     if currency_col and pd.notna(row[currency_col]):
                         currency = str(row[currency_col]).strip().upper()
+                    elif not currency_col:
+                        logger.debug("No currency column found in CSV, defaulting to USD")
 
                     transactions.append(
                         Transaction(
@@ -256,6 +261,8 @@ class StatementParser:
                     currency = "USD"  # default
                     if currency_col and pd.notna(row[currency_col]):
                         currency = str(row[currency_col]).strip().upper()
+                    elif not currency_col:
+                        logger.debug("No currency column found in Excel, defaulting to USD")
 
                     transactions.append(
                         Transaction(

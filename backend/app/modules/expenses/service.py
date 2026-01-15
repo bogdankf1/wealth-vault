@@ -70,11 +70,23 @@ async def convert_expense_to_display_currency(db: AsyncSession, user_id: UUID, e
                 expense.currency,
                 display_currency
             )
-            expense.display_monthly_equivalent = converted_monthly if converted_monthly else expense.monthly_equivalent
+            if converted_monthly:
+                expense.display_monthly_equivalent = converted_monthly
+            else:
+                logger.warning(
+                    f"Currency conversion failed for expense {expense.id} monthly equivalent: "
+                    f"could not convert {expense.currency} to {display_currency}"
+                )
+                expense.display_monthly_equivalent = expense.monthly_equivalent
         else:
             expense.display_monthly_equivalent = None
     else:
         # Fallback to original values if conversion fails
+        logger.warning(
+            f"Currency conversion failed for expense {expense.id}: "
+            f"could not convert {expense.currency} to {display_currency}. "
+            f"Using original currency values."
+        )
         expense.display_amount = expense.amount
         expense.display_currency = expense.currency
         expense.display_monthly_equivalent = expense.monthly_equivalent

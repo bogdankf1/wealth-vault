@@ -1,6 +1,7 @@
 """
 Goals module service layer.
 """
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
@@ -9,6 +10,8 @@ from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+
+logger = logging.getLogger(__name__)
 
 from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory, ProgressTriggerType
 from app.modules.goals.schemas import (
@@ -84,6 +87,11 @@ async def convert_goal_to_display_currency(db: AsyncSession, user_id: UUID, goal
         goal.display_currency = display_currency
     else:
         # Fallback to original values if conversion fails
+        logger.warning(
+            f"Currency conversion failed for goal {goal.id}: "
+            f"could not convert {goal.currency} to {display_currency}. "
+            f"Using original currency values."
+        )
         goal.display_target_amount = goal.target_amount
         goal.display_current_amount = goal.current_amount
         goal.display_monthly_contribution = goal.monthly_contribution

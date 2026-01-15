@@ -71,6 +71,11 @@ async def convert_asset_to_display_currency(db: AsyncSession, user_id: UUID, ass
         asset.display_currency = display_currency
     else:
         # Fallback to original values if conversion fails
+        logger.warning(
+            f"Currency conversion failed for portfolio asset {asset.id}: "
+            f"could not convert {asset.currency} to {display_currency}. "
+            f"Using original currency values."
+        )
         asset.display_purchase_price = asset.purchase_price
         asset.display_current_price = asset.current_price
         asset.display_total_invested = asset.total_invested
