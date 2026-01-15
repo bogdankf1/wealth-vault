@@ -16,6 +16,7 @@ import {
   SubscriptionFrequency,
 } from '@/lib/api/subscriptionsApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import {
   Dialog,
   DialogContent,
@@ -84,6 +85,10 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
   const tActions = useTranslations('subscriptions.actions');
   const tCategories = useTranslations('subscriptions.categories');
   const tFrequencies = useTranslations('subscriptions.frequencies');
+
+  // Get user's preferred currency
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   const FREQUENCY_OPTIONS = [
     { value: 'monthly', label: tFrequencies('monthly') },
@@ -203,7 +208,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
         description: '',
         category: '',
         amount: 0,
-        currency: 'USD',
+        currency: defaultCurrency,
         frequency: 'monthly',
         is_active: true,
         start_date: new Date().toISOString().split('T')[0],
@@ -215,7 +220,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
       });
       setAmountInput('');
     }
-  }, [isEditing, existingSubscription, isOpen, reset, setValue, tForm]);
+  }, [isEditing, existingSubscription, isOpen, reset, setValue, tForm, defaultCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -270,7 +275,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
     onClose();
     setAmountInput('');
     reset({
-      currency: 'USD',
+      currency: defaultCurrency,
       frequency: 'monthly',
       is_active: true,
       start_date: new Date().toISOString().split('T')[0],

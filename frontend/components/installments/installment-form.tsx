@@ -18,6 +18,7 @@ import {
   InstallmentUpdate,
 } from '@/lib/api/installmentsApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { formatCurrency } from '@/lib/utils/currency';
 import {
   Dialog,
@@ -59,6 +60,9 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
   const tCategories = useTranslations('installments.categories');
   const tFrequencies = useTranslations('installments.frequencies');
   const tActions = useTranslations('installments.actions');
+
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   // Form validation schema with translated error messages
   const installmentSchema = z.object({
@@ -256,7 +260,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         category: '',
         total_amount: 0,
         amount_per_payment: 0,
-        currency: 'USD',
+        currency: defaultCurrency,
         interest_rate: 0,
         frequency: 'monthly',
         number_of_payments: undefined,
@@ -271,7 +275,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       setTotalAmountInput('');
       setPaymentAmountInput('');
     }
-  }, [isEditing, existingInstallment, isOpen, reset, setValue, accountsData]);
+  }, [isEditing, existingInstallment, isOpen, reset, setValue, accountsData, defaultCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -321,7 +325,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
     setTotalAmountInput('');
     setPaymentAmountInput('');
     reset({
-      currency: 'USD',
+      currency: defaultCurrency,
       frequency: 'monthly',
       is_active: true,
       start_date: new Date().toISOString().split('T')[0],

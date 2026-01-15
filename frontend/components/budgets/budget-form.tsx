@@ -36,6 +36,7 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { CurrencyInput } from '@/components/currency/currency-input';
 import { useCreateBudgetMutation, useUpdateBudgetMutation, Budget } from '@/lib/api/budgetsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { toast } from 'sonner';
 import { EXPENSE_CATEGORY_KEYS, CATEGORY_NAME_TO_KEY } from '@/lib/constants/expense-categories';
 
@@ -88,6 +89,9 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
   const tActions = useTranslations('budgets.actions');
   const tPeriod = useTranslations('budgets.period');
   const tCategories = useTranslations('expenses.categories');
+
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
@@ -155,7 +159,19 @@ export function BudgetForm({ open, onClose, budget }: BudgetFormProps) {
         toast.success(tForm('createSuccess'));
       }
 
-      form.reset();
+      form.reset({
+        name: '',
+        category: '',
+        description: '',
+        amount: 0,
+        currency: defaultCurrency,
+        period: 'monthly',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: '',
+        is_active: true,
+        rollover_unused: false,
+        alert_threshold: 80,
+      });
       setAmountInput('');
       onClose();
     } catch {

@@ -41,6 +41,7 @@ import {
 } from '@/lib/api/taxesApi';
 import { useListIncomeSourcesQuery } from '@/lib/api/incomeApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 
 interface TaxFormProps {
   taxId?: string | null;
@@ -51,6 +52,9 @@ interface TaxFormProps {
 export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
   const tForm = useTranslations('taxes.form');
   const tActions = useTranslations('taxes.actions');
+
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   const isEditing = Boolean(taxId);
   const [amountInput, setAmountInput] = React.useState<string>('');
@@ -200,7 +204,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
         tax_type: 'fixed',
         frequency: 'annually',
         fixed_amount: undefined,
-        currency: 'USD',
+        currency: defaultCurrency,
         percentage: undefined,
         income_source_id: null,
         payment_account_id: null,
@@ -210,7 +214,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
       });
       setAmountInput('');
     }
-  }, [isEditing, existingTax, isOpen, reset, setValue]);
+  }, [isEditing, existingTax, isOpen, reset, setValue, defaultCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -273,7 +277,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
     reset({
       tax_type: 'fixed',
       frequency: 'annually',
-      currency: 'USD',
+      currency: defaultCurrency,
       is_active: true,
       fixed_amount: undefined,
       percentage: undefined,

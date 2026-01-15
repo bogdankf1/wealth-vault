@@ -33,6 +33,7 @@ import {
   useGetAccountQuery,
   type AccountType,
 } from '@/lib/api/savingsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 
 const accountSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -75,6 +76,9 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
   const tActions = useTranslations('savings.actions');
   const tAccountTypes = useTranslations('savings.accountTypes');
   const tInterest = useTranslations('savings.interest');
+
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   const ACCOUNT_TYPE_OPTIONS = [
     { value: 'personal', label: tAccountTypes('personal') },
@@ -179,7 +183,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
         institution: '',
         account_number_last4: '',
         current_balance: 0,
-        currency: 'USD',
+        currency: defaultCurrency,
         interest_rate_percent: undefined,
         interest_frequency: 'monthly',
         interest_accrual_method: 'compound',
@@ -189,7 +193,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
       setCurrentBalanceInput('');
       setInterestRateInput('');
     }
-  }, [isEditing, existingAccount, isOpen, reset, setValue]);
+  }, [isEditing, existingAccount, isOpen, reset, setValue, defaultCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {

@@ -4,7 +4,7 @@
  */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Plus, X, AlertCircle } from 'lucide-react';
@@ -13,6 +13,7 @@ import {
   ExpenseCreate,
   ExpenseFrequency,
 } from '@/lib/api/expensesApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import {
   Dialog,
   DialogContent,
@@ -65,20 +66,20 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
   const tCategories = useTranslations('expenses.categories');
   const tActions = useTranslations('expenses.actions');
 
+  // Get user's preferred currency
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
+
   const [batchCreateExpenses, { isLoading }] = useBatchCreateExpensesMutation();
 
-  const [rows, setRows] = useState<ExpenseRow[]>([
-    createEmptyRow(),
-  ]);
-
-  function createEmptyRow(): ExpenseRow {
+  const createEmptyRow = (): ExpenseRow => {
     return {
       id: Math.random().toString(36).substr(2, 9),
       name: '',
       description: '',
       category: '',
       amount: '',
-      currency: 'USD',
+      currency: defaultCurrency,
       frequency: 'one_time',
       date: new Date().toISOString().split('T')[0],
       start_date: '',
@@ -86,7 +87,36 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
       is_active: true,
       errors: {},
     };
-  }
+  };
+
+  const [rows, setRows] = useState<ExpenseRow[]>([
+    {
+      id: Math.random().toString(36).substr(2, 9),
+      name: '',
+      description: '',
+      category: '',
+      amount: '',
+      currency: 'USD', // Initial row uses USD, will be updated when preferences load
+      frequency: 'one_time',
+      date: new Date().toISOString().split('T')[0],
+      start_date: '',
+      end_date: '',
+      is_active: true,
+      errors: {},
+    },
+  ]);
+
+  // Update initial row's currency when preferences load
+  useEffect(() => {
+    if (preferences && defaultCurrency !== 'USD') {
+      setRows(currentRows =>
+        currentRows.map(row => ({
+          ...row,
+          currency: row.currency === 'USD' && !row.amount ? defaultCurrency : row.currency,
+        }))
+      );
+    }
+  }, [defaultCurrency, preferences]);
 
   const addRow = () => {
     setRows([...rows, createEmptyRow()]);

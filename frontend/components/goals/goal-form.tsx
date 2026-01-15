@@ -19,6 +19,7 @@ import {
   useRefreshGoalProgressMutation,
 } from '@/lib/api/goalsApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import {
   Dialog,
   DialogContent,
@@ -88,6 +89,10 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
   const tForm = useTranslations('goals.form');
   const tActions = useTranslations('goals.actions');
   const tCategories = useTranslations('goals.categories');
+
+  // User preferences for default currency
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   // Category options with translations
   const CATEGORY_OPTIONS = [
@@ -256,7 +261,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         category: '',
         target_amount: 0,
         current_amount: 0,
-        currency: 'USD',
+        currency: defaultCurrency,
         monthly_contribution: 0,
         is_active: true,
         auto_track_progress: true,
@@ -268,7 +273,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
       setMonthlyContributionInput('');
       setSelectedAccountId('');
     }
-  }, [isEditing, existingGoal, isOpen, reset, setValue]);
+  }, [isEditing, existingGoal, isOpen, reset, setValue, defaultCurrency]);
 
   // Set selected account from linked accounts when editing
   useEffect(() => {
@@ -350,7 +355,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
     setMonthlyContributionInput('');
     setSelectedAccountId('');
     reset({
-      currency: 'USD',
+      currency: defaultCurrency,
       is_active: true,
       auto_track_progress: true,
       current_amount: 0,

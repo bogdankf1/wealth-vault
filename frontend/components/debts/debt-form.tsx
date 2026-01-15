@@ -42,6 +42,7 @@ import {
   DebtCreate,
 } from '@/lib/api/debtsApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 
 interface DebtFormProps {
   debtId?: string | null;
@@ -58,6 +59,9 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
   // Translation hooks
   const tForm = useTranslations('debts.form');
   const tActions = useTranslations('debts.actions');
+
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   const FREQUENCY_OPTIONS = [
     { value: 'weekly', label: 'Weekly' },
@@ -206,7 +210,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
         description: '',
         amount: 0,
         amount_paid: 0,
-        currency: 'USD',
+        currency: defaultCurrency,
         is_paid: false,
         due_date: '',
         paid_date: '',
@@ -224,7 +228,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
       setAmountPaidInput('');
       setExpectedPaymentInput('');
     }
-  }, [isEditing, existingDebt, isOpen, reset, setValue, accountsData]);
+  }, [isEditing, existingDebt, isOpen, reset, setValue, accountsData, defaultCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -278,7 +282,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
     setAmountPaidInput('');
     setExpectedPaymentInput('');
     reset({
-      currency: 'USD',
+      currency: defaultCurrency,
       is_paid: false,
       amount_paid: 0,
     });

@@ -17,6 +17,7 @@ import {
   PortfolioAssetCreate,
 } from '@/lib/api/portfolioApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import {
   Dialog,
   DialogContent,
@@ -132,6 +133,9 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
   const tActions = useTranslations('portfolio.actions');
   const tAssetTypes = useTranslations('portfolio.assetTypes');
 
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
+
   const ASSET_TYPE_OPTIONS = [
     { value: 'Stocks', label: tAssetTypes('stocks') },
     { value: 'Bonds', label: tAssetTypes('bonds') },
@@ -246,7 +250,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
         quantity: 0,
         purchase_price: 0,
         current_price: 0,
-        currency: 'USD',
+        currency: defaultCurrency,
         is_active: true,
         purchase_date: new Date().toISOString().split('T')[0],
         payment_account_id: null,
@@ -267,7 +271,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
       setTickerValidationState('idle');
       setTickerPrice(null);
     }
-  }, [isEditing, existingAsset, isOpen, reset]);
+  }, [isEditing, existingAsset, isOpen, reset, defaultCurrency]);
 
   // Validate ticker
   const handleValidateTicker = async () => {

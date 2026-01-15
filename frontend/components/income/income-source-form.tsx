@@ -15,6 +15,7 @@ import {
   useGetIncomeSourceQuery,
   IncomeFrequency,
 } from '@/lib/api/incomeApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
 import {
   Dialog,
@@ -103,6 +104,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
   const tActions = useTranslations('income.actions');
   const tFrequency = useTranslations('income.frequency');
   const tCategories = useTranslations('income.categories');
+
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
@@ -218,7 +222,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         description: '',
         category: '',
         amount: 0,
-        currency: 'USD',
+        currency: defaultCurrency,
         frequency: 'monthly',
         is_active: true,
         date: '',
@@ -230,7 +234,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
       });
       setAmountInput('');
     }
-  }, [isEditing, existingSource, isOpen, reset, setValue]);
+  }, [isEditing, existingSource, isOpen, reset, setValue, defaultCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -296,7 +300,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
     onClose();
     setAmountInput('');
     reset({
-      currency: 'USD',
+      currency: defaultCurrency,
       frequency: 'monthly',
       is_active: true,
       date: new Date().toISOString().split('T')[0],

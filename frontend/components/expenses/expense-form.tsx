@@ -19,6 +19,7 @@ import {
 } from '@/lib/api/expensesApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
 import { useGetExchangeRateQuery } from '@/lib/api/currenciesApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import {
   Dialog,
   DialogContent,
@@ -121,6 +122,10 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
   const tActions = useTranslations('expenses.actions');
   const tOverview = useTranslations('expenses.overview');
   const tCategories = useTranslations('expenses.categories');
+
+  // Get user's preferred currency
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const defaultCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   // Form validation schema with translated messages
   const expenseSchema = z.object({
@@ -269,7 +274,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
       }, 0);
     } else if (!isEditing && isOpen) {
       reset({
-        currency: 'USD',
+        currency: defaultCurrency,
         frequency: 'one_time',
         is_active: true,
         date: new Date().toISOString().split('T')[0],
@@ -280,7 +285,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
       });
       setAmountInput('');
     }
-  }, [isEditing, existingExpense, isOpen, reset, setValue]);
+  }, [isEditing, existingExpense, isOpen, reset, setValue, defaultCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -343,7 +348,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
     onClose();
     setAmountInput('');
     reset({
-      currency: 'USD',
+      currency: defaultCurrency,
       frequency: 'monthly',
       is_active: true,
       date: new Date().toISOString().split('T')[0],
