@@ -119,8 +119,8 @@ async def stripe_webhook(
             await StripeService.handle_subscription_updated(data, db)
 
         elif event_type == "customer.subscription.deleted":
-            # Handle subscription cancellation
-            await StripeService.handle_subscription_updated(data, db)
+            # Handle subscription deletion - triggers immediate downgrade
+            await StripeService.handle_subscription_deleted(data, db)
 
         elif event_type == "invoice.paid":
             await StripeService.handle_invoice_paid(data, db)
@@ -142,11 +142,40 @@ async def get_subscription_status(
     """
     Get current user's subscription status and tier information.
     """
+    from datetime import datetime
+
     # Get user subscription
     result = await db.execute(
         select(UserSubscription).where(UserSubscription.user_id == current_user.id)
     )
     subscription = result.scalar_one_or_none()
+
+    # If subscription exists but period dates are missing, fetch from Stripe
+    if subscription and subscription.stripe_subscription_id and not subscription.current_period_end:
+        try:
+            logger.info(f"Fetching period dates from Stripe for subscription {subscription.stripe_subscription_id}")
+            stripe_sub = await StripeService.get_subscription(subscription.stripe_subscription_id)
+
+            # Try root level first (standard Stripe subscription attributes)
+            period_start = stripe_sub.get("current_period_start")
+            period_end = stripe_sub.get("current_period_end")
+
+            # If not at root level, try items.data[0] (subscription items have their own periods)
+            if not period_end and stripe_sub.get("items") and stripe_sub["items"].get("data"):
+                item = stripe_sub["items"]["data"][0]
+                period_start = item.get("current_period_start")
+                period_end = item.get("current_period_end")
+                logger.info(f"Got period dates from items.data[0]: start={period_start}, end={period_end}")
+
+            logger.info(f"Stripe response: period_start={period_start}, period_end={period_end}")
+            if period_start:
+                subscription.current_period_start = datetime.fromtimestamp(period_start)
+            if period_end:
+                subscription.current_period_end = datetime.fromtimestamp(period_end)
+            await db.commit()
+            logger.info(f"Updated subscription period dates in database")
+        except Exception as e:
+            logger.error(f"Failed to fetch subscription dates from Stripe: {e}", exc_info=True)
 
     # Get all tiers for upgrade/downgrade options
     result = await db.execute(select(Tier).order_by(Tier.price_monthly))
@@ -207,6 +236,8 @@ async def cancel_subscription(
     """
     Cancel the current user's subscription.
     """
+    from datetime import datetime
+
     if not current_user.stripe_subscription_id:
         raise HTTPException(status_code=404, detail="No active subscription found")
 
@@ -216,6 +247,9 @@ async def cancel_subscription(
         at_period_end=request.at_period_end
     )
 
+    # Fetch updated subscription data from Stripe
+    stripe_sub = await StripeService.get_subscription(current_user.stripe_subscription_id)
+
     # Update local record
     result = await db.execute(
         select(UserSubscription).where(UserSubscription.user_id == current_user.id)
@@ -224,6 +258,22 @@ async def cancel_subscription(
 
     if subscription:
         subscription.cancel_at_period_end = 1 if request.at_period_end else 0
+        subscription.canceled_at = datetime.utcnow()
+
+        # Update period dates from Stripe - try root level first, then items.data[0]
+        period_start = stripe_sub.get("current_period_start")
+        period_end = stripe_sub.get("current_period_end")
+
+        if not period_end and stripe_sub.get("items") and stripe_sub["items"].get("data"):
+            item = stripe_sub["items"]["data"][0]
+            period_start = item.get("current_period_start")
+            period_end = item.get("current_period_end")
+
+        if period_start:
+            subscription.current_period_start = datetime.fromtimestamp(period_start)
+        if period_end:
+            subscription.current_period_end = datetime.fromtimestamp(period_end)
+
         await db.commit()
 
     return {"status": "success", "message": "Subscription cancelled"}

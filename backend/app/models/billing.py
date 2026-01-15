@@ -18,6 +18,7 @@ class SubscriptionStatus(str, enum.Enum):
     PAST_DUE = "past_due"
     TRIALING = "trialing"
     UNPAID = "unpaid"
+    PAUSED = "paused"
 
 
 class PaymentStatus(str, enum.Enum):

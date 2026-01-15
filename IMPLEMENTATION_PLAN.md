@@ -1999,7 +1999,50 @@ Functions:
 - Show data that might be archived
 - Confirm or renew options
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Created TierDowngradeService with downgrade logic and feature loss calculation
+- [x] Updated Stripe webhook handler for subscription.deleted event
+- [x] Implemented check_tier_expirations Celery task for daily expiration checks
+- [x] Implemented send_tier_expiration_warnings Celery task for 7/3/1 day warnings
+- [x] Implemented cleanup_tier_data Celery task for archiving excess data on downgrade
+- [x] Implemented sync_stripe_status Celery task for periodic Stripe sync
+- [x] Added expiration countdown timer to subscription settings (days/hours/minutes)
+- [x] Created downgrade warning dialog showing features that will be lost
+- [x] Added progress bar showing time remaining until expiration
+- [x] Added urgent styling when 3 days or less remaining (red)
+- [x] Added "Renew Now" and "View Lost Features" buttons
+- [x] Added inline expiration date display: "Your Subscription is Ending (Expires on Feb 15, 2026)"
+- [x] Added translations for all 8 languages (en, de, es, fr, it, pl, pt, uk)
+
+**Bug Fixes:**
+- [x] Fixed Stripe period dates extraction - dates are nested in `items.data[0]`, not at subscription root level
+- [x] Fixed Stripe object access - use dict-style `.get()` instead of `getattr` (Stripe objects inherit from dict)
+- [x] Fixed webhook 500 errors - use `.get()` for optional fields to prevent KeyError
+- [x] Fixed `cancel_at_period_end` type conversion - added Pydantic field validator to convert integer 0/1 to boolean
+- [x] Fixed auto-population of missing period dates from Stripe when fetching subscription status
+
+**Key Features:**
+- Automatic tier downgrade when subscription expires (via Celery task or Stripe webhook)
+- Expiration warnings sent at 7, 3, and 1 day before expiration
+- Real-time countdown timer showing days/hours/minutes until expiration
+- Visual urgency indicator (amber → red) based on time remaining
+- Lost features dialog showing what premium features will be unavailable
+- Stripe status sync to handle webhook delivery failures
+- Event-driven notifications for downgrade and expiration warnings
+- Period dates auto-fetched from Stripe if missing in database
+
+**Files Created:**
+- `backend/app/services/tier_downgrade_service.py` - Tier downgrade logic and feature calculations
+
+**Files Modified:**
+- `backend/app/services/stripe_service.py` - Added handle_subscription_deleted(), fixed period dates extraction from `items.data[0]`
+- `backend/app/api/v1/billing.py` - Updated webhook, fixed period dates extraction, added auto-fetch from Stripe
+- `backend/app/schemas/billing.py` - Added field_validator for cancel_at_period_end int→bool conversion
+- `backend/app/tasks/billing_tasks.py` - Implemented all 4 billing Celery tasks
+- `frontend/components/settings/subscription-settings.tsx` - Added countdown timer, expiration date display, downgrade warning
+- `frontend/messages/*/settings.json` - Added expiration and downgradeWarning translations (8 languages)
 
 ---
 
@@ -2021,10 +2064,10 @@ Functions:
 | 9 | COMPLETED | 2026-01-14 | 2026-01-14 | Goals with auto-tracking from linked savings accounts, multi-currency support |
 | 10 | COMPLETED | 2026-01-14 | 2026-01-14 | Tax payment integration, auto-pay, period-based payment status |
 | 11 | COMPLETED | 2026-01-15 | 2026-01-15 | Dashboard with real net worth, debts receivable, snapshots, projections |
-| 12 | NOT STARTED | - | - | Billing automation |
+| 12 | COMPLETED | 2026-01-15 | 2026-01-15 | Billing automation with tier downgrade, expiration countdown, warnings |
 
 ### Current Focus
-**Next Phase to Start:** Phase 12 - Billing/Tier Subscription Automation
+**ALL PHASES COMPLETED!** The implementation plan has been fully executed.
 
 ### How to Continue
 When resuming work on this project:
@@ -2054,4 +2097,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 15, 2026 - Phase 11 (Dashboard & Analytics) completed with real net worth calculation (Portfolio + Savings + Debts Receivable - Installments), historical snapshots, financial projections, and category formatting*
+*Last updated: January 15, 2026 - ALL PHASES COMPLETED! Phase 12 (Billing/Tier Subscription Automation) completed with tier downgrade service, Stripe webhook handling, expiration countdown timer with inline date display, downgrade warning dialog, and critical bug fixes for Stripe period dates extraction (nested in items.data[0]).*

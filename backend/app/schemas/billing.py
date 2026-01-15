@@ -1,7 +1,7 @@
 """
 Pydantic schemas for billing and subscription endpoints.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -58,6 +58,14 @@ class SubscriptionResponse(BaseModel):
     trial_end: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+    @field_validator('cancel_at_period_end', mode='before')
+    @classmethod
+    def convert_int_to_bool(cls, v):
+        """Convert integer 0/1 to boolean."""
+        if isinstance(v, int):
+            return bool(v)
+        return v
 
     class Config:
         from_attributes = True

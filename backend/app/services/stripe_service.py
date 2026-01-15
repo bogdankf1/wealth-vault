@@ -231,11 +231,19 @@ class StripeService:
             "cancel_at_period_end": 1 if subscription.get("cancel_at_period_end") else 0,
         }
 
-        # Add period dates if available
-        if subscription.get("current_period_start"):
-            subscription_data["current_period_start"] = datetime.fromtimestamp(subscription["current_period_start"])
-        if subscription.get("current_period_end"):
-            subscription_data["current_period_end"] = datetime.fromtimestamp(subscription["current_period_end"])
+        # Get period dates - try subscription root level first, then items.data[0]
+        period_start = subscription.get("current_period_start")
+        period_end = subscription.get("current_period_end")
+
+        if not period_end and subscription.get("items") and subscription["items"]["data"]:
+            item = subscription["items"]["data"][0]
+            period_start = item.get("current_period_start") if isinstance(item, dict) else getattr(item, "current_period_start", None)
+            period_end = item.get("current_period_end") if isinstance(item, dict) else getattr(item, "current_period_end", None)
+
+        if period_start:
+            subscription_data["current_period_start"] = datetime.fromtimestamp(period_start)
+        if period_end:
+            subscription_data["current_period_end"] = datetime.fromtimestamp(period_end)
 
         # Add trial dates if available
         if subscription.get("trial_start"):
@@ -279,12 +287,21 @@ class StripeService:
 
         # Update subscription status
         user_subscription.status = SubscriptionStatus(subscription_data["status"])
-        user_subscription.current_period_start = datetime.fromtimestamp(
-            subscription_data["current_period_start"]
-        )
-        user_subscription.current_period_end = datetime.fromtimestamp(
-            subscription_data["current_period_end"]
-        )
+
+        # Get period dates - try root level first, then items.data[0]
+        period_start = subscription_data.get("current_period_start")
+        period_end = subscription_data.get("current_period_end")
+
+        if not period_end and subscription_data.get("items") and subscription_data["items"].get("data"):
+            item = subscription_data["items"]["data"][0]
+            period_start = item.get("current_period_start", period_start)
+            period_end = item.get("current_period_end", period_end)
+
+        if period_start:
+            user_subscription.current_period_start = datetime.fromtimestamp(period_start)
+        if period_end:
+            user_subscription.current_period_end = datetime.fromtimestamp(period_end)
+
         user_subscription.cancel_at_period_end = (
             1 if subscription_data.get("cancel_at_period_end") else 0
         )
@@ -374,3 +391,53 @@ class StripeService:
 
         db.add(payment)
         await db.commit()
+
+    @staticmethod
+    async def handle_subscription_deleted(
+        subscription_data: Dict[str, Any],
+        db: AsyncSession
+    ) -> None:
+        """
+        Handle subscription deletion (immediate cancellation).
+
+        This is called when a subscription is fully canceled (not just marked for cancellation).
+        Triggers immediate downgrade to starter tier.
+
+        Args:
+            subscription_data: Stripe subscription data
+            db: Database session
+        """
+        from app.services.tier_downgrade_service import TierDowngradeService
+
+        subscription_id = subscription_data["id"]
+
+        # Get user subscription
+        result = await db.execute(
+            select(UserSubscription).where(
+                UserSubscription.stripe_subscription_id == subscription_id
+            )
+        )
+        user_subscription = result.scalar_one_or_none()
+
+        if not user_subscription:
+            return
+
+        # Update subscription status
+        user_subscription.status = SubscriptionStatus.CANCELED
+        user_subscription.canceled_at = datetime.utcnow()
+
+        # Downgrade user to starter tier
+        result = await TierDowngradeService.downgrade_user_to_starter(
+            db=db,
+            user_id=user_subscription.user_id,
+            reason="subscription_deleted"
+        )
+
+        if result.get("success"):
+            # Log the downgrade
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(
+                f"User {user_subscription.user_id} downgraded due to subscription deletion. "
+                f"From: {result.get('from_tier')} to: starter"
+            )
