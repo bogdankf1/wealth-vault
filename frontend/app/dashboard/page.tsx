@@ -1091,25 +1091,40 @@ export default function DashboardPage() {
 
 function DashboardSkeleton() {
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <div>
-        <Skeleton className="h-9 w-48" />
-        <Skeleton className="h-5 w-64 mt-2" />
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
+      {/* Header skeleton */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <Skeleton className="h-8 md:h-9 w-40 md:w-48" />
+          <Skeleton className="h-4 md:h-5 w-52 md:w-64 mt-1 md:mt-2" />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Skeleton className="h-10 w-full sm:w-32" />
+          <Skeleton className="h-10 w-full sm:w-40" />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Skeleton className="h-64 col-span-1 lg:col-span-2" />
-        <Skeleton className="h-64" />
+      {/* Quick actions skeleton */}
+      <Skeleton className="h-32 md:h-40" />
+
+      {/* Top stats grid skeleton - matches xl:grid-cols-3 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+        <Skeleton className="h-56 md:h-64 col-span-1 md:col-span-2 xl:col-span-2" />
+        <Skeleton className="h-56 md:h-64" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
+      {/* Cash flow stats skeleton - matches sm:grid-cols-2 xl:grid-cols-3 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
+        <Skeleton className="h-24 md:h-28" />
+        <Skeleton className="h-24 md:h-28" />
+        <Skeleton className="h-24 md:h-28" />
+        <Skeleton className="h-24 md:h-28" />
+        <Skeleton className="h-24 md:h-28" />
+        <Skeleton className="h-24 md:h-28" />
       </div>
 
-      <Skeleton className="h-96" />
+      {/* Recent activity skeleton */}
+      <Skeleton className="h-72 md:h-96" />
     </div>
   );
 }

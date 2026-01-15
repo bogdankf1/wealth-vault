@@ -58,7 +58,19 @@
     "archiveSuccess": "Витрату успішно архівовано",
     "archiveError": "Не вдалося архівувати витрату",
     "batchArchiveSuccess": "Успішно архівовано {count} витрат(и)",
-    "batchArchiveError": "Не вдалося архівувати {count} витрат(и)"
+    "batchArchiveError": "Не вдалося архівувати {count} витрат(и)",
+    "table": {
+      "name": "Назва",
+      "description": "Опис",
+      "category": "Категорія",
+      "amount": "Сума",
+      "frequency": "Частота",
+      "date": "Дата",
+      "monthlyEquiv": "Місячний Екв.",
+      "originalAmount": "Оригінальна Сума",
+      "status": "Статус",
+      "actions": "Дії"
+    }
   },
   "analysis": {
     "title": "Аналіз витрат",

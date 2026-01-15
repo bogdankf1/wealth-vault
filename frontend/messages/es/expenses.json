@@ -58,7 +58,19 @@
     "archiveSuccess": "Gasto archivado exitosamente",
     "archiveError": "Error al archivar gasto",
     "batchArchiveSuccess": "Se archivaron exitosamente {count} gasto(s)",
-    "batchArchiveError": "Error al archivar {count} gasto(s)"
+    "batchArchiveError": "Error al archivar {count} gasto(s)",
+    "table": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "category": "Categoría",
+      "amount": "Importe",
+      "frequency": "Frecuencia",
+      "date": "Fecha",
+      "monthlyEquiv": "Equiv. Mensual",
+      "originalAmount": "Importe Original",
+      "status": "Estado",
+      "actions": "Acciones"
+    }
   },
   "analysis": {
     "title": "Análisis de gastos",

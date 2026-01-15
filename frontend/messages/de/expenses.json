@@ -58,7 +58,19 @@
     "archiveSuccess": "Ausgabe erfolgreich archiviert",
     "archiveError": "Ausgabe konnte nicht archiviert werden",
     "batchArchiveSuccess": "{count} Ausgabe(n) erfolgreich archiviert",
-    "batchArchiveError": "{count} Ausgabe(n) konnten nicht archiviert werden"
+    "batchArchiveError": "{count} Ausgabe(n) konnten nicht archiviert werden",
+    "table": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "category": "Kategorie",
+      "amount": "Betrag",
+      "frequency": "Häufigkeit",
+      "date": "Datum",
+      "monthlyEquiv": "Monatl. Äquiv.",
+      "originalAmount": "Originalbetrag",
+      "status": "Status",
+      "actions": "Aktionen"
+    }
   },
   "analysis": {
     "title": "Ausgabenanalyse",

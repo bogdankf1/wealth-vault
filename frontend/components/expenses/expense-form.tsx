@@ -361,7 +361,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? tForm('editTitle') : tForm('addTitle')}

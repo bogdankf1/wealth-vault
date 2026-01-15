@@ -707,16 +707,16 @@ export default function ExpensesPage() {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="hidden lg:table-cell">Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Frequency</TableHead>
-                    <TableHead className="hidden lg:table-cell">Date</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Monthly Equiv.</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">Original Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Actions</TableHead>
+                    <TableHead className="w-[200px]">{tOverview('table.name')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{tOverview('table.description')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('table.category')}</TableHead>
+                    <TableHead className="text-right">{tOverview('table.amount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('table.frequency')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{tOverview('table.date')}</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">{tOverview('table.monthlyEquiv')}</TableHead>
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('table.originalAmount')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{tOverview('table.status')}</TableHead>
+                    <TableHead className="text-right w-[180px]">{tOverview('table.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -58,7 +58,19 @@
     "archiveSuccess": "Wydatek zarchiwizowany pomyślnie",
     "archiveError": "Nie udało się zarchiwizować wydatku",
     "batchArchiveSuccess": "Pomyślnie zarchiwizowano {count} wydatek(ów)",
-    "batchArchiveError": "Nie udało się zarchiwizować {count} wydatek(ów)"
+    "batchArchiveError": "Nie udało się zarchiwizować {count} wydatek(ów)",
+    "table": {
+      "name": "Nazwa",
+      "description": "Opis",
+      "category": "Kategoria",
+      "amount": "Kwota",
+      "frequency": "Częstotliwość",
+      "date": "Data",
+      "monthlyEquiv": "Ekw. Miesięczny",
+      "originalAmount": "Kwota Oryginalna",
+      "status": "Status",
+      "actions": "Akcje"
+    }
   },
   "analysis": {
     "title": "Analiza wydatków",

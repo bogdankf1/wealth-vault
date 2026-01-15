@@ -58,7 +58,19 @@
     "archiveSuccess": "Expense archived successfully",
     "archiveError": "Failed to archive expense",
     "batchArchiveSuccess": "Successfully archived {count} expense(s)",
-    "batchArchiveError": "Failed to archive {count} expense(s)"
+    "batchArchiveError": "Failed to archive {count} expense(s)",
+    "table": {
+      "name": "Name",
+      "description": "Description",
+      "category": "Category",
+      "amount": "Amount",
+      "frequency": "Frequency",
+      "date": "Date",
+      "monthlyEquiv": "Monthly Equiv.",
+      "originalAmount": "Original Amount",
+      "status": "Status",
+      "actions": "Actions"
+    }
   },
   "analysis": {
     "title": "Expenses Analysis",

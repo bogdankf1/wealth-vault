@@ -58,7 +58,19 @@
     "archiveSuccess": "Spesa archiviata con successo",
     "archiveError": "Impossibile archiviare la spesa",
     "batchArchiveSuccess": "Archiviate con successo {count} spese",
-    "batchArchiveError": "Impossibile archiviare {count} spese"
+    "batchArchiveError": "Impossibile archiviare {count} spese",
+    "table": {
+      "name": "Nome",
+      "description": "Descrizione",
+      "category": "Categoria",
+      "amount": "Importo",
+      "frequency": "Frequenza",
+      "date": "Data",
+      "monthlyEquiv": "Equiv. Mensile",
+      "originalAmount": "Importo Originale",
+      "status": "Stato",
+      "actions": "Azioni"
+    }
   },
   "analysis": {
     "title": "Analisi Spese",

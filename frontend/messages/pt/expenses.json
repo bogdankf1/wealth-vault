@@ -58,7 +58,19 @@
     "archiveSuccess": "Despesa arquivada com sucesso",
     "archiveError": "Falha ao arquivar despesa",
     "batchArchiveSuccess": "Arquivadas com sucesso {count} despesa(s)",
-    "batchArchiveError": "Falha ao arquivar {count} despesa(s)"
+    "batchArchiveError": "Falha ao arquivar {count} despesa(s)",
+    "table": {
+      "name": "Nome",
+      "description": "Descrição",
+      "category": "Categoria",
+      "amount": "Valor",
+      "frequency": "Frequência",
+      "date": "Data",
+      "monthlyEquiv": "Equiv. Mensal",
+      "originalAmount": "Valor Original",
+      "status": "Estado",
+      "actions": "Ações"
+    }
   },
   "analysis": {
     "title": "Análise de Despesas",

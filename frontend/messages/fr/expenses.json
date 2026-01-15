@@ -58,7 +58,19 @@
     "archiveSuccess": "Dépense archivée avec succès",
     "archiveError": "Échec de l'archivage de la dépense",
     "batchArchiveSuccess": "{count} dépense(s) archivée(s) avec succès",
-    "batchArchiveError": "Échec de l'archivage de {count} dépense(s)"
+    "batchArchiveError": "Échec de l'archivage de {count} dépense(s)",
+    "table": {
+      "name": "Nom",
+      "description": "Description",
+      "category": "Catégorie",
+      "amount": "Montant",
+      "frequency": "Fréquence",
+      "date": "Date",
+      "monthlyEquiv": "Équiv. Mensuel",
+      "originalAmount": "Montant Original",
+      "status": "Statut",
+      "actions": "Actions"
+    }
   },
   "analysis": {
     "title": "Analyse des dépenses",
