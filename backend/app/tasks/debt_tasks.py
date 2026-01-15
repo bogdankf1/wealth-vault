@@ -15,7 +15,6 @@ from sqlalchemy import select, and_
 
 from app.core.celery_app import celery_app
 from app.tasks.base import BaseTask, get_async_db_session
-from app.core.events import FinancialEvents, event_dispatcher
 
 logger = logging.getLogger(__name__)
 
