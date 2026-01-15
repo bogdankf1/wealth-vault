@@ -121,11 +121,11 @@ async def seed_features():
                 "description": "Create and restore backups of your financial data",
                 "module": "backups"
             },
-            # Savings module
+            # Accounts module
             {
                 "key": "savings_tracking",
-                "name": "Savings Tracking",
-                "description": "Track savings accounts",
+                "name": "Accounts Tracking",
+                "description": "Track accounts",
                 "module": "savings"
             },
             {
