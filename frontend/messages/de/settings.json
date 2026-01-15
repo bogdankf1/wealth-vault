@@ -35,6 +35,34 @@
       "past_due": "überfällig",
       "cancelled": "gekündigt"
     },
+    "expiration": {
+      "title": "Ihr Abonnement läuft ab",
+      "description": "Ihre Premium-Funktionen werden deaktiviert, wenn Ihr Abonnement abläuft. Verlängern Sie jetzt, um vollen Zugriff zu behalten.",
+      "days": "Tage",
+      "hours": "Stunden",
+      "minutes": "Minuten",
+      "expiresOn": "Läuft ab am {date}",
+      "renewNow": "Jetzt verlängern",
+      "viewLostFeatures": "Verlorene Funktionen anzeigen"
+    },
+    "downgradeWarning": {
+      "title": "Funktionen, die Sie verlieren werden",
+      "description": "Wenn Ihr Abonnement endet, werden Sie auf die Starter-Stufe herabgestuft und verlieren den Zugriff auf folgende Premium-Funktionen:",
+      "featuresLost": "Funktionen, die nicht verfügbar sein werden:",
+      "features": {
+        "batch_expense_creation": "Batch-Ausgabenerstellung",
+        "advanced_budgeting": "Erweiterte Budgetierungstools",
+        "portfolio_analytics": "Portfolio-Analysen & Einblicke",
+        "tax_calculations": "Steuerberechnungen & Berichte",
+        "ai_insights": "KI-gestützte Finanzeinblicke",
+        "export_reports": "Berichte als PDF/Excel exportieren",
+        "priority_support": "Prioritäts-Kundensupport"
+      },
+      "keepAccess": "Premium-Zugang behalten",
+      "renewDescription": "Verlängern Sie Ihr Abonnement vor Ablauf, um alle Premium-Funktionen ohne Unterbrechung weiter nutzen zu können.",
+      "close": "Schließen",
+      "renewNow": "Jetzt verlängern"
+    },
     "paymentHistory": {
       "title": "Zahlungshistorie",
       "description": "Ihre letzten Zahlungstransaktionen",

@@ -35,6 +35,34 @@
       "past_due": "vencida",
       "cancelled": "cancelada"
     },
+    "expiration": {
+      "title": "Tu suscripción está por terminar",
+      "description": "Tus funciones premium se desactivarán cuando expire tu suscripción. Renueva ahora para mantener el acceso completo.",
+      "days": "Días",
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "expiresOn": "Expira el {date}",
+      "renewNow": "Renovar ahora",
+      "viewLostFeatures": "Ver funciones perdidas"
+    },
+    "downgradeWarning": {
+      "title": "Funciones que perderás",
+      "description": "Cuando termine tu suscripción, serás degradado al nivel Starter y perderás acceso a las siguientes funciones premium:",
+      "featuresLost": "Funciones que no estarán disponibles:",
+      "features": {
+        "batch_expense_creation": "Creación de gastos por lotes",
+        "advanced_budgeting": "Herramientas avanzadas de presupuesto",
+        "portfolio_analytics": "Análisis de portafolio e insights",
+        "tax_calculations": "Cálculos e informes de impuestos",
+        "ai_insights": "Insights financieros con IA",
+        "export_reports": "Exportar informes a PDF/Excel",
+        "priority_support": "Soporte prioritario al cliente"
+      },
+      "keepAccess": "Mantén tu acceso Premium",
+      "renewDescription": "Renueva tu suscripción antes de que expire para seguir disfrutando de todas las funciones premium sin interrupción.",
+      "close": "Cerrar",
+      "renewNow": "Renovar ahora"
+    },
     "paymentHistory": {
       "title": "Historial de pagos",
       "description": "Tus transacciones de pago recientes",

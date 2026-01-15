@@ -35,6 +35,34 @@
       "past_due": "past_due",
       "cancelled": "cancelled"
     },
+    "expiration": {
+      "title": "Your Subscription is Ending",
+      "description": "Your premium features will be deactivated when your subscription expires. Renew now to keep full access.",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "expiresOn": "Expires on {date}",
+      "renewNow": "Renew Now",
+      "viewLostFeatures": "View Lost Features"
+    },
+    "downgradeWarning": {
+      "title": "Features You Will Lose",
+      "description": "When your subscription ends, you will be downgraded to the Starter tier and lose access to the following premium features:",
+      "featuresLost": "Features that will be unavailable:",
+      "features": {
+        "batch_expense_creation": "Batch expense creation",
+        "advanced_budgeting": "Advanced budgeting tools",
+        "portfolio_analytics": "Portfolio analytics & insights",
+        "tax_calculations": "Tax calculations & reports",
+        "ai_insights": "AI-powered financial insights",
+        "export_reports": "Export reports to PDF/Excel",
+        "priority_support": "Priority customer support"
+      },
+      "keepAccess": "Keep Your Premium Access",
+      "renewDescription": "Renew your subscription before it expires to continue enjoying all premium features without interruption.",
+      "close": "Close",
+      "renewNow": "Renew Now"
+    },
     "paymentHistory": {
       "title": "Payment History",
       "description": "Your recent payment transactions",

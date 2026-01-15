@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { CreditCard, Calendar, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
+import { CreditCard, Calendar, CheckCircle2, XCircle, AlertCircle, Clock, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   useGetSubscriptionStatusQuery,
   useCancelSubscriptionMutation,
@@ -26,6 +27,73 @@ import { useToast } from '@/hooks/use-toast';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useTranslations } from 'next-intl';
 
+// Feature list that will be lost when downgrading to Starter
+const FEATURES_LOST_ON_DOWNGRADE = [
+  'batch_expense_creation',
+  'advanced_budgeting',
+  'portfolio_analytics',
+  'tax_calculations',
+  'ai_insights',
+  'export_reports',
+  'priority_support',
+];
+
+// Calculate countdown to expiration
+function useExpirationCountdown(expirationDate: string | Date | undefined, isExpiring: boolean) {
+  const [countdown, setCountdown] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    isUrgent: boolean;
+    percentRemaining: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!expirationDate || !isExpiring) {
+      setCountdown(null);
+      return;
+    }
+
+    const calculateCountdown = () => {
+      try {
+        const now = new Date();
+        const expiry = typeof expirationDate === 'string' ? new Date(expirationDate) : expirationDate;
+
+        // Validate the date
+        if (isNaN(expiry.getTime())) {
+          console.error('Invalid expiration date:', expirationDate);
+          return;
+        }
+
+        const days = differenceInDays(expiry, now);
+        const hours = differenceInHours(expiry, now) % 24;
+        const minutes = differenceInMinutes(expiry, now) % 60;
+
+        // Calculate percent remaining (assuming 30-day billing cycle)
+        const totalDays = 30;
+        const percentRemaining = Math.max(0, Math.min(100, (days / totalDays) * 100));
+
+        setCountdown({
+          days: Math.max(0, days),
+          hours: Math.max(0, hours),
+          minutes: Math.max(0, minutes),
+          isUrgent: days <= 3,
+          percentRemaining,
+        });
+      } catch (error) {
+        console.error('Error calculating countdown:', error);
+      }
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [expirationDate, isExpiring]);
+
+  return countdown;
+}
+
 export function SubscriptionSettings() {
   const t = useTranslations('settings.subscription');
   const { toast } = useToast();
@@ -35,6 +103,11 @@ export function SubscriptionSettings() {
   const [cancelSubscription] = useCancelSubscriptionMutation();
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
+
+  const subscription = subscriptionStatus?.subscription;
+  const isExpiring = Boolean(subscription?.cancel_at_period_end);
+  const countdown = useExpirationCountdown(subscription?.current_period_end, isExpiring);
 
   const handleCancelSubscription = async () => {
     try {
@@ -72,7 +145,6 @@ export function SubscriptionSettings() {
     );
   }
 
-  const subscription = subscriptionStatus?.subscription;
   const statusColor =
     subscription?.status === 'active'
       ? 'bg-green-500'
@@ -85,9 +157,81 @@ export function SubscriptionSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Expiration Countdown Banner */}
+      {isExpiring && (
+        <Card className={countdown?.isUrgent ? 'border-red-500/50 bg-red-500/5' : 'border-amber-500/50 bg-amber-500/5'}>
+          <CardContent>
+            <div className="flex items-start gap-3">
+              <div className={`p-2 rounded-full ${countdown?.isUrgent ? 'bg-red-500/20' : 'bg-amber-500/20'}`}>
+                <Clock className={`h-5 w-5 ${countdown?.isUrgent ? 'text-red-500' : 'text-amber-500'}`} />
+              </div>
+              <div className="flex-1">
+                <h3 className={`text-base font-semibold ${countdown?.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                  {t('expiration.title')}
+                  {subscription?.current_period_end && (
+                    <span className="font-normal text-sm ml-2">
+                      ({t('expiration.expiresOn', { date: format(new Date(subscription.current_period_end), 'MMM d, yyyy') })})
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t('expiration.description')}
+                </p>
+
+                {/* Countdown Timer */}
+                {countdown && (
+                  <div className="flex items-center gap-6 mt-4">
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {countdown.days}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase">{t('expiration.days')}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {countdown.hours}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase">{t('expiration.hours')}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {countdown.minutes}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase">{t('expiration.minutes')}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress Bar */}
+                {countdown && (
+                  <div className="mt-4">
+                    <Progress
+                      value={countdown.percentRemaining}
+                      className={`h-2 ${countdown.isUrgent ? '[&>div]:bg-red-500' : '[&>div]:bg-amber-500'}`}
+                    />
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-2 mt-4">
+                  <Link href="/dashboard/pricing">
+                    <Button size="sm" className={countdown?.isUrgent ? 'bg-red-600 hover:bg-red-700' : ''}>
+                      {t('expiration.renewNow')}
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" onClick={() => setShowDowngradeWarning(true)}>
+                    {t('expiration.viewLostFeatures')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Current Subscription */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
@@ -105,11 +249,11 @@ export function SubscriptionSettings() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {/* Show tier info for everyone */}
-          <div className="p-4 bg-muted/50 rounded-lg">
+          <div className="p-3 bg-muted/50 rounded-lg">
             <p className="text-sm font-medium mb-1">{t('currentPlan')}</p>
-            <p className="text-2xl font-bold">{currentTierName}</p>
+            <p className="text-xl font-bold">{currentTierName}</p>
           </div>
 
           {/* Show billing details if available */}
@@ -138,7 +282,7 @@ export function SubscriptionSettings() {
                 </div>
               </div>
 
-              {subscription.cancel_at_period_end && (
+              {subscription.cancel_at_period_end && !countdown && (
                 <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                   <div>
@@ -234,6 +378,52 @@ export function SubscriptionSettings() {
             <AlertDialogAction onClick={handleCancelSubscription} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {t('cancelDialog.confirmCancel')}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Downgrade Warning Dialog */}
+      <AlertDialog open={showDowngradeWarning} onOpenChange={setShowDowngradeWarning}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+              {t('downgradeWarning.title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p>{t('downgradeWarning.description')}</p>
+
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <p className="text-sm font-medium mb-3">{t('downgradeWarning.featuresLost')}</p>
+                  <ul className="space-y-2">
+                    {FEATURES_LOST_ON_DOWNGRADE.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm">
+                        <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                        <span>{t(`downgradeWarning.features.${feature}` as 'downgradeWarning.features.batch_expense_creation')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">
+                    {t('downgradeWarning.keepAccess')}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('downgradeWarning.renewDescription')}
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('downgradeWarning.close')}</AlertDialogCancel>
+            <Link href="/dashboard/pricing">
+              <AlertDialogAction className="bg-green-600 hover:bg-green-700">
+                {t('downgradeWarning.renewNow')}
+              </AlertDialogAction>
+            </Link>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
