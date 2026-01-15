@@ -297,6 +297,8 @@ async def create_deposit(
             transaction_date=deposit_data.transaction_date,
             category=deposit_data.category,
             reference_number=deposit_data.reference_number,
+            source_currency=deposit_data.source_currency,
+            exchange_rate=deposit_data.exchange_rate,
         )
         return transaction
     except AccountNotFoundError:
@@ -334,6 +336,8 @@ async def create_withdrawal(
             transaction_date=withdrawal_data.transaction_date,
             category=withdrawal_data.category,
             reference_number=withdrawal_data.reference_number,
+            source_currency=withdrawal_data.source_currency,
+            exchange_rate=withdrawal_data.exchange_rate,
         )
         return transaction
     except AccountNotFoundError:

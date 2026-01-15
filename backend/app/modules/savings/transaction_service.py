@@ -72,6 +72,8 @@ class TransactionService:
         transaction_date: Optional[datetime] = None,
         category: Optional[str] = None,
         reference_number: Optional[str] = None,
+        source_currency: Optional[str] = None,
+        exchange_rate: Optional[Decimal] = None,
     ) -> AccountTransaction:
         """
         Create a deposit transaction.
@@ -86,6 +88,8 @@ class TransactionService:
             transaction_date: Date of transaction (defaults to now)
             category: Optional category
             reference_number: Optional reference number
+            source_currency: Currency of the input amount (if different from account)
+            exchange_rate: Exchange rate to convert source_currency to account currency
 
         Returns:
             Created AccountTransaction
@@ -98,6 +102,22 @@ class TransactionService:
             raise InvalidTransactionError("Deposit amount must be positive")
 
         account = await self.get_account(account_id, user_id)
+
+        # Handle currency conversion if source currency differs from account currency
+        original_amount = amount
+        original_currency = source_currency
+        if source_currency and source_currency != account.currency:
+            if not exchange_rate:
+                raise InvalidTransactionError(
+                    f"Exchange rate required to convert {source_currency} to {account.currency}"
+                )
+            amount = amount * exchange_rate
+            # Add conversion info to description
+            conversion_note = f"(Converted from {original_currency} {original_amount} @ {exchange_rate})"
+            if description:
+                description = f"{description} {conversion_note}"
+            else:
+                description = conversion_note
 
         balance_before = Decimal(str(account.current_balance))
         balance_after = balance_before + amount
@@ -165,6 +185,8 @@ class TransactionService:
         category: Optional[str] = None,
         reference_number: Optional[str] = None,
         allow_negative: bool = False,
+        source_currency: Optional[str] = None,
+        exchange_rate: Optional[Decimal] = None,
     ) -> AccountTransaction:
         """
         Create a withdrawal transaction.
@@ -180,6 +202,8 @@ class TransactionService:
             category: Optional category
             reference_number: Optional reference number
             allow_negative: Allow balance to go negative (default False)
+            source_currency: Currency of the input amount (if different from account)
+            exchange_rate: Exchange rate to convert source_currency to account currency
 
         Returns:
             Created AccountTransaction
@@ -193,6 +217,22 @@ class TransactionService:
             raise InvalidTransactionError("Withdrawal amount must be positive")
 
         account = await self.get_account(account_id, user_id)
+
+        # Handle currency conversion if source currency differs from account currency
+        original_amount = amount
+        original_currency = source_currency
+        if source_currency and source_currency != account.currency:
+            if not exchange_rate:
+                raise InvalidTransactionError(
+                    f"Exchange rate required to convert {source_currency} to {account.currency}"
+                )
+            amount = amount * exchange_rate
+            # Add conversion info to description
+            conversion_note = f"(Converted from {original_currency} {original_amount} @ {exchange_rate})"
+            if description:
+                description = f"{description} {conversion_note}"
+            else:
+                description = conversion_note
 
         balance_before = Decimal(str(account.current_balance))
         balance_after = balance_before - amount

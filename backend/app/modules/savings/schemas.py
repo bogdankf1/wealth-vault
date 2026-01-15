@@ -189,12 +189,18 @@ class DepositCreate(TransactionCreate):
     """Schema for creating a deposit"""
     source_type: str = Field(default="manual", description="Source type (manual, income, etc.)")
     source_id: Optional[UUID] = Field(None, description="Source record ID")
+    # Currency conversion support
+    source_currency: Optional[str] = Field(None, min_length=3, max_length=3, description="Currency of the amount (if different from account)")
+    exchange_rate: Optional[Decimal] = Field(None, gt=0, description="Exchange rate if source currency differs from account currency")
 
 
 class WithdrawalCreate(TransactionCreate):
     """Schema for creating a withdrawal"""
     source_type: str = Field(default="manual", description="Source type (manual, expense, etc.)")
     source_id: Optional[UUID] = Field(None, description="Source record ID")
+    # Currency conversion support
+    source_currency: Optional[str] = Field(None, min_length=3, max_length=3, description="Currency of the amount (if different from account)")
+    exchange_rate: Optional[Decimal] = Field(None, gt=0, description="Exchange rate if source currency differs from account currency")
 
 
 class TransactionResponse(BaseModel):
