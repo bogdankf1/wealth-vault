@@ -46,6 +46,7 @@ import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/currency';
+import { AccountSelect } from '@/components/ui/account-select';
 
 // Form validation schema
 const goalSchema = z.object({
@@ -618,30 +619,22 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
               {/* Savings Account Selection - shows when auto-track is enabled */}
               {watch('auto_track_progress') && (
                 <div className="space-y-2">
-                  <Label>{tForm('savingsAccount')}</Label>
-
-                  {/* For new goals: simple dropdown */}
+                  {/* For new goals: simple dropdown using AccountSelect */}
                   {!isEditing && (
-                    <Select
-                      value={selectedAccountId}
-                      onValueChange={setSelectedAccountId}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={tForm('selectAccountPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{tForm('noAccountSelected')}</SelectItem>
-                        {allAccounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            {account.name} ({formatCurrency(account.current_balance, account.currency)})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <AccountSelect
+                      value={selectedAccountId || null}
+                      onChange={(accountId) => setSelectedAccountId(accountId || '')}
+                      accounts={allAccounts}
+                      label={tForm('savingsAccount')}
+                      placeholder={tForm('selectAccountPlaceholder')}
+                      noAccountLabel={tForm('noAccountSelected')}
+                    />
                   )}
 
                   {/* For editing: show linked accounts with ability to add/remove */}
                   {isEditing && (
+                    <>
+                    <Label>{tForm('savingsAccount')}</Label>
                     <div className="space-y-2">
                       {/* Show currently linked accounts */}
                       {linkedAccounts.length > 0 && (
@@ -754,6 +747,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                         </div>
                       )}
                     </div>
+                    </>
                   )}
                 </div>
               )}

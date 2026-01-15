@@ -41,6 +41,7 @@ import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
+import { AccountSelect } from '@/components/ui/account-select';
 import { formatCurrency } from '@/lib/utils/currency';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
@@ -596,27 +597,15 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             <div className="space-y-4 border-t pt-4 mt-4">
               <h3 className="text-base font-semibold text-foreground">{tForm('paymentIntegration')}</h3>
 
-              <div className="space-y-2">
-                <Label htmlFor="payment_account_id">{tForm('paymentAccount')}</Label>
-                <Select
-                  key={`payment_account_${watchPaymentAccountId || 'none'}`}
-                  value={watchPaymentAccountId || 'none'}
-                  onValueChange={(value) => setValue('payment_account_id', value === 'none' ? null : value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tForm('paymentAccountPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{tForm('noPaymentAccount')}</SelectItem>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name} ({formatCurrency(Number(account.current_balance), account.currency)})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">{tForm('paymentAccountHelp')}</p>
-              </div>
+              <AccountSelect
+                value={watchPaymentAccountId}
+                onChange={(accountId) => setValue('payment_account_id', accountId)}
+                accounts={accounts}
+                label={tForm('paymentAccount')}
+                placeholder={tForm('paymentAccountPlaceholder')}
+                noAccountLabel={tForm('noPaymentAccount')}
+                helpText={tForm('paymentAccountHelp')}
+              />
 
               {watchPaymentAccountId && (
                 <>
@@ -727,27 +716,15 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="dividend_account_id">{tForm('dividendAccount')}</Label>
-                    <Select
-                      key={`dividend_account_${watchDividendAccountId || 'none'}`}
-                      value={watchDividendAccountId || 'none'}
-                      onValueChange={(value) => setValue('dividend_account_id', value === 'none' ? null : value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={tForm('dividendAccountPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{tForm('noDividendAccount')}</SelectItem>
-                        {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            {account.name} ({formatCurrency(Number(account.current_balance), account.currency)})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">{tForm('dividendAccountHelp')}</p>
-                  </div>
+                  <AccountSelect
+                    value={watchDividendAccountId}
+                    onChange={(accountId) => setValue('dividend_account_id', accountId)}
+                    accounts={accounts}
+                    label={tForm('dividendAccount')}
+                    placeholder={tForm('dividendAccountPlaceholder')}
+                    noAccountLabel={tForm('noDividendAccount')}
+                    helpText={tForm('dividendAccountHelp')}
+                  />
 
                   {watchDividendAccountId && (
                     <div className="flex items-center justify-between">

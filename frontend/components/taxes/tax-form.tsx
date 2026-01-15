@@ -32,6 +32,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { AccountSelect } from '@/components/ui/account-select';
 import { toast } from 'sonner';
 import {
   useCreateTaxMutation,
@@ -470,39 +471,22 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
             <div className="border-t pt-4 space-y-4">
               <h4 className="font-medium text-sm">{tForm('paymentSettings')}</h4>
 
-              <div className="space-y-2">
-                <Label htmlFor="payment_account_id">{tForm('paymentAccountLabel')}</Label>
-                <Select
-                  value={watch('payment_account_id') || 'none'}
-                  onValueChange={(value) => {
-                    setValue('payment_account_id', value === 'none' ? null : value);
-                    // If no account selected, disable auto-pay
-                    if (value === 'none') {
-                      setValue('auto_pay', false);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tForm('paymentAccountPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{tForm('noPaymentAccount')}</SelectItem>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name} ({account.currency})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {tForm('paymentAccountHelp')}
-                </p>
-                {errors.payment_account_id && (
-                  <p className="text-sm text-destructive">
-                    {errors.payment_account_id.message}
-                  </p>
-                )}
-              </div>
+              <AccountSelect
+                value={watch('payment_account_id')}
+                onChange={(accountId) => {
+                  setValue('payment_account_id', accountId);
+                  // If no account selected, disable auto-pay
+                  if (!accountId) {
+                    setValue('auto_pay', false);
+                  }
+                }}
+                accounts={accounts}
+                label={tForm('paymentAccountLabel')}
+                placeholder={tForm('paymentAccountPlaceholder')}
+                noAccountLabel={tForm('noPaymentAccount')}
+                helpText={tForm('paymentAccountHelp')}
+                error={errors.payment_account_id?.message}
+              />
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">

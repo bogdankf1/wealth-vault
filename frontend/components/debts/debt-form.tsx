@@ -32,6 +32,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { AccountSelect } from '@/components/ui/account-select';
 import { formatCurrency } from '@/lib/utils/currency';
 import { toast } from 'sonner';
 import {
@@ -406,26 +407,15 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
               <h3 className="text-base font-semibold text-foreground">{tForm('paymentIntegration')}</h3>
 
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="deposit_account_id">{tForm('depositAccount')}</Label>
-                  <Select
-                    value={watch('deposit_account_id') || 'none'}
-                    onValueChange={(value) => setValue('deposit_account_id', value === 'none' ? null : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={tForm('depositAccountPlaceholder')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{tForm('noDepositAccount')}</SelectItem>
-                      {accountsData?.items?.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.name} ({formatCurrency(account.current_balance, account.currency)})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">{tForm('depositAccountHelp')}</p>
-                </div>
+                <AccountSelect
+                  value={watch('deposit_account_id')}
+                  onChange={(accountId) => setValue('deposit_account_id', accountId)}
+                  accounts={accountsData?.items}
+                  label={tForm('depositAccount')}
+                  placeholder={tForm('depositAccountPlaceholder')}
+                  noAccountLabel={tForm('noDepositAccount')}
+                  helpText={tForm('depositAccountHelp')}
+                />
 
                 <div className="flex items-center justify-between">
                   <div>

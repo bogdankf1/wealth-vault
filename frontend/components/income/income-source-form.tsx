@@ -39,6 +39,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { AccountSelect } from '@/components/ui/account-select';
 import { toast } from 'sonner';
 import { INCOME_CATEGORY_KEYS, INCOME_CATEGORY_NAME_TO_KEY } from '@/lib/constants/income-categories';
 
@@ -474,28 +475,15 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               </h4>
 
               {/* Target Account */}
-              <div className="space-y-2">
-                <Label htmlFor="target_account_id">{tForm('targetAccount')}</Label>
-                <Select
-                  value={watch('target_account_id') || 'none'}
-                  onValueChange={(value) => setValue('target_account_id', value === 'none' ? null : value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tForm('targetAccountPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{tForm('noTargetAccount')}</SelectItem>
-                    {accountsData?.items?.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name} ({account.currency})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {tForm('targetAccountHelp')}
-                </p>
-              </div>
+              <AccountSelect
+                value={watch('target_account_id')}
+                onChange={(accountId) => setValue('target_account_id', accountId)}
+                accounts={accountsData?.items}
+                label={tForm('targetAccount')}
+                placeholder={tForm('targetAccountPlaceholder')}
+                noAccountLabel={tForm('noTargetAccount')}
+                helpText={tForm('targetAccountHelp')}
+              />
 
               {/* Auto Deposit */}
               {watch('target_account_id') && watch('target_account_id') !== 'none' && (

@@ -45,6 +45,7 @@ import { EXPENSE_CATEGORY_KEYS, CATEGORY_NAME_TO_KEY } from '@/lib/constants/exp
 import { CurrencyInput } from '@/components/currency';
 import { formatCurrency } from '@/lib/utils/currency';
 import { AlertTriangle } from 'lucide-react';
+import { AccountSelect } from '@/components/ui/account-select';
 
 interface ExpenseFormProps {
   expenseId?: string | null;
@@ -515,56 +516,37 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
               <h4 className="text-sm font-medium">{tForm('accountIntegration')}</h4>
 
               {/* Payment Account */}
-              <div className="space-y-2">
-                <Label htmlFor="payment_account_id">{tForm('paymentAccount')}</Label>
-                <Select
-                  value={watch('payment_account_id') || 'none'}
-                  onValueChange={(value) => {
-                    const accountId = value === 'none' ? null : value;
-                    setValue('payment_account_id', accountId);
-                    // Auto-enable auto_pay and sync_historical when account is selected
-                    if (accountId) {
-                      setValue('auto_pay', true);
-                      setValue('sync_historical', true);
-                    } else {
-                      setValue('auto_pay', false);
-                      setValue('sync_historical', false);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tForm('paymentAccountPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{tForm('noPaymentAccount')}</SelectItem>
-                    {accountsData?.items?.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex justify-between items-center w-full gap-2">
-                          <span>{account.name}</span>
-                          <span className="text-muted-foreground text-xs">
-                            {formatCurrency(account.current_balance || 0, account.currency)}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {tForm('paymentAccountHelp')}
-                </p>
+              <AccountSelect
+                value={watch('payment_account_id')}
+                onChange={(accountId) => {
+                  setValue('payment_account_id', accountId);
+                  // Auto-enable auto_pay and sync_historical when account is selected
+                  if (accountId) {
+                    setValue('auto_pay', true);
+                    setValue('sync_historical', true);
+                  } else {
+                    setValue('auto_pay', false);
+                    setValue('sync_historical', false);
+                  }
+                }}
+                accounts={accountsData?.items}
+                label={tForm('paymentAccount')}
+                placeholder={tForm('paymentAccountPlaceholder')}
+                noAccountLabel={tForm('noPaymentAccount')}
+                helpText={tForm('paymentAccountHelp')}
+              />
 
-                {/* Warning if expense amount exceeds account balance */}
-                <InsufficientBalanceWarning
-                  selectedAccountId={watch('payment_account_id')}
-                  expenseAmount={watch('amount') || 0}
-                  expenseCurrency={watch('currency')}
-                  accounts={accountsData?.items || []}
-                  warningMessage={tForm('insufficientBalanceWarning', {
-                    amount: '{amount}',
-                    balance: '{balance}'
-                  })}
-                />
-              </div>
+              {/* Warning if expense amount exceeds account balance */}
+              <InsufficientBalanceWarning
+                selectedAccountId={watch('payment_account_id')}
+                expenseAmount={watch('amount') || 0}
+                expenseCurrency={watch('currency')}
+                accounts={accountsData?.items || []}
+                warningMessage={tForm('insufficientBalanceWarning', {
+                  amount: '{amount}',
+                  balance: '{balance}'
+                })}
+              />
 
               {/* Auto Pay Toggle - only visible when payment account is selected */}
               {watch('payment_account_id') && watch('payment_account_id') !== 'none' && (
