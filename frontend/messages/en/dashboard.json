@@ -45,11 +45,25 @@
     "assets": {
       "label": "Assets",
       "portfolio": "Portfolio",
-      "savings": "Savings"
+      "savings": "Savings",
+      "debtsReceivable": "Debts Receivable"
     },
     "liabilities": {
       "label": "Liabilities",
-      "debt": "Debt"
+      "debt": "Debt",
+      "installments": "Installments"
+    },
+    "breakdown": {
+      "title": "Net Worth Breakdown",
+      "viewDetails": "View Details"
+    },
+    "snapshots": {
+      "title": "Net Worth History",
+      "createSnapshot": "Create Snapshot",
+      "backfill": "Backfill History",
+      "changeFromPrevious": "Change from previous",
+      "noSnapshots": "No historical snapshots yet",
+      "noSnapshotsDescription": "Snapshots are created automatically each month to track your net worth over time"
     }
   },
   "financialHealth": {
@@ -305,6 +319,36 @@
       "viewAll": "View All",
       "monthly": "Monthly",
       "active": "active"
+    },
+    "projections": {
+      "title": "Financial Projections",
+      "description": "Projected net worth based on current trends",
+      "currentNetWorth": "Current Net Worth",
+      "monthlySavings": "Monthly Savings",
+      "savingsRate": "Savings Rate",
+      "assumedReturn": "Assumed Annual Return",
+      "projectedIn1Year": "Projected in 1 Year",
+      "projectedIn3Years": "Projected in 3 Years",
+      "projectedIn5Years": "Projected in 5 Years",
+      "projectedIn10Years": "Projected in 10 Years",
+      "disclaimer": "Projections are estimates based on current savings rate and assumed investment returns. Actual results may vary.",
+      "goals": {
+        "title": "Goal Projections",
+        "onTrack": "On Track",
+        "behindSchedule": "Behind Schedule",
+        "estimatedCompletion": "Estimated completion",
+        "monthsToGo": "{months} months to go",
+        "noGoals": "No active goals"
+      }
+    },
+    "upcomingPayments": {
+      "title": "Upcoming Payments",
+      "description": "Payments due in the next 7 days",
+      "dueIn": "Due in {days} days",
+      "dueToday": "Due today",
+      "overdue": "Overdue",
+      "noPayments": "No upcoming payments",
+      "noPaymentsDescription": "You have no scheduled payments in the next 7 days"
     }
   }
 }

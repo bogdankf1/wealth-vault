@@ -19,6 +19,14 @@ import { PieChartIcon, Info } from 'lucide-react';
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 import { useTranslations } from 'next-intl';
 
+// Helper function to format category from snake_case to Title Case
+const formatCategory = (category: string): string => {
+  return category
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 interface BreakdownData {
   category: string;
   amount: number;
@@ -97,7 +105,7 @@ export function IncomeBreakdownChart({
       const data = payload[0].payload;
       return (
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold mb-2">{data.category}</p>
+          <p className="font-semibold mb-2">{formatCategory(data.category)}</p>
           <div className="space-y-1">
             <p className="text-sm">
               {t('chartLabels.amount')}: <span className="font-semibold">{formatCurrency(data.amount)}</span>
@@ -224,7 +232,7 @@ export function IncomeBreakdownChart({
                   }}
                 />
                 <span className="text-sm font-medium truncate">
-                  {item.category}
+                  {formatCategory(item.category)}
                 </span>
               </div>
               <div className="text-right flex-shrink-0 ml-4">
@@ -260,7 +268,7 @@ export function IncomeBreakdownChart({
                 />
               </div>
               <p className="text-xs font-medium mb-1 truncate">
-                {item.category}
+                {formatCategory(item.category)}
               </p>
               <p className="text-sm font-bold">
                 {formatCurrency(item.amount)}

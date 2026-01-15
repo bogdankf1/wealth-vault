@@ -544,6 +544,14 @@ export default function DashboardPage() {
 
 
                   /></div>
+                  {parseFloat(net_worth.debts_receivable) > 0 && (
+                    <div>{tNetWorth('assets.debtsReceivable')}: <CurrencyDisplay
+                      amount={parseFloat(net_worth.debts_receivable)}
+                      currency={net_worth.currency}
+                      showSymbol={true}
+                      showCode={false}
+                    /></div>
+                  )}
                 </div>
               </div>
               <div>

@@ -15,6 +15,14 @@ import { useGetGoalStatsQuery, useListGoalsQuery, type Goal } from '@/lib/api/go
 import { useGetCurrencyQuery } from '@/lib/api/currenciesApi';
 import { useTranslations } from 'next-intl';
 
+// Helper function to format category from snake_case to Title Case
+const formatCategory = (category: string): string => {
+  return category
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export function GoalsOverviewWidget() {
   const t = useTranslations('dashboard.widgets.goalsOverview');
   const tCommon = useTranslations('dashboard.widgets.common');
@@ -182,7 +190,7 @@ export function GoalsOverviewWidget() {
                       <span className="text-sm font-medium truncate">{goal.name}</span>
                       {goal.category && (
                         <Badge variant="outline" className="text-xs">
-                          {goal.category}
+                          {formatCategory(goal.category)}
                         </Badge>
                       )}
                     </div>
@@ -241,7 +249,7 @@ export function GoalsOverviewWidget() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <TrendingUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm font-medium truncate">{category.category}</span>
+                    <span className="text-sm font-medium truncate">{formatCategory(category.category)}</span>
                     <Badge variant="secondary" className="text-xs">
                       {category.count}
                     </Badge>

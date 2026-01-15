@@ -15,6 +15,14 @@ import {
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useTranslations } from 'next-intl';
 
+// Helper function to format category from snake_case to Title Case
+const formatCategory = (category: string): string => {
+  return category
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export function BudgetOverviewWidget() {
   const t = useTranslations('dashboard.widgets.budgetOverview');
   const tCommon = useTranslations('dashboard.widgets.common');
@@ -206,7 +214,7 @@ export function BudgetOverviewWidget() {
           {topCategories.map((category) => (
             <div key={category.category} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{category.category}</span>
+                <span className="font-medium">{formatCategory(category.category)}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
                     amount={category.spent}

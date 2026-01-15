@@ -10,8 +10,17 @@ export interface NetWorthResponse {
   net_worth: string;
   portfolio_value: string;
   savings_balance: string;
+  debts_receivable: string;  // Debts owed TO user (assets)
   total_debt: string;
   currency: string;
+  assets_breakdown?: {
+    savings: Record<string, number>;
+    portfolio: Record<string, number>;
+    debts_receivable: Record<string, number>;
+  };
+  liabilities_breakdown?: {
+    installments: Record<string, number>;
+  };
 }
 
 export interface CashFlowResponse {
@@ -221,6 +230,76 @@ interface IncomeBreakdownApiResponse {
   currency: string;
 }
 
+// Snapshot types
+export interface NetWorthSnapshot {
+  id: string;
+  snapshot_date: string;
+  snapshot_type: string;
+  total_assets: string;
+  savings_total: string;
+  portfolio_total: string;
+  debts_receivable_total: string;
+  total_liabilities: string;
+  installments_total: string;
+  net_worth: string;
+  change_from_previous?: string;
+  percentage_change?: string;
+  assets_breakdown?: {
+    savings: Record<string, number>;
+    portfolio: Record<string, number>;
+    debts_receivable: Record<string, number>;
+  };
+  liabilities_breakdown?: {
+    installments: Record<string, number>;
+  };
+  currency: string;
+  created_at: string;
+}
+
+export interface NetWorthSnapshotListResponse {
+  items: NetWorthSnapshot[];
+  total: number;
+}
+
+// Projection types
+export interface FinancialProjections {
+  current_net_worth: string;
+  current_monthly_savings: string;
+  current_savings_rate: string;
+  projected_net_worth_1_year: string;
+  projected_net_worth_3_years: string;
+  projected_net_worth_5_years: string;
+  projected_net_worth_10_years: string;
+  assumed_annual_return: string;
+  assumed_monthly_savings: string;
+  currency: string;
+}
+
+export interface GoalProjection {
+  goal_id: string;
+  goal_name: string;
+  target_amount: string;
+  current_amount: string;
+  progress_percentage: string;
+  monthly_contribution: string;
+  projected_completion_date?: string;
+  months_to_completion?: number;
+  on_track: boolean;
+}
+
+export interface GoalProjectionsResponse {
+  goals: GoalProjection[];
+  total_goal_targets: string;
+  total_current_progress: string;
+  overall_progress_percentage: string;
+}
+
+export interface SnapshotParams {
+  start_date: string;
+  end_date: string;
+  snapshot_type?: string;
+}
+
 // API endpoints
 export const dashboardApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -394,6 +473,75 @@ export const dashboardApi = apiSlice.injectEndpoints({
       }),
       providesTags: ['Dashboard', 'Analytics'],
     }),
+
+    // Snapshot endpoints
+    getNetWorthSnapshots: builder.query<NetWorthSnapshotListResponse, SnapshotParams>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/snapshots/net-worth',
+        params,
+      }),
+      providesTags: ['Dashboard', 'Snapshots'],
+    }),
+
+    getLatestNetWorthSnapshot: builder.query<NetWorthSnapshot | null, void>({
+      query: () => '/api/v1/dashboard/snapshots/net-worth/latest',
+      providesTags: ['Dashboard', 'Snapshots'],
+    }),
+
+    createNetWorthSnapshot: builder.mutation<NetWorthSnapshot, { snapshot_type?: string } | void>({
+      query: (body) => ({
+        url: '/api/v1/dashboard/snapshots/net-worth',
+        method: 'POST',
+        body: body || { snapshot_type: 'manual' },
+      }),
+      invalidatesTags: ['Dashboard', 'Snapshots'],
+    }),
+
+    backfillNetWorthSnapshots: builder.mutation<NetWorthSnapshotListResponse, { months?: number } | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/snapshots/net-worth/backfill',
+        method: 'POST',
+        params: params || { months: 6 },
+      }),
+      invalidatesTags: ['Dashboard', 'Snapshots'],
+    }),
+
+    // Projection endpoints
+    getNetWorthProjections: builder.query<FinancialProjections, { annual_return_rate?: number } | void>({
+      query: (params) => ({
+        url: '/api/v1/dashboard/projections/net-worth',
+        params: params || undefined,
+      }),
+      providesTags: ['Dashboard', 'Projections'],
+    }),
+
+    getGoalProjections: builder.query<GoalProjectionsResponse, void>({
+      query: () => '/api/v1/dashboard/projections/goals',
+      providesTags: ['Dashboard', 'Projections', 'Goal'],
+    }),
+
+    // Net worth breakdown (detailed)
+    getNetWorthBreakdown: builder.query<{
+      total_assets: string;
+      savings_total: string;
+      portfolio_total: string;
+      debts_receivable_total: string;
+      total_liabilities: string;
+      installments_total: string;
+      net_worth: string;
+      assets_breakdown: {
+        savings: Record<string, number>;
+        portfolio: Record<string, number>;
+        debts_receivable: Record<string, number>;
+      };
+      liabilities_breakdown: {
+        installments: Record<string, number>;
+      };
+      currency: string;
+    }, void>({
+      query: () => '/api/v1/dashboard/net-worth/breakdown',
+      providesTags: ['Dashboard'],
+    }),
   }),
 });
 
@@ -412,4 +560,14 @@ export const {
   useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
   useGetIncomeBreakdownChartQuery,
+  // Snapshot hooks
+  useGetNetWorthSnapshotsQuery,
+  useGetLatestNetWorthSnapshotQuery,
+  useCreateNetWorthSnapshotMutation,
+  useBackfillNetWorthSnapshotsMutation,
+  // Projection hooks
+  useGetNetWorthProjectionsQuery,
+  useGetGoalProjectionsQuery,
+  // Net worth breakdown
+  useGetNetWorthBreakdownQuery,
 } = dashboardApi;
