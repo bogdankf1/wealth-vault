@@ -2,7 +2,7 @@
 
 > **Document Purpose**: This document contains the complete implementation plan to address all functionality gaps identified in the January 2026 audit. Reference this file when continuing work on any phase.
 
-> **Last Updated**: January 14, 2026
+> **Last Updated**: January 15, 2026
 
 ---
 
@@ -1890,7 +1890,47 @@ async def create_daily_snapshot():
 - Based on current income/expense/savings rate
 - Show scenarios (optimistic, realistic, conservative)
 
-### Status: NOT STARTED
+### Status: COMPLETED
+
+**Completed Items:**
+- [x] Created NetWorthSnapshot and CashFlowSnapshot models for historical tracking
+- [x] Created database migration for snapshot tables with proper indexes
+- [x] Created snapshot_service.py with net worth calculation including debts receivable
+- [x] Updated get_net_worth() to include: Savings + Portfolio + Debts Receivable - Installments
+- [x] Added financial projections endpoint (1/3/5/10 year forecasts)
+- [x] Added goal projections endpoint
+- [x] Added net worth breakdown endpoint
+- [x] Implemented Celery tasks for monthly/daily snapshots
+- [x] Updated frontend dashboard to display Debts Receivable under Assets
+- [x] Fixed category display formatting (snake_case → Title Case) across all widgets
+- [x] Fixed Debts Owed widget to match Net Worth > Debts Receivable calculation
+- [x] Added translations for all snapshot and projection features (8 languages)
+- [x] Fixed PortfolioAsset attribute error (asset_name vs name)
+
+**Key Features:**
+- Net Worth now correctly calculates: Assets (Portfolio + Savings + Debts Receivable) - Liabilities (Installments)
+- Historical snapshots track net worth over time for trend analysis
+- Financial projections based on current savings rate and assumed investment returns
+- Categories display in human-readable format (e.g., "Home Property" instead of "home_property")
+- Debts Receivable (money owed TO the user) properly shows as an asset
+
+**Files Created:**
+- `backend/app/modules/dashboard/models.py` - NetWorthSnapshot, CashFlowSnapshot models
+- `backend/app/modules/dashboard/snapshot_service.py` - Snapshot calculation and management
+- `backend/alembic/versions/20260115_add_dashboard_snapshots.py` - Database migration
+
+**Files Modified:**
+- `backend/app/modules/dashboard/service.py` - Added debts_receivable to net worth calculation
+- `backend/app/modules/dashboard/schemas.py` - Added snapshot and projection response types
+- `backend/app/modules/dashboard/router.py` - Added snapshot and projection endpoints
+- `backend/app/modules/debts/service.py` - Fixed debt stats to show remaining balance
+- `backend/app/tasks/dashboard_tasks.py` - Implemented snapshot Celery tasks
+- `frontend/app/dashboard/page.tsx` - Added Debts Receivable display under Assets
+- `frontend/components/dashboard/goals-overview-widget.tsx` - Added formatCategory helper
+- `frontend/components/dashboard/budget-overview-widget.tsx` - Added formatCategory helper
+- `frontend/components/dashboard/*-chart.tsx` - Added formatCategory to all chart components
+- `frontend/lib/api/dashboardApi.ts` - Added snapshot and projection types/hooks
+- `frontend/messages/*/dashboard.json` - Added translations (8 languages)
 
 ---
 
@@ -1980,11 +2020,11 @@ Functions:
 | 8 | COMPLETED | 2026-01-14 | 2026-01-14 | Portfolio with dynamic pricing (yfinance), dividends, transactions |
 | 9 | COMPLETED | 2026-01-14 | 2026-01-14 | Goals with auto-tracking from linked savings accounts, multi-currency support |
 | 10 | COMPLETED | 2026-01-14 | 2026-01-14 | Tax payment integration, auto-pay, period-based payment status |
-| 11 | NOT STARTED | - | - | Dashboard enhancement |
+| 11 | COMPLETED | 2026-01-15 | 2026-01-15 | Dashboard with real net worth, debts receivable, snapshots, projections |
 | 12 | NOT STARTED | - | - | Billing automation |
 
 ### Current Focus
-**Next Phase to Start:** Phase 11 - Dashboard & Analytics Enhancement
+**Next Phase to Start:** Phase 12 - Billing/Tier Subscription Automation
 
 ### How to Continue
 When resuming work on this project:
@@ -2014,4 +2054,4 @@ When resuming work on this project:
 ---
 
 *Document created: January 12, 2026*
-*Last updated: January 14, 2026 - Phase 10 (Tax Module) completed with payment integration, auto-pay functionality, period-based payment status tracking (monthly/quarterly/annually), and smart Pay Now/Pay Again button*
+*Last updated: January 15, 2026 - Phase 11 (Dashboard & Analytics) completed with real net worth calculation (Portfolio + Savings + Debts Receivable - Installments), historical snapshots, financial projections, and category formatting*
