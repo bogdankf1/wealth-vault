@@ -45,7 +45,7 @@
     "assets": {
       "label": "Activos",
       "portfolio": "Cartera",
-      "savings": "Ahorros"
+      "accounts": "Cuentas"
     },
     "liabilities": {
       "label": "Pasivos",

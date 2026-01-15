@@ -4,7 +4,7 @@
     "income": "Доходи",
     "expenses": "Витрати",
     "budgets": "Бюджети",
-    "savings": "Заощадження",
+    "accounts": "Рахунки",
     "portfolio": "Портфель",
     "goals": "Цілі",
     "subscriptions": "Підписки",
@@ -14,7 +14,7 @@
   },
   "groups": {
     "incomeExpenses": "Доходи та Витрати",
-    "savingsInvestments": "Заощадження та Інвестиції",
+    "accountsInvestments": "Рахунки та Інвестиції",
     "recurring": "Регулярні",
     "liabilities": "Зобов'язання"
   },

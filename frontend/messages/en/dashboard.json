@@ -45,7 +45,7 @@
     "assets": {
       "label": "Assets",
       "portfolio": "Portfolio",
-      "savings": "Savings",
+      "accounts": "Accounts",
       "debtsReceivable": "Debts Receivable"
     },
     "liabilities": {

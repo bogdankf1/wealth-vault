@@ -4,7 +4,7 @@
     "income": "Receitas",
     "expenses": "Despesas",
     "budgets": "Orçamentos",
-    "savings": "Poupança",
+    "accounts": "Contas",
     "portfolio": "Portfólio",
     "goals": "Metas",
     "subscriptions": "Assinaturas",
@@ -14,7 +14,7 @@
   },
   "groups": {
     "incomeExpenses": "Receitas e Despesas",
-    "savingsInvestments": "Poupança e Investimentos",
+    "accountsInvestments": "Contas e Investimentos",
     "recurring": "Recorrentes",
     "liabilities": "Passivos"
   },

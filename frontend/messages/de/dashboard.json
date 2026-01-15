@@ -45,7 +45,7 @@
     "assets": {
       "label": "Vermögenswerte",
       "portfolio": "Portfolio",
-      "savings": "Ersparnisse"
+      "accounts": "Konten"
     },
     "liabilities": {
       "label": "Verbindlichkeiten",

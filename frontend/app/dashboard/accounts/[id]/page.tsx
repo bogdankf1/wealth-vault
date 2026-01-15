@@ -117,7 +117,7 @@ export default function AccountDetailPage({ params }: PageProps) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="link" onClick={() => router.push('/dashboard/savings/overview')}>
+        <Button variant="link" onClick={() => router.push('/dashboard/accounts/overview')}>
           {t('backToAccounts')}
         </Button>
       </div>
@@ -132,7 +132,7 @@ export default function AccountDetailPage({ params }: PageProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push('/dashboard/savings/overview')}
+            onClick={() => router.push('/dashboard/accounts/overview')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

@@ -4,7 +4,7 @@
     "income": "Entrate",
     "expenses": "Spese",
     "budgets": "Budget",
-    "savings": "Risparmi",
+    "accounts": "Conti",
     "portfolio": "Portafoglio",
     "goals": "Obiettivi",
     "subscriptions": "Abbonamenti",
@@ -14,7 +14,7 @@
   },
   "groups": {
     "incomeExpenses": "Entrate e Spese",
-    "savingsInvestments": "Risparmi e Investimenti",
+    "accountsInvestments": "Conti e Investimenti",
     "recurring": "Ricorrenti",
     "liabilities": "Passività"
   },

@@ -45,7 +45,7 @@
     "assets": {
       "label": "Активи",
       "portfolio": "Портфель",
-      "savings": "Заощадження"
+      "accounts": "Рахунки"
     },
     "liabilities": {
       "label": "Зобов'язання",

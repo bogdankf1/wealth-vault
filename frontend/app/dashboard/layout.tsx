@@ -11,7 +11,7 @@ import { useTranslations } from 'next-intl';
 import {
   TrendingUp,
   DollarSign,
-  PiggyBank,
+  Landmark,
   LineChart,
   Target,
   CreditCard,
@@ -55,7 +55,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     incomeExpenses: true,
-    savingsInvestments: true,
+    accountsInvestments: true,
     recurring: true,
     liabilities: true,
   });
@@ -86,10 +86,10 @@ export default function DashboardLayout({
       ],
     },
     {
-      key: 'savingsInvestments',
-      label: t('groups.savingsInvestments'),
+      key: 'accountsInvestments',
+      label: t('groups.accountsInvestments'),
       items: [
-        { name: t('navigation.savings'), href: '/dashboard/savings', icon: PiggyBank },
+        { name: t('navigation.accounts'), href: '/dashboard/accounts', icon: Landmark },
         { name: t('navigation.portfolio'), href: '/dashboard/portfolio', icon: LineChart },
         { name: t('navigation.goals'), href: '/dashboard/goals', icon: Target },
       ],

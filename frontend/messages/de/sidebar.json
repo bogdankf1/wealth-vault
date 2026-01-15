@@ -4,7 +4,7 @@
     "income": "Einkommen",
     "expenses": "Ausgaben",
     "budgets": "Budgets",
-    "savings": "Ersparnisse",
+    "accounts": "Konten",
     "portfolio": "Portfolio",
     "goals": "Ziele",
     "subscriptions": "Abonnements",
@@ -14,7 +14,7 @@
   },
   "groups": {
     "incomeExpenses": "Einkommen & Ausgaben",
-    "savingsInvestments": "Ersparnisse & Investitionen",
+    "accountsInvestments": "Konten & Investitionen",
     "recurring": "Wiederkehrend",
     "liabilities": "Verbindlichkeiten"
   },

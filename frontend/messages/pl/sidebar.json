@@ -4,7 +4,7 @@
     "income": "Dochody",
     "expenses": "Wydatki",
     "budgets": "Budżety",
-    "savings": "Oszczędności",
+    "accounts": "Konta",
     "portfolio": "Portfel",
     "goals": "Cele",
     "subscriptions": "Subskrypcje",
@@ -14,7 +14,7 @@
   },
   "groups": {
     "incomeExpenses": "Dochody i Wydatki",
-    "savingsInvestments": "Oszczędności i Inwestycje",
+    "accountsInvestments": "Konta i Inwestycje",
     "recurring": "Cykliczne",
     "liabilities": "Zobowiązania"
   },

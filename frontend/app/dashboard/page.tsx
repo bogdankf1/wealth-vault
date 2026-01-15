@@ -536,7 +536,7 @@ export default function DashboardPage() {
 
 
                   /></div>
-                  <div>{tNetWorth('assets.savings')}: <CurrencyDisplay
+                  <div>{tNetWorth('assets.accounts')}: <CurrencyDisplay
                     amount={parseFloat(net_worth.savings_balance)}
                     currency={net_worth.currency}
                     showSymbol={true}

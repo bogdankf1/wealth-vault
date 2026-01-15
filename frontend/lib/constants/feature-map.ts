@@ -7,7 +7,7 @@ export const NAVIGATION_FEATURES: Record<string, string | null> = {
   '/dashboard/income': 'income_tracking',
   '/dashboard/expenses': 'expense_tracking',
   '/dashboard/budgets': 'budget_tracking',
-  '/dashboard/savings': 'savings_tracking',
+  '/dashboard/accounts': 'savings_tracking',
   '/dashboard/portfolio': 'portfolio_tracking',
   '/dashboard/goals': 'financial_goals',
   '/dashboard/subscriptions': 'subscription_tracking',

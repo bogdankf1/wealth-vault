@@ -1,5 +1,5 @@
 /**
- * Savings Module Layout
+ * Accounts Module Layout
  * Provides tabs navigation and action button injection
  */
 'use client';
@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { SavingsActionsContext } from './context';
 
-export default function SavingsLayout({
+export default function AccountsLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -22,24 +22,24 @@ export default function SavingsLayout({
   const [actions, setActions] = React.useState<React.ReactNode>(null);
   const t = useTranslations('savings');
 
-  const SAVINGS_TABS: ModuleTab[] = [
+  const ACCOUNTS_TABS: ModuleTab[] = [
     {
       value: 'overview',
       label: t('navigation.overview'),
       icon: LayoutGrid,
-      href: '/dashboard/savings/overview',
+      href: '/dashboard/accounts/overview',
     },
     {
       value: 'analysis',
       label: t('navigation.analysis'),
       icon: BarChart3,
-      href: '/dashboard/savings/analysis',
+      href: '/dashboard/accounts/analysis',
     },
     {
       value: 'archive',
       label: t('navigation.archive'),
       icon: Archive,
-      href: '/dashboard/savings/archive',
+      href: '/dashboard/accounts/archive',
     },
   ];
 
@@ -66,7 +66,7 @@ export default function SavingsLayout({
         {/* Tab Navigation with full-width border */}
         <div className="border-b border-border">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
-            {SAVINGS_TABS.map((tab) => {
+            {ACCOUNTS_TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = pathname === tab.href;
 

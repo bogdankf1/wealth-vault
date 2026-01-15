@@ -491,7 +491,7 @@ export default function SavingsPage() {
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => router.push(`/dashboard/savings/${account.id}`)}
+                      onClick={() => router.push(`/dashboard/accounts/${account.id}`)}
                     >
                       <Eye className="mr-1 h-3 w-3" />
                       {tActions('view')}
@@ -614,7 +614,7 @@ export default function SavingsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => router.push(`/dashboard/savings/${account.id}`)}
+                          onClick={() => router.push(`/dashboard/accounts/${account.id}`)}
                           className="h-8 w-8 p-0"
                         >
                           <Eye className="h-4 w-4" />
