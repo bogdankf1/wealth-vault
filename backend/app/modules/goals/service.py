@@ -500,6 +500,30 @@ async def get_goal_linked_accounts(
     return list(result.scalars().all())
 
 
+async def get_goals_by_linked_account(
+    db: AsyncSession,
+    user_id: UUID,
+    account_id: UUID
+) -> list[Goal]:
+    """
+    Get all goals that are linked to a specific savings account.
+    Used to update goal progress when account balance changes.
+    """
+    query = select(Goal).join(
+        GoalAccountLink, Goal.id == GoalAccountLink.goal_id
+    ).where(
+        and_(
+            GoalAccountLink.account_id == account_id,
+            GoalAccountLink.user_id == user_id,
+            Goal.is_active == True,
+            Goal.auto_track_progress == True
+        )
+    )
+
+    result = await db.execute(query)
+    return list(result.scalars().all())
+
+
 async def calculate_progress_from_accounts(
     db: AsyncSession,
     user_id: UUID,

@@ -509,48 +509,105 @@ async def notify_dividend_received(event: Event) -> None:
 @event_dispatcher.on(SavingsEvents.DEPOSIT, EventPriority.NORMAL)
 async def update_goal_on_deposit(event: Event) -> None:
     """Update goal progress when deposit is made to a linked savings account."""
-    # This will be implemented in Phase 9 when we add goal-account linking
+    from app.core.database import AsyncSessionLocal
+    from app.modules.goals.service import (
+        get_goals_by_linked_account,
+        update_goal_progress_from_accounts
+    )
+
     account_id = event.payload.get("account_id")
     amount = event.payload.get("amount", 0)
+    user_id = event.user_id
+
+    if not account_id or not user_id:
+        logger.warning("Missing account_id or user_id in deposit event")
+        return
+
     logger.debug(f"Savings deposit event received for account {account_id}, amount {amount}")
-    # TODO: Implement goal progress update in Phase 9
+
+    try:
+        async with AsyncSessionLocal() as db:
+            # Find all goals linked to this account with auto_track_progress enabled
+            goals = await get_goals_by_linked_account(db, user_id, UUID(account_id))
+
+            for goal in goals:
+                try:
+                    await update_goal_progress_from_accounts(
+                        db, user_id, goal.id,
+                        trigger_type="transaction",
+                        notes=f"Deposit of {amount} to linked account"
+                    )
+                    logger.info(f"Updated goal {goal.id} progress after deposit to account {account_id}")
+                except Exception as e:
+                    logger.error(f"Failed to update goal {goal.id} progress: {e}")
+
+    except Exception as e:
+        logger.error(f"Error updating goals on deposit: {e}")
 
 
 @event_dispatcher.on(SavingsEvents.WITHDRAWAL, EventPriority.NORMAL)
 async def update_goal_on_withdrawal(event: Event) -> None:
     """Update goal progress when withdrawal is made from a linked savings account."""
-    # This will be implemented in Phase 9 when we add goal-account linking
+    from app.core.database import AsyncSessionLocal
+    from app.modules.goals.service import (
+        get_goals_by_linked_account,
+        update_goal_progress_from_accounts
+    )
+
     account_id = event.payload.get("account_id")
     amount = event.payload.get("amount", 0)
+    user_id = event.user_id
+
+    if not account_id or not user_id:
+        logger.warning("Missing account_id or user_id in withdrawal event")
+        return
+
     logger.debug(f"Savings withdrawal event received for account {account_id}, amount {amount}")
-    # TODO: Implement goal progress update in Phase 9
+
+    try:
+        async with AsyncSessionLocal() as db:
+            # Find all goals linked to this account with auto_track_progress enabled
+            goals = await get_goals_by_linked_account(db, user_id, UUID(account_id))
+
+            for goal in goals:
+                try:
+                    await update_goal_progress_from_accounts(
+                        db, user_id, goal.id,
+                        trigger_type="transaction",
+                        notes=f"Withdrawal of {amount} from linked account"
+                    )
+                    logger.info(f"Updated goal {goal.id} progress after withdrawal from account {account_id}")
+                except Exception as e:
+                    logger.error(f"Failed to update goal {goal.id} progress: {e}")
+
+    except Exception as e:
+        logger.error(f"Error updating goals on withdrawal: {e}")
 
 
 # =============================================================================
 # TRANSACTION HANDLERS
 # =============================================================================
-# These handlers create transactions when financial events occur
+# Note: Transaction creation is handled directly in the module services:
+# - Income: auto_deposit via IncomeService.create_income_with_auto_deposit()
+# - Expenses: auto_pay via ExpenseService.pay_expense()
+# These event handlers are kept for logging/audit purposes only.
 
 @event_dispatcher.on(IncomeEvents.DEPOSITED, EventPriority.HIGH)
-async def create_income_transaction(event: Event) -> None:
-    """Create a transaction record when income is deposited."""
-    # This will be implemented in Phase 1 when we add the transaction system
+async def log_income_deposited(event: Event) -> None:
+    """Log when income is deposited to an account."""
     user_id = event.user_id
     amount = event.payload.get("amount", 0)
     account_id = event.payload.get("account_id")
-    logger.debug(f"Income deposited event: user={user_id}, amount={amount}, account={account_id}")
-    # TODO: Implement transaction creation in Phase 1
+    logger.info(f"Income deposited: user={user_id}, amount={amount}, account={account_id}")
 
 
 @event_dispatcher.on(ExpenseEvents.PAID, EventPriority.HIGH)
-async def create_expense_transaction(event: Event) -> None:
-    """Create a transaction record when expense is paid."""
-    # This will be implemented in Phase 1 when we add the transaction system
+async def log_expense_paid(event: Event) -> None:
+    """Log when an expense is paid from an account."""
     user_id = event.user_id
     amount = event.payload.get("amount", 0)
     account_id = event.payload.get("account_id")
-    logger.debug(f"Expense paid event: user={user_id}, amount={amount}, account={account_id}")
-    # TODO: Implement transaction creation in Phase 1
+    logger.info(f"Expense paid: user={user_id}, amount={amount}, account={account_id}")
 
 
 # =============================================================================

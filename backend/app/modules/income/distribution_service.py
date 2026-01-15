@@ -349,8 +349,48 @@ class DistributionService:
                     logger.error(f"Failed to apply distribution to account {dist.target_id}: {e}")
 
             elif dist.target_type == "goal":
-                # TODO: Update goal progress when Goal module is updated in Phase 9
-                logger.info(f"Would distribute {dist.amount} to goal {dist.target_id}")
+                try:
+                    # Get the goal and update its current_amount
+                    goal_result = await self.db.execute(
+                        select(Goal).where(
+                            and_(
+                                Goal.id == dist.target_id,
+                                Goal.user_id == user_id,
+                                Goal.is_active == True
+                            )
+                        )
+                    )
+                    goal = goal_result.scalar_one_or_none()
+
+                    if goal:
+                        # Add the distribution amount to the goal's current amount
+                        goal.current_amount = Decimal(str(goal.current_amount)) + dist.amount
+
+                        # Recalculate progress percentage
+                        if goal.target_amount and goal.target_amount > 0:
+                            goal.progress_percentage = (goal.current_amount / goal.target_amount) * 100
+
+                        # Check for completion
+                        if goal.current_amount >= goal.target_amount and not goal.is_completed:
+                            goal.is_completed = True
+                            goal.completed_at = datetime.utcnow()
+
+                        goal.updated_at = datetime.utcnow()
+
+                        # Record progress snapshot
+                        from app.modules.goals.service import record_progress_snapshot
+                        await record_progress_snapshot(
+                            self.db, user_id, goal.id,
+                            current_amount=goal.current_amount,
+                            trigger_type="transaction",
+                            notes=f"Income distribution: {dist.rule_name or 'Auto-distribution'}"
+                        )
+
+                        logger.info(f"Distributed {dist.amount} to goal {dist.target_id}")
+                    else:
+                        logger.warning(f"Goal {dist.target_id} not found or inactive for distribution")
+                except Exception as e:
+                    logger.error(f"Failed to distribute to goal {dist.target_id}: {e}")
 
         # Update income transaction status if any deposits were made
         if created_deposits:

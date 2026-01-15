@@ -66,15 +66,36 @@ def cleanup_old_notifications(self, days_old: int = 90) -> Dict[str, Any]:
 
     async def _cleanup():
         async with get_async_db_session() as db:
-            from sqlalchemy import delete, and_
+            from sqlalchemy import delete, and_, or_
             from datetime import datetime, timedelta
+            from app.modules.notifications.models import Notification
 
             cutoff_date = datetime.utcnow() - timedelta(days=days_old)
+            now = datetime.utcnow()
 
-            # TODO: Implement once Notification model exists
-            logger.info(f"Cleaning up notifications older than {days_old} days")
+            # Delete read notifications older than cutoff_date OR expired notifications
+            delete_stmt = delete(Notification).where(
+                or_(
+                    # Read notifications older than X days
+                    and_(
+                        Notification.is_read == True,
+                        Notification.created_at < cutoff_date
+                    ),
+                    # Expired notifications (regardless of read status)
+                    and_(
+                        Notification.expires_at.isnot(None),
+                        Notification.expires_at < now
+                    )
+                )
+            )
+
+            result = await db.execute(delete_stmt)
+            deleted_count = result.rowcount
+            await db.commit()
+
+            logger.info(f"Cleaned up {deleted_count} notifications older than {days_old} days or expired")
             return {
-                "deleted_count": 0,
+                "deleted_count": deleted_count,
                 "cutoff_date": cutoff_date.isoformat(),
                 "timestamp": datetime.utcnow().isoformat()
             }
@@ -193,12 +214,58 @@ def send_bulk_notifications(self, notifications: List[Dict[str, Any]]) -> Dict[s
 
     async def _send_bulk():
         async with get_async_db_session() as db:
-            # TODO: Implement once Notification model exists
-            logger.info(f"Sending {len(notifications)} bulk notifications")
+            from uuid import UUID as UUIDType
+            from app.modules.notifications.models import (
+                Notification,
+                NotificationType,
+                NotificationCategory
+            )
+
+            sent = 0
+            errors = 0
+
+            for notif_data in notifications:
+                try:
+                    # Extract and validate required fields
+                    user_id = notif_data.get("user_id")
+                    notif_type = notif_data.get("type", "info")
+                    category = notif_data.get("category", "system")
+                    title = notif_data.get("title")
+                    message = notif_data.get("message")
+
+                    if not all([user_id, title, message]):
+                        logger.warning(f"Skipping notification with missing required fields: {notif_data}")
+                        errors += 1
+                        continue
+
+                    # Create the notification
+                    notification = Notification(
+                        user_id=UUIDType(user_id) if isinstance(user_id, str) else user_id,
+                        notification_type=NotificationType(notif_type),
+                        category=NotificationCategory(category),
+                        title=title,
+                        message=message,
+                        priority=notif_data.get("priority", 3),
+                        action_url=notif_data.get("action_url"),
+                        extra_data=notif_data.get("extra_data")
+                    )
+
+                    db.add(notification)
+                    sent += 1
+
+                except Exception as e:
+                    logger.error(f"Failed to create notification: {e}")
+                    errors += 1
+
+            # Commit all notifications in a single transaction
+            if sent > 0:
+                await db.commit()
+
+            logger.info(f"Bulk notifications: {sent} sent, {errors} errors out of {len(notifications)} total")
             return {
                 "total": len(notifications),
-                "sent": 0,
-                "errors": 0,
+                "sent": sent,
+                "errors": errors,
                 "timestamp": datetime.utcnow().isoformat()
             }
 
