@@ -247,6 +247,11 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=2, minute=0, day_of_month=1),
         "options": {"queue": "default"},
     },
+    "create-cash-flow-snapshot": {
+        "task": "tasks.dashboard.create_cash_flow_snapshot",
+        "schedule": crontab(hour=2, minute=30, day_of_month=1),
+        "options": {"queue": "default"},
+    },
     "accrue-monthly-interest": {
         "task": "tasks.savings.accrue_monthly_interest",
         "schedule": crontab(hour=0, minute=30, day_of_month=1),

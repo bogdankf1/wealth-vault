@@ -24,8 +24,14 @@ from app.modules.dashboard.schemas import (
     MonthlySpendingChartResponse,
     NetWorthTrendChartResponse,
     IncomeBreakdownChartResponse,
+    NetWorthSnapshotResponse,
+    NetWorthSnapshotListResponse,
+    FinancialProjectionsResponse,
+    GoalProjectionsResponse,
+    CreateSnapshotRequest,
 )
 from app.modules.dashboard import service
+from app.modules.dashboard import snapshot_service
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["Dashboard"])
 
@@ -344,3 +350,161 @@ async def get_income_breakdown_chart(
     - Total monthly income
     """
     return await service.get_income_breakdown_chart(db, current_user.id, start_date, end_date)
+
+
+# ============================================================================
+# Snapshot Endpoints
+# ============================================================================
+
+@router.get("/snapshots/net-worth", response_model=NetWorthSnapshotListResponse)
+async def get_net_worth_snapshots(
+    start_date: datetime = Query(..., description="Start date for the period"),
+    end_date: datetime = Query(..., description="End date for the period"),
+    snapshot_type: Optional[str] = Query(None, description="Filter by snapshot type (monthly, daily, manual)"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get net worth snapshots for the specified period.
+
+    Query Parameters:
+    - start_date: Start date (ISO format)
+    - end_date: End date (ISO format)
+    - snapshot_type: Optional filter (monthly, daily, manual)
+
+    Returns list of historical net worth snapshots with full breakdown.
+    """
+    snapshots = await snapshot_service.get_snapshots_for_period(
+        db, current_user.id, start_date, end_date, snapshot_type
+    )
+    return NetWorthSnapshotListResponse(
+        items=[NetWorthSnapshotResponse.model_validate(s) for s in snapshots],
+        total=len(snapshots)
+    )
+
+
+@router.get("/snapshots/net-worth/latest", response_model=Optional[NetWorthSnapshotResponse])
+async def get_latest_net_worth_snapshot(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get the most recent net worth snapshot.
+
+    Returns the latest snapshot or null if no snapshots exist.
+    """
+    snapshot = await snapshot_service.get_latest_snapshot(db, current_user.id)
+    if snapshot:
+        return NetWorthSnapshotResponse.model_validate(snapshot)
+    return None
+
+
+@router.post("/snapshots/net-worth", response_model=NetWorthSnapshotResponse)
+async def create_net_worth_snapshot_endpoint(
+    request: CreateSnapshotRequest = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Create a manual net worth snapshot.
+
+    Use this to capture the current financial state at any time.
+    Automatic monthly snapshots are created by the system.
+
+    Returns the created snapshot with full breakdown.
+    """
+    snapshot_type = request.snapshot_type if request else "manual"
+    snapshot = await snapshot_service.create_net_worth_snapshot(
+        db, current_user.id, snapshot_type=snapshot_type
+    )
+    return NetWorthSnapshotResponse.model_validate(snapshot)
+
+
+@router.post("/snapshots/net-worth/backfill", response_model=NetWorthSnapshotListResponse)
+async def backfill_net_worth_snapshots(
+    months: int = Query(6, ge=1, le=24, description="Number of months to backfill"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Create historical snapshots for the last N months.
+
+    Note: Historical snapshots use current data since we can't
+    retrieve past values. This creates a baseline for future tracking.
+
+    Returns list of created snapshots.
+    """
+    snapshots = await snapshot_service.backfill_monthly_snapshots(
+        db, current_user.id, months=months
+    )
+    return NetWorthSnapshotListResponse(
+        items=[NetWorthSnapshotResponse.model_validate(s) for s in snapshots],
+        total=len(snapshots)
+    )
+
+
+# ============================================================================
+# Projection Endpoints
+# ============================================================================
+
+@router.get("/projections/net-worth", response_model=FinancialProjectionsResponse)
+async def get_net_worth_projections(
+    annual_return_rate: float = Query(7.0, ge=0, le=30, description="Assumed annual investment return rate (%)"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get net worth projections for 1, 3, 5, and 10 years.
+
+    Projections are based on:
+    - Current net worth
+    - Current monthly savings rate
+    - Assumed investment return rate
+
+    Query Parameters:
+    - annual_return_rate: Expected annual return (default 7%)
+
+    Returns projected net worth at different time horizons.
+    """
+    from decimal import Decimal
+    rate = Decimal(str(annual_return_rate / 100))  # Convert percentage to decimal
+    return await service.get_financial_projections(db, current_user.id, rate)
+
+
+@router.get("/projections/goals", response_model=GoalProjectionsResponse)
+async def get_goals_projections(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get projections for all active financial goals.
+
+    For each goal, calculates:
+    - Current progress percentage
+    - Estimated completion date based on monthly contribution
+    - Whether the goal is on track to meet target date
+
+    Returns list of goal projections with overall progress.
+    """
+    return await service.get_goal_projections(db, current_user.id)
+
+
+# ============================================================================
+# Enhanced Net Worth Endpoint (with full breakdown)
+# ============================================================================
+
+@router.get("/net-worth/breakdown")
+async def get_net_worth_breakdown(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get detailed net worth breakdown with all asset and liability categories.
+
+    Returns:
+    - Total assets with breakdown (savings, portfolio, debts receivable)
+    - Total liabilities with breakdown (installments)
+    - Net worth
+    - Individual item values within each category
+    """
+    return await snapshot_service.calculate_net_worth_with_debts(db, current_user.id)

@@ -251,27 +251,46 @@ async def get_debt_stats(
     now = datetime.utcnow()
 
     for debt in debts:
+        # Calculate remaining balance (amount - amount_paid)
+        remaining_balance = (debt.amount or Decimal("0")) - (debt.amount_paid or Decimal("0"))
+
         # Convert to display currency
-        amount_in_display = debt.amount
+        amount_in_display = remaining_balance
         if debt.currency != display_currency:
             converted = await currency_service.convert_amount(
-                debt.amount,
+                remaining_balance,
                 debt.currency,
                 display_currency
             )
             if converted is not None:
                 amount_in_display = converted
 
+        # Convert amount_paid to display currency for stats
+        paid_in_display = debt.amount_paid or Decimal("0")
+        if debt.currency != display_currency and debt.amount_paid:
+            converted_paid = await currency_service.convert_amount(
+                debt.amount_paid,
+                debt.currency,
+                display_currency
+            )
+            if converted_paid is not None:
+                paid_in_display = converted_paid
+
+        # Track paid vs active debts
         if debt.is_paid:
             paid_debts += 1
-            total_amount_paid += amount_in_display
         else:
             active_debts += 1
-            total_amount_owed += amount_in_display
-
             # Check if overdue
             if debt.due_date and now > debt.due_date:
                 overdue_debts += 1
+
+        # Add to totals based on remaining balance (matches Net Worth calculation)
+        if remaining_balance > 0:
+            total_amount_owed += amount_in_display
+
+        # Track total paid amounts
+        total_amount_paid += paid_in_display
 
     return DebtStats(
         total_debts=total_debts,

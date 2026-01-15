@@ -3,7 +3,7 @@ Dashboard Pydantic schemas for request/response validation.
 """
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -17,8 +17,13 @@ class NetWorthResponse(BaseModel):
     net_worth: Decimal
     portfolio_value: Decimal
     savings_balance: Decimal
-    total_debt: Decimal
+    debts_receivable: Decimal = Decimal('0')  # Debts owed TO user (assets)
+    total_debt: Decimal  # Installments (liabilities)
     currency: str
+
+    # Optional breakdown details
+    assets_breakdown: Optional[dict] = None
+    liabilities_breakdown: Optional[dict] = None
 
 
 class CashFlowResponse(BaseModel):
@@ -184,3 +189,141 @@ class IncomeBreakdownChartResponse(BaseModel):
     data: list[IncomeBreakdownDataPoint]
     total_income: Decimal
     currency: str
+
+
+# ============================================================================
+# Snapshot Schemas
+# ============================================================================
+
+class NetWorthSnapshotResponse(BaseModel):
+    """Schema for net worth snapshot response."""
+
+    id: UUID
+    snapshot_date: datetime
+    snapshot_type: str
+
+    # Assets
+    total_assets: Decimal
+    savings_total: Decimal
+    portfolio_total: Decimal
+    debts_receivable_total: Decimal
+
+    # Liabilities
+    total_liabilities: Decimal
+    installments_total: Decimal
+
+    # Net worth
+    net_worth: Decimal
+
+    # Change tracking
+    change_from_previous: Optional[Decimal] = None
+    percentage_change: Optional[Decimal] = None
+
+    # Breakdowns
+    assets_breakdown: Optional[dict] = None
+    liabilities_breakdown: Optional[dict] = None
+
+    currency: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class NetWorthSnapshotListResponse(BaseModel):
+    """Schema for paginated list of net worth snapshots."""
+
+    items: List[NetWorthSnapshotResponse]
+    total: int
+
+
+class CashFlowSnapshotResponse(BaseModel):
+    """Schema for cash flow snapshot response."""
+
+    id: UUID
+    period_start: datetime
+    period_end: datetime
+    period_type: str
+
+    total_income: Decimal
+    total_expenses: Decimal
+    total_subscriptions: Decimal
+    total_installments: Decimal
+    total_taxes: Decimal
+    net_cash_flow: Decimal
+    savings_rate: Optional[Decimal] = None
+
+    income_breakdown: Optional[dict] = None
+    expenses_breakdown: Optional[dict] = None
+
+    currency: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class FinancialProjectionsResponse(BaseModel):
+    """Schema for financial projections response."""
+
+    # Current state
+    current_net_worth: Decimal
+    current_monthly_savings: Decimal
+    current_savings_rate: Decimal
+
+    # Projections (based on current trends)
+    projected_net_worth_1_year: Decimal
+    projected_net_worth_3_years: Decimal
+    projected_net_worth_5_years: Decimal
+    projected_net_worth_10_years: Decimal
+
+    # Assumptions
+    assumed_annual_return: Decimal  # Investment return rate used
+    assumed_monthly_savings: Decimal
+
+    currency: str
+
+
+class GoalProjectionItem(BaseModel):
+    """Schema for individual goal projection."""
+
+    goal_id: UUID
+    goal_name: str
+    target_amount: Decimal
+    current_amount: Decimal
+    progress_percentage: Decimal
+    monthly_contribution: Decimal
+    projected_completion_date: Optional[date] = None
+    months_to_completion: Optional[int] = None
+    on_track: bool
+
+
+class GoalProjectionsResponse(BaseModel):
+    """Schema for goal projections response."""
+
+    goals: List[GoalProjectionItem]
+    total_goal_targets: Decimal
+    total_current_progress: Decimal
+    overall_progress_percentage: Decimal
+
+
+class CreateSnapshotRequest(BaseModel):
+    """Schema for manual snapshot creation request."""
+
+    snapshot_type: str = "manual"  # manual, event
+
+
+class UpcomingPaymentEnhanced(BaseModel):
+    """Enhanced upcoming payment with more details."""
+
+    id: UUID
+    module: str  # subscriptions, installments, taxes
+    name: str
+    amount: Decimal
+    currency: str
+    due_date: date
+    days_until_due: int
+    is_overdue: bool
+    payment_account: Optional[str] = None
+    auto_pay: bool = False
+    frequency: str

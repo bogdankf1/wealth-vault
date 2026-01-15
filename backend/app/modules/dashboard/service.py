@@ -51,19 +51,31 @@ async def get_user_display_currency(db: AsyncSession, user_id: UUID) -> str:
 
 async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
     """
-    Calculate net worth = (Portfolio + Savings) - Installments.
+    Calculate net worth = (Portfolio + Savings + Debts Receivable) - Installments.
 
-    Assets = Portfolio current value + Savings balance
-    Liabilities = Installments remaining balance
+    Assets:
+    - Portfolio current value
+    - Savings balance
+    - Debts owed TO user (receivables)
+
+    Liabilities:
+    - Installments remaining balance
+
     Net Worth = Assets - Liabilities
 
     All amounts are converted to user's display currency.
     """
+    from app.modules.debts.models import Debt
+
     # Get user's display currency
     display_currency = await get_user_display_currency(db, user_id)
     currency_service = CurrencyService(db)
 
-    # Get all portfolio assets with their currencies
+    # =========================================================================
+    # ASSETS
+    # =========================================================================
+
+    # 1. Portfolio Assets
     portfolio_query = select(PortfolioAsset).where(
         and_(
             PortfolioAsset.user_id == user_id,
@@ -73,20 +85,21 @@ async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
     portfolio_result = await db.execute(portfolio_query)
     portfolio_assets = portfolio_result.scalars().all()
 
-    # Convert portfolio values to display currency
     portfolio_value = Decimal('0')
+    portfolio_breakdown = {}
     for asset in portfolio_assets:
         if asset.current_value:
             if asset.currency == display_currency:
-                portfolio_value += asset.current_value
+                amount = asset.current_value
             else:
                 converted = await currency_service.convert_amount(
                     asset.current_value, asset.currency, display_currency
                 )
-                if converted:
-                    portfolio_value += converted
+                amount = converted if converted else Decimal('0')
+            portfolio_value += amount
+            portfolio_breakdown[asset.asset_name] = float(amount)
 
-    # Get all savings accounts with their currencies
+    # 2. Savings Accounts
     savings_query = select(SavingsAccount).where(
         and_(
             SavingsAccount.user_id == user_id,
@@ -96,20 +109,52 @@ async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
     savings_result = await db.execute(savings_query)
     savings_accounts = savings_result.scalars().all()
 
-    # Convert savings balances to display currency
     savings_balance = Decimal('0')
+    savings_breakdown = {}
     for account in savings_accounts:
         if account.current_balance:
             if account.currency == display_currency:
-                savings_balance += account.current_balance
+                amount = account.current_balance
             else:
                 converted = await currency_service.convert_amount(
                     account.current_balance, account.currency, display_currency
                 )
-                if converted:
-                    savings_balance += converted
+                amount = converted if converted else Decimal('0')
+            savings_balance += amount
+            savings_breakdown[account.name] = float(amount)
 
-    # Get all installments with their currencies
+    # 3. Debts Owed TO User (Receivables - these are ASSETS)
+    debts_query = select(Debt).where(
+        and_(
+            Debt.user_id == user_id,
+            Debt.is_active == True,
+            Debt.deleted_at.is_(None)
+        )
+    )
+    debts_result = await db.execute(debts_query)
+    debts = debts_result.scalars().all()
+
+    debts_receivable = Decimal('0')
+    debts_breakdown = {}
+    for debt in debts:
+        remaining = (debt.amount or Decimal('0')) - (debt.amount_paid or Decimal('0'))
+        if remaining > 0:
+            if debt.currency == display_currency:
+                amount = remaining
+            else:
+                converted = await currency_service.convert_amount(
+                    remaining, debt.currency, display_currency
+                )
+                amount = converted if converted else Decimal('0')
+            debts_receivable += amount
+            debtor_name = debt.debtor_name or f"Debt {debt.id}"
+            debts_breakdown[debtor_name] = float(amount)
+
+    # =========================================================================
+    # LIABILITIES
+    # =========================================================================
+
+    # 1. Installments (money user owes)
     installments_query = select(Installment).where(
         and_(
             Installment.user_id == user_id,
@@ -119,21 +164,25 @@ async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
     installments_result = await db.execute(installments_query)
     installments = installments_result.scalars().all()
 
-    # Convert installment balances to display currency
     total_debt = Decimal('0')
+    installments_breakdown = {}
     for installment in installments:
         if installment.remaining_balance:
             if installment.currency == display_currency:
-                total_debt += installment.remaining_balance
+                amount = installment.remaining_balance
             else:
                 converted = await currency_service.convert_amount(
                     installment.remaining_balance, installment.currency, display_currency
                 )
-                if converted:
-                    total_debt += converted
+                amount = converted if converted else Decimal('0')
+            total_debt += amount
+            installments_breakdown[installment.name] = float(amount)
 
-    # Calculate totals
-    total_assets = portfolio_value + savings_balance
+    # =========================================================================
+    # TOTALS
+    # =========================================================================
+
+    total_assets = portfolio_value + savings_balance + debts_receivable
     total_liabilities = total_debt
     net_worth = total_assets - total_liabilities
 
@@ -143,8 +192,17 @@ async def get_net_worth(db: AsyncSession, user_id: UUID) -> NetWorthResponse:
         net_worth=net_worth,
         portfolio_value=portfolio_value,
         savings_balance=savings_balance,
+        debts_receivable=debts_receivable,
         total_debt=total_debt,
-        currency=display_currency
+        currency=display_currency,
+        assets_breakdown={
+            "savings": savings_breakdown,
+            "portfolio": portfolio_breakdown,
+            "debts_receivable": debts_breakdown
+        },
+        liabilities_breakdown={
+            "installments": installments_breakdown
+        }
     )
 
 
@@ -717,17 +775,147 @@ async def get_upcoming_payments(
     days: int = 7
 ) -> list[UpcomingPayment]:
     """
-    Get upcoming subscription renewals and installment payments.
+    Get upcoming subscription renewals, installment payments, and tax payments.
 
     Returns payments due in the next N days.
     """
+    from app.modules.taxes.models import Tax
+
     today = date.today()
-    end_date = today + timedelta(days=days)
+    end_date_dt = datetime.combine(today + timedelta(days=days), datetime.max.time())
     payments = []
 
-    # Note: Neither Subscriptions nor Installments have next_payment_date in their models
-    # Future enhancement: Calculate next payment date from start_date/first_payment_date + frequency + payments_made
-    # For now, return empty list
+    # Get user's display currency for reference
+    display_currency = await get_user_display_currency(db, user_id)
+    currency_service = CurrencyService(db)
+
+    # =========================================================================
+    # Subscriptions with next_payment_date
+    # =========================================================================
+    subscriptions_query = select(Subscription).where(
+        and_(
+            Subscription.user_id == user_id,
+            Subscription.is_active == True,
+            Subscription.next_payment_date.isnot(None),
+            Subscription.next_payment_date <= end_date_dt
+        )
+    )
+    subscriptions_result = await db.execute(subscriptions_query)
+    subscriptions = subscriptions_result.scalars().all()
+
+    for sub in subscriptions:
+        if sub.next_payment_date:
+            due_date = sub.next_payment_date.date() if isinstance(sub.next_payment_date, datetime) else sub.next_payment_date
+            days_until = (due_date - today).days
+
+            # Convert amount to display currency
+            if sub.currency == display_currency:
+                amount = sub.amount
+            else:
+                converted = await currency_service.convert_amount(
+                    sub.amount, sub.currency, display_currency
+                )
+                amount = converted if converted else sub.amount
+
+            payments.append(UpcomingPayment(
+                id=sub.id,
+                module="subscriptions",
+                name=sub.name,
+                amount=amount,
+                currency=display_currency,
+                due_date=due_date,
+                days_until_due=days_until,
+                is_overdue=days_until < 0
+            ))
+
+    # =========================================================================
+    # Installments with next_payment_date
+    # =========================================================================
+    installments_query = select(Installment).where(
+        and_(
+            Installment.user_id == user_id,
+            Installment.is_active == True,
+            Installment.next_payment_date.isnot(None),
+            Installment.next_payment_date <= end_date_dt
+        )
+    )
+    installments_result = await db.execute(installments_query)
+    installments = installments_result.scalars().all()
+
+    for inst in installments:
+        if inst.next_payment_date:
+            due_date = inst.next_payment_date.date() if isinstance(inst.next_payment_date, datetime) else inst.next_payment_date
+            days_until = (due_date - today).days
+
+            # Convert amount to display currency
+            if inst.currency == display_currency:
+                amount = inst.amount_per_payment
+            else:
+                converted = await currency_service.convert_amount(
+                    inst.amount_per_payment, inst.currency, display_currency
+                )
+                amount = converted if converted else inst.amount_per_payment
+
+            payments.append(UpcomingPayment(
+                id=inst.id,
+                module="installments",
+                name=inst.name,
+                amount=amount,
+                currency=display_currency,
+                due_date=due_date,
+                days_until_due=days_until,
+                is_overdue=days_until < 0
+            ))
+
+    # =========================================================================
+    # Taxes with next_payment_date
+    # =========================================================================
+    taxes_query = select(Tax).where(
+        and_(
+            Tax.user_id == user_id,
+            Tax.is_active == True,
+            Tax.deleted_at.is_(None),
+            Tax.next_payment_date.isnot(None),
+            Tax.next_payment_date <= end_date_dt
+        )
+    )
+    taxes_result = await db.execute(taxes_query)
+    taxes = taxes_result.scalars().all()
+
+    for tax in taxes:
+        if tax.next_payment_date:
+            due_date = tax.next_payment_date.date() if isinstance(tax.next_payment_date, datetime) else tax.next_payment_date
+            days_until = (due_date - today).days
+
+            # Get tax amount (fixed or calculate percentage)
+            if tax.tax_type == "fixed" and tax.fixed_amount:
+                amount = tax.fixed_amount
+            else:
+                # For percentage taxes, we'd need income data - use 0 as placeholder
+                amount = Decimal('0')
+
+            # Convert amount to display currency
+            if tax.currency == display_currency:
+                converted_amount = amount
+            else:
+                converted = await currency_service.convert_amount(
+                    amount, tax.currency, display_currency
+                )
+                converted_amount = converted if converted else amount
+
+            payments.append(UpcomingPayment(
+                id=tax.id,
+                module="taxes",
+                name=tax.name,
+                amount=converted_amount,
+                currency=display_currency,
+                due_date=due_date,
+                days_until_due=days_until,
+                is_overdue=days_until < 0
+            ))
+
+    # Sort by due date (earliest first, overdue at top)
+    payments.sort(key=lambda x: (x.days_until_due >= 0, x.due_date))
 
     return payments
 
@@ -1636,4 +1824,189 @@ async def get_income_breakdown_chart(
         total_income=total_income,
         currency=cash_flow.currency
     )
+
+
+# ============================================================================
+# Financial Projections
+# ============================================================================
+
+async def get_financial_projections(
+    db: AsyncSession,
+    user_id: UUID,
+    annual_return_rate: Decimal = Decimal('0.07')  # 7% default
+) -> "FinancialProjectionsResponse":
+    """
+    Calculate financial projections based on current trends.
+
+    Projections use:
+    - Current net worth as baseline
+    - Current monthly savings rate
+    - Assumed investment return rate
+
+    Formula: FV = PV * (1 + r)^n + PMT * (((1 + r)^n - 1) / r)
+    Where:
+    - FV = Future Value
+    - PV = Present Value (current net worth)
+    - r = monthly interest rate
+    - n = number of months
+    - PMT = monthly contribution (savings)
+    """
+    from app.modules.dashboard.schemas import FinancialProjectionsResponse
+
+    # Get current financial state
+    net_worth_data = await get_net_worth(db, user_id)
+    cash_flow_data = await get_cash_flow(db, user_id)
+
+    current_net_worth = net_worth_data.net_worth
+    monthly_savings = cash_flow_data.net_cash_flow
+    savings_rate = cash_flow_data.savings_rate
+
+    # Monthly interest rate
+    monthly_rate = annual_return_rate / Decimal('12')
+
+    def calculate_future_value(months: int) -> Decimal:
+        """Calculate future value with compound interest and regular contributions."""
+        if monthly_rate == 0:
+            return current_net_worth + (monthly_savings * months)
+
+        # FV of lump sum: PV * (1 + r)^n
+        fv_lump = current_net_worth * ((1 + monthly_rate) ** months)
+
+        # FV of annuity: PMT * (((1 + r)^n - 1) / r)
+        if monthly_savings > 0:
+            fv_annuity = monthly_savings * ((((1 + monthly_rate) ** months) - 1) / monthly_rate)
+        else:
+            fv_annuity = Decimal('0')
+
+        return fv_lump + fv_annuity
+
+    return FinancialProjectionsResponse(
+        current_net_worth=current_net_worth,
+        current_monthly_savings=monthly_savings,
+        current_savings_rate=savings_rate,
+        projected_net_worth_1_year=calculate_future_value(12),
+        projected_net_worth_3_years=calculate_future_value(36),
+        projected_net_worth_5_years=calculate_future_value(60),
+        projected_net_worth_10_years=calculate_future_value(120),
+        assumed_annual_return=annual_return_rate * 100,  # Convert to percentage
+        assumed_monthly_savings=monthly_savings,
+        currency=net_worth_data.currency
+    )
+
+
+async def get_goal_projections(
+    db: AsyncSession,
+    user_id: UUID
+) -> "GoalProjectionsResponse":
+    """
+    Calculate projections for all active goals.
+
+    For each goal, calculates:
+    - Progress percentage
+    - Estimated completion date based on current contribution rate
+    - Whether the goal is on track
+    """
+    from app.modules.dashboard.schemas import GoalProjectionsResponse, GoalProjectionItem
+    from dateutil.relativedelta import relativedelta
+
+    # Get all active goals
+    goals_query = select(Goal).where(
+        and_(
+            Goal.user_id == user_id,
+            Goal.is_active == True,
+            Goal.is_completed == False
+        )
+    )
+    goals_result = await db.execute(goals_query)
+    goals = goals_result.scalars().all()
+
+    goal_projections = []
+    total_targets = Decimal('0')
+    total_progress = Decimal('0')
+
+    for goal in goals:
+        target_amount = goal.target_amount or Decimal('0')
+        current_amount = goal.current_amount or Decimal('0')
+        monthly_contribution = goal.monthly_contribution or Decimal('0')
+
+        total_targets += target_amount
+        total_progress += current_amount
+
+        progress_pct = (current_amount / target_amount * 100) if target_amount > 0 else Decimal('0')
+        remaining = target_amount - current_amount
+
+        # Calculate months to completion
+        if monthly_contribution > 0 and remaining > 0:
+            months_to_complete = int(remaining / monthly_contribution) + 1
+            completion_date = datetime.utcnow().date() + relativedelta(months=months_to_complete)
+        else:
+            months_to_complete = None
+            completion_date = None
+
+        # Check if on track (has target date and will meet it)
+        on_track = True
+        if goal.target_date and completion_date:
+            on_track = completion_date <= goal.target_date
+
+        goal_projections.append(GoalProjectionItem(
+            goal_id=goal.id,
+            goal_name=goal.name,
+            target_amount=target_amount,
+            current_amount=current_amount,
+            progress_percentage=progress_pct,
+            monthly_contribution=monthly_contribution,
+            projected_completion_date=completion_date,
+            months_to_completion=months_to_complete,
+            on_track=on_track
+        ))
+
+    overall_progress = (total_progress / total_targets * 100) if total_targets > 0 else Decimal('0')
+
+    return GoalProjectionsResponse(
+        goals=goal_projections,
+        total_goal_targets=total_targets,
+        total_current_progress=total_progress,
+        overall_progress_percentage=overall_progress
+    )
+
+
+async def get_net_worth_trend_from_snapshots(
+    db: AsyncSession,
+    user_id: UUID,
+    start_date: datetime,
+    end_date: datetime
+) -> NetWorthTrendChartResponse:
+    """
+    Get net worth trend using actual stored snapshots.
+
+    Falls back to calculated values for months without snapshots.
+    """
+    from app.modules.dashboard.snapshot_service import get_snapshots_for_period
+    from calendar import month_abbr
+
+    # Get actual snapshots
+    snapshots = await get_snapshots_for_period(db, user_id, start_date, end_date)
+
+    # Build a map of month -> snapshot
+    snapshot_map = {}
+    for snapshot in snapshots:
+        month_key = f"{month_abbr[snapshot.snapshot_date.month]} {snapshot.snapshot_date.year}"
+        snapshot_map[month_key] = snapshot
+
+    # If we have snapshots, use them; otherwise fall back to calculated
+    if snapshots:
+        data_points = []
+        for month_key, snapshot in snapshot_map.items():
+            data_points.append(NetWorthTrendDataPoint(
+                month=month_key,
+                net_worth=snapshot.net_worth,
+                assets=snapshot.total_assets,
+                liabilities=snapshot.total_liabilities
+            ))
+        # Sort by date
+        data_points.sort(key=lambda x: datetime.strptime(x.month, "%b %Y"))
+        return NetWorthTrendChartResponse(data=data_points)
+
+    # Fall back to calculated values
+    return await get_net_worth_trend_chart(db, user_id, start_date, end_date)
 
