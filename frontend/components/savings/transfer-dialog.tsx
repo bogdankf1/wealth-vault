@@ -38,6 +38,7 @@ import {
 } from '@/lib/api/savingsApi';
 import { useGetExchangeRateQuery } from '@/lib/api/currenciesApi';
 import { formatCurrency } from '@/lib/utils/currency';
+import { CurrencyInput } from '@/components/currency/currency-input';
 
 const transferSchema = z.object({
   from_account_id: z.string().min(1, 'Source account is required'),
@@ -51,8 +52,10 @@ const transferSchema = z.object({
       },
       { message: 'Amount can have at most 2 decimal places' }
     ),
+  currency: z.string().length(3),
   description: z.string().max(500).optional(),
   exchange_rate: z.number().min(0.000001).optional(),
+  input_exchange_rate: z.number().min(0.000001).optional(),
   transfer_date: z.string().optional(),
 }).refine((data) => data.from_account_id !== data.to_account_id, {
   message: 'Source and destination accounts must be different',
@@ -76,6 +79,7 @@ export function TransferDialog({
 }: TransferDialogProps) {
   const [amountInput, setAmountInput] = React.useState<string>('');
   const [exchangeRateInput, setExchangeRateInput] = React.useState<string>('');
+  const [inputExchangeRateInput, setInputExchangeRateInput] = React.useState<string>('');
 
   // Translation hooks
   const t = useTranslations('savings.transfers.form');
@@ -99,6 +103,7 @@ export function TransferDialog({
       from_account_id: preselectedFromAccountId || '',
       to_account_id: preselectedToAccountId || '',
       amount: 0,
+      currency: 'USD',
       description: '',
       transfer_date: new Date().toISOString().split('T')[0],
     },
@@ -107,53 +112,96 @@ export function TransferDialog({
   const fromAccountId = watch('from_account_id');
   const toAccountId = watch('to_account_id');
   const amount = watch('amount');
+  const selectedCurrency = watch('currency');
   const exchangeRate = watch('exchange_rate');
+  const inputExchangeRate = watch('input_exchange_rate');
 
   const fromAccount = accounts.find((a) => a.id === fromAccountId);
   const toAccount = accounts.find((a) => a.id === toAccountId);
-  const isCrossCurrency = fromAccount && toAccount && fromAccount.currency !== toAccount.currency;
-  const convertedAmount = isCrossCurrency && exchangeRate ? amount * exchangeRate : undefined;
 
-  // Auto-fetch exchange rate for cross-currency transfers
-  const { data: exchangeRateData, isFetching: isFetchingRate } = useGetExchangeRateQuery(
-    { from: fromAccount?.currency || '', to: toAccount?.currency || '' },
-    { skip: !isCrossCurrency || !fromAccount?.currency || !toAccount?.currency }
+  // Check if input currency differs from source account currency
+  const isInputCrossCurrency = fromAccount && selectedCurrency && selectedCurrency !== fromAccount.currency;
+  // Check if source and destination accounts have different currencies
+  const isAccountCrossCurrency = fromAccount && toAccount && fromAccount.currency !== toAccount.currency;
+
+  // Calculate converted amounts
+  const sourceAmount = isInputCrossCurrency && inputExchangeRate ? amount * inputExchangeRate : amount;
+  const destinationAmount = isAccountCrossCurrency && exchangeRate ? sourceAmount * exchangeRate : sourceAmount;
+
+  // Auto-fetch exchange rate for input currency -> source account currency
+  const { data: inputExchangeRateData, isFetching: isFetchingInputRate } = useGetExchangeRateQuery(
+    { from: selectedCurrency || '', to: fromAccount?.currency || '' },
+    { skip: !isInputCrossCurrency || !selectedCurrency || !fromAccount?.currency }
   );
 
-  // Auto-set exchange rate when fetched
+  // Auto-fetch exchange rate for source -> destination account currencies
+  const { data: exchangeRateData, isFetching: isFetchingRate } = useGetExchangeRateQuery(
+    { from: fromAccount?.currency || '', to: toAccount?.currency || '' },
+    { skip: !isAccountCrossCurrency || !fromAccount?.currency || !toAccount?.currency }
+  );
+
+  // Auto-set input exchange rate when fetched
   useEffect(() => {
-    if (exchangeRateData?.rate && isCrossCurrency) {
+    if (inputExchangeRateData?.rate && isInputCrossCurrency) {
+      const rate = typeof inputExchangeRateData.rate === 'string'
+        ? parseFloat(inputExchangeRateData.rate)
+        : inputExchangeRateData.rate;
+      setValue('input_exchange_rate', rate);
+      setInputExchangeRateInput(String(rate));
+    }
+  }, [inputExchangeRateData, isInputCrossCurrency, setValue]);
+
+  // Auto-set account exchange rate when fetched
+  useEffect(() => {
+    if (exchangeRateData?.rate && isAccountCrossCurrency) {
       const rate = typeof exchangeRateData.rate === 'string'
         ? parseFloat(exchangeRateData.rate)
         : exchangeRateData.rate;
       setValue('exchange_rate', rate);
       setExchangeRateInput(String(rate));
     }
-  }, [exchangeRateData, isCrossCurrency, setValue]);
+  }, [exchangeRateData, isAccountCrossCurrency, setValue]);
 
-  // Reset form when opening
+  // Reset form when opening - use source account currency as default
   useEffect(() => {
     if (isOpen) {
+      const defaultCurrency = preselectedFromAccountId
+        ? accounts.find(a => a.id === preselectedFromAccountId)?.currency || 'USD'
+        : 'USD';
       reset({
         from_account_id: preselectedFromAccountId || '',
         to_account_id: preselectedToAccountId || '',
         amount: 0,
+        currency: defaultCurrency,
         description: '',
         transfer_date: new Date().toISOString().split('T')[0],
       });
       setAmountInput('');
       setExchangeRateInput('');
+      setInputExchangeRateInput('');
     }
-  }, [isOpen, reset, preselectedFromAccountId, preselectedToAccountId]);
+  }, [isOpen, reset, preselectedFromAccountId, preselectedToAccountId, accounts]);
+
+  // Update currency when source account changes
+  useEffect(() => {
+    if (fromAccount && !isInputCrossCurrency) {
+      setValue('currency', fromAccount.currency);
+    }
+  }, [fromAccount, setValue, isInputCrossCurrency]);
 
   const onSubmit = async (data: FormData) => {
     try {
+      // If input currency differs from source account, convert to source account currency
+      const transferAmount = isInputCrossCurrency && data.input_exchange_rate
+        ? data.amount * data.input_exchange_rate
+        : data.amount;
+
       const submitData = {
         from_account_id: data.from_account_id,
         to_account_id: data.to_account_id,
-        amount: data.amount,
+        amount: transferAmount, // Amount in source account currency
         description: data.description || undefined,
-        exchange_rate: isCrossCurrency ? data.exchange_rate : undefined,
+        exchange_rate: isAccountCrossCurrency ? data.exchange_rate : undefined,
         transfer_date: data.transfer_date ? `${data.transfer_date}T00:00:00Z` : undefined,
       };
 
@@ -172,6 +220,7 @@ export function TransferDialog({
     onClose();
     setAmountInput('');
     setExchangeRateInput('');
+    setInputExchangeRateInput('');
     reset();
   };
 
@@ -248,9 +297,87 @@ export function TransferDialog({
             )}
           </div>
 
-          {/* Cross-currency info - show exchange rate status */}
-          {isCrossCurrency && (
-            <Alert variant={isFetchingRate ? 'default' : 'default'}>
+          {/* Amount with Currency Selection */}
+          <CurrencyInput
+            label={t('amount')}
+            amount={amountInput}
+            currency={selectedCurrency || fromAccount?.currency || 'USD'}
+            onAmountChange={(value) => {
+              setAmountInput(value);
+              if (value === '') {
+                setValue('amount', 0, { shouldValidate: true });
+              } else {
+                const numValue = parseFloat(value);
+                if (!isNaN(numValue)) {
+                  setValue('amount', numValue, { shouldValidate: true });
+                }
+              }
+            }}
+            onCurrencyChange={(value) => setValue('currency', value)}
+            required
+            error={errors.amount?.message}
+          />
+
+          {/* Insufficient funds warning */}
+          {fromAccount && sourceAmount > fromAccount.current_balance && (
+            <p className="text-sm text-destructive">{t('insufficientFunds')}</p>
+          )}
+
+          {/* Input currency conversion info (when input currency differs from source account) */}
+          {isInputCrossCurrency && (
+            <Alert variant="default">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {isFetchingInputRate
+                  ? t('fetchingExchangeRate')
+                  : t('exchangeRateLoaded', {
+                      fromCurrency: selectedCurrency,
+                      toCurrency: fromAccount?.currency,
+                      rate: inputExchangeRateData?.rate ? Number(inputExchangeRateData.rate).toFixed(4) : '...',
+                    })}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Input Exchange Rate (for input currency -> source account currency) */}
+          {isInputCrossCurrency && (
+            <div className="space-y-2">
+              <Label>{t('inputExchangeRate')}</Label>
+              <Input
+                type="number"
+                step="0.000001"
+                min="0.000001"
+                value={inputExchangeRateInput}
+                onChange={(e) => {
+                  setInputExchangeRateInput(e.target.value);
+                  if (e.target.value === '') {
+                    setValue('input_exchange_rate', undefined);
+                  } else {
+                    const numValue = parseFloat(e.target.value);
+                    if (!isNaN(numValue)) {
+                      setValue('input_exchange_rate', numValue);
+                    }
+                  }
+                }}
+                placeholder="1.0"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('exchangeRateHelp', {
+                  fromCurrency: selectedCurrency,
+                  toCurrency: fromAccount?.currency,
+                })}
+              </p>
+              {sourceAmount > 0 && (
+                <p className="text-sm font-medium">
+                  {t('withdrawalAmount')}: {formatCurrency(sourceAmount, fromAccount?.currency)}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Cross-currency info for source -> destination accounts */}
+          {isAccountCrossCurrency && (
+            <Alert variant="default">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 {isFetchingRate
@@ -264,74 +391,37 @@ export function TransferDialog({
             </Alert>
           )}
 
-          {/* Amount */}
-          <div className="space-y-2">
-            <Label>{t('amount')} *</Label>
-            <div className="relative">
+          {/* Exchange Rate (for source -> destination account currencies) */}
+          {isAccountCrossCurrency && (
+            <div className="space-y-2">
+              <Label>{t('exchangeRate')}</Label>
               <Input
                 type="number"
-                step="0.01"
-                min="0.01"
-                value={amountInput}
+                step="0.000001"
+                min="0.000001"
+                value={exchangeRateInput}
                 onChange={(e) => {
-                  setAmountInput(e.target.value);
+                  setExchangeRateInput(e.target.value);
                   if (e.target.value === '') {
-                    setValue('amount', 0, { shouldValidate: true });
+                    setValue('exchange_rate', undefined);
                   } else {
                     const numValue = parseFloat(e.target.value);
                     if (!isNaN(numValue)) {
-                      setValue('amount', numValue, { shouldValidate: true });
+                      setValue('exchange_rate', numValue);
                     }
                   }
                 }}
-                placeholder="0.00"
-                className="pr-16"
+                placeholder="1.0"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {fromAccount?.currency || 'USD'}
-              </span>
-            </div>
-            {errors.amount && (
-              <p className="text-sm text-destructive">{errors.amount.message}</p>
-            )}
-            {fromAccount && amount > fromAccount.current_balance && (
-              <p className="text-sm text-destructive">{t('insufficientFunds')}</p>
-            )}
-          </div>
-
-          {/* Exchange Rate (for cross-currency transfers) */}
-          {isCrossCurrency && (
-            <div className="space-y-2">
-              <Label>{t('exchangeRate')}</Label>
-              <div className="relative">
-                <Input
-                  type="number"
-                  step="0.000001"
-                  min="0.000001"
-                  value={exchangeRateInput}
-                  onChange={(e) => {
-                    setExchangeRateInput(e.target.value);
-                    if (e.target.value === '') {
-                      setValue('exchange_rate', undefined);
-                    } else {
-                      const numValue = parseFloat(e.target.value);
-                      if (!isNaN(numValue)) {
-                        setValue('exchange_rate', numValue);
-                      }
-                    }
-                  }}
-                  placeholder="1.0"
-                />
-              </div>
               <p className="text-xs text-muted-foreground">
                 {t('exchangeRateHelp', {
                   fromCurrency: fromAccount?.currency,
                   toCurrency: toAccount?.currency,
                 })}
               </p>
-              {convertedAmount !== undefined && (
+              {destinationAmount > 0 && (
                 <p className="text-sm font-medium">
-                  {t('convertedAmount')}: {formatCurrency(convertedAmount, toAccount?.currency)}
+                  {t('convertedAmount')}: {formatCurrency(destinationAmount, toAccount?.currency)}
                 </p>
               )}
             </div>
@@ -364,7 +454,7 @@ export function TransferDialog({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || (fromAccount ? amount > fromAccount.current_balance : false)}
+              disabled={isLoading || (fromAccount ? sourceAmount > fromAccount.current_balance : false)}
             >
               {isLoading ? t('processing') : t('submit')}
             </Button>

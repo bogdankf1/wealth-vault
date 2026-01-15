@@ -70,7 +70,7 @@ export function CurrencyInput({
             disabled={disabled}
             required={required}
             className={cn(
-              currencyData?.symbol && "pl-8",
+              currencyData?.symbol && "pl-14",
               error && "border-destructive focus-visible:ring-destructive"
             )}
             aria-invalid={!!error}

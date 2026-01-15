@@ -1,6 +1,7 @@
 /**
  * Transaction Form Component
  * Form for creating deposits and withdrawals for savings accounts
+ * Supports currency conversion when entering amounts in different currencies
  */
 'use client';
 
@@ -28,13 +29,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useCreateDepositMutation,
   useCreateWithdrawalMutation,
   useGetAccountQuery,
 } from '@/lib/api/savingsApi';
+import { useGetExchangeRateQuery } from '@/lib/api/currenciesApi';
 import { formatCurrency } from '@/lib/utils/currency';
+import { CurrencyInput } from '@/components/currency/currency-input';
 
 const transactionSchema = z.object({
   amount: z.number()
@@ -46,10 +51,12 @@ const transactionSchema = z.object({
       },
       { message: 'Amount can have at most 2 decimal places' }
     ),
+  currency: z.string().length(3),
   description: z.string().max(500).optional(),
   category: z.string().max(50).optional(),
   reference_number: z.string().max(100).optional(),
   transaction_date: z.string().optional(),
+  exchange_rate: z.number().min(0.000001).optional(),
 });
 
 type FormData = z.infer<typeof transactionSchema>;
@@ -65,6 +72,7 @@ interface TransactionFormProps {
 
 export function TransactionForm({ accountId, type, isOpen, onClose }: TransactionFormProps) {
   const [amountInput, setAmountInput] = React.useState<string>('');
+  const [exchangeRateInput, setExchangeRateInput] = React.useState<string>('');
 
   // Translation hooks
   const tForm = useTranslations('savings.transactions.form');
@@ -115,6 +123,7 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       amount: 0,
+      currency: 'USD',
       description: '',
       category: '',
       reference_number: '',
@@ -123,29 +132,60 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
   });
 
   const selectedCategory = watch('category');
+  const selectedCurrency = watch('currency');
+  const amount = watch('amount');
+  const exchangeRate = watch('exchange_rate');
 
-  // Reset form when opening
+  // Check if currency conversion is needed
+  const isCrossCurrency = account && selectedCurrency && selectedCurrency !== account.currency;
+  const convertedAmount = isCrossCurrency && exchangeRate ? amount * exchangeRate : undefined;
+
+  // Auto-fetch exchange rate for cross-currency transactions
+  const { data: exchangeRateData, isFetching: isFetchingRate } = useGetExchangeRateQuery(
+    { from: selectedCurrency || '', to: account?.currency || '' },
+    { skip: !isCrossCurrency || !selectedCurrency || !account?.currency }
+  );
+
+  // Auto-set exchange rate when fetched
   useEffect(() => {
-    if (isOpen) {
+    if (exchangeRateData?.rate && isCrossCurrency) {
+      const rate = typeof exchangeRateData.rate === 'string'
+        ? parseFloat(exchangeRateData.rate)
+        : exchangeRateData.rate;
+      setValue('exchange_rate', rate);
+      setExchangeRateInput(String(rate));
+    }
+  }, [exchangeRateData, isCrossCurrency, setValue]);
+
+  // Reset form when opening - use account currency as default
+  useEffect(() => {
+    if (isOpen && account) {
       reset({
         amount: 0,
+        currency: account.currency,
         description: '',
         category: '',
         reference_number: '',
         transaction_date: new Date().toISOString().split('T')[0],
       });
       setAmountInput('');
+      setExchangeRateInput('');
     }
-  }, [isOpen, reset]);
+  }, [isOpen, reset, account]);
 
   const onSubmit = async (data: FormData) => {
     try {
+      // Build submit data with optional currency conversion fields
+      const needsConversion = data.currency !== account?.currency;
       const submitData = {
         amount: data.amount,
         description: data.description || undefined,
         category: data.category || undefined,
         reference_number: data.reference_number || undefined,
         transaction_date: data.transaction_date ? `${data.transaction_date}T00:00:00Z` : undefined,
+        // Include currency conversion data if currencies differ
+        source_currency: needsConversion ? data.currency : undefined,
+        exchange_rate: needsConversion ? data.exchange_rate : undefined,
       };
 
       if (type === 'deposit') {
@@ -171,6 +211,7 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
   const handleClose = () => {
     onClose();
     setAmountInput('');
+    setExchangeRateInput('');
     reset();
   };
 
@@ -195,38 +236,78 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Amount */}
-          <div className="space-y-2">
-            <Label htmlFor="amount">{tForm('amount')} *</Label>
-            <div className="relative">
+          {/* Amount with Currency Selection */}
+          <CurrencyInput
+            label={tForm('amount')}
+            amount={amountInput}
+            currency={selectedCurrency || account?.currency || 'USD'}
+            onAmountChange={(value) => {
+              setAmountInput(value);
+              if (value === '') {
+                setValue('amount', 0, { shouldValidate: true });
+              } else {
+                const numValue = parseFloat(value);
+                if (!isNaN(numValue)) {
+                  setValue('amount', numValue, { shouldValidate: true });
+                }
+              }
+            }}
+            onCurrencyChange={(value) => setValue('currency', value)}
+            required
+            error={errors.amount?.message}
+          />
+
+          {/* Cross-currency conversion info */}
+          {isCrossCurrency && (
+            <Alert variant={isFetchingRate ? 'default' : 'default'}>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {isFetchingRate
+                  ? tForm('fetchingExchangeRate')
+                  : tForm('exchangeRateLoaded', {
+                      fromCurrency: selectedCurrency,
+                      toCurrency: account?.currency,
+                      rate: exchangeRateData?.rate ? Number(exchangeRateData.rate).toFixed(4) : '...',
+                    })}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Exchange Rate (for cross-currency transactions) */}
+          {isCrossCurrency && (
+            <div className="space-y-2">
+              <Label>{tForm('exchangeRate')}</Label>
               <Input
-                id="amount"
                 type="number"
-                step="0.01"
-                min="0.01"
-                value={amountInput}
+                step="0.000001"
+                min="0.000001"
+                value={exchangeRateInput}
                 onChange={(e) => {
-                  setAmountInput(e.target.value);
+                  setExchangeRateInput(e.target.value);
                   if (e.target.value === '') {
-                    setValue('amount', 0, { shouldValidate: true });
+                    setValue('exchange_rate', undefined);
                   } else {
                     const numValue = parseFloat(e.target.value);
                     if (!isNaN(numValue)) {
-                      setValue('amount', numValue, { shouldValidate: true });
+                      setValue('exchange_rate', numValue);
                     }
                   }
                 }}
-                placeholder="0.00"
-                className="pr-16"
+                placeholder="1.0"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {account?.currency || 'USD'}
-              </span>
+              <p className="text-xs text-muted-foreground">
+                {tForm('exchangeRateHelp', {
+                  fromCurrency: selectedCurrency,
+                  toCurrency: account?.currency,
+                })}
+              </p>
+              {convertedAmount !== undefined && (
+                <p className="text-sm font-medium">
+                  {tForm('convertedAmount')}: {formatCurrency(convertedAmount, account?.currency)}
+                </p>
+              )}
             </div>
-            {errors.amount && (
-              <p className="text-sm text-destructive">{errors.amount.message}</p>
-            )}
-          </div>
+          )}
 
           {/* Description */}
           <div className="space-y-2">
