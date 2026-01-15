@@ -80,7 +80,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
     number_of_payments: z.number().min(1, tForm('totalPaymentsMin')).optional(),
     is_active: z.boolean(),
     start_date: z.string().min(1, tForm('startDateRequired')),
-    first_payment_date: z.string().min(1, tForm('firstPaymentDateRequired')),
+    first_payment_date: z.string().optional(), // Auto-synced to start_date
     end_date: z.string().optional(),
     // Payment integration fields
     payment_account_id: z.string().nullable().optional(),
@@ -145,7 +145,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       frequency: 'monthly',
       is_active: true,
       start_date: new Date().toISOString().split('T')[0],
-      first_payment_date: new Date().toISOString().split('T')[0],
       // Payment integration defaults
       payment_account_id: null,
       auto_pay: false,
@@ -158,6 +157,14 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
   const totalAmount = watch('total_amount');
   const amountPerPayment = watch('amount_per_payment');
   const interestRate = watch('interest_rate');
+  const startDate = watch('start_date');
+
+  // Sync first_payment_date to start_date whenever start_date changes
+  useEffect(() => {
+    if (startDate) {
+      setValue('first_payment_date', startDate);
+    }
+  }, [startDate, setValue]);
 
   // Calculate number of payments based on total amount, payment amount, and interest rate
   useEffect(() => {
@@ -210,8 +217,8 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         number_of_payments: existingInstallment.number_of_payments,
         is_active: existingInstallment.is_active,
         // Extract date directly from string to avoid timezone conversion
-        start_date: existingInstallment.start_date.split('T')[0],
-        first_payment_date: existingInstallment.first_payment_date.split('T')[0],
+        // Use first_payment_date as the start_date since they're now combined
+        start_date: existingInstallment.first_payment_date?.split('T')[0] || existingInstallment.start_date.split('T')[0],
         end_date: existingInstallment.end_date
           ? existingInstallment.end_date.split('T')[0]
           : '',
@@ -254,7 +261,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         number_of_payments: undefined,
         is_active: true,
         start_date: new Date().toISOString().split('T')[0],
-        first_payment_date: new Date().toISOString().split('T')[0],
         end_date: '',
         payment_account_id: null,
         auto_pay: false,
@@ -283,8 +289,9 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         number_of_payments: finalNumberOfPayments,
         is_active: data.is_active,
         // Keep date-only format to avoid timezone issues
+        // first_payment_date is synced to start_date
         start_date: `${data.start_date}T00:00:00`,
-        first_payment_date: `${data.first_payment_date}T00:00:00`,
+        first_payment_date: `${data.start_date}T00:00:00`,
         end_date: data.end_date ? `${data.end_date}T00:00:00` : undefined,
         // Payment integration fields
         payment_account_id: data.payment_account_id || null,
@@ -317,7 +324,6 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
       frequency: 'monthly',
       is_active: true,
       start_date: new Date().toISOString().split('T')[0],
-      first_payment_date: new Date().toISOString().split('T')[0],
       payment_account_id: null,
       auto_pay: false,
       reminder_days_before: 3,
@@ -528,36 +534,22 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </div>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="start_date">{tForm('startDate')} *</Label>
-                <Input
-                  id="start_date"
-                  type="date"
-                  {...register('start_date')}
-                  className="cursor-pointer"
-                                  />
-                {errors.start_date && (
-                  <p className="text-sm text-destructive">
-                    {errors.start_date.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="first_payment_date">{tForm('firstPaymentDate')} *</Label>
-                <Input
-                  id="first_payment_date"
-                  type="date"
-                  {...register('first_payment_date')}
-                  className="cursor-pointer"
-                                  />
-                {errors.first_payment_date && (
-                  <p className="text-sm text-destructive">
-                    {errors.first_payment_date.message}
-                  </p>
-                )}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="start_date">{tForm('startDate')} *</Label>
+              <Input
+                id="start_date"
+                type="date"
+                {...register('start_date')}
+                className="cursor-pointer"
+              />
+              <p className="text-xs text-muted-foreground">
+                {tForm('startDateHelp')}
+              </p>
+              {errors.start_date && (
+                <p className="text-sm text-destructive">
+                  {errors.start_date.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
