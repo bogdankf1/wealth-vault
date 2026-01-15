@@ -364,6 +364,8 @@ async def list_transactions(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     transaction_type: Optional[str] = Query(None, description="Filter by type: deposit, withdrawal, etc."),
+    source_type: Optional[str] = Query(None, description="Filter by source: subscription, installment, etc."),
+    search: Optional[str] = Query(None, description="Search in description"),
     start_date: Optional[datetime] = Query(None, description="Start date filter"),
     end_date: Optional[datetime] = Query(None, description="End date filter"),
     current_user: User = Depends(get_current_user),
@@ -380,6 +382,8 @@ async def list_transactions(
             page=page,
             page_size=page_size,
             transaction_type=transaction_type,
+            source_type=source_type,
+            search=search,
             start_date=start_date,
             end_date=end_date,
         )

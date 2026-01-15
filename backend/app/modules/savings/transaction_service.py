@@ -448,6 +448,8 @@ class TransactionService:
         page: int = 1,
         page_size: int = 50,
         transaction_type: Optional[str] = None,
+        source_type: Optional[str] = None,
+        search: Optional[str] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
     ) -> Tuple[List[AccountTransaction], int]:
@@ -467,6 +469,12 @@ class TransactionService:
 
         if transaction_type:
             query = query.where(AccountTransaction.transaction_type == transaction_type)
+
+        if source_type:
+            query = query.where(AccountTransaction.source_type == source_type)
+
+        if search:
+            query = query.where(AccountTransaction.description.ilike(f"%{search}%"))
 
         if start_date:
             query = query.where(AccountTransaction.transaction_date >= start_date)
