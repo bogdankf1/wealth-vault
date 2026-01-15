@@ -156,9 +156,13 @@
   },
   "transactions": {
     "title": "Історія транзакцій",
+    "searchPlaceholder": "Пошук транзакцій...",
+    "sourceFilter": "Джерело",
+    "allSources": "Усі джерела",
     "filterByType": "Фільтрувати за типом",
     "allTypes": "Всі типи",
     "noTransactions": "Поки немає транзакцій",
+    "noMatchingTransactions": "Транзакції, що відповідають вашим фільтрам, не знайдено",
     "noDescription": "Без опису",
     "balance": "Баланс",
     "showing": "Показано {from}-{to} з {total}",
@@ -194,6 +198,17 @@
       "completed": "Завершено",
       "failed": "Невдало",
       "reversed": "Скасовано"
+    },
+    "sources": {
+      "manual": "Вручну",
+      "subscription": "Підписка",
+      "installment": "Внесок",
+      "portfolio": "Портфоліо",
+      "debt": "Борг",
+      "income": "Дохід",
+      "expense": "Витрата",
+      "transfer": "Переказ",
+      "interest": "Відсотки"
     },
     "form": {
       "depositTitle": "Зробити внесок",

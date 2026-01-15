@@ -1,6 +1,7 @@
 /**
  * Transaction List Component
  * Displays a list of transactions for a savings account
+ * With search, source type filter, and transaction type filter
  */
 'use client';
 
@@ -9,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -26,14 +28,19 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  Search,
 } from 'lucide-react';
 import {
   useListTransactionsQuery,
   type AccountTransaction,
   type TransactionType,
+  type SourceType,
 } from '@/lib/api/savingsApi';
 import { formatCurrency } from '@/lib/utils/currency';
 import { format } from 'date-fns';
+
+// Extended source type with 'all' option for filter UI
+type SourceFilterType = SourceType | 'all';
 
 interface TransactionListProps {
   accountId: string;
@@ -63,15 +70,31 @@ const TRANSACTION_TYPE_COLORS: Record<TransactionType, string> = {
 export function TransactionList({ accountId, currency = 'USD' }: TransactionListProps) {
   const [page, setPage] = React.useState(1);
   const [typeFilter, setTypeFilter] = React.useState<TransactionType | 'all'>('all');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
+  const [sourceFilter, setSourceFilter] = React.useState<SourceFilterType>('all');
   const pageSize = 10;
 
   const t = useTranslations('savings.transactions');
+
+  // Debounce search input
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const { data, isLoading, isFetching } = useListTransactionsQuery({
     accountId,
     page,
     page_size: pageSize,
     transaction_type: typeFilter !== 'all' ? typeFilter : undefined,
+    source_type: sourceFilter !== 'all' ? sourceFilter : undefined,
+    search: debouncedSearch || undefined,
   });
 
   const transactions = data?.items || [];
@@ -158,36 +181,75 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="space-y-4">
         <CardTitle>{t('title')}</CardTitle>
-        <Select
-          value={typeFilter}
-          onValueChange={(value) => {
-            setTypeFilter(value as TransactionType | 'all');
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={t('filterByType')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allTypes')}</SelectItem>
-            <SelectItem value="deposit">{t('types.deposit')}</SelectItem>
-            <SelectItem value="withdrawal">{t('types.withdrawal')}</SelectItem>
-            <SelectItem value="transfer_in">{t('types.transfer_in')}</SelectItem>
-            <SelectItem value="transfer_out">{t('types.transfer_out')}</SelectItem>
-            <SelectItem value="interest">{t('types.interest')}</SelectItem>
-            <SelectItem value="fee">{t('types.fee')}</SelectItem>
-            <SelectItem value="adjustment">{t('types.adjustment')}</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          {/* Source Type Filter */}
+          <Select
+            value={sourceFilter}
+            onValueChange={(value) => {
+              setSourceFilter(value as SourceFilterType);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue placeholder={t('sourceFilter')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('allSources')}</SelectItem>
+              <SelectItem value="subscription">{t('sources.subscription')}</SelectItem>
+              <SelectItem value="installment">{t('sources.installment')}</SelectItem>
+              <SelectItem value="portfolio">{t('sources.portfolio')}</SelectItem>
+              <SelectItem value="debt">{t('sources.debt')}</SelectItem>
+              <SelectItem value="expense">{t('sources.expense')}</SelectItem>
+              <SelectItem value="transfer">{t('sources.transfer')}</SelectItem>
+              <SelectItem value="interest">{t('sources.interest')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Transaction Type Filter */}
+          <Select
+            value={typeFilter}
+            onValueChange={(value) => {
+              setTypeFilter(value as TransactionType | 'all');
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue placeholder={t('filterByType')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('allTypes')}</SelectItem>
+              <SelectItem value="deposit">{t('types.deposit')}</SelectItem>
+              <SelectItem value="withdrawal">{t('types.withdrawal')}</SelectItem>
+              <SelectItem value="transfer_in">{t('types.transfer_in')}</SelectItem>
+              <SelectItem value="transfer_out">{t('types.transfer_out')}</SelectItem>
+              <SelectItem value="interest">{t('types.interest')}</SelectItem>
+              <SelectItem value="fee">{t('types.fee')}</SelectItem>
+              <SelectItem value="adjustment">{t('types.adjustment')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           renderSkeleton()
         ) : transactions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            {t('noTransactions')}
+            {debouncedSearch || sourceFilter !== 'all' || typeFilter !== 'all'
+              ? t('noMatchingTransactions')
+              : t('noTransactions')}
           </div>
         ) : (
           <>

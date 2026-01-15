@@ -154,9 +154,13 @@
   },
   "transactions": {
     "title": "Cronologia transazioni",
+    "searchPlaceholder": "Cerca transazioni...",
+    "sourceFilter": "Origine",
+    "allSources": "Tutte le origini",
     "filterByType": "Filtra per tipo",
     "allTypes": "Tutti i tipi",
     "noTransactions": "Nessuna transazione",
+    "noMatchingTransactions": "Nessuna transazione corrisponde ai tuoi filtri",
     "noDescription": "Nessuna descrizione",
     "balance": "Saldo",
     "showing": "Mostrando {from}-{to} di {total}",
@@ -192,6 +196,17 @@
       "completed": "Completato",
       "failed": "Fallito",
       "reversed": "Annullato"
+    },
+    "sources": {
+      "manual": "Manuale",
+      "subscription": "Abbonamento",
+      "installment": "Rata",
+      "portfolio": "Portafoglio",
+      "debt": "Debito",
+      "income": "Entrata",
+      "expense": "Spesa",
+      "transfer": "Trasferimento",
+      "interest": "Interesse"
     },
     "form": {
       "depositTitle": "Effettua un deposito",

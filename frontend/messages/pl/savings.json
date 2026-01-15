@@ -156,9 +156,13 @@
   },
   "transactions": {
     "title": "Historia transakcji",
+    "searchPlaceholder": "Szukaj transakcji...",
+    "sourceFilter": "Źródło",
+    "allSources": "Wszystkie źródła",
     "filterByType": "Filtruj wg typu",
     "allTypes": "Wszystkie typy",
     "noTransactions": "Brak transakcji",
+    "noMatchingTransactions": "Brak transakcji pasujących do filtrów",
     "noDescription": "Brak opisu",
     "balance": "Saldo",
     "showing": "Pokazuje {from}-{to} z {total}",
@@ -194,6 +198,17 @@
       "completed": "Zakończona",
       "failed": "Nieudana",
       "reversed": "Anulowana"
+    },
+    "sources": {
+      "manual": "Ręczna",
+      "subscription": "Subskrypcja",
+      "installment": "Rata",
+      "portfolio": "Portfel",
+      "debt": "Dług",
+      "income": "Przychód",
+      "expense": "Wydatek",
+      "transfer": "Przelew",
+      "interest": "Odsetki"
     },
     "form": {
       "depositTitle": "Dokonaj wpłaty",

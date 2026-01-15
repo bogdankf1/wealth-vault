@@ -154,9 +154,13 @@
   },
   "transactions": {
     "title": "Historique des transactions",
+    "searchPlaceholder": "Rechercher des transactions...",
+    "sourceFilter": "Source",
+    "allSources": "Toutes les sources",
     "filterByType": "Filtrer par type",
     "allTypes": "Tous les types",
     "noTransactions": "Aucune transaction",
+    "noMatchingTransactions": "Aucune transaction ne correspond à vos filtres",
     "noDescription": "Pas de description",
     "balance": "Solde",
     "showing": "Affichage {from}-{to} sur {total}",
@@ -192,6 +196,17 @@
       "completed": "Terminé",
       "failed": "Échoué",
       "reversed": "Annulé"
+    },
+    "sources": {
+      "manual": "Manuel",
+      "subscription": "Abonnement",
+      "installment": "Versement",
+      "portfolio": "Portefeuille",
+      "debt": "Dette",
+      "income": "Revenu",
+      "expense": "Dépense",
+      "transfer": "Virement",
+      "interest": "Intérêt"
     },
     "form": {
       "depositTitle": "Effectuer un dépôt",

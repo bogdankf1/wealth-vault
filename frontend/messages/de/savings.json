@@ -154,9 +154,13 @@
   },
   "transactions": {
     "title": "Transaktionsverlauf",
+    "searchPlaceholder": "Transaktionen suchen...",
+    "sourceFilter": "Quelle",
+    "allSources": "Alle Quellen",
     "filterByType": "Nach Typ filtern",
     "allTypes": "Alle Typen",
     "noTransactions": "Noch keine Transaktionen",
+    "noMatchingTransactions": "Keine Transaktionen entsprechen Ihren Filtern",
     "noDescription": "Keine Beschreibung",
     "balance": "Saldo",
     "showing": "Zeige {from}-{to} von {total}",
@@ -192,6 +196,17 @@
       "completed": "Abgeschlossen",
       "failed": "Fehlgeschlagen",
       "reversed": "Storniert"
+    },
+    "sources": {
+      "manual": "Manuell",
+      "subscription": "Abonnement",
+      "installment": "Ratenzahlung",
+      "portfolio": "Portfolio",
+      "debt": "Schulden",
+      "income": "Einkommen",
+      "expense": "Ausgabe",
+      "transfer": "Überweisung",
+      "interest": "Zinsen"
     },
     "form": {
       "depositTitle": "Einzahlung vornehmen",

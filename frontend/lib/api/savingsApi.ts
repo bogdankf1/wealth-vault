@@ -215,11 +215,15 @@ export interface ListAccountsParams {
   is_active?: boolean;
 }
 
+export type SourceType = 'manual' | 'subscription' | 'installment' | 'portfolio' | 'portfolio_dividend' | 'income' | 'expense' | 'debt' | 'transfer' | 'interest' | 'reversal';
+
 export interface ListTransactionsParams {
   accountId: string;
   page?: number;
   page_size?: number;
   transaction_type?: TransactionType;
+  source_type?: SourceType;
+  search?: string;
   start_date?: string;
   end_date?: string;
 }

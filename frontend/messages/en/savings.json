@@ -155,9 +155,13 @@
   },
   "transactions": {
     "title": "Transaction History",
+    "searchPlaceholder": "Search transactions...",
+    "sourceFilter": "Source",
+    "allSources": "All Sources",
     "filterByType": "Filter by type",
     "allTypes": "All Types",
     "noTransactions": "No transactions yet",
+    "noMatchingTransactions": "No transactions match your filters",
     "noDescription": "No description",
     "balance": "Balance",
     "showing": "Showing {from}-{to} of {total}",
@@ -193,6 +197,17 @@
       "completed": "Completed",
       "failed": "Failed",
       "reversed": "Reversed"
+    },
+    "sources": {
+      "manual": "Manual",
+      "subscription": "Subscription",
+      "installment": "Installment",
+      "portfolio": "Portfolio",
+      "debt": "Debt",
+      "income": "Income",
+      "expense": "Expense",
+      "transfer": "Transfer",
+      "interest": "Interest"
     },
     "form": {
       "depositTitle": "Make a Deposit",
