@@ -488,7 +488,12 @@ class TransactionService:
         total = total_result.scalar() or 0
 
         # Apply pagination and ordering
-        query = query.order_by(AccountTransaction.transaction_date.desc())
+        # Sort by transaction_date first, then by created_at to ensure newest transactions
+        # appear first when dates are the same (e.g., backdated or same-day transactions)
+        query = query.order_by(
+            AccountTransaction.transaction_date.desc(),
+            AccountTransaction.created_at.desc()
+        )
         query = query.offset((page - 1) * page_size).limit(page_size)
 
         result = await self.db.execute(query)
@@ -523,7 +528,10 @@ class TransactionService:
         total = total_result.scalar() or 0
 
         # Apply pagination and ordering
-        query = query.order_by(AccountTransfer.transfer_date.desc())
+        query = query.order_by(
+            AccountTransfer.transfer_date.desc(),
+            AccountTransfer.created_at.desc()
+        )
         query = query.offset((page - 1) * page_size).limit(page_size)
 
         result = await self.db.execute(query)
