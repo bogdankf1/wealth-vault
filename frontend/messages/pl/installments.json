@@ -268,6 +268,7 @@
     "reactivateError": "Nie udało się reaktywować raty",
     "paymentRecordedSuccess": "Płatność zarejestrowana pomyślnie",
     "paymentRecordedError": "Nie udało się zarejestrować płatności",
+    "insufficientFunds": "Niewystarczające środki na koncie {accountName}. Dostępne: {balance}, Wymagane: {amount}",
     "completeConfirmTitle": "Zakończ ratę",
     "completeConfirmDescription": "To oznaczy ratę jako w pełni spłaconą. Czy na pewno?",
     "defaultConfirmTitle": "Oznacz jako niespłaconą",

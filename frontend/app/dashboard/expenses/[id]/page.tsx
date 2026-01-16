@@ -353,6 +353,12 @@ export default function ExpenseDetailPage({ params }: PageProps) {
                     />
                   </Badge>
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t('autoPay')}</span>
+                  <Badge variant={expense.auto_pay ? 'default' : 'secondary'}>
+                    {expense.auto_pay ? t('autoPayEnabled') : t('autoPayDisabled')}
+                  </Badge>
+                </div>
                 {expense.payment_method && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CreditCard className="h-4 w-4" />

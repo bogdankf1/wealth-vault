@@ -268,6 +268,7 @@
     "reactivateError": "Falha ao reativar a parcela",
     "paymentRecordedSuccess": "Pagamento registrado com sucesso",
     "paymentRecordedError": "Falha ao registrar o pagamento",
+    "insufficientFunds": "Fundos insuficientes em {accountName}. Disponível: {balance}, Necessário: {amount}",
     "completeConfirmTitle": "Concluir parcela",
     "completeConfirmDescription": "Isso marcará a parcela como totalmente paga. Tem certeza?",
     "defaultConfirmTitle": "Marcar como inadimplente",

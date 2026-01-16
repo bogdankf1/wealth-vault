@@ -145,8 +145,17 @@ export default function InstallmentDetailPage({ params }: PageProps) {
     try {
       await recordPayment({ installmentId: id }).unwrap();
       toast.success(t('paymentRecordedSuccess'));
-    } catch (error) {
-      toast.error(t('paymentRecordedError'));
+    } catch (error: unknown) {
+      // Check if it's an insufficient funds error
+      const apiError = error as { data?: { detail?: { error_code?: string; account_name?: string; current_balance?: number; required_amount?: number; currency?: string } } };
+      if (apiError?.data?.detail?.error_code === 'INSUFFICIENT_FUNDS') {
+        const { account_name, current_balance, required_amount, currency } = apiError.data.detail;
+        const formattedBalance = new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(current_balance || 0);
+        const formattedAmount = new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(required_amount || 0);
+        toast.error(t('insufficientFunds', { accountName: account_name || 'Unknown', balance: formattedBalance, amount: formattedAmount }));
+      } else {
+        toast.error(t('paymentRecordedError'));
+      }
     }
   };
 

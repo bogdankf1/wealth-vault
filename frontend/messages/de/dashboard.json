@@ -306,5 +306,23 @@
       "monthly": "Monatlich",
       "active": "aktiv"
     }
+  },
+  "failedPayments": {
+    "title": "Fehlgeschlagene Zahlungen",
+    "description": "{count, plural, one {# Zahlung fehlgeschlagen} other {# Zahlungen fehlgeschlagen}} wegen unzureichender Mittel",
+    "compactMessage": "{count, plural, one {# Zahlung fehlgeschlagen} other {# Zahlungen fehlgeschlagen}} - unzureichende Mittel",
+    "types": {
+      "expense": "Ausgabe",
+      "subscription": "Abonnement",
+      "installment": "Rate"
+    },
+    "retry": "Erneut versuchen",
+    "viewAll": "Alle anzeigen",
+    "viewAllButton": "{count} weitere anzeigen",
+    "insufficientFunds": {
+      "title": "Unzureichende Mittel",
+      "message": "Das Konto \"{accountName}\" hat unzureichende Mittel. Aktueller Kontostand: {balance}, erforderlich: {required}.",
+      "shortMessage": "Unzureichende Mittel auf {accountName}"
+    }
   }
 }

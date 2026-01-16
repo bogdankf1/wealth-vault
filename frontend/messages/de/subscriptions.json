@@ -200,7 +200,10 @@
     "pauseConfirmDescription": "Sind Sie sicher, dass Sie dieses Abonnement pausieren möchten? Sie können es später fortsetzen.",
     "cancelConfirmTitle": "Abonnement kündigen",
     "cancelConfirmDescription": "Sind Sie sicher, dass Sie dieses Abonnement kündigen möchten?",
-    "recordPayment": "Zahlung erfassen"
+    "recordPayment": "Zahlung erfassen",
+    "paymentSuccess": "Zahlung erfolgreich erfasst",
+    "paymentError": "Zahlung konnte nicht erfasst werden",
+    "insufficientFunds": "Unzureichendes Guthaben auf {accountName}. Verfügbar: {balance}, Benötigt: {amount}"
   },
   "payments": {
     "title": "Zahlungsverlauf",

@@ -306,5 +306,23 @@
       "monthly": "Miesięczny",
       "active": "aktywny"
     }
+  },
+  "failedPayments": {
+    "title": "Nieudane Płatności",
+    "description": "{count, plural, one {# płatność nie powiodła się} few {# płatności nie powiodły się} other {# płatności nie powiodło się}} z powodu niewystarczających środków",
+    "compactMessage": "{count, plural, one {# płatność nie powiodła się} few {# płatności nie powiodły się} other {# płatności nie powiodło się}} - brak środków",
+    "types": {
+      "expense": "Wydatek",
+      "subscription": "Subskrypcja",
+      "installment": "Rata"
+    },
+    "retry": "Ponów",
+    "viewAll": "Zobacz Wszystko",
+    "viewAllButton": "Zobacz {count} więcej",
+    "insufficientFunds": {
+      "title": "Niewystarczające Środki",
+      "message": "Konto \"{accountName}\" ma niewystarczające środki. Aktualny stan: {balance}, wymagane: {required}.",
+      "shortMessage": "Niewystarczające środki na {accountName}"
+    }
   }
 }

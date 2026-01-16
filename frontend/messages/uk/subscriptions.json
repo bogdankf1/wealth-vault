@@ -200,7 +200,10 @@
     "pauseConfirmDescription": "Ви впевнені, що хочете призупинити цю підписку? Ви зможете відновити її пізніше.",
     "cancelConfirmTitle": "Скасувати підписку",
     "cancelConfirmDescription": "Ви впевнені, що хочете скасувати цю підписку?",
-    "recordPayment": "Записати платіж"
+    "recordPayment": "Записати платіж",
+    "paymentSuccess": "Платіж успішно записано",
+    "paymentError": "Не вдалося записати платіж",
+    "insufficientFunds": "Недостатньо коштів на рахунку {accountName}. Доступно: {balance}, Потрібно: {amount}"
   },
   "payments": {
     "title": "Історія платежів",

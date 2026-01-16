@@ -326,8 +326,11 @@
     "paymentMethod": "Спосіб Оплати",
     "created": "Створено",
     "expenseDetails": "Деталі Витрати",
-    "linkedAccount": "Рахунок для Оплати",
-    "noLinkedAccount": "Немає пов'язаного рахунку",
+    "linkedAccount": "Прив'язаний Рахунок",
+    "noLinkedAccount": "Немає прив'язаного рахунку",
+    "autoPay": "Авто-оплата",
+    "autoPayEnabled": "Авто-оплата увімкнена",
+    "autoPayDisabled": "Вручну",
     "paymentStatus": {
       "paid": "Сплачено",
       "pending": "Очікується",

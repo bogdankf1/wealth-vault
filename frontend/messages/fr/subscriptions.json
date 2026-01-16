@@ -200,7 +200,10 @@
     "pauseConfirmDescription": "Êtes-vous sûr de vouloir suspendre cet abonnement? Vous pourrez le reprendre plus tard.",
     "cancelConfirmTitle": "Annuler l'abonnement",
     "cancelConfirmDescription": "Êtes-vous sûr de vouloir annuler cet abonnement?",
-    "recordPayment": "Enregistrer le paiement"
+    "recordPayment": "Enregistrer le paiement",
+    "paymentSuccess": "Paiement enregistré avec succès",
+    "paymentError": "Échec de l'enregistrement du paiement",
+    "insufficientFunds": "Fonds insuffisants sur {accountName}. Disponible : {balance}, Requis : {amount}"
   },
   "payments": {
     "title": "Historique des paiements",

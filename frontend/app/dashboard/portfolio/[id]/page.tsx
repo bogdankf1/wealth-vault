@@ -13,6 +13,7 @@ import {
   useDeletePortfolioAssetMutation,
   PortfolioTransaction,
 } from '@/lib/api/portfolioApi';
+import { useGetAccountQuery } from '@/lib/api/savingsApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -110,6 +111,9 @@ export default function PortfolioDetailPage() {
   const { data: asset, isLoading, error } = useGetPortfolioAssetQuery(assetId);
   const { data: transactionsData } = useGetAssetTransactionsQuery({ assetId, page_size: 50 });
   const transactions = transactionsData?.items || [];
+  const { data: linkedAccount } = useGetAccountQuery(asset?.payment_account_id || '', {
+    skip: !asset?.payment_account_id,
+  });
 
   // Mutations
   const [buyAsset, { isLoading: isBuying }] = useBuyAssetMutation();
@@ -156,8 +160,17 @@ export default function PortfolioDetailPage() {
       toast.success(t('buySuccess'));
       setIsBuyDialogOpen(false);
       resetBuyForm();
-    } catch {
-      toast.error(t('buyError'));
+    } catch (error: unknown) {
+      // Check if it's an insufficient funds error
+      const apiError = error as { data?: { detail?: { error_code?: string; account_name?: string; current_balance?: number; required_amount?: number; currency?: string } } };
+      if (apiError?.data?.detail?.error_code === 'INSUFFICIENT_FUNDS') {
+        const { account_name, current_balance, required_amount, currency } = apiError.data.detail;
+        const formattedBalance = new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(current_balance || 0);
+        const formattedAmount = new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(required_amount || 0);
+        toast.error(t('insufficientFunds', { accountName: account_name || 'Unknown', balance: formattedBalance, amount: formattedAmount }));
+      } else {
+        toast.error(t('buyError'));
+      }
     }
   };
 
@@ -445,13 +458,39 @@ export default function PortfolioDetailPage() {
                 )}
               </>
             )}
-            {asset.payment_account_id && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('linkedAccount')}</span>
-                <Badge variant="outline"><Wallet className="h-3 w-3 mr-1" />{t('linked')}</Badge>
-              </div>
-            )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Linked Account Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('linkedAccount')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {linkedAccount ? (
+            <>
+              <div className="flex items-center gap-2">
+                <Wallet className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{linkedAccount.name}</span>
+                <Badge variant="outline" className="text-xs">
+                  <CurrencyDisplay
+                    amount={linkedAccount.current_balance}
+                    currency={linkedAccount.currency}
+                    showSymbol
+                  />
+                </Badge>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t('autoTransact')}</span>
+                <Badge variant={asset.auto_transact ? 'default' : 'secondary'}>
+                  {asset.auto_transact ? t('autoTransactEnabled') : t('autoTransactDisabled')}
+                </Badge>
+              </div>
+            </>
+          ) : (
+            <p className="text-muted-foreground">{t('noLinkedAccount')}</p>
+          )}
         </CardContent>
       </Card>
 

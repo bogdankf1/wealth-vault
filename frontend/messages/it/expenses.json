@@ -326,8 +326,11 @@
     "paymentMethod": "Metodo di Pagamento",
     "created": "Creato",
     "expenseDetails": "Dettagli Spesa",
-    "linkedAccount": "Conto di Pagamento",
+    "linkedAccount": "Conto Collegato",
     "noLinkedAccount": "Nessun conto collegato",
+    "autoPay": "Pagamento automatico",
+    "autoPayEnabled": "Pagamento automatico attivato",
+    "autoPayDisabled": "Manuale",
     "paymentStatus": {
       "paid": "Pagato",
       "pending": "In attesa",

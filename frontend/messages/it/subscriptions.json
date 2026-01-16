@@ -200,7 +200,10 @@
     "pauseConfirmDescription": "Sei sicuro di voler sospendere questo abbonamento? Potrai riprenderlo in seguito.",
     "cancelConfirmTitle": "Annulla abbonamento",
     "cancelConfirmDescription": "Sei sicuro di voler annullare questo abbonamento?",
-    "recordPayment": "Registra pagamento"
+    "recordPayment": "Registra pagamento",
+    "paymentSuccess": "Pagamento registrato con successo",
+    "paymentError": "Impossibile registrare il pagamento",
+    "insufficientFunds": "Fondi insufficienti su {accountName}. Disponibile: {balance}, Richiesto: {amount}"
   },
   "payments": {
     "title": "Cronologia pagamenti",

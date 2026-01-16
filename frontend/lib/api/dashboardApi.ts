@@ -300,6 +300,35 @@ export interface SnapshotParams {
   snapshot_type?: string;
 }
 
+// Failed Payments types
+export interface FailedPaymentItem {
+  id: string;
+  payment_type: 'expense' | 'installment' | 'subscription';
+  name: string;
+  amount: string;
+  currency: string;
+  account_name?: string;
+  account_id?: string;
+  failure_date: string;
+  status: string;
+}
+
+export interface FailedPaymentsResponse {
+  items: FailedPaymentItem[];
+  total: number;
+  has_failed_payments: boolean;
+}
+
+// Insufficient funds error detail type
+export interface InsufficientFundsError {
+  message: string;
+  error_code: 'INSUFFICIENT_FUNDS';
+  account_name: string;
+  current_balance: number | null;
+  required_amount: number | null;
+  currency: string;
+}
+
 // API endpoints
 export const dashboardApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -542,6 +571,12 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/dashboard/net-worth/breakdown',
       providesTags: ['Dashboard'],
     }),
+
+    // Failed payments endpoint
+    getFailedPayments: builder.query<FailedPaymentsResponse, void>({
+      query: () => '/api/v1/dashboard/failed-payments',
+      providesTags: ['Dashboard', 'FailedPayments'],
+    }),
   }),
 });
 
@@ -570,4 +605,6 @@ export const {
   useGetGoalProjectionsQuery,
   // Net worth breakdown
   useGetNetWorthBreakdownQuery,
+  // Failed payments
+  useGetFailedPaymentsQuery,
 } = dashboardApi;

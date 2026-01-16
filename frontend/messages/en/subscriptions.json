@@ -200,7 +200,10 @@
     "pauseConfirmDescription": "Are you sure you want to pause this subscription? You can resume it later.",
     "cancelConfirmTitle": "Cancel Subscription",
     "cancelConfirmDescription": "Are you sure you want to cancel this subscription? This will mark it as cancelled.",
-    "recordPayment": "Record Payment"
+    "recordPayment": "Record Payment",
+    "paymentSuccess": "Payment recorded successfully",
+    "paymentError": "Failed to record payment",
+    "insufficientFunds": "Insufficient funds in {accountName}. Available: {balance}, Required: {amount}"
   },
   "payments": {
     "title": "Payment History",

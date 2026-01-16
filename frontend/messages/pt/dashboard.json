@@ -306,5 +306,23 @@
       "monthly": "Mensal",
       "active": "ativo"
     }
+  },
+  "failedPayments": {
+    "title": "Pagamentos Falhos",
+    "description": "{count, plural, one {# pagamento falhou} other {# pagamentos falharam}} por fundos insuficientes",
+    "compactMessage": "{count, plural, one {# pagamento falhou} other {# pagamentos falharam}} - fundos insuficientes",
+    "types": {
+      "expense": "Despesa",
+      "subscription": "Assinatura",
+      "installment": "Parcela"
+    },
+    "retry": "Tentar Novamente",
+    "viewAll": "Ver Todos",
+    "viewAllButton": "Ver mais {count}",
+    "insufficientFunds": {
+      "title": "Fundos Insuficientes",
+      "message": "A conta \"{accountName}\" tem fundos insuficientes. Saldo atual: {balance}, necessário: {required}.",
+      "shortMessage": "Fundos insuficientes em {accountName}"
+    }
   }
 }

@@ -200,7 +200,10 @@
     "pauseConfirmDescription": "Czy na pewno chcesz wstrzymać tę subskrypcję? Możesz ją później wznowić.",
     "cancelConfirmTitle": "Anuluj subskrypcję",
     "cancelConfirmDescription": "Czy na pewno chcesz anulować tę subskrypcję?",
-    "recordPayment": "Zarejestruj płatność"
+    "recordPayment": "Zarejestruj płatność",
+    "paymentSuccess": "Płatność zarejestrowana pomyślnie",
+    "paymentError": "Nie udało się zarejestrować płatności",
+    "insufficientFunds": "Niewystarczające środki na koncie {accountName}. Dostępne: {balance}, Wymagane: {amount}"
   },
   "payments": {
     "title": "Historia płatności",

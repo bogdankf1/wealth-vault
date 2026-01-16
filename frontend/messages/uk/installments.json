@@ -268,6 +268,7 @@
     "reactivateError": "Не вдалося відновити розстрочку",
     "paymentRecordedSuccess": "Платіж успішно записано",
     "paymentRecordedError": "Не вдалося записати платіж",
+    "insufficientFunds": "Недостатньо коштів на рахунку {accountName}. Доступно: {balance}, Потрібно: {amount}",
     "completeConfirmTitle": "Завершити розстрочку",
     "completeConfirmDescription": "Це позначить розстрочку як повністю сплачену. Ви впевнені?",
     "defaultConfirmTitle": "Позначити як прострочену",

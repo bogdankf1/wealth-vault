@@ -350,5 +350,23 @@
       "noPayments": "No upcoming payments",
       "noPaymentsDescription": "You have no scheduled payments in the next 7 days"
     }
+  },
+  "failedPayments": {
+    "title": "Failed Payments",
+    "description": "{count, plural, one {# payment failed} other {# payments failed}} due to insufficient funds",
+    "compactMessage": "{count, plural, one {# payment failed} other {# payments failed}} - insufficient funds",
+    "types": {
+      "expense": "Expense",
+      "subscription": "Subscription",
+      "installment": "Installment"
+    },
+    "retry": "Retry",
+    "viewAll": "View All",
+    "viewAllButton": "View {count} more",
+    "insufficientFunds": {
+      "title": "Insufficient Funds",
+      "message": "Account \"{accountName}\" has insufficient funds. Current balance: {balance}, required: {required}.",
+      "shortMessage": "Insufficient funds in {accountName}"
+    }
   }
 }

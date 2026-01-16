@@ -306,5 +306,23 @@
       "monthly": "Щомісяця",
       "active": "активний"
     }
+  },
+  "failedPayments": {
+    "title": "Невдалі Платежі",
+    "description": "{count, plural, one {# платіж не вдався} few {# платежі не вдалися} other {# платежів не вдалося}} через недостатньо коштів",
+    "compactMessage": "{count, plural, one {# платіж не вдався} few {# платежі не вдалися} other {# платежів не вдалося}} - недостатньо коштів",
+    "types": {
+      "expense": "Витрата",
+      "subscription": "Підписка",
+      "installment": "Розстрочка"
+    },
+    "retry": "Повторити",
+    "viewAll": "Переглянути Все",
+    "viewAllButton": "Ще {count}",
+    "insufficientFunds": {
+      "title": "Недостатньо Коштів",
+      "message": "На рахунку \"{accountName}\" недостатньо коштів. Поточний баланс: {balance}, потрібно: {required}.",
+      "shortMessage": "Недостатньо коштів на {accountName}"
+    }
   }
 }

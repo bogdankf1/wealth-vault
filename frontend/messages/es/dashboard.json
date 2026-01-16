@@ -306,5 +306,23 @@
       "monthly": "Mensual",
       "active": "activo"
     }
+  },
+  "failedPayments": {
+    "title": "Pagos Fallidos",
+    "description": "{count, plural, one {# pago falló} other {# pagos fallaron}} por fondos insuficientes",
+    "compactMessage": "{count, plural, one {# pago falló} other {# pagos fallaron}} - fondos insuficientes",
+    "types": {
+      "expense": "Gasto",
+      "subscription": "Suscripción",
+      "installment": "Cuota"
+    },
+    "retry": "Reintentar",
+    "viewAll": "Ver Todo",
+    "viewAllButton": "Ver {count} más",
+    "insufficientFunds": {
+      "title": "Fondos Insuficientes",
+      "message": "La cuenta \"{accountName}\" tiene fondos insuficientes. Saldo actual: {balance}, requerido: {required}.",
+      "shortMessage": "Fondos insuficientes en {accountName}"
+    }
   }
 }

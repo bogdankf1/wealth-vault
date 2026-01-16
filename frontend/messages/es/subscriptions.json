@@ -200,7 +200,10 @@
     "pauseConfirmDescription": "¿Estás seguro de que quieres pausar esta suscripción? Puedes reanudarla más tarde.",
     "cancelConfirmTitle": "Cancelar suscripción",
     "cancelConfirmDescription": "¿Estás seguro de que quieres cancelar esta suscripción?",
-    "recordPayment": "Registrar pago"
+    "recordPayment": "Registrar pago",
+    "paymentSuccess": "Pago registrado correctamente",
+    "paymentError": "Error al registrar el pago",
+    "insufficientFunds": "Fondos insuficientes en {accountName}. Disponible: {balance}, Requerido: {amount}"
   },
   "payments": {
     "title": "Historial de pagos",

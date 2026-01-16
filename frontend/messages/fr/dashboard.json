@@ -306,5 +306,23 @@
       "monthly": "Mensuel",
       "active": "actif"
     }
+  },
+  "failedPayments": {
+    "title": "Paiements Échoués",
+    "description": "{count, plural, one {# paiement a échoué} other {# paiements ont échoué}} en raison de fonds insuffisants",
+    "compactMessage": "{count, plural, one {# paiement a échoué} other {# paiements ont échoué}} - fonds insuffisants",
+    "types": {
+      "expense": "Dépense",
+      "subscription": "Abonnement",
+      "installment": "Mensualité"
+    },
+    "retry": "Réessayer",
+    "viewAll": "Voir Tout",
+    "viewAllButton": "Voir {count} de plus",
+    "insufficientFunds": {
+      "title": "Fonds Insuffisants",
+      "message": "Le compte \"{accountName}\" a des fonds insuffisants. Solde actuel : {balance}, requis : {required}.",
+      "shortMessage": "Fonds insuffisants sur {accountName}"
+    }
   }
 }

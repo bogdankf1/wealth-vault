@@ -268,6 +268,7 @@
     "reactivateError": "Ratenzahlung konnte nicht reaktiviert werden",
     "paymentRecordedSuccess": "Zahlung erfolgreich erfasst",
     "paymentRecordedError": "Zahlung konnte nicht erfasst werden",
+    "insufficientFunds": "Unzureichendes Guthaben auf {accountName}. Verfügbar: {balance}, Benötigt: {amount}",
     "completeConfirmTitle": "Ratenzahlung abschließen",
     "completeConfirmDescription": "Dies markiert die Ratenzahlung als vollständig bezahlt. Sind Sie sicher?",
     "defaultConfirmTitle": "Als ausgefallen markieren",
