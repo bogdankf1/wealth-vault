@@ -227,5 +227,30 @@
     "refundsReimbursements": "Refunds & Reimbursements",
     "rental": "Rental",
     "other": "Other"
+  },
+  "detail": {
+    "notFound": "Income source not found",
+    "backToIncome": "Back to Income",
+    "amount": "Amount",
+    "perPayment": "Per payment",
+    "monthlyEquivalent": "Monthly Equivalent",
+    "estimatedMonthly": "Estimated monthly income",
+    "frequency": "Frequency",
+    "paymentSchedule": "Payment schedule",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "whenStarted": "When income started",
+    "noEndDate": "No end date",
+    "created": "Created",
+    "incomeDetails": "Income Details",
+    "linkedAccount": "Linked Account",
+    "noLinkedAccount": "No linked account",
+    "autoDeposit": "Auto Deposit",
+    "autoDepositEnabled": "Enabled",
+    "autoDepositDisabled": "Disabled",
+    "deleteConfirmTitle": "Delete Income Source",
+    "deleteConfirmDescription": "Are you sure you want to delete this income source? This action cannot be undone.",
+    "deleteSuccess": "Income source deleted successfully",
+    "deleteError": "Failed to delete income source"
   }
 }

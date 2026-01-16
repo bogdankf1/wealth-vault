@@ -298,6 +298,7 @@
     "clothing": "Abbigliamento",
     "gifts": "Regali",
     "transportation": "Trasporti",
+    "vehicle": "Veicolo",
     "personalCare": "Cura personale",
     "healthcare": "Sanità",
     "luxuryPremium": "Lusso & Premium",
@@ -307,5 +308,35 @@
     "educationLearning": "Istruzione",
     "travelVacations": "Viaggi & Vacanze",
     "entertainment": "Intrattenimento"
+  },
+  "detail": {
+    "notFound": "Spesa non trovata",
+    "backToExpenses": "Torna alle Spese",
+    "amount": "Importo",
+    "perPayment": "Per pagamento",
+    "monthlyEquivalent": "Equivalente Mensile",
+    "estimatedMonthly": "Spesa mensile stimata",
+    "frequency": "Frequenza",
+    "paymentSchedule": "Calendario pagamenti",
+    "startDate": "Data di Inizio",
+    "endDate": "Data di Fine",
+    "whenStarted": "Quando è iniziata la spesa",
+    "noEndDate": "Nessuna data di fine",
+    "lastPaid": "Ultimo Pagamento",
+    "paymentMethod": "Metodo di Pagamento",
+    "created": "Creato",
+    "expenseDetails": "Dettagli Spesa",
+    "linkedAccount": "Conto di Pagamento",
+    "noLinkedAccount": "Nessun conto collegato",
+    "paymentStatus": {
+      "paid": "Pagato",
+      "pending": "In attesa",
+      "overdue": "Scaduto",
+      "cancelled": "Annullato"
+    },
+    "deleteConfirmTitle": "Elimina Spesa",
+    "deleteConfirmDescription": "Sei sicuro di voler eliminare questa spesa? Questa azione non può essere annullata.",
+    "deleteSuccess": "Spesa eliminata con successo",
+    "deleteError": "Impossibile eliminare la spesa"
   }
 }

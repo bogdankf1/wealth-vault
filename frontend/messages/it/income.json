@@ -227,5 +227,30 @@
     "refundsReimbursements": "Rimborsi",
     "rental": "Affitto",
     "other": "Altro"
+  },
+  "detail": {
+    "notFound": "Fonte di reddito non trovata",
+    "backToIncome": "Torna ai Redditi",
+    "amount": "Importo",
+    "perPayment": "Per pagamento",
+    "monthlyEquivalent": "Equivalente Mensile",
+    "estimatedMonthly": "Reddito mensile stimato",
+    "frequency": "Frequenza",
+    "paymentSchedule": "Calendario pagamenti",
+    "startDate": "Data di Inizio",
+    "endDate": "Data di Fine",
+    "whenStarted": "Quando è iniziato il reddito",
+    "noEndDate": "Nessuna data di fine",
+    "created": "Creato",
+    "incomeDetails": "Dettagli Reddito",
+    "linkedAccount": "Conto Collegato",
+    "noLinkedAccount": "Nessun conto collegato",
+    "autoDeposit": "Deposito Automatico",
+    "autoDepositEnabled": "Attivato",
+    "autoDepositDisabled": "Disattivato",
+    "deleteConfirmTitle": "Elimina Fonte di Reddito",
+    "deleteConfirmDescription": "Sei sicuro di voler eliminare questa fonte di reddito? Questa azione non può essere annullata.",
+    "deleteSuccess": "Fonte di reddito eliminata con successo",
+    "deleteError": "Impossibile eliminare la fonte di reddito"
   }
 }

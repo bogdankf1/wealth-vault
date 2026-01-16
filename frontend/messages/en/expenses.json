@@ -298,6 +298,7 @@
     "clothing": "Clothing",
     "gifts": "Gifts",
     "transportation": "Transportation",
+    "vehicle": "Vehicle",
     "personalCare": "Personal Care",
     "healthcare": "Healthcare",
     "luxuryPremium": "Luxury & Premium Items",
@@ -307,5 +308,35 @@
     "educationLearning": "Education & Learning",
     "travelVacations": "Travel & Vacations",
     "entertainment": "Entertainment"
+  },
+  "detail": {
+    "notFound": "Expense not found",
+    "backToExpenses": "Back to Expenses",
+    "amount": "Amount",
+    "perPayment": "Per payment",
+    "monthlyEquivalent": "Monthly Equivalent",
+    "estimatedMonthly": "Estimated monthly expense",
+    "frequency": "Frequency",
+    "paymentSchedule": "Payment schedule",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "whenStarted": "When expense started",
+    "noEndDate": "No end date",
+    "lastPaid": "Last Paid",
+    "paymentMethod": "Payment Method",
+    "created": "Created",
+    "expenseDetails": "Expense Details",
+    "linkedAccount": "Payment Account",
+    "noLinkedAccount": "No linked account",
+    "paymentStatus": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "deleteConfirmTitle": "Delete Expense",
+    "deleteConfirmDescription": "Are you sure you want to delete this expense? This action cannot be undone.",
+    "deleteSuccess": "Expense deleted successfully",
+    "deleteError": "Failed to delete expense"
   }
 }

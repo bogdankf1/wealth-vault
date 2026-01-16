@@ -227,5 +227,30 @@
     "refundsReimbursements": "Reembolsos y devoluciones",
     "rental": "Alquiler",
     "other": "Otro"
+  },
+  "detail": {
+    "notFound": "Fuente de ingresos no encontrada",
+    "backToIncome": "Volver a Ingresos",
+    "amount": "Monto",
+    "perPayment": "Por pago",
+    "monthlyEquivalent": "Equivalente Mensual",
+    "estimatedMonthly": "Ingreso mensual estimado",
+    "frequency": "Frecuencia",
+    "paymentSchedule": "Calendario de pagos",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "whenStarted": "Cuándo comenzó el ingreso",
+    "noEndDate": "Sin fecha de fin",
+    "created": "Creado",
+    "incomeDetails": "Detalles del Ingreso",
+    "linkedAccount": "Cuenta Vinculada",
+    "noLinkedAccount": "Sin cuenta vinculada",
+    "autoDeposit": "Depósito Automático",
+    "autoDepositEnabled": "Activado",
+    "autoDepositDisabled": "Desactivado",
+    "deleteConfirmTitle": "Eliminar Fuente de Ingresos",
+    "deleteConfirmDescription": "¿Está seguro de que desea eliminar esta fuente de ingresos? Esta acción no se puede deshacer.",
+    "deleteSuccess": "Fuente de ingresos eliminada exitosamente",
+    "deleteError": "Error al eliminar la fuente de ingresos"
   }
 }

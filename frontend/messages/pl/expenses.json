@@ -298,6 +298,7 @@
     "clothing": "Odzież",
     "gifts": "Prezenty",
     "transportation": "Transport",
+    "vehicle": "Pojazd",
     "personalCare": "Pielęgnacja",
     "healthcare": "Zdrowie",
     "luxuryPremium": "Luksus & Premium",
@@ -307,5 +308,35 @@
     "educationLearning": "Edukacja",
     "travelVacations": "Podróże & Wakacje",
     "entertainment": "Rozrywka"
+  },
+  "detail": {
+    "notFound": "Nie znaleziono wydatku",
+    "backToExpenses": "Wróć do Wydatków",
+    "amount": "Kwota",
+    "perPayment": "Za płatność",
+    "monthlyEquivalent": "Miesięczny Ekwiwalent",
+    "estimatedMonthly": "Szacowany miesięczny wydatek",
+    "frequency": "Częstotliwość",
+    "paymentSchedule": "Harmonogram płatności",
+    "startDate": "Data Rozpoczęcia",
+    "endDate": "Data Zakończenia",
+    "whenStarted": "Kiedy rozpoczął się wydatek",
+    "noEndDate": "Brak daty zakończenia",
+    "lastPaid": "Ostatnia płatność",
+    "paymentMethod": "Metoda Płatności",
+    "created": "Utworzono",
+    "expenseDetails": "Szczegóły Wydatku",
+    "linkedAccount": "Konto Płatnicze",
+    "noLinkedAccount": "Brak powiązanego konta",
+    "paymentStatus": {
+      "paid": "Opłacone",
+      "pending": "Oczekujące",
+      "overdue": "Zaległe",
+      "cancelled": "Anulowane"
+    },
+    "deleteConfirmTitle": "Usuń Wydatek",
+    "deleteConfirmDescription": "Czy na pewno chcesz usunąć ten wydatek? Tej akcji nie można cofnąć.",
+    "deleteSuccess": "Wydatek został pomyślnie usunięty",
+    "deleteError": "Nie udało się usunąć wydatku"
   }
 }

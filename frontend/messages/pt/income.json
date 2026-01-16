@@ -227,5 +227,30 @@
     "refundsReimbursements": "Reembolsos",
     "rental": "Aluguel",
     "other": "Outro"
+  },
+  "detail": {
+    "notFound": "Fonte de renda não encontrada",
+    "backToIncome": "Voltar para Receitas",
+    "amount": "Valor",
+    "perPayment": "Por pagamento",
+    "monthlyEquivalent": "Equivalente Mensal",
+    "estimatedMonthly": "Renda mensal estimada",
+    "frequency": "Frequência",
+    "paymentSchedule": "Calendário de pagamentos",
+    "startDate": "Data de Início",
+    "endDate": "Data de Término",
+    "whenStarted": "Quando a renda começou",
+    "noEndDate": "Sem data de término",
+    "created": "Criado",
+    "incomeDetails": "Detalhes da Renda",
+    "linkedAccount": "Conta Vinculada",
+    "noLinkedAccount": "Sem conta vinculada",
+    "autoDeposit": "Depósito Automático",
+    "autoDepositEnabled": "Ativado",
+    "autoDepositDisabled": "Desativado",
+    "deleteConfirmTitle": "Excluir Fonte de Renda",
+    "deleteConfirmDescription": "Tem certeza de que deseja excluir esta fonte de renda? Esta ação não pode ser desfeita.",
+    "deleteSuccess": "Fonte de renda excluída com sucesso",
+    "deleteError": "Falha ao excluir fonte de renda"
   }
 }

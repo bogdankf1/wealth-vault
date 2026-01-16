@@ -227,5 +227,30 @@
     "refundsReimbursements": "Rückerstattungen",
     "rental": "Miete",
     "other": "Sonstiges"
+  },
+  "detail": {
+    "notFound": "Einkommensquelle nicht gefunden",
+    "backToIncome": "Zurück zu Einkommen",
+    "amount": "Betrag",
+    "perPayment": "Pro Zahlung",
+    "monthlyEquivalent": "Monatlicher Gegenwert",
+    "estimatedMonthly": "Geschätztes monatliches Einkommen",
+    "frequency": "Häufigkeit",
+    "paymentSchedule": "Zahlungsplan",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "whenStarted": "Wann das Einkommen begann",
+    "noEndDate": "Kein Enddatum",
+    "created": "Erstellt",
+    "incomeDetails": "Einkommensdetails",
+    "linkedAccount": "Verknüpftes Konto",
+    "noLinkedAccount": "Kein verknüpftes Konto",
+    "autoDeposit": "Automatische Einzahlung",
+    "autoDepositEnabled": "Aktiviert",
+    "autoDepositDisabled": "Deaktiviert",
+    "deleteConfirmTitle": "Einkommensquelle löschen",
+    "deleteConfirmDescription": "Sind Sie sicher, dass Sie diese Einkommensquelle löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteSuccess": "Einkommensquelle erfolgreich gelöscht",
+    "deleteError": "Fehler beim Löschen der Einkommensquelle"
   }
 }

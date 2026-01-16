@@ -227,5 +227,30 @@
     "refundsReimbursements": "Повернення та компенсації",
     "rental": "Оренда",
     "other": "Інше"
+  },
+  "detail": {
+    "notFound": "Джерело доходу не знайдено",
+    "backToIncome": "Повернутися до Доходів",
+    "amount": "Сума",
+    "perPayment": "За платіж",
+    "monthlyEquivalent": "Місячний Еквівалент",
+    "estimatedMonthly": "Орієнтовний місячний дохід",
+    "frequency": "Частота",
+    "paymentSchedule": "Графік платежів",
+    "startDate": "Дата Початку",
+    "endDate": "Дата Закінчення",
+    "whenStarted": "Коли почався дохід",
+    "noEndDate": "Без дати закінчення",
+    "created": "Створено",
+    "incomeDetails": "Деталі Доходу",
+    "linkedAccount": "Пов'язаний Рахунок",
+    "noLinkedAccount": "Немає пов'язаного рахунку",
+    "autoDeposit": "Автоматичний Депозит",
+    "autoDepositEnabled": "Увімкнено",
+    "autoDepositDisabled": "Вимкнено",
+    "deleteConfirmTitle": "Видалити Джерело Доходу",
+    "deleteConfirmDescription": "Ви впевнені, що хочете видалити це джерело доходу? Цю дію неможливо скасувати.",
+    "deleteSuccess": "Джерело доходу успішно видалено",
+    "deleteError": "Не вдалося видалити джерело доходу"
   }
 }

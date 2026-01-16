@@ -227,5 +227,30 @@
     "refundsReimbursements": "Zwroty i rekompensaty",
     "rental": "Wynajem",
     "other": "Inne"
+  },
+  "detail": {
+    "notFound": "Nie znaleziono źródła dochodu",
+    "backToIncome": "Wróć do Dochodów",
+    "amount": "Kwota",
+    "perPayment": "Za płatność",
+    "monthlyEquivalent": "Miesięczny Ekwiwalent",
+    "estimatedMonthly": "Szacowany miesięczny dochód",
+    "frequency": "Częstotliwość",
+    "paymentSchedule": "Harmonogram płatności",
+    "startDate": "Data Rozpoczęcia",
+    "endDate": "Data Zakończenia",
+    "whenStarted": "Kiedy rozpoczął się dochód",
+    "noEndDate": "Brak daty zakończenia",
+    "created": "Utworzono",
+    "incomeDetails": "Szczegóły Dochodu",
+    "linkedAccount": "Powiązane Konto",
+    "noLinkedAccount": "Brak powiązanego konta",
+    "autoDeposit": "Automatyczna Wpłata",
+    "autoDepositEnabled": "Włączone",
+    "autoDepositDisabled": "Wyłączone",
+    "deleteConfirmTitle": "Usuń Źródło Dochodu",
+    "deleteConfirmDescription": "Czy na pewno chcesz usunąć to źródło dochodu? Tej akcji nie można cofnąć.",
+    "deleteSuccess": "Źródło dochodu zostało pomyślnie usunięte",
+    "deleteError": "Nie udało się usunąć źródła dochodu"
   }
 }

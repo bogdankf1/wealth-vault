@@ -298,6 +298,7 @@
     "clothing": "Kleidung",
     "gifts": "Geschenke",
     "transportation": "Transport",
+    "vehicle": "Fahrzeug",
     "personalCare": "Körperpflege",
     "healthcare": "Gesundheit",
     "luxuryPremium": "Luxus & Premium",
@@ -307,5 +308,35 @@
     "educationLearning": "Bildung & Lernen",
     "travelVacations": "Reisen & Urlaub",
     "entertainment": "Unterhaltung"
+  },
+  "detail": {
+    "notFound": "Ausgabe nicht gefunden",
+    "backToExpenses": "Zurück zu Ausgaben",
+    "amount": "Betrag",
+    "perPayment": "Pro Zahlung",
+    "monthlyEquivalent": "Monatlicher Gegenwert",
+    "estimatedMonthly": "Geschätzte monatliche Ausgabe",
+    "frequency": "Häufigkeit",
+    "paymentSchedule": "Zahlungsplan",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "whenStarted": "Wann die Ausgabe begann",
+    "noEndDate": "Kein Enddatum",
+    "lastPaid": "Zuletzt bezahlt",
+    "paymentMethod": "Zahlungsmethode",
+    "created": "Erstellt",
+    "expenseDetails": "Ausgabendetails",
+    "linkedAccount": "Zahlungskonto",
+    "noLinkedAccount": "Kein verknüpftes Konto",
+    "paymentStatus": {
+      "paid": "Bezahlt",
+      "pending": "Ausstehend",
+      "overdue": "Überfällig",
+      "cancelled": "Storniert"
+    },
+    "deleteConfirmTitle": "Ausgabe löschen",
+    "deleteConfirmDescription": "Sind Sie sicher, dass Sie diese Ausgabe löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteSuccess": "Ausgabe erfolgreich gelöscht",
+    "deleteError": "Fehler beim Löschen der Ausgabe"
   }
 }

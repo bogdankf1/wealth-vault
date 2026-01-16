@@ -227,5 +227,30 @@
     "refundsReimbursements": "Remboursements",
     "rental": "Location",
     "other": "Autre"
+  },
+  "detail": {
+    "notFound": "Source de revenus introuvable",
+    "backToIncome": "Retour aux Revenus",
+    "amount": "Montant",
+    "perPayment": "Par paiement",
+    "monthlyEquivalent": "Équivalent Mensuel",
+    "estimatedMonthly": "Revenu mensuel estimé",
+    "frequency": "Fréquence",
+    "paymentSchedule": "Calendrier de paiement",
+    "startDate": "Date de Début",
+    "endDate": "Date de Fin",
+    "whenStarted": "Quand le revenu a commencé",
+    "noEndDate": "Pas de date de fin",
+    "created": "Créé",
+    "incomeDetails": "Détails du Revenu",
+    "linkedAccount": "Compte Lié",
+    "noLinkedAccount": "Aucun compte lié",
+    "autoDeposit": "Dépôt Automatique",
+    "autoDepositEnabled": "Activé",
+    "autoDepositDisabled": "Désactivé",
+    "deleteConfirmTitle": "Supprimer la Source de Revenus",
+    "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer cette source de revenus ? Cette action est irréversible.",
+    "deleteSuccess": "Source de revenus supprimée avec succès",
+    "deleteError": "Échec de la suppression de la source de revenus"
   }
 }

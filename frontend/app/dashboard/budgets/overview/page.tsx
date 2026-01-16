@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,8 @@ import { toast } from 'sonner';
 import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
 export default function BudgetsPage() {
+  const router = useRouter();
+
   // Translation hooks
   const tOverview = useTranslations('budgets.overview');
   const tActions = useTranslations('budgets.actions');
@@ -600,6 +603,14 @@ export default function BudgetsPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => router.push(`/dashboard/budgets/${budget.id}`)}
+                      >
+                        <Eye className="mr-1 h-3 w-3" />
+                        {tCommon('view')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleEditBudget(budget.id)}
                       >
                         <Edit className="mr-1 h-3 w-3" />
@@ -730,6 +741,14 @@ export default function BudgetsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push(`/dashboard/budgets/${budget.id}`)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"

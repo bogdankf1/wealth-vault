@@ -298,6 +298,7 @@
     "clothing": "Ropa",
     "gifts": "Regalos",
     "transportation": "Transporte",
+    "vehicle": "Vehículo",
     "personalCare": "Cuidado personal",
     "healthcare": "Salud",
     "luxuryPremium": "Artículos de lujo",
@@ -307,5 +308,35 @@
     "educationLearning": "Educación",
     "travelVacations": "Viajes y vacaciones",
     "entertainment": "Entretenimiento"
+  },
+  "detail": {
+    "notFound": "Gasto no encontrado",
+    "backToExpenses": "Volver a Gastos",
+    "amount": "Monto",
+    "perPayment": "Por pago",
+    "monthlyEquivalent": "Equivalente Mensual",
+    "estimatedMonthly": "Gasto mensual estimado",
+    "frequency": "Frecuencia",
+    "paymentSchedule": "Calendario de pagos",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "whenStarted": "Cuándo comenzó el gasto",
+    "noEndDate": "Sin fecha de fin",
+    "lastPaid": "Último pago",
+    "paymentMethod": "Método de Pago",
+    "created": "Creado",
+    "expenseDetails": "Detalles del Gasto",
+    "linkedAccount": "Cuenta de Pago",
+    "noLinkedAccount": "Sin cuenta vinculada",
+    "paymentStatus": {
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "overdue": "Vencido",
+      "cancelled": "Cancelado"
+    },
+    "deleteConfirmTitle": "Eliminar Gasto",
+    "deleteConfirmDescription": "¿Está seguro de que desea eliminar este gasto? Esta acción no se puede deshacer.",
+    "deleteSuccess": "Gasto eliminado exitosamente",
+    "deleteError": "Error al eliminar el gasto"
   }
 }

@@ -298,6 +298,7 @@
     "clothing": "Roupas",
     "gifts": "Presentes",
     "transportation": "Transporte",
+    "vehicle": "Veículo",
     "personalCare": "Cuidados pessoais",
     "healthcare": "Saúde",
     "luxuryPremium": "Luxo & Premium",
@@ -307,5 +308,35 @@
     "educationLearning": "Educação",
     "travelVacations": "Viagens & Férias",
     "entertainment": "Entretenimento"
+  },
+  "detail": {
+    "notFound": "Despesa não encontrada",
+    "backToExpenses": "Voltar para Despesas",
+    "amount": "Valor",
+    "perPayment": "Por pagamento",
+    "monthlyEquivalent": "Equivalente Mensal",
+    "estimatedMonthly": "Despesa mensal estimada",
+    "frequency": "Frequência",
+    "paymentSchedule": "Calendário de pagamentos",
+    "startDate": "Data de Início",
+    "endDate": "Data de Término",
+    "whenStarted": "Quando a despesa começou",
+    "noEndDate": "Sem data de término",
+    "lastPaid": "Último pagamento",
+    "paymentMethod": "Método de Pagamento",
+    "created": "Criado",
+    "expenseDetails": "Detalhes da Despesa",
+    "linkedAccount": "Conta de Pagamento",
+    "noLinkedAccount": "Sem conta vinculada",
+    "paymentStatus": {
+      "paid": "Pago",
+      "pending": "Pendente",
+      "overdue": "Atrasado",
+      "cancelled": "Cancelado"
+    },
+    "deleteConfirmTitle": "Excluir Despesa",
+    "deleteConfirmDescription": "Tem certeza de que deseja excluir esta despesa? Esta ação não pode ser desfeita.",
+    "deleteSuccess": "Despesa excluída com sucesso",
+    "deleteError": "Falha ao excluir despesa"
   }
 }

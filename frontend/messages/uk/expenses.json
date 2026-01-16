@@ -298,6 +298,7 @@
     "clothing": "Одяг",
     "gifts": "Подарунки",
     "transportation": "Транспорт",
+    "vehicle": "Транспортний засіб",
     "personalCare": "Особистий догляд",
     "healthcare": "Медицина",
     "luxuryPremium": "Люкс та преміум товари",
@@ -307,5 +308,35 @@
     "educationLearning": "Освіта та навчання",
     "travelVacations": "Подорожі та відпустка",
     "entertainment": "Розваги"
+  },
+  "detail": {
+    "notFound": "Витрату не знайдено",
+    "backToExpenses": "Повернутися до Витрат",
+    "amount": "Сума",
+    "perPayment": "За платіж",
+    "monthlyEquivalent": "Місячний Еквівалент",
+    "estimatedMonthly": "Орієнтовна місячна витрата",
+    "frequency": "Частота",
+    "paymentSchedule": "Графік платежів",
+    "startDate": "Дата Початку",
+    "endDate": "Дата Закінчення",
+    "whenStarted": "Коли почалася витрата",
+    "noEndDate": "Без дати закінчення",
+    "lastPaid": "Останній платіж",
+    "paymentMethod": "Спосіб Оплати",
+    "created": "Створено",
+    "expenseDetails": "Деталі Витрати",
+    "linkedAccount": "Рахунок для Оплати",
+    "noLinkedAccount": "Немає пов'язаного рахунку",
+    "paymentStatus": {
+      "paid": "Сплачено",
+      "pending": "Очікується",
+      "overdue": "Прострочено",
+      "cancelled": "Скасовано"
+    },
+    "deleteConfirmTitle": "Видалити Витрату",
+    "deleteConfirmDescription": "Ви впевнені, що хочете видалити цю витрату? Цю дію неможливо скасувати.",
+    "deleteSuccess": "Витрату успішно видалено",
+    "deleteError": "Не вдалося видалити витрату"
   }
 }

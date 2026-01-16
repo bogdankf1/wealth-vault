@@ -298,6 +298,7 @@
     "clothing": "Vêtements",
     "gifts": "Cadeaux",
     "transportation": "Transport",
+    "vehicle": "Véhicule",
     "personalCare": "Soins personnels",
     "healthcare": "Santé",
     "luxuryPremium": "Luxe & Premium",
@@ -307,5 +308,35 @@
     "educationLearning": "Éducation",
     "travelVacations": "Voyages & Vacances",
     "entertainment": "Divertissement"
+  },
+  "detail": {
+    "notFound": "Dépense introuvable",
+    "backToExpenses": "Retour aux Dépenses",
+    "amount": "Montant",
+    "perPayment": "Par paiement",
+    "monthlyEquivalent": "Équivalent Mensuel",
+    "estimatedMonthly": "Dépense mensuelle estimée",
+    "frequency": "Fréquence",
+    "paymentSchedule": "Calendrier de paiement",
+    "startDate": "Date de Début",
+    "endDate": "Date de Fin",
+    "whenStarted": "Quand la dépense a commencé",
+    "noEndDate": "Pas de date de fin",
+    "lastPaid": "Dernier paiement",
+    "paymentMethod": "Mode de Paiement",
+    "created": "Créé",
+    "expenseDetails": "Détails de la Dépense",
+    "linkedAccount": "Compte de Paiement",
+    "noLinkedAccount": "Aucun compte lié",
+    "paymentStatus": {
+      "paid": "Payé",
+      "pending": "En attente",
+      "overdue": "En retard",
+      "cancelled": "Annulé"
+    },
+    "deleteConfirmTitle": "Supprimer la Dépense",
+    "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer cette dépense ? Cette action est irréversible.",
+    "deleteSuccess": "Dépense supprimée avec succès",
+    "deleteError": "Échec de la suppression de la dépense"
   }
 }
