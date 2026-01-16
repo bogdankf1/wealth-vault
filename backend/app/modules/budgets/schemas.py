@@ -1,8 +1,8 @@
 """
 Budget module Pydantic schemas.
 """
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import Optional, Any
 from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
@@ -83,6 +83,14 @@ class BudgetResponse(BaseModel):
     display_spent: Optional[Decimal] = None
     display_remaining: Optional[Decimal] = None
     display_currency: Optional[str] = None
+
+    @field_validator('is_overspent', 'should_alert', mode='before')
+    @classmethod
+    def handle_method_fields(cls, v: Any) -> Optional[bool]:
+        """Handle case where these fields are methods on the SQLAlchemy model."""
+        if callable(v):
+            return None
+        return v
 
     class Config:
         from_attributes = True
