@@ -38,6 +38,7 @@ def process_installment_payments(self) -> Dict[str, Any]:
     3. If auto_pay is enabled, deduct from linked account
     4. Record payment in installment_payments table
     5. Update next_payment_date and payments_made
+    6. If payment fails due to insufficient funds, mark as failed and notify
 
     Returns:
         Dict with processing results
@@ -46,6 +47,11 @@ def process_installment_payments(self) -> Dict[str, Any]:
 
     async def _process():
         async with get_async_db_session() as db:
+            from app.modules.savings.transaction_service import InsufficientFundsError
+            from app.modules.savings.models import SavingsAccount
+            from app.modules.notifications.service import NotificationService
+            from app.modules.installments.models import InstallmentPaymentStatus
+
             now = datetime.now(timezone.utc)
 
             # Get all installments with payments due
@@ -55,6 +61,7 @@ def process_installment_payments(self) -> Dict[str, Any]:
             expenses_created = 0
             auto_paid = 0
             completed = 0
+            failed_payments = 0
             errors = 0
 
             for installment in due_installments:
@@ -103,6 +110,31 @@ def process_installment_payments(self) -> Dict[str, Any]:
 
                         logger.info(f"Processed payment #{payment.payment_number} for installment: {installment.name}")
 
+                except InsufficientFundsError as e:
+                    # Mark payment as failed and create notification
+                    failed_payments += 1
+                    logger.warning(f"Insufficient funds for installment {installment.id}: {e}")
+
+                    # Get account details for notification
+                    account_result = await db.execute(
+                        select(SavingsAccount).where(SavingsAccount.id == installment.payment_account_id)
+                    )
+                    account = account_result.scalar_one_or_none()
+                    account_name = account.name if account else "Unknown"
+                    current_balance = account.current_balance if account else None
+
+                    # Create notification
+                    notification_service = NotificationService(db)
+                    await notification_service.create_payment_failed_notification(
+                        user_id=installment.user_id,
+                        payment_type="installment",
+                        amount=installment.amount_per_payment,
+                        currency=installment.currency,
+                        account_name=account_name,
+                        item_name=installment.name,
+                        current_balance=current_balance
+                    )
+
                 except Exception as e:
                     errors += 1
                     logger.error(f"Error processing installment {installment.id}: {e}")
@@ -110,13 +142,14 @@ def process_installment_payments(self) -> Dict[str, Any]:
 
             await db.commit()
 
-            logger.info(f"Installment payments complete: {processed} processed, {expenses_created} expenses, {auto_paid} auto-paid, {completed} completed, {errors} errors")
+            logger.info(f"Installment payments complete: {processed} processed, {expenses_created} expenses, {auto_paid} auto-paid, {completed} completed, {failed_payments} failed, {errors} errors")
 
             return {
                 "processed": processed,
                 "expenses_created": expenses_created,
                 "auto_paid": auto_paid,
                 "completed": completed,
+                "failed_payments": failed_payments,
                 "errors": errors,
                 "timestamp": now.isoformat()
             }

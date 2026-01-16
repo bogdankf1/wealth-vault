@@ -29,6 +29,8 @@ from app.modules.dashboard.schemas import (
     FinancialProjectionsResponse,
     GoalProjectionsResponse,
     CreateSnapshotRequest,
+    FailedPaymentsResponse,
+    FailedPaymentItem,
 )
 from app.modules.dashboard import service
 from app.modules.dashboard import snapshot_service
@@ -508,3 +510,26 @@ async def get_net_worth_breakdown(
     - Individual item values within each category
     """
     return await snapshot_service.calculate_net_worth_with_debts(db, current_user.id)
+
+
+# ============================================================================
+# Failed Payments Endpoint
+# ============================================================================
+
+@router.get("/failed-payments", response_model=FailedPaymentsResponse)
+async def get_failed_payments(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get all failed payments across expenses, installments, and subscriptions.
+
+    Returns payments that failed due to insufficient funds and need attention.
+    Useful for displaying alerts and allowing users to retry payments.
+
+    Returns:
+    - List of failed payment items with details
+    - Total count
+    - Flag indicating if there are any failed payments
+    """
+    return await service.get_failed_payments(db, current_user.id)

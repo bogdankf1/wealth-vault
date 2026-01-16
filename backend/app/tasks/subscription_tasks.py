@@ -38,14 +38,20 @@ def process_subscription_renewals(self) -> Dict[str, Any]:
     3. If auto_pay is enabled, deduct from linked account
     4. Record payment in subscription_payments table
     5. Update next_payment_date
+    6. If payment fails due to insufficient funds, mark as failed and notify
 
     Returns:
         Dict with processing results
     """
     import asyncio
+    from sqlalchemy import select
 
     async def _process():
         async with get_async_db_session() as db:
+            from app.modules.savings.transaction_service import InsufficientFundsError
+            from app.modules.savings.models import SavingsAccount
+            from app.modules.notifications.service import NotificationService
+
             now = datetime.now(timezone.utc)
 
             # Get all subscriptions with payments due
@@ -54,6 +60,7 @@ def process_subscription_renewals(self) -> Dict[str, Any]:
             renewed = 0
             expenses_created = 0
             auto_paid = 0
+            failed_payments = 0
             errors = 0
 
             for subscription in due_subscriptions:
@@ -87,6 +94,35 @@ def process_subscription_renewals(self) -> Dict[str, Any]:
 
                         logger.info(f"Processed renewal for subscription: {subscription.name}")
 
+                except InsufficientFundsError as e:
+                    # Mark payment as failed and create notification
+                    failed_payments += 1
+                    logger.warning(f"Insufficient funds for subscription {subscription.id}: {e}")
+
+                    # Mark subscription status as payment_failed
+                    from app.modules.subscriptions.models import SubscriptionStatus
+                    subscription.status = SubscriptionStatus.PAYMENT_FAILED.value
+
+                    # Get account details for notification
+                    account_result = await db.execute(
+                        select(SavingsAccount).where(SavingsAccount.id == subscription.payment_account_id)
+                    )
+                    account = account_result.scalar_one_or_none()
+                    account_name = account.name if account else "Unknown"
+                    current_balance = account.current_balance if account else None
+
+                    # Create notification
+                    notification_service = NotificationService(db)
+                    await notification_service.create_payment_failed_notification(
+                        user_id=subscription.user_id,
+                        payment_type="subscription",
+                        amount=subscription.amount,
+                        currency=subscription.currency,
+                        account_name=account_name,
+                        item_name=subscription.name,
+                        current_balance=current_balance
+                    )
+
                 except Exception as e:
                     errors += 1
                     logger.error(f"Error processing subscription {subscription.id}: {e}")
@@ -94,12 +130,13 @@ def process_subscription_renewals(self) -> Dict[str, Any]:
 
             await db.commit()
 
-            logger.info(f"Subscription renewals complete: {renewed} renewed, {expenses_created} expenses, {auto_paid} auto-paid, {errors} errors")
+            logger.info(f"Subscription renewals complete: {renewed} renewed, {expenses_created} expenses, {auto_paid} auto-paid, {failed_payments} failed, {errors} errors")
 
             return {
                 "renewed": renewed,
                 "expenses_created": expenses_created,
                 "auto_paid": auto_paid,
+                "failed_payments": failed_payments,
                 "errors": errors,
                 "timestamp": now.isoformat()
             }

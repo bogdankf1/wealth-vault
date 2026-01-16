@@ -327,3 +327,29 @@ class UpcomingPaymentEnhanced(BaseModel):
     payment_account: Optional[str] = None
     auto_pay: bool = False
     frequency: str
+
+
+# ============================================================================
+# Failed Payments Schemas
+# ============================================================================
+
+class FailedPaymentItem(BaseModel):
+    """Schema for a failed payment item."""
+
+    id: UUID
+    payment_type: str  # "expense", "installment", "subscription"
+    name: str
+    amount: Decimal
+    currency: str
+    account_name: Optional[str] = None
+    account_id: Optional[UUID] = None
+    failure_date: datetime
+    status: str
+
+
+class FailedPaymentsResponse(BaseModel):
+    """Schema for failed payments list response."""
+
+    items: List[FailedPaymentItem]
+    total: int
+    has_failed_payments: bool

@@ -406,6 +406,9 @@ async def pay_expense(
     the amount will be deducted from that account as a withdrawal.
     """
     from app.modules.savings.transaction_service import InsufficientFundsError
+    from app.modules.savings.models import SavingsAccount
+    from app.modules.expenses.models import Expense as ExpenseModel
+    from sqlalchemy import select
 
     try:
         response = await service.pay_expense(
@@ -421,9 +424,45 @@ async def pay_expense(
             detail=str(e)
         )
     except InsufficientFundsError as e:
+        # Get expense and account details for detailed error response
+        expense_result = await db.execute(
+            select(ExpenseModel).where(
+                ExpenseModel.id == expense_id,
+                ExpenseModel.user_id == current_user.id
+            )
+        )
+        expense = expense_result.scalar_one_or_none()
+
+        account_id = pay_request.account_id or (expense.payment_account_id if expense else None)
+        account_name = "Unknown"
+        current_balance = None
+        currency = "USD"
+
+        if account_id:
+            account_result = await db.execute(
+                select(SavingsAccount).where(
+                    SavingsAccount.id == account_id,
+                    SavingsAccount.user_id == current_user.id
+                )
+            )
+            account = account_result.scalar_one_or_none()
+            if account:
+                account_name = account.name
+                current_balance = float(account.current_balance)
+                currency = account.currency
+
+        required_amount = float(pay_request.amount or (expense.amount if expense else 0))
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail={
+                "message": "Insufficient funds",
+                "error_code": "INSUFFICIENT_FUNDS",
+                "account_name": account_name,
+                "current_balance": current_balance,
+                "required_amount": required_amount,
+                "currency": currency
+            }
         )
 
 

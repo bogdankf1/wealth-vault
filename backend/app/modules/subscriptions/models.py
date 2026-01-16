@@ -25,6 +25,7 @@ class SubscriptionStatus(str, enum.Enum):
     PAUSED = "paused"
     CANCELLED = "cancelled"
     EXPIRED = "expired"
+    PAYMENT_FAILED = "payment_failed"
 
 
 class Subscription(Base):

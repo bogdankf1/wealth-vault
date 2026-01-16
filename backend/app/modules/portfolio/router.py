@@ -2,6 +2,7 @@
 Portfolio module API routes.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from uuid import UUID
@@ -9,6 +10,8 @@ from uuid import UUID
 from app.core.database import get_db
 from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
+from app.modules.savings.transaction_service import InsufficientFundsError
+from app.modules.savings.models import SavingsAccount
 from app.modules.portfolio import service
 from app.modules.portfolio.schemas import (
     PortfolioAssetCreate,
@@ -62,8 +65,42 @@ async def create_asset(
                 detail=f"Portfolio asset limit reached for {tier_name} tier. Upgrade to add more."
             )
 
-    asset = await service.create_asset(db, current_user.id, asset_data)
-    return asset
+    try:
+        asset = await service.create_asset(db, current_user.id, asset_data)
+        return asset
+    except InsufficientFundsError:
+        # Get account details for detailed error response
+        account_id = asset_data.payment_account_id
+        account_name = "Unknown"
+        current_balance = None
+        currency = asset_data.currency or "USD"
+
+        if account_id:
+            account_result = await db.execute(
+                select(SavingsAccount).where(
+                    SavingsAccount.id == account_id,
+                    SavingsAccount.user_id == current_user.id
+                )
+            )
+            account = account_result.scalar_one_or_none()
+            if account:
+                account_name = account.name
+                current_balance = float(account.current_balance)
+                currency = account.currency
+
+        required_amount = float(asset_data.quantity * asset_data.purchase_price) if asset_data.quantity and asset_data.purchase_price else 0
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Insufficient funds",
+                "error_code": "INSUFFICIENT_FUNDS",
+                "account_name": account_name,
+                "current_balance": current_balance,
+                "required_amount": required_amount,
+                "currency": currency
+            }
+        )
 
 
 @router.get("", response_model=PortfolioAssetListResponse)
@@ -300,13 +337,59 @@ async def buy_asset(
     db: AsyncSession = Depends(get_db)
 ):
     """Record a buy transaction for an existing asset"""
-    transaction = await service.record_buy(db, current_user.id, asset_id, buy_data)
-    if not transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Portfolio asset not found"
+    from app.modules.savings.transaction_service import InsufficientFundsError
+    from app.modules.savings.models import SavingsAccount
+    from app.modules.portfolio.models import PortfolioAsset
+    from sqlalchemy import select
+
+    try:
+        transaction = await service.record_buy(db, current_user.id, asset_id, buy_data)
+        if not transaction:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Portfolio asset not found"
+            )
+        return transaction
+    except InsufficientFundsError as e:
+        # Get asset and account details for detailed error response
+        asset_result = await db.execute(
+            select(PortfolioAsset).where(
+                PortfolioAsset.id == asset_id,
+                PortfolioAsset.user_id == current_user.id
+            )
         )
-    return transaction
+        asset = asset_result.scalar_one_or_none()
+
+        account_name = "Unknown"
+        current_balance = None
+        currency = "USD"
+
+        if asset and asset.payment_account_id:
+            account_result = await db.execute(
+                select(SavingsAccount).where(
+                    SavingsAccount.id == asset.payment_account_id,
+                    SavingsAccount.user_id == current_user.id
+                )
+            )
+            account = account_result.scalar_one_or_none()
+            if account:
+                account_name = account.name
+                current_balance = float(account.current_balance)
+                currency = account.currency
+
+        total_amount = float(buy_data.quantity * buy_data.price_per_unit + buy_data.fees)
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Insufficient funds",
+                "error_code": "INSUFFICIENT_FUNDS",
+                "account_name": account_name,
+                "current_balance": current_balance,
+                "required_amount": total_amount,
+                "currency": currency
+            }
+        )
 
 
 @router.post("/{asset_id}/sell", response_model=SellAssetResponse)

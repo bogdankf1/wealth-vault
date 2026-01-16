@@ -18,6 +18,7 @@ from app.modules.portfolio.schemas import (
     RecordDividendRequest, PriceUpdateResponse
 )
 from app.services.currency_service import CurrencyService
+from app.modules.savings.transaction_service import InsufficientFundsError
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +196,9 @@ async def create_asset(
                 asset_data.purchase_date
             )
             initial_transaction.account_transaction_id = account_tx_id
+        except InsufficientFundsError:
+            # Re-raise insufficient funds error so the router can handle it
+            raise
         except Exception as e:
             logger.error(f"Failed to create account withdrawal for asset purchase: {e}")
 
@@ -408,6 +412,7 @@ async def record_buy(
 
     # Create account withdrawal if requested
     if buy_data.withdraw_from_account and asset.payment_account_id:
+        from app.modules.savings.transaction_service import InsufficientFundsError
         try:
             account_tx_id = await _create_account_withdrawal(
                 db, user_id, asset.payment_account_id,
@@ -416,6 +421,9 @@ async def record_buy(
                 buy_data.transaction_date
             )
             transaction.account_transaction_id = account_tx_id
+        except InsufficientFundsError:
+            # Re-raise InsufficientFundsError for proper handling by the caller
+            raise
         except Exception as e:
             logger.error(f"Failed to create account withdrawal: {e}")
 

@@ -65,6 +65,7 @@ def process_recurring_expenses(self) -> Dict[str, Any]:
     1. Check if payment is due today (based on frequency and start_date)
     2. If auto_pay is enabled and account is linked, deduct from account
     3. Mark expense as paid with today's date
+    4. If payment fails due to insufficient funds, mark as payment_failed and notify
 
     Returns:
         Dict with processing results
@@ -77,6 +78,9 @@ def process_recurring_expenses(self) -> Dict[str, Any]:
             from app.modules.expenses.models import Expense, ExpenseFrequency, ExpenseStatus
             from app.modules.expenses.service import pay_expense
             from app.modules.expenses.schemas import PayExpenseRequest
+            from app.modules.savings.transaction_service import InsufficientFundsError
+            from app.modules.savings.models import SavingsAccount
+            from app.modules.notifications.service import NotificationService
 
             # Get all active recurring expenses with auto_pay enabled and linked accounts
             result = await db.execute(
@@ -95,6 +99,7 @@ def process_recurring_expenses(self) -> Dict[str, Any]:
 
             processed = 0
             auto_paid = 0
+            failed_payments = 0
             errors = 0
 
             for expense in expenses:
@@ -119,9 +124,34 @@ def process_recurring_expenses(self) -> Dict[str, Any]:
                         await pay_expense(db, expense.user_id, expense.id, pay_request)
                         auto_paid += 1
                         logger.info(f"Auto-paid expense {expense.id} from account {expense.payment_account_id}")
+                    except InsufficientFundsError as e:
+                        # Mark as payment_failed and create notification
+                        expense.status = ExpenseStatus.PAYMENT_FAILED.value
+                        failed_payments += 1
+                        logger.warning(f"Insufficient funds for expense {expense.id}: {e}")
+
+                        # Get account details for notification
+                        account_result = await db.execute(
+                            select(SavingsAccount).where(SavingsAccount.id == expense.payment_account_id)
+                        )
+                        account = account_result.scalar_one_or_none()
+                        account_name = account.name if account else "Unknown"
+                        current_balance = account.current_balance if account else None
+
+                        # Create notification
+                        notification_service = NotificationService(db)
+                        await notification_service.create_payment_failed_notification(
+                            user_id=expense.user_id,
+                            payment_type="expense",
+                            amount=expense.amount,
+                            currency=expense.currency,
+                            account_name=account_name,
+                            item_name=expense.name,
+                            current_balance=current_balance
+                        )
                     except Exception as pay_error:
                         logger.warning(f"Failed to auto-pay expense {expense.id}: {pay_error}")
-                        # Keep expense as pending if payment fails
+                        # Keep expense as pending if payment fails for other reasons
 
                     processed += 1
 
@@ -131,11 +161,12 @@ def process_recurring_expenses(self) -> Dict[str, Any]:
 
             await db.commit()
 
-            logger.info(f"Processed {processed} recurring expenses, auto-paid {auto_paid}, errors {errors}")
+            logger.info(f"Processed {processed} recurring expenses, auto-paid {auto_paid}, failed {failed_payments}, errors {errors}")
 
             return {
                 "processed": processed,
                 "auto_paid": auto_paid,
+                "failed_payments": failed_payments,
                 "errors": errors,
                 "timestamp": datetime.utcnow().isoformat()
             }

@@ -311,6 +311,74 @@ class NotificationService:
         await self.db.commit()
         return result.rowcount
 
+    async def create_payment_failed_notification(
+        self,
+        user_id: UUID,
+        payment_type: str,
+        amount: "Decimal",
+        currency: str,
+        account_name: str,
+        item_name: str,
+        current_balance: "Decimal" = None,
+    ) -> Notification:
+        """
+        Create a notification for a failed payment due to insufficient funds.
+
+        Args:
+            user_id: User's UUID
+            payment_type: Type of payment (expense, installment, subscription, stock, tax)
+            amount: Amount that failed to process
+            currency: Currency code
+            account_name: Name of the account with insufficient funds
+            item_name: Name of the item (expense name, subscription name, etc.)
+            current_balance: Current balance of the account (optional)
+
+        Returns:
+            Created Notification object
+        """
+        from decimal import Decimal
+
+        title = "Payment Failed - Insufficient Funds"
+
+        if current_balance is not None:
+            message = (
+                f"{payment_type.capitalize()} payment of {amount:.2f} {currency} for \"{item_name}\" failed. "
+                f"Account \"{account_name}\" has insufficient funds (balance: {current_balance:.2f} {currency})."
+            )
+        else:
+            message = (
+                f"{payment_type.capitalize()} payment of {amount:.2f} {currency} for \"{item_name}\" failed. "
+                f"Account \"{account_name}\" has insufficient funds."
+            )
+
+        # Determine action URL based on payment type
+        action_urls = {
+            "expense": "/dashboard/expenses",
+            "installment": "/dashboard/installments",
+            "subscription": "/dashboard/subscriptions",
+            "stock": "/dashboard/portfolio",
+            "tax": "/dashboard/taxes",
+        }
+        action_url = action_urls.get(payment_type.lower(), "/dashboard")
+
+        return await self.create_notification(
+            user_id=user_id,
+            notification_type=NotificationType.ALERT,
+            category=NotificationCategory.PAYMENT_FAILED,
+            title=title,
+            message=message,
+            priority=1,  # High priority
+            action_url=action_url,
+            extra_data={
+                "payment_type": payment_type,
+                "amount": str(amount),
+                "currency": currency,
+                "account_name": account_name,
+                "item_name": item_name,
+                "current_balance": str(current_balance) if current_balance is not None else None,
+            }
+        )
+
     async def get_stats(self, user_id: UUID) -> NotificationStatsResponse:
         """Get notification statistics for user."""
         # Total count

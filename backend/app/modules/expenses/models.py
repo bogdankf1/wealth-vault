@@ -28,6 +28,7 @@ class ExpenseStatus(str, enum.Enum):
     PAID = "paid"
     OVERDUE = "overdue"
     CANCELLED = "cancelled"
+    PAYMENT_FAILED = "payment_failed"
 
 
 class PaymentMethod(str, enum.Enum):

@@ -2010,3 +2010,127 @@ async def get_net_worth_trend_from_snapshots(
     # Fall back to calculated values
     return await get_net_worth_trend_chart(db, user_id, start_date, end_date)
 
+
+async def get_failed_payments(db: AsyncSession, user_id: UUID):
+    """
+    Get all failed payments across expenses, installments, and subscriptions.
+
+    Returns payments that failed due to insufficient funds and need attention.
+    """
+    from app.modules.expenses.models import Expense as ExpenseModel, ExpenseStatus
+    from app.modules.subscriptions.models import Subscription as SubscriptionModel
+    from app.modules.dashboard.schemas import FailedPaymentsResponse, FailedPaymentItem
+
+    failed_items = []
+
+    # Get failed expenses (status = payment_failed)
+    expenses_query = select(ExpenseModel).where(
+        and_(
+            ExpenseModel.user_id == user_id,
+            ExpenseModel.status == ExpenseStatus.PAYMENT_FAILED.value,
+            ExpenseModel.deleted_at.is_(None)
+        )
+    )
+    expenses_result = await db.execute(expenses_query)
+    failed_expenses = expenses_result.scalars().all()
+
+    for expense in failed_expenses:
+        # Get account name if linked
+        account_name = None
+        if expense.payment_account_id:
+            account_result = await db.execute(
+                select(SavingsAccount.name).where(SavingsAccount.id == expense.payment_account_id)
+            )
+            account_name = account_result.scalar_one_or_none()
+
+        failed_items.append(FailedPaymentItem(
+            id=expense.id,
+            payment_type="expense",
+            name=expense.name,
+            amount=expense.amount,
+            currency=expense.currency,
+            account_name=account_name,
+            account_id=expense.payment_account_id,
+            failure_date=expense.updated_at,
+            status=expense.status
+        ))
+
+    # Get failed subscriptions (status = payment_failed)
+    from app.modules.subscriptions.models import SubscriptionStatus
+    subscriptions_query = select(SubscriptionModel).where(
+        and_(
+            SubscriptionModel.user_id == user_id,
+            SubscriptionModel.status == SubscriptionStatus.PAYMENT_FAILED.value
+        )
+    )
+    subscriptions_result = await db.execute(subscriptions_query)
+    failed_subscriptions = subscriptions_result.scalars().all()
+
+    for subscription in failed_subscriptions:
+        # Get account name if linked
+        account_name = None
+        if subscription.payment_account_id:
+            account_result = await db.execute(
+                select(SavingsAccount.name).where(SavingsAccount.id == subscription.payment_account_id)
+            )
+            account_name = account_result.scalar_one_or_none()
+
+        failed_items.append(FailedPaymentItem(
+            id=subscription.id,
+            payment_type="subscription",
+            name=subscription.name,
+            amount=subscription.amount,
+            currency=subscription.currency,
+            account_name=account_name,
+            account_id=subscription.payment_account_id,
+            failure_date=subscription.updated_at,
+            status=subscription.status
+        ))
+
+    # Get failed installment payments
+    # Note: Installments use InstallmentPaymentStatus.FAILED for failed payments
+    from app.modules.installments.models import InstallmentPayment, InstallmentPaymentStatus
+
+    failed_installment_payments_query = select(InstallmentPayment).where(
+        InstallmentPayment.status == InstallmentPaymentStatus.FAILED.value
+    ).join(Installment).where(Installment.user_id == user_id)
+    failed_installment_payments_result = await db.execute(failed_installment_payments_query)
+    failed_installment_payments = failed_installment_payments_result.scalars().all()
+
+    for payment in failed_installment_payments:
+        # Get the installment details
+        installment_result = await db.execute(
+            select(Installment).where(Installment.id == payment.installment_id)
+        )
+        installment = installment_result.scalar_one_or_none()
+
+        if installment:
+            # Get account name if linked
+            account_name = None
+            if installment.payment_account_id:
+                account_result = await db.execute(
+                    select(SavingsAccount.name).where(SavingsAccount.id == installment.payment_account_id)
+                )
+                account_name = account_result.scalar_one_or_none()
+
+            failed_items.append(FailedPaymentItem(
+                id=installment.id,
+                payment_type="installment",
+                name=installment.name,
+                amount=payment.scheduled_amount,
+                currency=installment.currency,
+                account_name=account_name,
+                account_id=installment.payment_account_id,
+                failure_date=payment.created_at,
+                status=payment.status
+            ))
+
+    # Sort by failure date (most recent first)
+    failed_items.sort(key=lambda x: x.failure_date, reverse=True)
+
+    return FailedPaymentsResponse(
+        items=failed_items,
+        total=len(failed_items),
+        has_failed_payments=len(failed_items) > 0
+    )
+

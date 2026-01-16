@@ -7,9 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from uuid import UUID
 
+from sqlalchemy import select
+
 from app.core.database import get_db
 from app.core.permissions import get_current_user, require_feature, check_usage_limit
 from app.models.user import User
+from app.modules.savings.transaction_service import InsufficientFundsError
+from app.modules.savings.models import SavingsAccount
 from app.modules.installments import service
 from app.modules.installments.schemas import (
     InstallmentCreate,
@@ -486,6 +490,39 @@ async def record_installment_payment(
             "notes": payment.notes,
             "created_at": payment.created_at,
         }
+    except InsufficientFundsError as e:
+        # Get account details for detailed error response
+        account_id = installment.payment_account_id
+        account_name = "Unknown"
+        current_balance = None
+        currency = installment.currency or "USD"
+
+        if account_id:
+            account_result = await db.execute(
+                select(SavingsAccount).where(
+                    SavingsAccount.id == account_id,
+                    SavingsAccount.user_id == current_user.id
+                )
+            )
+            account = account_result.scalar_one_or_none()
+            if account:
+                account_name = account.name
+                current_balance = float(account.current_balance)
+                currency = account.currency
+
+        required_amount = float(installment.amount_per_payment) if installment.amount_per_payment else 0
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Insufficient funds",
+                "error_code": "INSUFFICIENT_FUNDS",
+                "account_name": account_name,
+                "current_balance": current_balance,
+                "required_amount": required_amount,
+                "currency": currency
+            }
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

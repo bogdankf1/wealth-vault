@@ -32,6 +32,7 @@ class NotificationCategory(str, enum.Enum):
     EXPENSE = "expense"
     BILLING = "billing"
     SYSTEM = "system"
+    PAYMENT_FAILED = "payment_failed"
 
 
 class Notification(BaseModel):

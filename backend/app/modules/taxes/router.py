@@ -193,6 +193,9 @@ async def pay_tax(
     - amount: Override the calculated amount
     - notes: Add notes to the payment
     """
+    from app.modules.savings.models import SavingsAccount
+    from sqlalchemy import select
+
     try:
         payment, transaction_id = await service.pay_tax(
             db=db,
@@ -207,7 +210,49 @@ async def pay_tax(
             message="Tax payment processed successfully"
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_str = str(e)
+        # Check if this is an insufficient funds error
+        if "Insufficient balance" in error_str:
+            # Get tax and account details for detailed error response
+            tax = await service.get_tax(db, tax_id, current_user.id)
+            account_id = request.account_id if request and request.account_id else (tax.payment_account_id if tax else None)
+
+            account_name = "Unknown"
+            current_balance = None
+            currency = "USD"
+            required_amount = None
+
+            if account_id:
+                account_result = await db.execute(
+                    select(SavingsAccount).where(
+                        SavingsAccount.id == account_id,
+                        SavingsAccount.user_id == current_user.id
+                    )
+                )
+                account = account_result.scalar_one_or_none()
+                if account:
+                    account_name = account.name
+                    current_balance = float(account.current_balance)
+                    currency = account.currency
+
+            # Try to extract required amount from error message
+            import re
+            match = re.search(r"Required: ([\d.]+)", error_str)
+            if match:
+                required_amount = float(match.group(1))
+
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Insufficient funds",
+                    "error_code": "INSUFFICIENT_FUNDS",
+                    "account_name": account_name,
+                    "current_balance": current_balance,
+                    "required_amount": required_amount,
+                    "currency": currency
+                }
+            )
+        raise HTTPException(status_code=400, detail=error_str)
 
 
 # ============================================================================

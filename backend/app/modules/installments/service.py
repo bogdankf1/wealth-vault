@@ -836,6 +836,7 @@ async def process_installment_payment(
 
         # If auto_pay is enabled and account is linked, deduct from account
         if installment.auto_pay and installment.payment_account_id:
+            from app.modules.savings.transaction_service import InsufficientFundsError
             try:
                 transaction_service = TransactionService(db)
                 transaction = await transaction_service.create_withdrawal(
@@ -850,6 +851,9 @@ async def process_installment_payment(
                 )
                 account_transaction_id = transaction.id
                 expense.account_transaction_id = transaction.id
+            except InsufficientFundsError:
+                # Re-raise InsufficientFundsError to be handled by caller
+                raise
             except Exception as e:
                 logger.warning(f"Failed to create withdrawal for installment {installment.id}: {e}")
                 # Continue without the withdrawal - payment still recorded
