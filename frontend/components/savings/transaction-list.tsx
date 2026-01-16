@@ -1,7 +1,7 @@
 /**
  * Transaction List Component
  * Displays a list of transactions for a savings account
- * With search, source type filter, and transaction type filter
+ * With search, source type filter, transaction type filter, and month filter
  */
 'use client';
 
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MonthFilter } from '@/components/ui/month-filter';
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -37,7 +38,7 @@ import {
   type SourceType,
 } from '@/lib/api/savingsApi';
 import { formatCurrency } from '@/lib/utils/currency';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 // Extended source type with 'all' option for filter UI
 type SourceFilterType = SourceType | 'all';
@@ -73,9 +74,20 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const [sourceFilter, setSourceFilter] = React.useState<SourceFilterType>('all');
+  const [selectedMonth, setSelectedMonth] = React.useState<string | null>(null);
   const pageSize = 10;
 
   const t = useTranslations('savings.transactions');
+  const tCommon = useTranslations('common');
+
+  // Calculate date range based on selected month (YYYY-MM format)
+  const dateRange = React.useMemo(() => {
+    if (!selectedMonth) return { start: undefined, end: undefined };
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const start = startOfMonth(new Date(year, month - 1));
+    const end = endOfMonth(new Date(year, month - 1));
+    return { start, end };
+  }, [selectedMonth]);
 
   // Debounce search input
   React.useEffect(() => {
@@ -95,6 +107,8 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
     transaction_type: typeFilter !== 'all' ? typeFilter : undefined,
     source_type: sourceFilter !== 'all' ? sourceFilter : undefined,
     search: debouncedSearch || undefined,
+    start_date: dateRange.start?.toISOString(),
+    end_date: dateRange.end?.toISOString(),
   });
 
   const transactions = data?.items || [];
@@ -134,10 +148,7 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
           </div>
           <div>
             <div className="font-medium">
-              {formatTransactionType(transaction.transaction_type)}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {transaction.description || t('noDescription')}
+              {transaction.description || formatTransactionType(transaction.transaction_type)}
             </div>
             <div className="text-xs text-muted-foreground">
               {format(new Date(transaction.transaction_date), 'MMM d, yyyy h:mm a')}
@@ -240,6 +251,17 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
               <SelectItem value="adjustment">{t('types.adjustment')}</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Month Filter */}
+          <MonthFilter
+            selectedMonth={selectedMonth}
+            onMonthChange={(month) => {
+              setSelectedMonth(month);
+              setPage(1);
+            }}
+            label={tCommon('common.filterBy')}
+            clearLabel={tCommon('common.clear')}
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -247,7 +269,7 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
           renderSkeleton()
         ) : transactions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            {debouncedSearch || sourceFilter !== 'all' || typeFilter !== 'all'
+            {debouncedSearch || sourceFilter !== 'all' || typeFilter !== 'all' || selectedMonth
               ? t('noMatchingTransactions')
               : t('noTransactions')}
           </div>
