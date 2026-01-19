@@ -211,6 +211,143 @@ async def save_categorization_correction(
         )
 
 
+@router.post("/upload-images", response_model=schemas.MultipleFileUploadResponse)
+@require_feature("ai_categorization")
+async def upload_images(
+    files: List[UploadFile] = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Upload multiple image files (screenshots) for AI parsing
+
+    Supports JPEG, PNG, and WebP formats. Max 10 files per request.
+
+    **Requires:** Growth tier or higher
+    """
+    # Validate file count
+    if len(files) > 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Maximum 10 files allowed per upload",
+        )
+
+    if len(files) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one file is required",
+        )
+
+    # Validate file types
+    allowed_extensions = [".jpg", ".jpeg", ".png", ".webp"]
+
+    uploaded_files = []
+    for file in files:
+        file_ext = Path(file.filename).suffix.lower()
+
+        if file_ext not in allowed_extensions:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File type not supported for {file.filename}. Only JPEG, PNG, and WebP images are allowed.",
+            )
+
+        # Read file content
+        content = await file.read()
+        file_size = len(content)
+
+        # Validate file size (max 5MB per image)
+        if file_size > 5 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File {file.filename} exceeds maximum size of 5MB",
+            )
+
+        # Save to temp directory
+        temp_dir = Path(tempfile.gettempdir()) / "wealth-vault" / "uploads" / "images"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+
+        import uuid as uuid_module
+
+        unique_filename = f"{uuid_module.uuid4()}{file_ext}"
+        file_path = temp_dir / unique_filename
+
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+        # Create database record
+        uploaded_file = UploadedFile(
+            user_id=current_user.id,
+            filename=file.filename,
+            file_url=str(file_path),
+            file_type=file_ext.replace(".", ""),
+            file_size=file_size,
+            status="uploaded",
+        )
+
+        db.add(uploaded_file)
+        await db.flush()
+        await db.refresh(uploaded_file)
+        uploaded_files.append(uploaded_file)
+
+    await db.commit()
+
+    return schemas.MultipleFileUploadResponse(
+        files=[
+            schemas.FileUploadResponse(
+                id=f.id,
+                filename=f.filename,
+                file_url=f.file_url,
+                file_type=f.file_type,
+                file_size=f.file_size,
+                status=f.status,
+                created_at=f.created_at,
+            )
+            for f in uploaded_files
+        ],
+        total_count=len(uploaded_files),
+    )
+
+
+@router.post(
+    "/parse-income-screenshots", response_model=schemas.ParseIncomeScreenshotsResponse
+)
+@require_feature("ai_categorization")
+async def parse_income_screenshots(
+    request: schemas.ParseIncomeScreenshotsRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Parse uploaded screenshots to extract income transactions using AI Vision
+
+    Uses GPT-4o Vision to analyze banking app screenshots and extract income transactions.
+    Supports Monobank, PrivatBank, and similar Ukrainian banking apps.
+
+    **Requires:** Growth tier or higher
+    """
+    try:
+        transactions = await ai_service.parse_income_screenshots(
+            db=db,
+            file_ids=request.file_ids,
+            user_id=current_user.id,
+        )
+
+        recurring_count = sum(1 for t in transactions if t.is_recurring_hint)
+
+        return schemas.ParseIncomeScreenshotsResponse(
+            transactions=transactions,
+            total_count=len(transactions),
+            recurring_count=recurring_count,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse screenshots: {str(e)}",
+        )
+
+
 @router.get("/insights")
 @require_feature("ai_insights")
 async def get_financial_insights(

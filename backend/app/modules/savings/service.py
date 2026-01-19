@@ -182,10 +182,26 @@ async def delete_account(
     user_id: UUID,
     account_id: UUID
 ) -> bool:
-    """Delete a savings account"""
+    """Delete a savings account and related transfers"""
+    from app.modules.savings.models import AccountTransfer
+    from sqlalchemy import or_
+
     account = await get_account(db, user_id, account_id)
     if not account:
         return False
+
+    # Delete transfers where this account is the source or destination
+    # This must be done before deleting the account to avoid FK constraint errors
+    transfers_query = select(AccountTransfer).where(
+        or_(
+            AccountTransfer.from_account_id == account_id,
+            AccountTransfer.to_account_id == account_id
+        )
+    )
+    transfers_result = await db.execute(transfers_query)
+    transfers = transfers_result.scalars().all()
+    for transfer in transfers:
+        await db.delete(transfer)
 
     await db.delete(account)
     await db.commit()

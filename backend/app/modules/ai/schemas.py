@@ -89,3 +89,34 @@ class ImportTransactionsResponse(BaseModel):
     imported_count: int
     failed_count: int
     errors: List[str] = []
+
+
+# Income Screenshot Parsing Schemas
+class ParsedIncomeTransaction(BaseModel):
+    """A single parsed income transaction from screenshot"""
+    date: str
+    description: str
+    amount: float
+    currency: str = "UAH"
+    category: Optional[str] = None
+    suggested_frequency: Optional[str] = None  # one_time, daily, weekly, monthly, etc.
+    is_recurring_hint: bool = False
+    confidence: str = "medium"  # high, medium, low
+
+
+class ParseIncomeScreenshotsRequest(BaseModel):
+    """Request to parse income screenshots"""
+    file_ids: List[UUID]
+
+
+class ParseIncomeScreenshotsResponse(BaseModel):
+    """Response with parsed income transactions from screenshots"""
+    transactions: List[ParsedIncomeTransaction]
+    total_count: int
+    recurring_count: int
+
+
+class MultipleFileUploadResponse(BaseModel):
+    """Response after uploading multiple files"""
+    files: List[FileUploadResponse]
+    total_count: int
