@@ -281,7 +281,10 @@
     "uploadFile": "Datei hochladen",
     "uploadSuccess": "Datei erfolgreich hochgeladen! Sie können jetzt den Kontoauszug parsen.",
     "noteExpensesOnly": "Hinweis: Nur Ausgaben werden importiert. Einkommenstransaktionen werden übersprungen.",
-    "importExpensesButton": "Ausgaben importieren"
+    "importExpensesButton": "Ausgaben importieren",
+    "backButton": "Zurück",
+    "importComplete": "Import abgeschlossen!",
+    "importDescription": "Ihre Ausgaben werden importiert..."
   },
   "frequency": {
     "daily": "Täglich",

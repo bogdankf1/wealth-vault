@@ -281,7 +281,10 @@
     "uploadFile": "Enviar Arquivo",
     "uploadSuccess": "Arquivo enviado com sucesso! Agora você pode processar o extrato.",
     "noteExpensesOnly": "Nota: Apenas despesas serão importadas. Transações de receita serão ignoradas.",
-    "importExpensesButton": "Importar Despesas"
+    "importExpensesButton": "Importar Despesas",
+    "backButton": "Voltar",
+    "importComplete": "Importação concluída!",
+    "importDescription": "Importando suas despesas..."
   },
   "frequency": {
     "daily": "Diário",

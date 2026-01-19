@@ -281,7 +281,10 @@
     "uploadFile": "Subir archivo",
     "uploadSuccess": "¡Archivo subido exitosamente! Ahora puedes analizar el extracto.",
     "noteExpensesOnly": "Nota: Solo se importarán gastos. Las transacciones de ingresos se omitirán.",
-    "importExpensesButton": "Importar gastos"
+    "importExpensesButton": "Importar gastos",
+    "backButton": "Atrás",
+    "importComplete": "¡Importación completada!",
+    "importDescription": "Importando sus gastos..."
   },
   "frequency": {
     "daily": "Diario",

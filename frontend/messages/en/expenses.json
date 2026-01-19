@@ -281,7 +281,10 @@
     "uploadFile": "Upload File",
     "uploadSuccess": "File uploaded successfully! You can now parse the statement.",
     "noteExpensesOnly": "Note: Only expenses will be imported. Income transactions will be skipped.",
-    "importExpensesButton": "Import Expenses"
+    "importExpensesButton": "Import Expenses",
+    "backButton": "Back",
+    "importComplete": "Import Complete!",
+    "importDescription": "Importing your expenses..."
   },
   "frequency": {
     "daily": "Daily",

@@ -4,9 +4,10 @@
  */
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Download, CheckCircle, AlertCircle, Loader2, X, Trash2 } from 'lucide-react';
+import { Download, CheckCircle, AlertCircle, Loader2, X, Trash2, Upload, Sparkles, Edit3, ChevronRight, ChevronLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -39,6 +40,17 @@ import { useListSubscriptionsQuery } from '@/lib/api/subscriptionsApi';
 import { useListInstallmentsQuery } from '@/lib/api/installmentsApi';
 import { EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
+// Step type
+type ImportStep = 'upload' | 'parse' | 'review' | 'import';
+
+// Progress steps configuration
+const STEPS: { key: ImportStep; icon: React.ElementType }[] = [
+  { key: 'upload', icon: Upload },
+  { key: 'parse', icon: Sparkles },
+  { key: 'review', icon: Edit3 },
+  { key: 'import', icon: CheckCircle },
+];
+
 export default function ImportStatementPage() {
   const t = useTranslations('expenses.import');
   const tCategories = useTranslations('expenses.categories');
@@ -58,7 +70,7 @@ export default function ImportStatementPage() {
     Array<ParsedTransaction & { category: string }>
   >([]);
   const [error, setError] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<'upload' | 'parse' | 'review' | 'import'>('upload');
+  const [currentStep, setCurrentStep] = useState<ImportStep>('upload');
   const [importing, setImporting] = useState(false);
   const [importResults, setImportResults] = useState<{
     success: number;
@@ -273,24 +285,35 @@ export default function ImportStatementPage() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-6">
       {/* Progress Steps */}
-      <div className="flex items-center gap-2">
-        <Badge variant={currentStep === 'upload' ? 'default' : 'secondary'}>
-          1. {t('uploadStep')}
-        </Badge>
-        <div className="h-px flex-1 bg-border" />
-        <Badge variant={currentStep === 'parse' ? 'default' : 'secondary'}>
-          2. {t('parseStep')}
-        </Badge>
-        <div className="h-px flex-1 bg-border" />
-        <Badge variant={currentStep === 'review' ? 'default' : 'secondary'}>
-          3. {t('reviewStep')}
-        </Badge>
-        <div className="h-px flex-1 bg-border" />
-        <Badge variant={currentStep === 'import' ? 'default' : 'secondary'}>
-          4. {t('importStep')}
-        </Badge>
+      <div className="flex items-center justify-center gap-2 mb-8">
+        {STEPS.map((step, index) => {
+          const Icon = step.icon;
+          const isActive = step.key === currentStep;
+          const isPast = STEPS.findIndex((s) => s.key === currentStep) > index;
+
+          return (
+            <React.Fragment key={step.key}>
+              <div
+                className={cn(
+                  'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                  isActive && 'bg-primary text-primary-foreground',
+                  isPast && 'bg-primary/20 text-primary',
+                  !isActive && !isPast && 'bg-muted text-muted-foreground'
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="text-sm font-medium hidden sm:inline">
+                  {t(`${step.key}Step`)}
+                </span>
+              </div>
+              {index < STEPS.length - 1 && (
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* Error Alert */}
@@ -305,7 +328,10 @@ export default function ImportStatementPage() {
       {currentStep === 'upload' && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('step1Title')}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              {t('uploadStep')}
+            </CardTitle>
             <CardDescription>
               {t('step1Description')}
             </CardDescription>
@@ -323,26 +349,38 @@ export default function ImportStatementPage() {
       {currentStep === 'parse' && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('step2Title')}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              {t('parseStep')}
+            </CardTitle>
             <CardDescription>
               {t('step2Description')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <div>
-                <p className="font-medium">{uploadedFilename}</p>
-                <p className="text-sm text-muted-foreground">{t('readyToParse')}</p>
-              </div>
-              <Button onClick={handleParseStatement} disabled={isParsing}>
-                {isParsing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('parsing')}
-                  </>
-                ) : (
-                  t('parseButton')
-                )}
+          <CardContent className="space-y-6">
+            <div className="text-center py-8">
+              {isParsing ? (
+                <div className="space-y-4">
+                  <Loader2 className="h-12 w-12 mx-auto text-primary animate-spin" />
+                  <p className="text-muted-foreground">{t('parsing')}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">{uploadedFilename}</span> - {t('readyToParse')}
+                  </p>
+                  <Button onClick={handleParseStatement} size="lg">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {t('parseButton')}
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-start">
+              <Button variant="ghost" onClick={() => setCurrentStep('upload')}>
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                {t('backButton') || 'Back'}
               </Button>
             </div>
           </CardContent>
@@ -353,7 +391,10 @@ export default function ImportStatementPage() {
       {currentStep === 'review' && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('step3Title')}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Edit3 className="h-5 w-5" />
+              {t('reviewStep')}
+            </CardTitle>
             <CardDescription>
               {t('transactionsFound', { count: transactions.length })}
             </CardDescription>
@@ -758,46 +799,55 @@ export default function ImportStatementPage() {
       {currentStep === 'import' && importResults && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('step4Title')}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              {t('importStep')}
+            </CardTitle>
+            <CardDescription>
+              {t('importDescription') || 'Importing your expenses...'}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
-              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <AlertDescription className="text-green-600 dark:text-green-400">
-                {t('importSuccess', { count: importResults.success })}
-              </AlertDescription>
-            </Alert>
+          <CardContent className="space-y-6">
+            <div className="text-center py-8 space-y-6">
+              <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
+              <div className="space-y-4">
+                <p className="text-lg font-medium">{t('importComplete') || 'Import Complete!'}</p>
+                <div className="flex justify-center gap-4">
+                  <Badge variant="default" className="text-sm">
+                    {t('successCount', { count: importResults.success })}
+                  </Badge>
+                  {importResults.failed > 0 && (
+                    <Badge variant="destructive" className="text-sm">
+                      {t('failedCount', { count: importResults.failed })}
+                    </Badge>
+                  )}
+                </div>
 
-            {importResults.failed > 0 && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {importResults.failed} transactions failed to import
-                  {importResults.errors.length > 0 && (
-                    <ul className="mt-2 list-disc list-inside">
+                {importResults.failed > 0 && importResults.errors.length > 0 && (
+                  <div className="text-left mx-auto max-w-md mt-4">
+                    <p className="text-sm text-muted-foreground mb-2">{t('errors')}</p>
+                    <ul className="list-disc list-inside text-xs text-red-600">
                       {importResults.errors.slice(0, 5).map((error, index) => (
-                        <li key={index} className="text-xs">
-                          {error}
-                        </li>
+                        <li key={index}>{error}</li>
                       ))}
                     </ul>
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
+                  </div>
+                )}
 
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  setCurrentStep('upload');
-                  setUploadedFileId(null);
-                  setTransactions([]);
-                  setCategorizedTransactions([]);
-                  setImportResults(null);
-                }}
-              >
-                {t('importAnother')}
-              </Button>
+                <Button
+                  onClick={() => {
+                    setCurrentStep('upload');
+                    setUploadedFileId(null);
+                    setTransactions([]);
+                    setCategorizedTransactions([]);
+                    setImportResults(null);
+                  }}
+                  variant="outline"
+                  className="mt-4"
+                >
+                  {t('importAnother')}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

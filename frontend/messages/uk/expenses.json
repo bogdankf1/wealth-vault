@@ -281,7 +281,10 @@
     "uploadFile": "Завантажити файл",
     "uploadSuccess": "Файл успішно завантажено! Тепер ви можете розібрати виписку.",
     "noteExpensesOnly": "Примітка: Імпортуватимуться лише витрати. Транзакції доходів будуть пропущені.",
-    "importExpensesButton": "Імпортувати витрати"
+    "importExpensesButton": "Імпортувати витрати",
+    "backButton": "Назад",
+    "importComplete": "Імпорт завершено!",
+    "importDescription": "Імпортуємо ваші витрати..."
   },
   "frequency": {
     "daily": "Щоденно",

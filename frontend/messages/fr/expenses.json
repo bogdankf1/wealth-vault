@@ -281,7 +281,10 @@
     "uploadFile": "Téléverser un fichier",
     "uploadSuccess": "Fichier téléversé avec succès ! Vous pouvez maintenant analyser le relevé.",
     "noteExpensesOnly": "Remarque : Seules les dépenses seront importées. Les transactions de revenus seront ignorées.",
-    "importExpensesButton": "Importer les dépenses"
+    "importExpensesButton": "Importer les dépenses",
+    "backButton": "Retour",
+    "importComplete": "Importation terminée !",
+    "importDescription": "Importation de vos dépenses..."
   },
   "frequency": {
     "daily": "Quotidien",

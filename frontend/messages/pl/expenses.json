@@ -281,7 +281,10 @@
     "uploadFile": "Prześlij plik",
     "uploadSuccess": "Plik przesłany pomyślnie! Możesz teraz sparsować wyciąg.",
     "noteExpensesOnly": "Uwaga: Zaimportowane zostaną tylko wydatki. Transakcje dochodowe zostaną pominięte.",
-    "importExpensesButton": "Importuj wydatki"
+    "importExpensesButton": "Importuj wydatki",
+    "backButton": "Wstecz",
+    "importComplete": "Import zakończony!",
+    "importDescription": "Importowanie wydatków..."
   },
   "frequency": {
     "daily": "Dziennie",

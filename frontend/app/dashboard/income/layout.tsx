@@ -5,7 +5,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, BarChart3, History, Archive } from 'lucide-react';
+import { LayoutGrid, BarChart3, History, Archive, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -22,6 +22,7 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
     { value: 'overview', label: tNav('overview'), icon: LayoutGrid, href: '/dashboard/income/overview' },
     { value: 'analysis', label: tNav('analysis'), icon: BarChart3, href: '/dashboard/income/analysis' },
     { value: 'history', label: tNav('history'), icon: History, href: '/dashboard/income/history' },
+    { value: 'import', label: tNav('import'), icon: Upload, href: '/dashboard/income/import' },
     { value: 'archive', label: tNav('archive'), icon: Archive, href: '/dashboard/income/archive' },
   ];
 

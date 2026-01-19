@@ -69,6 +69,33 @@ export interface FinancialInsights {
   anomalies: string[];
 }
 
+// Income Screenshot Parsing Types
+export interface ParsedIncomeTransaction {
+  date: string;
+  description: string;
+  amount: number;
+  currency: string;
+  category?: string;
+  suggested_frequency?: string;
+  is_recurring_hint: boolean;
+  confidence: string;
+}
+
+export interface MultipleFileUploadResponse {
+  files: FileUploadResponse[];
+  total_count: number;
+}
+
+export interface ParseIncomeScreenshotsRequest {
+  file_ids: string[];
+}
+
+export interface ParseIncomeScreenshotsResponse {
+  transactions: ParsedIncomeTransaction[];
+  total_count: number;
+  recurring_count: number;
+}
+
 export const aiApi = createApi({
   reducerPath: 'aiApi',
   baseQuery: fetchBaseQuery({
@@ -138,6 +165,25 @@ export const aiApi = createApi({
       }),
       providesTags: ['AIInsights'],
     }),
+
+    // Upload multiple images for AI parsing
+    uploadImages: builder.mutation<MultipleFileUploadResponse, FormData>({
+      query: (formData) => ({
+        url: '/upload-images',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['UploadedFiles'],
+    }),
+
+    // Parse income screenshots with AI Vision
+    parseIncomeScreenshots: builder.mutation<ParseIncomeScreenshotsResponse, ParseIncomeScreenshotsRequest>({
+      query: (body) => ({
+        url: '/parse-income-screenshots',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -148,4 +194,6 @@ export const {
   useBatchCategorizeTransactionsMutation,
   useSaveCategorizationCorrectionMutation,
   useGetFinancialInsightsQuery,
+  useUploadImagesMutation,
+  useParseIncomeScreenshotsMutation,
 } = aiApi;

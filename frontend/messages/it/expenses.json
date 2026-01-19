@@ -281,7 +281,10 @@
     "uploadFile": "Carica File",
     "uploadSuccess": "File caricato con successo! Ora può analizzare l'estratto.",
     "noteExpensesOnly": "Nota: Saranno importate solo le spese. Le transazioni di entrate verranno saltate.",
-    "importExpensesButton": "Importa Spese"
+    "importExpensesButton": "Importa Spese",
+    "backButton": "Indietro",
+    "importComplete": "Importazione completata!",
+    "importDescription": "Importazione delle sue spese..."
   },
   "frequency": {
     "daily": "Giornaliera",
