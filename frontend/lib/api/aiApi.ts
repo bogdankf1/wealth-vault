@@ -122,6 +122,34 @@ export interface ParseAccountScreenshotsResponse {
   total_balance_by_currency: Record<string, number>;
 }
 
+// Portfolio Screenshot Parsing Types
+export interface ParsedPortfolioHolding {
+  ticker: string;
+  name?: string;
+  asset_type: 'stock' | 'etf' | 'crypto' | 'bond' | 'other';
+  quantity: number;
+  purchase_price: number;
+  current_price: number;
+  currency: string;
+  total_value?: number;
+  total_cost?: number;
+  gain_loss?: number;
+  gain_loss_percent?: number;
+  confidence: string;
+}
+
+export interface ParsePortfolioScreenshotsRequest {
+  file_ids: string[];
+}
+
+export interface ParsePortfolioScreenshotsResponse {
+  holdings: ParsedPortfolioHolding[];
+  total_count: number;
+  total_value: number;
+  total_cost: number;
+  total_gain_loss: number;
+}
+
 export const aiApi = createApi({
   reducerPath: 'aiApi',
   baseQuery: fetchBaseQuery({
@@ -219,6 +247,15 @@ export const aiApi = createApi({
         body,
       }),
     }),
+
+    // Parse portfolio screenshots with AI Vision
+    parsePortfolioScreenshots: builder.mutation<ParsePortfolioScreenshotsResponse, ParsePortfolioScreenshotsRequest>({
+      query: (body) => ({
+        url: '/parse-portfolio-screenshots',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -232,4 +269,5 @@ export const {
   useUploadImagesMutation,
   useParseIncomeScreenshotsMutation,
   useParseAccountScreenshotsMutation,
+  useParsePortfolioScreenshotsMutation,
 } = aiApi;
