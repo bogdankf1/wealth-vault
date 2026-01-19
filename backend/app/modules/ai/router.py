@@ -348,6 +348,52 @@ async def parse_income_screenshots(
         )
 
 
+@router.post(
+    "/parse-account-screenshots", response_model=schemas.ParseAccountScreenshotsResponse
+)
+@require_feature("ai_categorization")
+async def parse_account_screenshots(
+    request: schemas.ParseAccountScreenshotsRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Parse uploaded screenshots to extract bank accounts and cards using AI Vision
+
+    Uses GPT-4o Vision to analyze banking app screenshots and extract account information.
+    Supports Monobank, PrivatBank, and similar Ukrainian banking apps.
+
+    **Requires:** Growth tier or higher
+    """
+    try:
+        accounts = await ai_service.parse_account_screenshots(
+            db=db,
+            file_ids=request.file_ids,
+            user_id=current_user.id,
+        )
+
+        # Calculate total balance by currency
+        total_balance_by_currency: dict = {}
+        for acc in accounts:
+            currency = acc.currency
+            if currency not in total_balance_by_currency:
+                total_balance_by_currency[currency] = 0.0
+            total_balance_by_currency[currency] += acc.balance
+
+        return schemas.ParseAccountScreenshotsResponse(
+            accounts=accounts,
+            total_count=len(accounts),
+            total_balance_by_currency=total_balance_by_currency,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse account screenshots: {str(e)}",
+        )
+
+
 @router.get("/insights")
 @require_feature("ai_insights")
 async def get_financial_insights(

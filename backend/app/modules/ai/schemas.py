@@ -120,3 +120,32 @@ class MultipleFileUploadResponse(BaseModel):
     """Response after uploading multiple files"""
     files: List[FileUploadResponse]
     total_count: int
+
+
+# Account Screenshot Parsing Schemas
+class ParsedAccount(BaseModel):
+    """A single parsed account from screenshot"""
+    name: str  # Account/card name (e.g., "Картка Універсальна Голд", "всеКАРТА")
+    account_type: str  # card, deposit, cash, savings, other
+    balance: float
+    currency: str = "UAH"
+    institution: Optional[str] = None  # Bank name (Monobank, PrivatBank, etc.)
+    card_last4: Optional[str] = None  # Last 4 digits of card
+    card_expiry: Optional[str] = None  # Expiry date MM/YY
+    card_network: Optional[str] = None  # VISA, Mastercard, etc.
+    interest_rate: Optional[float] = None  # For deposits, annual interest rate as decimal
+    maturity_date: Optional[str] = None  # For deposits, YYYY-MM-DD
+    is_virtual: bool = False  # Virtual card flag
+    confidence: str = "medium"  # high, medium, low
+
+
+class ParseAccountScreenshotsRequest(BaseModel):
+    """Request to parse account screenshots"""
+    file_ids: List[UUID]
+
+
+class ParseAccountScreenshotsResponse(BaseModel):
+    """Response with parsed accounts from screenshots"""
+    accounts: List[ParsedAccount]
+    total_count: int
+    total_balance_by_currency: dict = {}  # e.g., {"UAH": 22468.87, "USD": 9311.16, "EUR": 20046.50}

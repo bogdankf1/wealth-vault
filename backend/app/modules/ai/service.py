@@ -14,7 +14,7 @@ from pathlib import Path
 from openai import OpenAI
 
 from app.modules.ai.models import UploadedFile
-from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction
+from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount
 from app.services.statement_parser import StatementParser, Transaction
 from app.services.ai_categorizer import AICategorizer, INCOME_CATEGORIES
 
@@ -366,6 +366,207 @@ IMPORTANT: Only extract INCOME (money received). Look for "Поповнення"
                 )
 
             return transactions
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse AI response: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Vision API parsing failed: {str(e)}")
+
+    async def parse_account_screenshots(
+        self, db: AsyncSession, file_ids: List[UUID], user_id: UUID
+    ) -> List[ParsedAccount]:
+        """
+        Parse bank accounts/cards from banking app screenshots using Vision API
+
+        Args:
+            db: Database session
+            file_ids: List of uploaded file IDs (images)
+            user_id: User ID (for security check)
+
+        Returns:
+            List of parsed accounts
+        """
+        # Get all files from database
+        result = await db.execute(
+            select(UploadedFile).where(
+                UploadedFile.id.in_(file_ids),
+                UploadedFile.user_id == user_id,
+            )
+        )
+        uploaded_files = result.scalars().all()
+
+        if len(uploaded_files) != len(file_ids):
+            raise ValueError("One or more files not found")
+
+        # Prepare images for Vision API
+        image_contents = []
+        for uploaded_file in uploaded_files:
+            file_path = uploaded_file.file_url
+
+            # Read and encode image to base64
+            with open(file_path, "rb") as f:
+                image_data = base64.standard_b64encode(f.read()).decode("utf-8")
+
+            # Determine MIME type
+            file_ext = uploaded_file.file_type.lower()
+            mime_type = {
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "png": "image/png",
+                "webp": "image/webp",
+            }.get(file_ext, "image/jpeg")
+
+            image_contents.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{mime_type};base64,{image_data}",
+                        "detail": "high",
+                    },
+                }
+            )
+
+        # Build the prompt for Vision API
+        prompt = """Analyze these Ukrainian banking app screenshots (Monobank, PrivatBank, or similar).
+Extract ALL bank accounts, cards, and deposits visible in the screenshots.
+
+MONOBANK CARD/ACCOUNT FORMAT:
+- Card number shown as "** XXXX" or "**** XXXX" (last 4 digits)
+- Expiry date shown as "MM/YY" (e.g., "04/28")
+- Balance shown prominently with currency symbol (€, $, ₴)
+- Card network: VISA or Mastercard logo visible
+- "всеКАРТА" = Multi-currency card wallet containing multiple cards
+- "Віртуальна" = Virtual card
+- "Накопичення" or "Депозит" = Savings/Deposit account
+- Interest rate shown as "X,X% річних" (annual)
+- Maturity date shown as "до DD.MM.YYYY"
+
+PRIVATBANK FORMAT:
+- "Заощадження" = Savings section
+- "Мої вклади" = My deposits
+- "Картка Універсальна Голд" = Universal Gold Card (account name)
+- Balance shown as "Баланс: X XXX.XX CUR"
+- Deposits show "Сума", "Нараховано" (accrued interest)
+- Period shown as "Період отримання: DD.MM.YYYY - DD.MM.YYYY"
+
+For each account/card found, provide:
+1. name - Card/account name (e.g., "Картка Універсальна Голд", "всеКАРТА USD", "Депозит Валютний")
+2. account_type - One of: card, deposit, cash, savings, other
+3. balance - Current balance amount (positive number)
+4. currency - Currency code: UAH for ₴, USD for $, EUR for €, GBP for £
+5. institution - Bank name: "Monobank" or "PrivatBank" or other detected bank
+6. card_last4 - Last 4 digits of card if visible (e.g., "9699")
+7. card_expiry - Expiry date if visible (e.g., "04/28")
+8. card_network - Card network if visible: "VISA", "Mastercard", or null
+9. interest_rate - Annual interest rate as decimal (0.01 for 1%) for deposits, null for cards
+10. maturity_date - Deposit maturity date in YYYY-MM-DD format, null for cards
+11. is_virtual - true if marked as virtual card, false otherwise
+12. confidence - high, medium, or low
+
+IMPORTANT RULES:
+- Extract EVERY unique account/card visible
+- For "всеКАРТА" (multi-currency wallet), extract each card within it separately
+- The main balance shown is the total, but individual cards have their own last4/expiry
+- Don't create duplicate accounts (same card_last4 + currency = same account)
+- For deposits, capture the interest rate and maturity date if visible
+- Currency detection: ₴ or грн = UAH, $ = USD, € = EUR
+
+Return a JSON object with this exact structure:
+{{
+  "accounts": [
+    {{
+      "name": "Картка Універсальна Голд",
+      "account_type": "card",
+      "balance": 4751.03,
+      "currency": "EUR",
+      "institution": "PrivatBank",
+      "card_last4": "1324",
+      "card_expiry": "01/27",
+      "card_network": "Mastercard",
+      "interest_rate": null,
+      "maturity_date": null,
+      "is_virtual": false,
+      "confidence": "high"
+    }},
+    {{
+      "name": "Депозит Валютний",
+      "account_type": "deposit",
+      "balance": 4629.00,
+      "currency": "USD",
+      "institution": "Monobank",
+      "card_last4": null,
+      "card_expiry": null,
+      "card_network": null,
+      "interest_rate": 0.001,
+      "maturity_date": "2026-04-11",
+      "is_virtual": false,
+      "confidence": "high"
+    }}
+  ]
+}}
+
+If no accounts are found in the screenshots, return:
+{{"accounts": []}}"""
+
+        try:
+            # Call Vision API
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial data extraction assistant specialized in parsing Ukrainian banking app screenshots. Extract account and card information accurately and return valid JSON.",
+                    },
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": prompt}, *image_contents],
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=4096,
+                response_format={"type": "json_object"},
+            )
+
+            # Parse the response
+            content = response.choices[0].message.content
+            parsed_data = json.loads(content)
+
+            # Convert to ParsedAccount objects
+            accounts = []
+            valid_account_types = ["card", "deposit", "cash", "savings", "other"]
+            valid_card_networks = ["VISA", "Mastercard", "Visa", "mastercard", None]
+
+            for acc in parsed_data.get("accounts", []):
+                # Validate account_type
+                account_type = acc.get("account_type", "other")
+                if account_type not in valid_account_types:
+                    account_type = "other"
+
+                # Normalize card network
+                card_network = acc.get("card_network")
+                if card_network:
+                    card_network = card_network.upper() if card_network.lower() == "visa" else (
+                        "Mastercard" if card_network.lower() == "mastercard" else card_network
+                    )
+
+                accounts.append(
+                    ParsedAccount(
+                        name=acc.get("name", "Unknown Account"),
+                        account_type=account_type,
+                        balance=float(acc.get("balance", 0)),
+                        currency=acc.get("currency", "UAH"),
+                        institution=acc.get("institution"),
+                        card_last4=acc.get("card_last4"),
+                        card_expiry=acc.get("card_expiry"),
+                        card_network=card_network,
+                        interest_rate=float(acc["interest_rate"]) if acc.get("interest_rate") is not None else None,
+                        maturity_date=acc.get("maturity_date"),
+                        is_virtual=bool(acc.get("is_virtual", False)),
+                        confidence=acc.get("confidence", "medium"),
+                    )
+                )
+
+            return accounts
 
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse AI response: {str(e)}")
