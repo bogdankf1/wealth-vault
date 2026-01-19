@@ -14,7 +14,7 @@ from pathlib import Path
 from openai import OpenAI
 
 from app.modules.ai.models import UploadedFile
-from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount
+from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount, ParsedPortfolioHolding
 from app.services.statement_parser import StatementParser, Transaction
 from app.services.ai_categorizer import AICategorizer, INCOME_CATEGORIES
 
@@ -567,6 +567,301 @@ If no accounts are found in the screenshots, return:
                 )
 
             return accounts
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse AI response: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Vision API parsing failed: {str(e)}")
+
+    async def parse_portfolio_screenshots(
+        self, db: AsyncSession, file_ids: List[UUID], user_id: UUID
+    ) -> List[ParsedPortfolioHolding]:
+        """
+        Parse portfolio holdings from brokerage/trading app screenshots using Vision API
+
+        Args:
+            db: Database session
+            file_ids: List of uploaded file IDs (images)
+            user_id: User ID (for security check)
+
+        Returns:
+            List of parsed portfolio holdings
+        """
+        # Get all files from database
+        result = await db.execute(
+            select(UploadedFile).where(
+                UploadedFile.id.in_(file_ids),
+                UploadedFile.user_id == user_id,
+            )
+        )
+        uploaded_files = result.scalars().all()
+
+        if len(uploaded_files) != len(file_ids):
+            raise ValueError("One or more files not found")
+
+        # Prepare images for Vision API
+        image_contents = []
+        for uploaded_file in uploaded_files:
+            file_path = uploaded_file.file_url
+
+            # Read and encode image to base64
+            with open(file_path, "rb") as f:
+                image_data = base64.standard_b64encode(f.read()).decode("utf-8")
+
+            # Determine MIME type
+            file_ext = uploaded_file.file_type.lower()
+            mime_type = {
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "png": "image/png",
+                "webp": "image/webp",
+            }.get(file_ext, "image/jpeg")
+
+            image_contents.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{mime_type};base64,{image_data}",
+                        "detail": "high",
+                    },
+                }
+            )
+
+        # Build the prompt for Vision API
+        prompt = f"""Analyze these {len(image_contents)} brokerage/trading platform screenshots and extract ALL portfolio holdings from EVERY image.
+
+CRITICAL: You are receiving {len(image_contents)} separate screenshots. These may be from DIFFERENT brokerage accounts (e.g., Interactive Brokers AND Trading 212).
+You MUST analyze EACH screenshot independently and extract ALL holdings from ALL of them.
+The same ticker appearing in multiple screenshots is NOT a duplicate - it represents holdings in different accounts.
+
+COMMON BROKERAGE PLATFORM FORMATS:
+
+1. INTERACTIVE BROKERS (IBKR) FORMAT (light/white theme):
+   - Row format: INSTRUMENT (ticker + company name) | POSITION | LAST | CHANGE % | COST BASIS | MARKET VALUE | AVG PRICE | DAILY P&L | UNREALIZED P&L
+   - Example row: "AMZN Amazon.com Inc" | 5 | 238.82 | +0.27% | 1,158.14 | 1,194.10 | 231.63 | -1.00 | +36.00
+   - INSTRUMENT shows ticker first then company name (e.g., "GOOGL Alphabet Inc Cl A")
+   - POSITION = quantity (number of shares)
+   - AVG PRICE = purchase_price (average cost per share)
+   - LAST = current_price
+   - MARKET VALUE = total_value
+   - COST BASIS = total_cost
+   - UNREALIZED P&L = gain_loss
+
+2. TRADING 212 / WEBULL FORMAT (dark theme):
+   - Ticker shown as "AAPL.US", "NVDA.US", "VOO.US" (with .US suffix for US stocks)
+   - Columns: Ticker | Qty | Entry Price | Book Value | Price | Value | Share(%) | P&L
+   - "Entry Price" = purchase_price (average cost per share)
+   - "Price" = current_price
+   - "Qty" = quantity
+   - "Value" = total_value (current)
+   - "Book value" = total_cost
+   - P&L columns show gain/loss
+
+3. ROBINHOOD / FIDELITY / SCHWAB FORMAT:
+   - Instrument name with company description
+   - "AMZN - Amazon.com Inc"
+   - Position (shares), Last Price, Change %, Cost Basis, Market Value, Avg Price, Daily P&L, Unrealized P&L
+
+4. CRYPTO EXCHANGES (Binance, Coinbase, Kraken):
+   - Symbol: BTC, ETH, SOL, etc.
+   - Holdings shown in crypto units
+   - USD equivalent value
+   - Entry/average price
+
+For each holding found, extract:
+1. ticker - Stock/ETF/Crypto symbol WITHOUT exchange suffix (e.g., "NVDA" not "NVDA.US", "AAPL" not "AAPL.US")
+2. name - Full company/asset name if visible (e.g., "NVIDIA Corporation", "Apple Inc")
+3. asset_type - One of: stock, etf, crypto, bond, other
+   - ETFs: VOO, VTI, QQQ, SPY, VGT, SMH, ARKK, etc.
+   - Crypto: BTC, ETH, SOL, ADA, etc.
+   - Stocks: Everything else with company names
+4. quantity - Number of shares/units held (can be fractional)
+5. purchase_price - Average cost per share/unit (Entry Price, Avg Price, or Cost Basis / Quantity)
+6. current_price - Current market price per share/unit
+7. currency - Currency code (usually "USD")
+8. total_value - Current market value (quantity * current_price) if shown
+9. total_cost - Total cost basis (quantity * purchase_price) if shown
+10. gain_loss - Unrealized gain/loss amount if shown
+11. gain_loss_percent - Unrealized gain/loss percentage if shown (as decimal, e.g., 0.15 for 15%)
+12. confidence - high, medium, or low
+
+DETECTION RULES:
+- ETF detection: VOO, VTI, QQQ, SPY, IVV, VGT, SMH, ARKK, VXX, GLD, SLV, TLT, BND, VCIT, VEA, EFA, VWO
+- Crypto detection: BTC, ETH, SOL, ADA, XRP, DOGE, DOT, LINK, AVAX, MATIC, ATOM
+- Everything else with a company name = stock
+
+CALCULATIONS (if not directly shown):
+- total_value = quantity * current_price
+- total_cost = quantity * purchase_price
+- gain_loss = total_value - total_cost
+- gain_loss_percent = (gain_loss / total_cost) if total_cost > 0
+
+Return a JSON object with this exact structure:
+{{
+  "holdings": [
+    {{
+      "ticker": "NVDA",
+      "name": "NVIDIA Corporation",
+      "asset_type": "stock",
+      "quantity": 147,
+      "purchase_price": 83.30,
+      "current_price": 186.26,
+      "currency": "USD",
+      "total_value": 27380.22,
+      "total_cost": 12245.10,
+      "gain_loss": 15135.12,
+      "gain_loss_percent": 1.2359,
+      "confidence": "high"
+    }},
+    {{
+      "ticker": "VOO",
+      "name": "Vanguard S&P 500 ETF",
+      "asset_type": "etf",
+      "quantity": 12,
+      "purchase_price": 584.82,
+      "current_price": 636.01,
+      "currency": "USD",
+      "total_value": 7632.12,
+      "total_cost": 7017.84,
+      "gain_loss": 614.28,
+      "gain_loss_percent": 0.0875,
+      "confidence": "high"
+    }},
+    {{
+      "ticker": "BTC",
+      "name": "Bitcoin",
+      "asset_type": "crypto",
+      "quantity": 0.5,
+      "purchase_price": 45000.00,
+      "current_price": 67000.00,
+      "currency": "USD",
+      "total_value": 33500.00,
+      "total_cost": 22500.00,
+      "gain_loss": 11000.00,
+      "gain_loss_percent": 0.4889,
+      "confidence": "high"
+    }}
+  ]
+}}
+
+If no portfolio holdings are found in the screenshots, return:
+{{"holdings": []}}
+
+IMPORTANT:
+- Extract ALL holdings visible in ALL screenshots - do not skip any image
+- If you see {len(image_contents)} images, you should extract holdings from EACH one
+- Holdings from different screenshots (different brokers) should ALL be included, even if they have the same ticker
+- Remove exchange suffixes from tickers (.US, .L, .DE, etc.)
+- Distinguish between stocks and ETFs correctly
+- For crypto, use standard ticker symbols (BTC, ETH, etc.)"""
+
+        try:
+            # Call Vision API
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial data extraction assistant specialized in parsing brokerage and trading platform screenshots. Extract portfolio holdings accurately and return valid JSON.",
+                    },
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": prompt}, *image_contents],
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=4096,
+                response_format={"type": "json_object"},
+            )
+
+            # Parse the response
+            content = response.choices[0].message.content
+            parsed_data = json.loads(content)
+
+            # Convert to ParsedPortfolioHolding objects
+            holdings = []
+            valid_asset_types = ["stock", "etf", "crypto", "bond", "other"]
+
+            # Known ETF tickers for validation
+            etf_tickers = {
+                "VOO", "VTI", "QQQ", "SPY", "IVV", "VGT", "SMH", "ARKK", "VXX",
+                "GLD", "SLV", "TLT", "BND", "VCIT", "VEA", "EFA", "VWO", "SCHD",
+                "JEPI", "QQQM", "VYM", "VIG", "VXUS", "VTV", "IWF", "IWM", "IJR"
+            }
+
+            # Known crypto tickers
+            crypto_tickers = {
+                "BTC", "ETH", "SOL", "ADA", "XRP", "DOGE", "DOT", "LINK", "AVAX",
+                "MATIC", "ATOM", "UNI", "LTC", "BCH", "XLM", "ALGO", "FTM", "NEAR"
+            }
+
+            for holding in parsed_data.get("holdings", []):
+                # Clean ticker (remove exchange suffix)
+                ticker = holding.get("ticker", "").upper()
+                for suffix in [".US", ".L", ".DE", ".PA", ".TO", ".AX", ".HK"]:
+                    if ticker.endswith(suffix):
+                        ticker = ticker[:-len(suffix)]
+                        break
+
+                # Validate/correct asset_type
+                asset_type = holding.get("asset_type", "stock")
+                if asset_type not in valid_asset_types:
+                    asset_type = "stock"
+
+                # Auto-correct asset_type based on ticker
+                if ticker in etf_tickers:
+                    asset_type = "etf"
+                elif ticker in crypto_tickers:
+                    asset_type = "crypto"
+
+                # Extract values with defaults
+                quantity = float(holding.get("quantity", 0))
+                purchase_price = float(holding.get("purchase_price", 0))
+                current_price = float(holding.get("current_price", 0))
+
+                # Calculate derived values if not provided
+                total_value = holding.get("total_value")
+                if total_value is None and quantity > 0 and current_price > 0:
+                    total_value = quantity * current_price
+                else:
+                    total_value = float(total_value) if total_value else None
+
+                total_cost = holding.get("total_cost")
+                if total_cost is None and quantity > 0 and purchase_price > 0:
+                    total_cost = quantity * purchase_price
+                else:
+                    total_cost = float(total_cost) if total_cost else None
+
+                gain_loss = holding.get("gain_loss")
+                if gain_loss is None and total_value and total_cost:
+                    gain_loss = total_value - total_cost
+                else:
+                    gain_loss = float(gain_loss) if gain_loss else None
+
+                gain_loss_percent = holding.get("gain_loss_percent")
+                if gain_loss_percent is None and gain_loss and total_cost and total_cost > 0:
+                    gain_loss_percent = gain_loss / total_cost
+                else:
+                    gain_loss_percent = float(gain_loss_percent) if gain_loss_percent else None
+
+                holdings.append(
+                    ParsedPortfolioHolding(
+                        ticker=ticker,
+                        name=holding.get("name"),
+                        asset_type=asset_type,
+                        quantity=quantity,
+                        purchase_price=purchase_price,
+                        current_price=current_price,
+                        currency=holding.get("currency", "USD"),
+                        total_value=total_value,
+                        total_cost=total_cost,
+                        gain_loss=gain_loss,
+                        gain_loss_percent=gain_loss_percent,
+                        confidence=holding.get("confidence", "medium"),
+                    )
+                )
+
+            return holdings
 
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse AI response: {str(e)}")

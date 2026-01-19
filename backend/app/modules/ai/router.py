@@ -394,6 +394,51 @@ async def parse_account_screenshots(
         )
 
 
+@router.post(
+    "/parse-portfolio-screenshots", response_model=schemas.ParsePortfolioScreenshotsResponse
+)
+@require_feature("ai_categorization")
+async def parse_portfolio_screenshots(
+    request: schemas.ParsePortfolioScreenshotsRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Parse uploaded screenshots to extract portfolio holdings using AI Vision
+
+    Uses GPT-4o Vision to analyze brokerage/trading app screenshots and extract holdings.
+    Supports Interactive Brokers, Trading 212, Robinhood, and similar platforms.
+
+    **Requires:** Growth tier or higher
+    """
+    try:
+        holdings = await ai_service.parse_portfolio_screenshots(
+            db=db,
+            file_ids=request.file_ids,
+            user_id=current_user.id,
+        )
+
+        # Calculate totals
+        total_value = sum(h.total_value or 0 for h in holdings)
+        total_cost = sum(h.total_cost or 0 for h in holdings)
+        total_gain_loss = sum(h.gain_loss or 0 for h in holdings)
+
+        return schemas.ParsePortfolioScreenshotsResponse(
+            holdings=holdings,
+            total_count=len(holdings),
+            total_value=total_value,
+            total_cost=total_cost,
+            total_gain_loss=total_gain_loss,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse portfolio screenshots: {str(e)}",
+        )
+
+
 @router.get("/insights")
 @require_feature("ai_insights")
 async def get_financial_insights(

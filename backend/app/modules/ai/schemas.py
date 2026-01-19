@@ -149,3 +149,34 @@ class ParseAccountScreenshotsResponse(BaseModel):
     accounts: List[ParsedAccount]
     total_count: int
     total_balance_by_currency: dict = {}  # e.g., {"UAH": 22468.87, "USD": 9311.16, "EUR": 20046.50}
+
+
+# Portfolio Screenshot Parsing Schemas
+class ParsedPortfolioHolding(BaseModel):
+    """A single parsed portfolio holding from screenshot"""
+    ticker: str  # Stock ticker symbol (e.g., AAPL, NVDA, VOO)
+    name: Optional[str] = None  # Full name (e.g., "Apple Inc", "NVIDIA Corporation")
+    asset_type: str = "stock"  # stock, etf, crypto, bond, other
+    quantity: float  # Number of shares/units held
+    purchase_price: float  # Average cost per share
+    current_price: float  # Current market price per share
+    currency: str = "USD"
+    total_value: Optional[float] = None  # Current market value (quantity * current_price)
+    total_cost: Optional[float] = None  # Total cost basis (quantity * purchase_price)
+    gain_loss: Optional[float] = None  # Unrealized gain/loss
+    gain_loss_percent: Optional[float] = None  # Unrealized gain/loss percentage
+    confidence: str = "medium"  # high, medium, low
+
+
+class ParsePortfolioScreenshotsRequest(BaseModel):
+    """Request to parse portfolio screenshots"""
+    file_ids: List[UUID]
+
+
+class ParsePortfolioScreenshotsResponse(BaseModel):
+    """Response with parsed portfolio holdings from screenshots"""
+    holdings: List[ParsedPortfolioHolding]
+    total_count: int
+    total_value: float = 0.0  # Total portfolio value
+    total_cost: float = 0.0  # Total cost basis
+    total_gain_loss: float = 0.0  # Total unrealized gain/loss
