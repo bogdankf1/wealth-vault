@@ -7,7 +7,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, Archive, BarChart3 } from 'lucide-react';
+import { LayoutGrid, Archive, BarChart3, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
@@ -34,6 +34,12 @@ export default function AccountsLayout({
       label: t('navigation.analysis'),
       icon: BarChart3,
       href: '/dashboard/accounts/analysis',
+    },
+    {
+      value: 'import',
+      label: t('navigation.import'),
+      icon: Upload,
+      href: '/dashboard/accounts/import',
     },
     {
       value: 'archive',

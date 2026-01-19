@@ -96,6 +96,32 @@ export interface ParseIncomeScreenshotsResponse {
   recurring_count: number;
 }
 
+// Account Screenshot Parsing Types
+export interface ParsedAccount {
+  name: string;
+  account_type: 'card' | 'deposit' | 'cash' | 'savings' | 'other';
+  balance: number;
+  currency: string;
+  institution?: string;
+  card_last4?: string;
+  card_expiry?: string;
+  card_network?: string;
+  interest_rate?: number;
+  maturity_date?: string;
+  is_virtual: boolean;
+  confidence: string;
+}
+
+export interface ParseAccountScreenshotsRequest {
+  file_ids: string[];
+}
+
+export interface ParseAccountScreenshotsResponse {
+  accounts: ParsedAccount[];
+  total_count: number;
+  total_balance_by_currency: Record<string, number>;
+}
+
 export const aiApi = createApi({
   reducerPath: 'aiApi',
   baseQuery: fetchBaseQuery({
@@ -184,6 +210,15 @@ export const aiApi = createApi({
         body,
       }),
     }),
+
+    // Parse account screenshots with AI Vision
+    parseAccountScreenshots: builder.mutation<ParseAccountScreenshotsResponse, ParseAccountScreenshotsRequest>({
+      query: (body) => ({
+        url: '/parse-account-screenshots',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -196,4 +231,5 @@ export const {
   useGetFinancialInsightsQuery,
   useUploadImagesMutation,
   useParseIncomeScreenshotsMutation,
+  useParseAccountScreenshotsMutation,
 } = aiApi;
