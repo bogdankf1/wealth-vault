@@ -3,7 +3,8 @@
     "overview": "Vue d'ensemble",
     "analysis": "Analyse",
     "history": "Historique",
-    "archive": "Archive"
+    "archive": "Archive",
+    "import": "Importer"
   },
   "layout": {
     "title": "Versements",
@@ -299,5 +300,70 @@
     "overdue": "En retard",
     "paidOff": "Remboursé",
     "noUpcomingPayment": "Aucun paiement à venir"
+  },
+  "import": {
+    "steps": {
+      "upload": "Télécharger",
+      "parse": "Analyser",
+      "review": "Réviser",
+      "import": "Importer"
+    },
+    "uploadDescription": "Téléchargez des captures d'écran de Monobank Pay, PrivatBank ou d'autres écrans de paiement en plusieurs fois",
+    "uploading": "Téléchargement...",
+    "continueButton": "Continuer",
+    "parseDescription": "L'IA analysera vos captures d'écran et extraira les informations de versement",
+    "parsing": "Analyse des captures d'écran avec l'IA...",
+    "parseButton": "Analyser les captures avec l'IA",
+    "parseError": "Échec de l'analyse des captures d'écran",
+    "backButton": "Retour",
+    "reviewDescription": "Révisez {count} versement(s) extrait(s). Modifiez les détails avant l'importation.",
+    "installmentsFound": "{count} versement(s) trouvé(s)",
+    "paymentAccount": "Compte de paiement",
+    "selectAccount": "Sélectionner un compte...",
+    "noPaymentAccount": "Pas de compte de paiement",
+    "paymentAccountHelp": "Liez un compte de paiement pour le suivi automatique des paiements",
+    "autoPay": "Activer le paiement automatique",
+    "syncHistorical": "Synchroniser les paiements historiques",
+    "tabs": {
+      "all": "Tous",
+      "active": "Actifs",
+      "completed": "Terminés"
+    },
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "removeSelected": "Supprimer ({count})",
+    "columns": {
+      "name": "Nom",
+      "totalAmount": "Montant total",
+      "paymentAmount": "Paiement",
+      "currency": "Devise",
+      "frequency": "Fréquence",
+      "payments": "Paiements",
+      "category": "Catégorie",
+      "startDate": "Date de début",
+      "status": "Statut"
+    },
+    "statusActive": "Actif",
+    "statusCompleted": "Terminé",
+    "selectedCount": "{count} versement(s) sélectionné(s)",
+    "totalInstallments": "Versements totaux",
+    "totalDebt": "Dette totale",
+    "monthlyPayment": "Paiement mensuel",
+    "breakdown": "Répartition",
+    "breakdownLabels": "actifs / terminés",
+    "readyToParse": "{count} capture(s) prête(s) à analyser",
+    "startOver": "Recommencer",
+    "importButton": "Importer {count} versement(s)",
+    "importTitle": "Importation des versements",
+    "importDescription": "Vos versements sont en cours d'importation...",
+    "importProgress": "Importation de {current} sur {total}",
+    "successCount": "{count} réussi(s)",
+    "failedCount": "{count} échoué(s)",
+    "importComplete": "Importation terminée !",
+    "importSummary": "{success} versement(s) importé(s) avec succès. {failed} échoué(s).",
+    "importSuccess": "{count} versement(s) importé(s) avec succès",
+    "importPartial": "{success} versement(s) importé(s), {failed} échoué(s)",
+    "importMoreButton": "Importer plus de versements",
+    "uploadError": "Échec du téléchargement des images"
   }
 }

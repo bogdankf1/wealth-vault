@@ -3,7 +3,8 @@
     "overview": "Übersicht",
     "analysis": "Analyse",
     "history": "Verlauf",
-    "archive": "Archiv"
+    "archive": "Archiv",
+    "import": "Importieren"
   },
   "layout": {
     "title": "Ratenzahlungen",
@@ -299,5 +300,70 @@
     "overdue": "Überfällig",
     "paidOff": "Abbezahlt",
     "noUpcomingPayment": "Keine bevorstehende Zahlung"
+  },
+  "import": {
+    "steps": {
+      "upload": "Hochladen",
+      "parse": "Analysieren",
+      "review": "Überprüfen",
+      "import": "Importieren"
+    },
+    "uploadDescription": "Laden Sie Screenshots von Monobank Pay, PrivatBank oder anderen Ratenzahlungsbildschirmen hoch",
+    "uploading": "Hochladen...",
+    "continueButton": "Weiter",
+    "parseDescription": "KI analysiert Ihre Screenshots und extrahiert Ratenzahlungsinformationen",
+    "parsing": "Screenshots mit KI analysieren...",
+    "parseButton": "Screenshots mit KI analysieren",
+    "parseError": "Screenshots konnten nicht analysiert werden",
+    "backButton": "Zurück",
+    "reviewDescription": "Überprüfen Sie {count} extrahierte Ratenzahlung(en). Bearbeiten Sie Details vor dem Import.",
+    "installmentsFound": "{count} Ratenzahlung(en) gefunden",
+    "paymentAccount": "Zahlungskonto",
+    "selectAccount": "Konto auswählen...",
+    "noPaymentAccount": "Kein Zahlungskonto",
+    "paymentAccountHelp": "Verknüpfen Sie ein Zahlungskonto für automatische Zahlungsverfolgung",
+    "autoPay": "Auto-Zahlung aktivieren",
+    "syncHistorical": "Historische Zahlungen synchronisieren",
+    "tabs": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "completed": "Abgeschlossen"
+    },
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Auswahl aufheben",
+    "removeSelected": "Entfernen ({count})",
+    "columns": {
+      "name": "Name",
+      "totalAmount": "Gesamtbetrag",
+      "paymentAmount": "Zahlung",
+      "currency": "Währung",
+      "frequency": "Häufigkeit",
+      "payments": "Zahlungen",
+      "category": "Kategorie",
+      "startDate": "Startdatum",
+      "status": "Status"
+    },
+    "statusActive": "Aktiv",
+    "statusCompleted": "Abgeschlossen",
+    "selectedCount": "{count} Ratenzahlung(en) ausgewählt",
+    "totalInstallments": "Ratenzahlungen insgesamt",
+    "totalDebt": "Gesamtschuld",
+    "monthlyPayment": "Monatliche Zahlung",
+    "breakdown": "Aufschlüsselung",
+    "breakdownLabels": "aktiv / abgeschlossen",
+    "readyToParse": "{count} Screenshot(s) bereit zum Analysieren",
+    "startOver": "Neu starten",
+    "importButton": "{count} Ratenzahlung(en) importieren",
+    "importTitle": "Ratenzahlungen importieren",
+    "importDescription": "Ihre Ratenzahlungen werden importiert...",
+    "importProgress": "Importieren {current} von {total}",
+    "successCount": "{count} erfolgreich",
+    "failedCount": "{count} fehlgeschlagen",
+    "importComplete": "Import abgeschlossen!",
+    "importSummary": "{success} Ratenzahlung(en) erfolgreich importiert. {failed} fehlgeschlagen.",
+    "importSuccess": "{count} Ratenzahlung(en) erfolgreich importiert",
+    "importPartial": "{success} Ratenzahlung(en) importiert, {failed} fehlgeschlagen",
+    "importMoreButton": "Weitere Ratenzahlungen importieren",
+    "uploadError": "Bilder konnten nicht hochgeladen werden"
   }
 }

@@ -3,7 +3,8 @@
     "overview": "Panoramica",
     "analysis": "Analisi",
     "history": "Storico",
-    "archive": "Archivio"
+    "archive": "Archivio",
+    "import": "Importa"
   },
   "layout": {
     "title": "Rate",
@@ -299,5 +300,70 @@
     "overdue": "Scaduto",
     "paidOff": "Pagato",
     "noUpcomingPayment": "Nessun pagamento in arrivo"
+  },
+  "import": {
+    "steps": {
+      "upload": "Carica",
+      "parse": "Analizza",
+      "review": "Rivedi",
+      "import": "Importa"
+    },
+    "uploadDescription": "Carica screenshot da Monobank Pay, PrivatBank o altre schermate di pagamento rateale",
+    "uploading": "Caricamento...",
+    "continueButton": "Continua",
+    "parseDescription": "L'IA analizzerà i tuoi screenshot ed estrarrà le informazioni sulle rate",
+    "parsing": "Analisi degli screenshot con l'IA...",
+    "parseButton": "Analizza screenshot con l'IA",
+    "parseError": "Impossibile analizzare gli screenshot",
+    "backButton": "Indietro",
+    "reviewDescription": "Rivedi {count} rata/e estratta/e. Modifica i dettagli prima dell'importazione.",
+    "installmentsFound": "{count} rata/e trovata/e",
+    "paymentAccount": "Conto pagamenti",
+    "selectAccount": "Seleziona conto...",
+    "noPaymentAccount": "Nessun conto pagamenti",
+    "paymentAccountHelp": "Collega un conto pagamenti per il tracciamento automatico dei pagamenti",
+    "autoPay": "Abilita pagamento automatico",
+    "syncHistorical": "Sincronizza pagamenti storici",
+    "tabs": {
+      "all": "Tutte",
+      "active": "Attive",
+      "completed": "Completate"
+    },
+    "selectAll": "Seleziona tutte",
+    "deselectAll": "Deseleziona tutte",
+    "removeSelected": "Rimuovi ({count})",
+    "columns": {
+      "name": "Nome",
+      "totalAmount": "Importo totale",
+      "paymentAmount": "Pagamento",
+      "currency": "Valuta",
+      "frequency": "Frequenza",
+      "payments": "Pagamenti",
+      "category": "Categoria",
+      "startDate": "Data inizio",
+      "status": "Stato"
+    },
+    "statusActive": "Attiva",
+    "statusCompleted": "Completata",
+    "selectedCount": "{count} rata/e selezionata/e",
+    "totalInstallments": "Rate totali",
+    "totalDebt": "Debito totale",
+    "monthlyPayment": "Pagamento mensile",
+    "breakdown": "Ripartizione",
+    "breakdownLabels": "attive / completate",
+    "readyToParse": "{count} screenshot pronti per l'analisi",
+    "startOver": "Ricomincia",
+    "importButton": "Importa {count} rata/e",
+    "importTitle": "Importazione rate",
+    "importDescription": "Le tue rate sono in fase di importazione...",
+    "importProgress": "Importazione {current} di {total}",
+    "successCount": "{count} riuscita/e",
+    "failedCount": "{count} fallita/e",
+    "importComplete": "Importazione completata!",
+    "importSummary": "{success} rata/e importata/e con successo. {failed} fallita/e.",
+    "importSuccess": "{count} rata/e importata/e con successo",
+    "importPartial": "{success} rata/e importata/e, {failed} fallita/e",
+    "importMoreButton": "Importa altre rate",
+    "uploadError": "Impossibile caricare le immagini"
   }
 }

@@ -3,7 +3,8 @@
     "overview": "Visão Geral",
     "analysis": "Análise",
     "history": "Histórico",
-    "archive": "Arquivo"
+    "archive": "Arquivo",
+    "import": "Importar"
   },
   "layout": {
     "title": "Parcelamentos",
@@ -299,5 +300,70 @@
     "overdue": "Vencido",
     "paidOff": "Quitado",
     "noUpcomingPayment": "Nenhum pagamento próximo"
+  },
+  "import": {
+    "steps": {
+      "upload": "Carregar",
+      "parse": "Analisar",
+      "review": "Revisar",
+      "import": "Importar"
+    },
+    "uploadDescription": "Carregue capturas de tela de Monobank Pay, PrivatBank ou outras telas de pagamento parcelado",
+    "uploading": "Carregando...",
+    "continueButton": "Continuar",
+    "parseDescription": "A IA analisará suas capturas de tela e extrairá informações de parcelamentos",
+    "parsing": "Analisando capturas de tela com IA...",
+    "parseButton": "Analisar capturas com IA",
+    "parseError": "Falha ao analisar capturas de tela",
+    "backButton": "Voltar",
+    "reviewDescription": "Revise {count} parcelamento(s) extraído(s). Edite os detalhes antes de importar.",
+    "installmentsFound": "{count} parcelamento(s) encontrado(s)",
+    "paymentAccount": "Conta de pagamento",
+    "selectAccount": "Selecionar conta...",
+    "noPaymentAccount": "Sem conta de pagamento",
+    "paymentAccountHelp": "Vincule uma conta de pagamento para rastreamento automático de pagamentos",
+    "autoPay": "Habilitar pagamento automático",
+    "syncHistorical": "Sincronizar pagamentos históricos",
+    "tabs": {
+      "all": "Todos",
+      "active": "Ativos",
+      "completed": "Concluídos"
+    },
+    "selectAll": "Selecionar todos",
+    "deselectAll": "Desmarcar todos",
+    "removeSelected": "Remover ({count})",
+    "columns": {
+      "name": "Nome",
+      "totalAmount": "Valor total",
+      "paymentAmount": "Pagamento",
+      "currency": "Moeda",
+      "frequency": "Frequência",
+      "payments": "Pagamentos",
+      "category": "Categoria",
+      "startDate": "Data de início",
+      "status": "Status"
+    },
+    "statusActive": "Ativo",
+    "statusCompleted": "Concluído",
+    "selectedCount": "{count} parcelamento(s) selecionado(s)",
+    "totalInstallments": "Total de parcelamentos",
+    "totalDebt": "Dívida total",
+    "monthlyPayment": "Pagamento mensal",
+    "breakdown": "Detalhamento",
+    "breakdownLabels": "ativos / concluídos",
+    "readyToParse": "{count} captura(s) de tela pronta(s) para analisar",
+    "startOver": "Recomeçar",
+    "importButton": "Importar {count} parcelamento(s)",
+    "importTitle": "Importando parcelamentos",
+    "importDescription": "Seus parcelamentos estão sendo importados...",
+    "importProgress": "Importando {current} de {total}",
+    "successCount": "{count} sucesso",
+    "failedCount": "{count} falhou",
+    "importComplete": "Importação completa!",
+    "importSummary": "{success} parcelamento(s) importado(s) com sucesso. {failed} falhou.",
+    "importSuccess": "{count} parcelamento(s) importado(s) com sucesso",
+    "importPartial": "{success} parcelamento(s) importado(s), {failed} falhou",
+    "importMoreButton": "Importar mais parcelamentos",
+    "uploadError": "Falha ao carregar imagens"
   }
 }

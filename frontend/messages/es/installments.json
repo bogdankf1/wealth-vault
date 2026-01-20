@@ -3,7 +3,8 @@
     "overview": "Resumen",
     "analysis": "Análisis",
     "history": "Historial",
-    "archive": "Archivo"
+    "archive": "Archivo",
+    "import": "Importar"
   },
   "layout": {
     "title": "Cuotas",
@@ -299,5 +300,70 @@
     "overdue": "Atrasado",
     "paidOff": "Pagado",
     "noUpcomingPayment": "No hay próximos pagos"
+  },
+  "import": {
+    "steps": {
+      "upload": "Subir",
+      "parse": "Analizar",
+      "review": "Revisar",
+      "import": "Importar"
+    },
+    "uploadDescription": "Sube capturas de pantalla de Monobank Pay, PrivatBank u otras pantallas de pago a plazos",
+    "uploading": "Subiendo...",
+    "continueButton": "Continuar",
+    "parseDescription": "La IA analizará tus capturas de pantalla y extraerá la información de las cuotas",
+    "parsing": "Analizando capturas de pantalla con IA...",
+    "parseButton": "Analizar capturas con IA",
+    "parseError": "Error al analizar las capturas de pantalla",
+    "backButton": "Volver",
+    "reviewDescription": "Revisa {count} cuota(s) extraída(s). Edita los detalles antes de importar.",
+    "installmentsFound": "{count} cuota(s) encontrada(s)",
+    "paymentAccount": "Cuenta de pago",
+    "selectAccount": "Seleccionar cuenta...",
+    "noPaymentAccount": "Sin cuenta de pago",
+    "paymentAccountHelp": "Vincula una cuenta de pago para seguimiento automático de pagos",
+    "autoPay": "Habilitar pago automático",
+    "syncHistorical": "Sincronizar pagos históricos",
+    "tabs": {
+      "all": "Todas",
+      "active": "Activas",
+      "completed": "Completadas"
+    },
+    "selectAll": "Seleccionar todas",
+    "deselectAll": "Deseleccionar todas",
+    "removeSelected": "Eliminar ({count})",
+    "columns": {
+      "name": "Nombre",
+      "totalAmount": "Monto total",
+      "paymentAmount": "Pago",
+      "currency": "Moneda",
+      "frequency": "Frecuencia",
+      "payments": "Pagos",
+      "category": "Categoría",
+      "startDate": "Fecha de inicio",
+      "status": "Estado"
+    },
+    "statusActive": "Activa",
+    "statusCompleted": "Completada",
+    "selectedCount": "{count} cuota(s) seleccionada(s)",
+    "totalInstallments": "Total de cuotas",
+    "totalDebt": "Deuda total",
+    "monthlyPayment": "Pago mensual",
+    "breakdown": "Desglose",
+    "breakdownLabels": "activas / completadas",
+    "readyToParse": "{count} captura(s) lista(s) para analizar",
+    "startOver": "Empezar de nuevo",
+    "importButton": "Importar {count} cuota(s)",
+    "importTitle": "Importando cuotas",
+    "importDescription": "Tus cuotas se están importando...",
+    "importProgress": "Importando {current} de {total}",
+    "successCount": "{count} exitosa(s)",
+    "failedCount": "{count} fallida(s)",
+    "importComplete": "¡Importación completada!",
+    "importSummary": "{success} cuota(s) importada(s) con éxito. {failed} fallida(s).",
+    "importSuccess": "{count} cuota(s) importada(s) con éxito",
+    "importPartial": "{success} cuota(s) importada(s), {failed} fallida(s)",
+    "importMoreButton": "Importar más cuotas",
+    "uploadError": "Error al subir las imágenes"
   }
 }

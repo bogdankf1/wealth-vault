@@ -3,7 +3,8 @@
     "overview": "Overview",
     "analysis": "Analysis",
     "history": "History",
-    "archive": "Archive"
+    "archive": "Archive",
+    "import": "Import"
   },
   "layout": {
     "title": "Installments",
@@ -299,5 +300,70 @@
     "overdue": "Overdue",
     "paidOff": "Paid off",
     "noUpcomingPayment": "No upcoming payment"
+  },
+  "import": {
+    "steps": {
+      "upload": "Upload",
+      "parse": "Parse",
+      "review": "Review",
+      "import": "Import"
+    },
+    "uploadDescription": "Upload screenshots from Monobank Pay, PrivatBank, or other installment payment screens",
+    "uploading": "Uploading...",
+    "continueButton": "Continue",
+    "parseDescription": "AI will analyze your screenshots and extract installment information",
+    "parsing": "Analyzing screenshots with AI...",
+    "parseButton": "Parse Screenshots with AI",
+    "parseError": "Failed to parse screenshots",
+    "backButton": "Back",
+    "reviewDescription": "Review {count} extracted installment(s). Edit details before importing.",
+    "installmentsFound": "{count} installment(s) found",
+    "paymentAccount": "Payment Account",
+    "selectAccount": "Select account...",
+    "noPaymentAccount": "No payment account",
+    "paymentAccountHelp": "Link a payment account for automatic payment tracking",
+    "autoPay": "Enable auto-pay",
+    "syncHistorical": "Sync historical payments",
+    "tabs": {
+      "all": "All",
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "removeSelected": "Remove ({count})",
+    "columns": {
+      "name": "Name",
+      "totalAmount": "Total Amount",
+      "paymentAmount": "Payment",
+      "currency": "Currency",
+      "frequency": "Frequency",
+      "payments": "Payments",
+      "category": "Category",
+      "startDate": "Start Date",
+      "status": "Status"
+    },
+    "statusActive": "Active",
+    "statusCompleted": "Completed",
+    "selectedCount": "{count} installment(s) selected",
+    "totalInstallments": "Total Installments",
+    "totalDebt": "Total Debt",
+    "monthlyPayment": "Monthly Payment",
+    "breakdown": "Breakdown",
+    "breakdownLabels": "active / completed",
+    "readyToParse": "{count} screenshot(s) ready to parse",
+    "startOver": "Start Over",
+    "importButton": "Import {count} installment(s)",
+    "importTitle": "Importing installments",
+    "importDescription": "Your installments are being imported...",
+    "importProgress": "Importing {current} of {total}",
+    "successCount": "{count} succeeded",
+    "failedCount": "{count} failed",
+    "importComplete": "Import complete!",
+    "importSummary": "{success} installment(s) imported successfully. {failed} failed.",
+    "importSuccess": "{count} installment(s) imported successfully",
+    "importPartial": "{success} installment(s) imported, {failed} failed",
+    "importMoreButton": "Import more installments",
+    "uploadError": "Failed to upload images"
   }
 }

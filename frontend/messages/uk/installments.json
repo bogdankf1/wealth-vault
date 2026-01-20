@@ -3,7 +3,8 @@
     "overview": "Огляд",
     "analysis": "Аналіз",
     "history": "Історія",
-    "archive": "Архів"
+    "archive": "Архів",
+    "import": "Імпорт"
   },
   "layout": {
     "title": "Розстрочки",
@@ -299,5 +300,70 @@
     "overdue": "Прострочено",
     "paidOff": "Сплачено",
     "noUpcomingPayment": "Немає майбутніх платежів"
+  },
+  "import": {
+    "steps": {
+      "upload": "Завантаження",
+      "parse": "Аналіз",
+      "review": "Перевірка",
+      "import": "Імпорт"
+    },
+    "uploadDescription": "Завантажте скріншоти з Monobank Pay, ПриватБанк або інших екранів оплати частинами",
+    "uploading": "Завантаження...",
+    "continueButton": "Продовжити",
+    "parseDescription": "ШІ проаналізує ваші скріншоти та витягне інформацію про розстрочки",
+    "parsing": "Аналіз скріншотів за допомогою ШІ...",
+    "parseButton": "Аналізувати скріншоти з ШІ",
+    "parseError": "Не вдалося проаналізувати скріншоти",
+    "backButton": "Назад",
+    "reviewDescription": "Перевірте {count} витягнуту розстрочку. Відредагуйте деталі перед імпортом.",
+    "installmentsFound": "Знайдено {count} розстрочку(ок)",
+    "paymentAccount": "Платіжний рахунок",
+    "selectAccount": "Оберіть рахунок...",
+    "noPaymentAccount": "Без платіжного рахунку",
+    "paymentAccountHelp": "Пов'яжіть платіжний рахунок для автоматичного відстеження платежів",
+    "autoPay": "Увімкнути автоплатіж",
+    "syncHistorical": "Синхронізувати минулі платежі",
+    "tabs": {
+      "all": "Всі",
+      "active": "Активні",
+      "completed": "Завершені"
+    },
+    "selectAll": "Вибрати всі",
+    "deselectAll": "Скасувати вибір",
+    "removeSelected": "Видалити ({count})",
+    "columns": {
+      "name": "Назва",
+      "totalAmount": "Загальна сума",
+      "paymentAmount": "Платіж",
+      "currency": "Валюта",
+      "frequency": "Частота",
+      "payments": "Платежі",
+      "category": "Категорія",
+      "startDate": "Дата початку",
+      "status": "Статус"
+    },
+    "statusActive": "Активна",
+    "statusCompleted": "Завершена",
+    "selectedCount": "Вибрано {count} розстрочку(ок)",
+    "totalInstallments": "Всього розстрочок",
+    "totalDebt": "Загальний борг",
+    "monthlyPayment": "Місячний платіж",
+    "breakdown": "Розподіл",
+    "breakdownLabels": "активні / завершені",
+    "readyToParse": "{count} скріншот(ів) готові до аналізу",
+    "startOver": "Почати спочатку",
+    "importButton": "Імпортувати {count} розстрочку(ок)",
+    "importTitle": "Імпорт розстрочок",
+    "importDescription": "Ваші розстрочки імпортуються...",
+    "importProgress": "Імпорт {current} з {total}",
+    "successCount": "{count} успішно",
+    "failedCount": "{count} невдало",
+    "importComplete": "Імпорт завершено!",
+    "importSummary": "{success} розстрочку(ок) успішно імпортовано. {failed} невдало.",
+    "importSuccess": "{count} розстрочку(ок) успішно імпортовано",
+    "importPartial": "{success} розстрочку(ок) імпортовано, {failed} невдало",
+    "importMoreButton": "Імпортувати ще розстрочки",
+    "uploadError": "Не вдалося завантажити зображення"
   }
 }

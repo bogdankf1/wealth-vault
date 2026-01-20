@@ -3,7 +3,8 @@
     "overview": "Przegląd",
     "analysis": "Analiza",
     "history": "Historia",
-    "archive": "Archiwum"
+    "archive": "Archiwum",
+    "import": "Importuj"
   },
   "layout": {
     "title": "Raty",
@@ -299,5 +300,70 @@
     "overdue": "Po terminie",
     "paidOff": "Spłacona",
     "noUpcomingPayment": "Brak nadchodzącej płatności"
+  },
+  "import": {
+    "steps": {
+      "upload": "Prześlij",
+      "parse": "Analizuj",
+      "review": "Przejrzyj",
+      "import": "Importuj"
+    },
+    "uploadDescription": "Prześlij zrzuty ekranu z Monobank Pay, PrivatBank lub innych ekranów płatności ratalnych",
+    "uploading": "Przesyłanie...",
+    "continueButton": "Kontynuuj",
+    "parseDescription": "AI przeanalizuje Twoje zrzuty ekranu i wyodrębni informacje o ratach",
+    "parsing": "Analiza zrzutów ekranu przez AI...",
+    "parseButton": "Analizuj zrzuty z AI",
+    "parseError": "Nie udało się przeanalizować zrzutów ekranu",
+    "backButton": "Wstecz",
+    "reviewDescription": "Przejrzyj {count} wyodrębnioną ratę. Edytuj szczegóły przed importem.",
+    "installmentsFound": "Znaleziono {count} rat(ę)",
+    "paymentAccount": "Konto płatnicze",
+    "selectAccount": "Wybierz konto...",
+    "noPaymentAccount": "Brak konta płatniczego",
+    "paymentAccountHelp": "Połącz konto płatnicze do automatycznego śledzenia płatności",
+    "autoPay": "Włącz automatyczne płatności",
+    "syncHistorical": "Synchronizuj historyczne płatności",
+    "tabs": {
+      "all": "Wszystkie",
+      "active": "Aktywne",
+      "completed": "Zakończone"
+    },
+    "selectAll": "Zaznacz wszystkie",
+    "deselectAll": "Odznacz wszystkie",
+    "removeSelected": "Usuń ({count})",
+    "columns": {
+      "name": "Nazwa",
+      "totalAmount": "Całkowita kwota",
+      "paymentAmount": "Płatność",
+      "currency": "Waluta",
+      "frequency": "Częstotliwość",
+      "payments": "Płatności",
+      "category": "Kategoria",
+      "startDate": "Data rozpoczęcia",
+      "status": "Status"
+    },
+    "statusActive": "Aktywna",
+    "statusCompleted": "Zakończona",
+    "selectedCount": "Wybrano {count} rat(ę)",
+    "totalInstallments": "Wszystkie raty",
+    "totalDebt": "Całkowity dług",
+    "monthlyPayment": "Miesięczna płatność",
+    "breakdown": "Podział",
+    "breakdownLabels": "aktywne / zakończone",
+    "readyToParse": "{count} zrzut(ów) ekranu gotowych do analizy",
+    "startOver": "Zacznij od nowa",
+    "importButton": "Importuj {count} rat(ę)",
+    "importTitle": "Importowanie rat",
+    "importDescription": "Twoje raty są importowane...",
+    "importProgress": "Importowanie {current} z {total}",
+    "successCount": "{count} udanych",
+    "failedCount": "{count} nieudanych",
+    "importComplete": "Import zakończony!",
+    "importSummary": "{success} rat(y) zaimportowano pomyślnie. {failed} nieudanych.",
+    "importSuccess": "{count} rat(y) zaimportowano pomyślnie",
+    "importPartial": "{success} rat(y) zaimportowano, {failed} nieudanych",
+    "importMoreButton": "Importuj więcej rat",
+    "uploadError": "Nie udało się przesłać obrazów"
   }
 }

@@ -7,7 +7,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, History, Archive, BarChart3 } from 'lucide-react';
+import { LayoutGrid, History, Archive, BarChart3, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
@@ -49,6 +49,12 @@ export default function InstallmentsLayout({
       label: tNav('archive'),
       icon: Archive,
       href: '/dashboard/installments/archive',
+    },
+    {
+      value: 'import',
+      label: tNav('import'),
+      icon: Upload,
+      href: '/dashboard/installments/import',
     },
   ];
 

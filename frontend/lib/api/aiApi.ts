@@ -176,6 +176,37 @@ export interface ParseSubscriptionScreenshotsResponse {
   annual_total: number;
 }
 
+// Installment Screenshot Parsing Types
+export interface ParsedInstallment {
+  name: string;
+  description?: string;
+  total_amount: number;
+  amount_per_payment: number;
+  currency: string;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  number_of_payments: number;
+  payments_made: number;
+  remaining_balance?: number;
+  start_date?: string;
+  next_payment_date?: string;
+  category?: string;
+  status: 'active' | 'completed';
+  provider?: string;
+  confidence: string;
+}
+
+export interface ParseInstallmentScreenshotsRequest {
+  file_ids: string[];
+}
+
+export interface ParseInstallmentScreenshotsResponse {
+  installments: ParsedInstallment[];
+  total_count: number;
+  active_count: number;
+  total_debt: number;
+  monthly_payment: number;
+}
+
 export const aiApi = createApi({
   reducerPath: 'aiApi',
   baseQuery: fetchBaseQuery({
@@ -291,6 +322,15 @@ export const aiApi = createApi({
         body,
       }),
     }),
+
+    // Parse installment screenshots with AI Vision
+    parseInstallmentScreenshots: builder.mutation<ParseInstallmentScreenshotsResponse, ParseInstallmentScreenshotsRequest>({
+      query: (body) => ({
+        url: '/parse-installment-screenshots',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -306,4 +346,5 @@ export const {
   useParseAccountScreenshotsMutation,
   useParsePortfolioScreenshotsMutation,
   useParseSubscriptionScreenshotsMutation,
+  useParseInstallmentScreenshotsMutation,
 } = aiApi;
