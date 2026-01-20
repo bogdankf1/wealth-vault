@@ -52,6 +52,8 @@ class UserPreferencesBase(BaseModel):
     default_content_view: str = Field(default="card", pattern="^(card|list)$")
     default_stats_view: str = Field(default="cards", pattern="^(cards|compact)$")
     language: str = Field(default="en", max_length=10)
+    country: Optional[str] = Field(None, min_length=2, max_length=2)  # ISO 3166-1 alpha-2
+    occupation: Optional[str] = Field(None, max_length=50)
     timezone: str = Field(default="UTC", max_length=50)
     currency: str = Field(default="USD", min_length=3, max_length=3)
     display_currency: Optional[str] = Field(None, min_length=3, max_length=3)
@@ -76,6 +78,8 @@ class UserPreferencesUpdate(BaseModel):
     default_content_view: Optional[str] = Field(None, pattern="^(card|list)$")
     default_stats_view: Optional[str] = Field(None, pattern="^(cards|compact)$")
     language: Optional[str] = Field(None, max_length=10)
+    country: Optional[str] = Field(None, min_length=2, max_length=2)
+    occupation: Optional[str] = Field(None, max_length=50)
     timezone: Optional[str] = Field(None, max_length=50)
     currency: Optional[str] = Field(None, min_length=3, max_length=3)
     display_currency: Optional[str] = Field(None, min_length=3, max_length=3)

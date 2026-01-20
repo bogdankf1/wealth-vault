@@ -23,6 +23,8 @@ class UserPreferences(BaseModel):
 
     # Locale preferences
     language = Column(String(10), default="en", nullable=False)
+    country = Column(String(2), nullable=True)  # ISO 3166-1 alpha-2 country code
+    occupation = Column(String(50), nullable=True)  # Employment status/occupation type
     timezone = Column(String(50), default="UTC", nullable=False)
     currency = Column(String(3), default="USD", nullable=False)  # Preferred currency for data entry
     display_currency = Column(String(3), nullable=True)  # Currency to display amounts in (defaults to currency)
