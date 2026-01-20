@@ -18,7 +18,45 @@
     "name": "Nome",
     "email": "E-mail",
     "memberSince": "Membro Desde",
-    "notSet": "Não definido"
+    "notSet": "Não definido",
+    "country": {
+      "title": "País",
+      "description": "Selecione seu país para recursos e serviços regionais",
+      "selectPlaceholder": "Selecionar país"
+    },
+    "occupation": {
+      "title": "Profissão",
+      "description": "Selecione seu status de emprego ou tipo de profissão",
+      "selectPlaceholder": "Selecionar profissão",
+      "options": {
+        "employed": "Empregado",
+        "selfEmployed": "Autônomo",
+        "businessOwner": "Empresário",
+        "freelancer": "Freelancer",
+        "retired": "Aposentado",
+        "student": "Estudante",
+        "unemployed": "Desempregado",
+        "homemaker": "Do lar",
+        "military": "Militar",
+        "government": "Funcionário público",
+        "other": "Outro"
+      }
+    },
+    "toasts": {
+      "countryUpdated": {
+        "title": "País Atualizado",
+        "description": "País alterado para"
+      },
+      "occupationUpdated": {
+        "title": "Profissão Atualizada",
+        "description": "Profissão alterada para"
+      },
+      "error": {
+        "title": "Erro",
+        "countryDescription": "Falha ao salvar preferência de país",
+        "occupationDescription": "Falha ao salvar preferência de profissão"
+      }
+    }
   },
   "subscription": {
     "title": "Detalhes da Assinatura",

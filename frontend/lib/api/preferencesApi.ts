@@ -35,6 +35,8 @@ export interface UserPreferences {
   default_content_view: 'card' | 'list' | 'calendar';
   default_stats_view: 'cards' | 'compact';
   language: string;
+  country?: string;
+  occupation?: string;
   timezone: string;
   currency: string;
   display_currency?: string;
@@ -55,6 +57,8 @@ export interface UserPreferencesUpdate {
   default_content_view?: 'card' | 'list' | 'calendar';
   default_stats_view?: 'cards' | 'compact';
   language?: string;
+  country?: string;
+  occupation?: string;
   timezone?: string;
   currency?: string;
   display_currency?: string;

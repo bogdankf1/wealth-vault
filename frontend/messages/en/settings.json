@@ -18,7 +18,45 @@
     "name": "Name",
     "email": "Email",
     "memberSince": "Member Since",
-    "notSet": "Not set"
+    "notSet": "Not set",
+    "country": {
+      "title": "Country",
+      "description": "Select your country for region-specific features and services",
+      "selectPlaceholder": "Select country"
+    },
+    "occupation": {
+      "title": "Occupation",
+      "description": "Select your employment status or occupation type",
+      "selectPlaceholder": "Select occupation",
+      "options": {
+        "employed": "Employed",
+        "selfEmployed": "Self-Employed",
+        "businessOwner": "Business Owner",
+        "freelancer": "Freelancer",
+        "retired": "Retired",
+        "student": "Student",
+        "unemployed": "Unemployed",
+        "homemaker": "Homemaker",
+        "military": "Military",
+        "government": "Government Employee",
+        "other": "Other"
+      }
+    },
+    "toasts": {
+      "countryUpdated": {
+        "title": "Country Updated",
+        "description": "Country changed to"
+      },
+      "occupationUpdated": {
+        "title": "Occupation Updated",
+        "description": "Occupation changed to"
+      },
+      "error": {
+        "title": "Error",
+        "countryDescription": "Failed to save country preference",
+        "occupationDescription": "Failed to save occupation preference"
+      }
+    }
   },
   "subscription": {
     "title": "Subscription Details",

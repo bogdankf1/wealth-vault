@@ -18,7 +18,45 @@
     "name": "Ім'я",
     "email": "Електронна пошта",
     "memberSince": "Користувач з",
-    "notSet": "Не встановлено"
+    "notSet": "Не встановлено",
+    "country": {
+      "title": "Країна",
+      "description": "Виберіть вашу країну для регіональних функцій та сервісів",
+      "selectPlaceholder": "Виберіть країну"
+    },
+    "occupation": {
+      "title": "Рід занять",
+      "description": "Виберіть ваш статус зайнятості або тип діяльності",
+      "selectPlaceholder": "Виберіть рід занять",
+      "options": {
+        "employed": "Найманий працівник",
+        "selfEmployed": "Самозайнятий",
+        "businessOwner": "Власник бізнесу",
+        "freelancer": "Фрілансер",
+        "retired": "Пенсіонер",
+        "student": "Студент",
+        "unemployed": "Безробітний",
+        "homemaker": "Домогосподар",
+        "military": "Військовий",
+        "government": "Державний службовець",
+        "other": "Інше"
+      }
+    },
+    "toasts": {
+      "countryUpdated": {
+        "title": "Країну оновлено",
+        "description": "Країну змінено на"
+      },
+      "occupationUpdated": {
+        "title": "Рід занять оновлено",
+        "description": "Рід занять змінено на"
+      },
+      "error": {
+        "title": "Помилка",
+        "countryDescription": "Не вдалося зберегти налаштування країни",
+        "occupationDescription": "Не вдалося зберегти налаштування роду занять"
+      }
+    }
   },
   "subscription": {
     "title": "Деталі підписки",

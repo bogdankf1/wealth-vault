@@ -18,7 +18,45 @@
     "name": "Name",
     "email": "E-Mail",
     "memberSince": "Mitglied seit",
-    "notSet": "Nicht festgelegt"
+    "notSet": "Nicht festgelegt",
+    "country": {
+      "title": "Land",
+      "description": "Wählen Sie Ihr Land für regionsspezifische Funktionen und Dienste",
+      "selectPlaceholder": "Land auswählen"
+    },
+    "occupation": {
+      "title": "Beruf",
+      "description": "Wählen Sie Ihren Beschäftigungsstatus oder Berufstyp",
+      "selectPlaceholder": "Beruf auswählen",
+      "options": {
+        "employed": "Angestellt",
+        "selfEmployed": "Selbstständig",
+        "businessOwner": "Unternehmer",
+        "freelancer": "Freiberufler",
+        "retired": "Rentner",
+        "student": "Student",
+        "unemployed": "Arbeitslos",
+        "homemaker": "Hausfrau/-mann",
+        "military": "Militär",
+        "government": "Beamter",
+        "other": "Sonstiges"
+      }
+    },
+    "toasts": {
+      "countryUpdated": {
+        "title": "Land aktualisiert",
+        "description": "Land geändert zu"
+      },
+      "occupationUpdated": {
+        "title": "Beruf aktualisiert",
+        "description": "Beruf geändert zu"
+      },
+      "error": {
+        "title": "Fehler",
+        "countryDescription": "Länderpräferenz konnte nicht gespeichert werden",
+        "occupationDescription": "Berufspräferenz konnte nicht gespeichert werden"
+      }
+    }
   },
   "subscription": {
     "title": "Abonnementdetails",

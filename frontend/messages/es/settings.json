@@ -18,7 +18,45 @@
     "name": "Nombre",
     "email": "Correo electrónico",
     "memberSince": "Miembro desde",
-    "notSet": "No configurado"
+    "notSet": "No configurado",
+    "country": {
+      "title": "País",
+      "description": "Selecciona tu país para funciones y servicios específicos de la región",
+      "selectPlaceholder": "Seleccionar país"
+    },
+    "occupation": {
+      "title": "Ocupación",
+      "description": "Selecciona tu situación laboral o tipo de ocupación",
+      "selectPlaceholder": "Seleccionar ocupación",
+      "options": {
+        "employed": "Empleado",
+        "selfEmployed": "Autónomo",
+        "businessOwner": "Empresario",
+        "freelancer": "Freelancer",
+        "retired": "Jubilado",
+        "student": "Estudiante",
+        "unemployed": "Desempleado",
+        "homemaker": "Ama/o de casa",
+        "military": "Militar",
+        "government": "Funcionario público",
+        "other": "Otro"
+      }
+    },
+    "toasts": {
+      "countryUpdated": {
+        "title": "País actualizado",
+        "description": "País cambiado a"
+      },
+      "occupationUpdated": {
+        "title": "Ocupación actualizada",
+        "description": "Ocupación cambiada a"
+      },
+      "error": {
+        "title": "Error",
+        "countryDescription": "No se pudo guardar la preferencia de país",
+        "occupationDescription": "No se pudo guardar la preferencia de ocupación"
+      }
+    }
   },
   "subscription": {
     "title": "Detalles de suscripción",

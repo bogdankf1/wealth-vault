@@ -18,7 +18,45 @@
     "name": "Nom",
     "email": "Email",
     "memberSince": "Membre depuis",
-    "notSet": "Non défini"
+    "notSet": "Non défini",
+    "country": {
+      "title": "Pays",
+      "description": "Sélectionnez votre pays pour les fonctionnalités et services régionaux",
+      "selectPlaceholder": "Sélectionner le pays"
+    },
+    "occupation": {
+      "title": "Profession",
+      "description": "Sélectionnez votre statut d'emploi ou type de profession",
+      "selectPlaceholder": "Sélectionner la profession",
+      "options": {
+        "employed": "Salarié",
+        "selfEmployed": "Indépendant",
+        "businessOwner": "Chef d'entreprise",
+        "freelancer": "Freelance",
+        "retired": "Retraité",
+        "student": "Étudiant",
+        "unemployed": "Sans emploi",
+        "homemaker": "Au foyer",
+        "military": "Militaire",
+        "government": "Fonctionnaire",
+        "other": "Autre"
+      }
+    },
+    "toasts": {
+      "countryUpdated": {
+        "title": "Pays mis à jour",
+        "description": "Pays changé en"
+      },
+      "occupationUpdated": {
+        "title": "Profession mise à jour",
+        "description": "Profession changée en"
+      },
+      "error": {
+        "title": "Erreur",
+        "countryDescription": "Échec de l'enregistrement de la préférence de pays",
+        "occupationDescription": "Échec de l'enregistrement de la préférence de profession"
+      }
+    }
   },
   "subscription": {
     "title": "Détails de l'abonnement",

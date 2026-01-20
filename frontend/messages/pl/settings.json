@@ -18,7 +18,45 @@
     "name": "Imię",
     "email": "Email",
     "memberSince": "Członek od",
-    "notSet": "Nie ustawiono"
+    "notSet": "Nie ustawiono",
+    "country": {
+      "title": "Kraj",
+      "description": "Wybierz swój kraj dla funkcji i usług regionalnych",
+      "selectPlaceholder": "Wybierz kraj"
+    },
+    "occupation": {
+      "title": "Zawód",
+      "description": "Wybierz swój status zatrudnienia lub rodzaj zawodu",
+      "selectPlaceholder": "Wybierz zawód",
+      "options": {
+        "employed": "Pracownik etatowy",
+        "selfEmployed": "Samozatrudniony",
+        "businessOwner": "Właściciel firmy",
+        "freelancer": "Freelancer",
+        "retired": "Emeryt",
+        "student": "Student",
+        "unemployed": "Bezrobotny",
+        "homemaker": "Gospodarz/Gospodyni domowa",
+        "military": "Wojskowy",
+        "government": "Urzędnik państwowy",
+        "other": "Inne"
+      }
+    },
+    "toasts": {
+      "countryUpdated": {
+        "title": "Kraj zaktualizowany",
+        "description": "Kraj zmieniony na"
+      },
+      "occupationUpdated": {
+        "title": "Zawód zaktualizowany",
+        "description": "Zawód zmieniony na"
+      },
+      "error": {
+        "title": "Błąd",
+        "countryDescription": "Nie udało się zapisać preferencji kraju",
+        "occupationDescription": "Nie udało się zapisać preferencji zawodu"
+      }
+    }
   },
   "subscription": {
     "title": "Szczegóły subskrypcji",
