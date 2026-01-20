@@ -640,3 +640,172 @@ async def get_tax_presets(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get tax presets: {str(e)}",
         )
+
+
+@router.post("/budget-presets", response_model=schemas.GetBudgetPresetsResponse)
+@require_feature("ai_categorization")
+async def get_budget_presets(
+    request: schemas.GetBudgetPresetsRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get AI-generated budget presets based on user's financial data
+
+    Analyzes the user's expenses, subscriptions, installments, goals, and portfolio
+    to generate personalized budget recommendations.
+
+    **Requires:** Growth tier or higher
+    """
+    from sqlalchemy import func, select
+    from datetime import datetime, timedelta
+    from app.modules.expenses.models import Expense
+    from app.modules.subscriptions.models import Subscription
+    from app.modules.installments.models import Installment
+    from app.modules.goals.models import Goal
+    from app.modules.portfolio.models import PortfolioAsset
+
+    try:
+        # Get date range for expense analysis (last 3 months)
+        three_months_ago = datetime.utcnow() - timedelta(days=90)
+
+        # Fetch expenses summary by category
+        expenses_query = await db.execute(
+            select(
+                Expense.category,
+                func.count(Expense.id).label("count"),
+                func.sum(Expense.amount).label("total"),
+                func.avg(Expense.amount).label("avg"),
+            )
+            .where(Expense.user_id == current_user.id)
+            .where(Expense.date >= three_months_ago)
+            .group_by(Expense.category)
+        )
+        expenses_result = expenses_query.all()
+
+        expenses_summary = {
+            "categories": {},
+            "monthly_avg": 0,
+        }
+        total_expenses = 0
+        for row in expenses_result:
+            expenses_summary["categories"][row.category or "other"] = {
+                "count": row.count,
+                "total": float(row.total or 0),
+                "avg": float(row.avg or 0),
+            }
+            total_expenses += float(row.total or 0)
+        expenses_summary["monthly_avg"] = total_expenses / 3  # 3 months
+
+        # Fetch subscriptions
+        subscriptions_query = await db.execute(
+            select(Subscription)
+            .where(Subscription.user_id == current_user.id)
+            .where(Subscription.is_active == True)
+        )
+        subscriptions = subscriptions_query.scalars().all()
+
+        subscriptions_summary = {
+            "items": [],
+            "monthly_total": 0,
+        }
+        for sub in subscriptions:
+            monthly_amount = float(sub.amount)
+            if sub.frequency == "quarterly":
+                monthly_amount = float(sub.amount) / 3
+            elif sub.frequency in ("yearly", "annually"):
+                monthly_amount = float(sub.amount) / 12
+
+            subscriptions_summary["items"].append({
+                "name": sub.name,
+                "amount": float(sub.amount),
+                "currency": sub.currency,
+                "frequency": sub.frequency,
+            })
+            subscriptions_summary["monthly_total"] += monthly_amount
+
+        # Fetch installments
+        installments_query = await db.execute(
+            select(Installment)
+            .where(Installment.user_id == current_user.id)
+            .where(Installment.is_active == True)
+        )
+        installments = installments_query.scalars().all()
+
+        installments_summary = {
+            "items": [],
+            "monthly_total": 0,
+        }
+        for inst in installments:
+            installments_summary["items"].append({
+                "name": inst.name,
+                "monthly_payment": float(inst.amount_per_payment),
+                "currency": inst.currency,
+            })
+            installments_summary["monthly_total"] += float(inst.amount_per_payment)
+
+        # Fetch savings goals
+        goals_query = await db.execute(
+            select(Goal)
+            .where(Goal.user_id == current_user.id)
+            .where(Goal.is_active == True)
+        )
+        goals = goals_query.scalars().all()
+
+        goals_summary = {
+            "items": [],
+        }
+        for goal in goals:
+            goals_summary["items"].append({
+                "name": goal.name,
+                "target_amount": float(goal.target_amount),
+                "currency": goal.currency,
+                "monthly_contribution": float(goal.monthly_contribution or 0),
+            })
+
+        # Fetch portfolio summary
+        portfolio_query = await db.execute(
+            select(
+                func.count(PortfolioAsset.id).label("count"),
+                func.sum(PortfolioAsset.quantity * PortfolioAsset.current_price).label("total_value"),
+            )
+            .where(PortfolioAsset.user_id == current_user.id)
+        )
+        portfolio_result = portfolio_query.first()
+
+        portfolio_summary = {
+            "total_value": float(portfolio_result.total_value or 0) if portfolio_result else 0,
+            "holdings_count": portfolio_result.count if portfolio_result else 0,
+        }
+
+        # Generate budget presets using AI
+        presets, analysis_summary = await ai_service.get_budget_presets(
+            currency=request.currency,
+            expenses_summary=expenses_summary,
+            subscriptions_summary=subscriptions_summary,
+            installments_summary=installments_summary,
+            goals_summary=goals_summary,
+            portfolio_summary=portfolio_summary,
+        )
+
+        # Calculate total suggested monthly budget
+        total_suggested_monthly = sum(
+            p.suggested_amount if p.period == "monthly"
+            else p.suggested_amount / 3 if p.period == "quarterly"
+            else p.suggested_amount / 12
+            for p in presets
+        )
+
+        return schemas.GetBudgetPresetsResponse(
+            presets=presets,
+            total_count=len(presets),
+            total_suggested_monthly=round(total_suggested_monthly, 2),
+            analysis_summary=analysis_summary,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get budget presets: {str(e)}",
+        )

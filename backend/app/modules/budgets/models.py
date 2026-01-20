@@ -66,7 +66,8 @@ class Budget(BaseModel):
         """Calculate total amount spent in this budget's category during the period."""
         total = Decimal("0")
         for expense in expenses:
-            if expense.category == self.category:
+            # Case-insensitive category matching
+            if expense.category and self.category and expense.category.lower() == self.category.lower():
                 # Check if expense date falls within budget period
                 expense_date = expense.date or expense.start_date
                 if expense_date and expense_date >= self.start_date:

@@ -271,3 +271,29 @@ class GetTaxPresetsResponse(BaseModel):
     occupation: str
     total_count: int
     disclaimer: str  # Legal disclaimer about tax advice
+
+
+# AI Budget Presets Schemas
+class BudgetPreset(BaseModel):
+    """A single budget preset suggestion"""
+    name: str  # Budget name (e.g., "Groceries", "Entertainment")
+    category: str  # Category key matching expense categories
+    description: str  # Why this budget is suggested
+    suggested_amount: float  # Suggested monthly amount
+    period: str = "monthly"  # monthly, quarterly, yearly
+    alert_threshold: int = 80  # Alert when this percentage is reached
+    reasoning: str  # Why this amount was suggested (based on user's data)
+    priority: str = "medium"  # high, medium, low - how important this budget is
+
+
+class GetBudgetPresetsRequest(BaseModel):
+    """Request to get budget presets based on user's financial data"""
+    currency: str = Field(default="USD", description="User's preferred currency")
+
+
+class GetBudgetPresetsResponse(BaseModel):
+    """Response with budget presets based on user's financial data"""
+    presets: List[BudgetPreset]
+    total_count: int
+    total_suggested_monthly: float  # Total monthly budget if all presets are adopted
+    analysis_summary: str  # Summary of what data was analyzed
