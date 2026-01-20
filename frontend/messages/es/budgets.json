@@ -62,7 +62,23 @@
     "ongoing": "continuo",
     "to": "a",
     "base": "Base",
-    "rollover": "Transferido"
+    "rollover": "Transferido",
+    "aiPresets": {
+      "button": "Plantillas de IA",
+      "title": "Sugerencias de Presupuesto IA",
+      "description": "Obtenga recomendaciones de presupuesto personalizadas basadas en sus patrones de gasto",
+      "loading": "Analizando sus datos financieros...",
+      "fetchError": "Error al generar sugerencias de presupuesto. Por favor, inténtelo de nuevo.",
+      "noPresets": "No hay sugerencias de presupuesto disponibles. Agregue gastos o suscripciones para obtener recomendaciones personalizadas.",
+      "addSuccess": "Presupuesto \"{name}\" agregado exitosamente",
+      "addError": "Error al agregar presupuesto",
+      "addBudget": "Agregar Presupuesto",
+      "priority": {
+        "high": "Esencial",
+        "medium": "Importante",
+        "low": "Opcional"
+      }
+    }
   },
   "analysis": {
     "title": "Análisis de Presupuestos",
@@ -168,15 +184,28 @@
     "other": "Otro",
     "groceries": "Compras de supermercado",
     "diningOut": "Restaurantes / Delivery",
+    "dining_out": "Restaurantes / Delivery",
     "clothing": "Ropa",
     "gifts": "Regalos",
     "personalCare": "Cuidado personal",
+    "personal_care": "Cuidado personal",
     "luxuryPremium": "Artículos de lujo",
     "postalShipping": "Correo y envíos",
     "miscellaneous": "Varios",
     "educationLearning": "Educación",
     "travelVacations": "Viajes y vacaciones",
-    "vehicle": "Vehículo"
+    "travel": "Viajes",
+    "vehicle": "Vehículo",
+    "subscriptions": "Suscripciones",
+    "insurance": "Seguros",
+    "debt_payments": "Pagos de deuda",
+    "debtpayments": "Pagos de deuda",
+    "childcare": "Cuidado infantil",
+    "pet_expenses": "Gastos de mascotas",
+    "gifts_donations": "Regalos y donaciones",
+    "savings_investments": "Ahorros e inversiones",
+    "business_expenses": "Gastos de negocio",
+    "taxes": "Impuestos"
   },
   "detail": {
     "notFound": "Presupuesto no encontrado",

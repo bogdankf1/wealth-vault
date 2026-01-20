@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3, Eye } from 'lucide-react';
+import { Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Grid3x3, Rows3, Eye, Sparkles, AlertCircle, Plus, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useListBudgetsQuery, useGetBudgetOverviewQuery, useUpdateBudgetMutation, useDeleteBudgetMutation, useBatchDeleteBudgetsMutation } from '@/lib/api/budgetsApi';
+import { useListBudgetsQuery, useGetBudgetOverviewQuery, useUpdateBudgetMutation, useDeleteBudgetMutation, useBatchDeleteBudgetsMutation, useCreateBudgetMutation } from '@/lib/api/budgetsApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
+import { useGetBudgetPresetsMutation, type BudgetPreset } from '@/lib/api/aiApi';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
 import { BudgetForm } from '@/components/budgets/budget-form';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
@@ -99,9 +110,19 @@ export default function BudgetsPage() {
   }, [selectedMonth]);
 
   const { data: overview, isLoading: overviewLoading } = useGetBudgetOverviewQuery(overviewParams);
+  const { data: preferences } = useGetMyPreferencesQuery();
   const [updateBudget] = useUpdateBudgetMutation();
   const [deleteBudget, { isLoading: isDeleting }] = useDeleteBudgetMutation();
+  const [createBudget] = useCreateBudgetMutation();
   const [batchDeleteBudgets, { isLoading: isBatchDeleting }] = useBatchDeleteBudgetsMutation();
+  const [getBudgetPresets, { isLoading: isLoadingPresets }] = useGetBudgetPresetsMutation();
+
+  // AI Budget Presets state
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [budgetPresets, setBudgetPresets] = useState<BudgetPreset[]>([]);
+  const [analysisSummary, setAnalysisSummary] = useState('');
+  const [presetsError, setPresetsError] = useState<string | null>(null);
+  const [addingPresets, setAddingPresets] = useState<Set<number>>(new Set());
 
   const isLoading = budgetsLoading || overviewLoading;
 
@@ -280,6 +301,62 @@ export default function BudgetsPage() {
     }
   };
 
+  // AI Budget Presets handlers
+  const handleOpenAiPresets = useCallback(async () => {
+    setAiDialogOpen(true);
+    setBudgetPresets([]);
+    setPresetsError(null);
+    setAnalysisSummary('');
+
+    try {
+      const result = await getBudgetPresets({
+        currency: preferences?.currency || 'USD',
+      }).unwrap();
+
+      setBudgetPresets(result.presets);
+      setAnalysisSummary(result.analysis_summary);
+    } catch (err) {
+      setPresetsError(tOverview('aiPresets.fetchError'));
+    }
+  }, [preferences?.currency, getBudgetPresets, tOverview]);
+
+  const handleAddPresetAsBudget = useCallback(async (preset: BudgetPreset, index: number) => {
+    setAddingPresets(prev => new Set(prev).add(index));
+
+    try {
+      const today = new Date();
+      const startDate = new Date(today.getFullYear(), today.getMonth(), 1); // First day of current month
+
+      await createBudget({
+        name: preset.name,
+        category: preset.category,
+        description: preset.description,
+        amount: preset.suggested_amount,
+        currency: preferences?.currency || 'USD',
+        period: preset.period as 'monthly' | 'quarterly' | 'yearly',
+        start_date: startDate.toISOString().split('T')[0],
+        is_active: true,
+        alert_threshold: preset.alert_threshold,
+      }).unwrap();
+
+      toast.success(tOverview('aiPresets.addSuccess', { name: preset.name }));
+
+      // Reset the selection for this preset so user can add again if needed
+      setAddingPresets(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    } catch (err) {
+      toast.error(tOverview('aiPresets.addError'));
+      setAddingPresets(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    }
+  }, [createBudget, preferences?.currency, tOverview]);
+
   // Set action buttons in layout
   React.useEffect(() => {
     setActions(
@@ -306,6 +383,10 @@ export default function BudgetsPage() {
             </Button>
           </>
         )}
+        <Button onClick={handleOpenAiPresets} variant="outline" size="default" className="w-full sm:w-auto">
+          <Sparkles className="mr-2 h-4 w-4" />
+          <span className="truncate">{tOverview('aiPresets.button')}</span>
+        </Button>
         <Button onClick={handleAddBudget} size="default" className="w-full sm:w-auto">
           <Wallet className="mr-2 h-4 w-4" />
           <span className="truncate">{tOverview('addBudget')}</span>
@@ -314,7 +395,7 @@ export default function BudgetsPage() {
     );
 
     return () => setActions(null);
-  }, [selectedBudgetIds.size, setActions, tOverview]);
+  }, [selectedBudgetIds.size, setActions, tOverview, handleOpenAiPresets]);
 
   // Prepare stats cards data from overview
   const statsCards: StatCard[] = overview?.stats
@@ -606,7 +687,7 @@ export default function BudgetsPage() {
                         onClick={() => router.push(`/dashboard/budgets/${budget.id}`)}
                       >
                         <Eye className="mr-1 h-3 w-3" />
-                        {tCommon('view')}
+                        {tCommon('common.view')}
                       </Button>
                       <Button
                         variant="outline"
@@ -816,6 +897,125 @@ export default function BudgetsPage() {
         itemName="budget"
         isDeleting={isBatchDeleting}
       />
+
+      {/* AI Budget Presets Dialog */}
+      <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+        <DialogContent className="sm:max-w-[650px] max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              {tOverview('aiPresets.title')}
+            </DialogTitle>
+            <DialogDescription>
+              {tOverview('aiPresets.description')}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Loading state */}
+            {isLoadingPresets && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">{tOverview('aiPresets.loading')}</span>
+              </div>
+            )}
+
+            {/* Error state */}
+            {presetsError && !isLoadingPresets && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{presetsError}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Analysis Summary */}
+            {!isLoadingPresets && !presetsError && analysisSummary && (
+              <Alert>
+                <Sparkles className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  {analysisSummary}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Presets list */}
+            {!isLoadingPresets && !presetsError && budgetPresets.length > 0 && (
+              <div className="max-h-[400px] overflow-y-auto pr-2">
+                <div className="space-y-3">
+                  {budgetPresets.map((preset, index) => (
+                    <Card key={index} className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium truncate">{preset.name}</h4>
+                              <Badge
+                                variant={preset.priority === 'high' ? 'destructive' : preset.priority === 'medium' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {tOverview(`aiPresets.priority.${preset.priority}`)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                              {preset.description}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <Badge variant="outline" className="text-xs">
+                                <DollarSign className="h-3 w-3 mr-1" />
+                                <CurrencyDisplay
+                                  amount={preset.suggested_amount}
+                                  currency={preferences?.currency || 'USD'}
+                                  showSymbol={false}
+                                  showCode={true}
+                                />
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs capitalize">
+                                {tPeriod(preset.period)}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {translateCategory(preset.category)}
+                              </Badge>
+                            </div>
+                            {preset.reasoning && (
+                              <p className="text-xs text-muted-foreground mt-2 italic">
+                                {preset.reasoning}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Add Button */}
+                        <div className="flex justify-end pt-2 border-t">
+                          <Button
+                            size="sm"
+                            onClick={() => handleAddPresetAsBudget(preset, index)}
+                            disabled={addingPresets.has(index)}
+                          >
+                            {addingPresets.has(index) ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Plus className="h-4 w-4 mr-2" />
+                            )}
+                            {tOverview('aiPresets.addBudget')}
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!isLoadingPresets && !presetsError && budgetPresets.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>{tOverview('aiPresets.noPresets')}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

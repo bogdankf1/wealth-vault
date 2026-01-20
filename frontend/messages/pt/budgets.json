@@ -62,7 +62,23 @@
     "ongoing": "contínuo",
     "to": "a",
     "base": "Base",
-    "rollover": "Transferência"
+    "rollover": "Transferência",
+    "aiPresets": {
+      "button": "Modelos de IA",
+      "title": "Sugestões de Orçamento IA",
+      "description": "Obtenha recomendações de orçamento personalizadas com base em seus padrões de gastos",
+      "loading": "Analisando seus dados financeiros...",
+      "fetchError": "Falha ao gerar sugestões de orçamento. Por favor, tente novamente.",
+      "noPresets": "Nenhuma sugestão de orçamento disponível. Adicione despesas ou assinaturas para obter recomendações personalizadas.",
+      "addSuccess": "Orçamento \"{name}\" adicionado com sucesso",
+      "addError": "Falha ao adicionar orçamento",
+      "addBudget": "Adicionar Orçamento",
+      "priority": {
+        "high": "Essencial",
+        "medium": "Importante",
+        "low": "Opcional"
+      }
+    }
   },
   "analysis": {
     "title": "Análise de Orçamento",
@@ -168,15 +184,28 @@
     "other": "Outros",
     "groceries": "Supermercado",
     "diningOut": "Restaurantes / Delivery",
+    "dining_out": "Restaurantes / Delivery",
     "clothing": "Roupas",
     "gifts": "Presentes",
     "personalCare": "Cuidados pessoais",
+    "personal_care": "Cuidados pessoais",
     "luxuryPremium": "Luxo & Premium",
     "postalShipping": "Correios & Envios",
     "miscellaneous": "Diversos",
     "educationLearning": "Educação",
     "travelVacations": "Viagens & Férias",
-    "vehicle": "Veículo"
+    "travel": "Viagens",
+    "vehicle": "Veículo",
+    "subscriptions": "Assinaturas",
+    "insurance": "Seguro",
+    "debt_payments": "Pagamento de dívidas",
+    "debtpayments": "Pagamento de dívidas",
+    "childcare": "Cuidado infantil",
+    "pet_expenses": "Despesas com animais",
+    "gifts_donations": "Presentes e doações",
+    "savings_investments": "Poupança e investimentos",
+    "business_expenses": "Despesas comerciais",
+    "taxes": "Impostos"
   },
   "detail": {
     "notFound": "Orçamento não encontrado",

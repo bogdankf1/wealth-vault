@@ -232,6 +232,29 @@ export interface GetTaxPresetsResponse {
   disclaimer: string;
 }
 
+// Budget Presets Types
+export interface BudgetPreset {
+  name: string;
+  category: string;
+  description: string;
+  suggested_amount: number;
+  period: 'monthly' | 'quarterly' | 'yearly';
+  alert_threshold: number;
+  reasoning: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+export interface GetBudgetPresetsRequest {
+  currency: string;
+}
+
+export interface GetBudgetPresetsResponse {
+  presets: BudgetPreset[];
+  total_count: number;
+  total_suggested_monthly: number;
+  analysis_summary: string;
+}
+
 export const aiApi = createApi({
   reducerPath: 'aiApi',
   baseQuery: fetchBaseQuery({
@@ -365,6 +388,15 @@ export const aiApi = createApi({
         body,
       }),
     }),
+
+    // Get AI-generated budget presets based on user's financial data
+    getBudgetPresets: builder.mutation<GetBudgetPresetsResponse, GetBudgetPresetsRequest>({
+      query: (body) => ({
+        url: '/budget-presets',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -382,4 +414,5 @@ export const {
   useParseSubscriptionScreenshotsMutation,
   useParseInstallmentScreenshotsMutation,
   useGetTaxPresetsMutation,
+  useGetBudgetPresetsMutation,
 } = aiApi;

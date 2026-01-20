@@ -62,7 +62,23 @@
     "ongoing": "in corso",
     "to": "a",
     "base": "Base",
-    "rollover": "Riporto"
+    "rollover": "Riporto",
+    "aiPresets": {
+      "button": "Modelli IA",
+      "title": "Suggerimenti Budget IA",
+      "description": "Ricevi raccomandazioni di budget personalizzate basate sui tuoi modelli di spesa",
+      "loading": "Analisi dei dati finanziari...",
+      "fetchError": "Impossibile generare suggerimenti di budget. Riprova.",
+      "noPresets": "Nessun suggerimento di budget disponibile. Aggiungi spese o abbonamenti per ottenere raccomandazioni personalizzate.",
+      "addSuccess": "Budget \"{name}\" aggiunto con successo",
+      "addError": "Impossibile aggiungere il budget",
+      "addBudget": "Aggiungi Budget",
+      "priority": {
+        "high": "Essenziale",
+        "medium": "Importante",
+        "low": "Opzionale"
+      }
+    }
   },
   "analysis": {
     "title": "Analisi Budget",
@@ -168,15 +184,28 @@
     "other": "Altro",
     "groceries": "Spesa",
     "diningOut": "Ristoranti / Consegna",
+    "dining_out": "Ristoranti / Consegna",
     "clothing": "Abbigliamento",
     "gifts": "Regali",
     "personalCare": "Cura personale",
+    "personal_care": "Cura personale",
     "luxuryPremium": "Lusso & Premium",
     "postalShipping": "Posta & Spedizioni",
     "miscellaneous": "Varie",
     "educationLearning": "Istruzione",
     "travelVacations": "Viaggi & Vacanze",
-    "vehicle": "Veicolo"
+    "travel": "Viaggi",
+    "vehicle": "Veicolo",
+    "subscriptions": "Abbonamenti",
+    "insurance": "Assicurazione",
+    "debt_payments": "Pagamento debiti",
+    "debtpayments": "Pagamento debiti",
+    "childcare": "Cura dei bambini",
+    "pet_expenses": "Spese animali",
+    "gifts_donations": "Regali e donazioni",
+    "savings_investments": "Risparmi e investimenti",
+    "business_expenses": "Spese aziendali",
+    "taxes": "Tasse"
   },
   "detail": {
     "notFound": "Budget non trovato",

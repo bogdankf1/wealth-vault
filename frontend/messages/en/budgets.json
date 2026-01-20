@@ -62,7 +62,23 @@
     "ongoing": "ongoing",
     "to": "to",
     "base": "Base",
-    "rollover": "Rollover"
+    "rollover": "Rollover",
+    "aiPresets": {
+      "button": "AI Budget Presets",
+      "title": "AI Budget Suggestions",
+      "description": "Get personalized budget recommendations based on your spending patterns",
+      "loading": "Analyzing your financial data...",
+      "fetchError": "Failed to generate budget suggestions. Please try again.",
+      "noPresets": "No budget suggestions available. Add some expenses or subscriptions to get personalized recommendations.",
+      "addSuccess": "\"{name}\" budget added successfully",
+      "addError": "Failed to add budget",
+      "addBudget": "Add Budget",
+      "priority": {
+        "high": "Essential",
+        "medium": "Important",
+        "low": "Optional"
+      }
+    }
   },
   "analysis": {
     "title": "Budget Analysis",
@@ -168,15 +184,28 @@
     "other": "Other",
     "groceries": "Groceries",
     "diningOut": "Dining Out / Delivery",
+    "dining_out": "Dining Out / Delivery",
     "clothing": "Clothing",
     "gifts": "Gifts",
     "personalCare": "Personal Care",
+    "personal_care": "Personal Care",
     "luxuryPremium": "Luxury & Premium Items",
     "postalShipping": "Postal & Shipping",
     "miscellaneous": "Miscellaneous",
     "educationLearning": "Education & Learning",
     "travelVacations": "Travel & Vacations",
-    "vehicle": "Vehicle"
+    "travel": "Travel",
+    "vehicle": "Vehicle",
+    "subscriptions": "Subscriptions",
+    "insurance": "Insurance",
+    "debt_payments": "Debt Payments",
+    "debtpayments": "Debt Payments",
+    "childcare": "Childcare",
+    "pet_expenses": "Pet Expenses",
+    "gifts_donations": "Gifts & Donations",
+    "savings_investments": "Savings & Investments",
+    "business_expenses": "Business Expenses",
+    "taxes": "Taxes"
   },
   "detail": {
     "notFound": "Budget not found",

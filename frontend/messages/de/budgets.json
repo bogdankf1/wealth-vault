@@ -62,7 +62,23 @@
     "ongoing": "laufend",
     "to": "bis",
     "base": "Basis",
-    "rollover": "Übertrag"
+    "rollover": "Übertrag",
+    "aiPresets": {
+      "button": "KI Budget-Vorlagen",
+      "title": "KI Budget-Vorschläge",
+      "description": "Erhalten Sie personalisierte Budgetempfehlungen basierend auf Ihren Ausgabenmustern",
+      "loading": "Analysiere Ihre Finanzdaten...",
+      "fetchError": "Budgetvorschläge konnten nicht generiert werden. Bitte versuchen Sie es erneut.",
+      "noPresets": "Keine Budgetvorschläge verfügbar. Fügen Sie Ausgaben oder Abonnements hinzu, um personalisierte Empfehlungen zu erhalten.",
+      "addSuccess": "Budget \"{name}\" erfolgreich hinzugefügt",
+      "addError": "Budget konnte nicht hinzugefügt werden",
+      "addBudget": "Budget hinzufügen",
+      "priority": {
+        "high": "Wesentlich",
+        "medium": "Wichtig",
+        "low": "Optional"
+      }
+    }
   },
   "analysis": {
     "title": "Budgetanalyse",
@@ -168,15 +184,28 @@
     "other": "Sonstiges",
     "groceries": "Lebensmittel",
     "diningOut": "Essen gehen / Lieferung",
+    "dining_out": "Essen gehen / Lieferung",
     "clothing": "Kleidung",
     "gifts": "Geschenke",
     "personalCare": "Körperpflege",
+    "personal_care": "Körperpflege",
     "luxuryPremium": "Luxus & Premium",
     "postalShipping": "Post & Versand",
     "miscellaneous": "Sonstiges",
     "educationLearning": "Bildung & Lernen",
     "travelVacations": "Reisen & Urlaub",
-    "vehicle": "Fahrzeug"
+    "travel": "Reisen",
+    "vehicle": "Fahrzeug",
+    "subscriptions": "Abonnements",
+    "insurance": "Versicherung",
+    "debt_payments": "Schuldentilgung",
+    "debtpayments": "Schuldentilgung",
+    "childcare": "Kinderbetreuung",
+    "pet_expenses": "Haustierkosten",
+    "gifts_donations": "Geschenke & Spenden",
+    "savings_investments": "Sparen & Investitionen",
+    "business_expenses": "Geschäftsausgaben",
+    "taxes": "Steuern"
   },
   "detail": {
     "notFound": "Budget nicht gefunden",

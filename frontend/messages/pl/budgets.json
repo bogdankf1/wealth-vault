@@ -62,7 +62,23 @@
     "ongoing": "bezterminowo",
     "to": "do",
     "base": "Podstawa",
-    "rollover": "Przeniesienie"
+    "rollover": "Przeniesienie",
+    "aiPresets": {
+      "button": "Szablony AI",
+      "title": "Sugestie Budżetu AI",
+      "description": "Uzyskaj spersonalizowane rekomendacje budżetowe na podstawie Twoich wzorców wydatków",
+      "loading": "Analizowanie danych finansowych...",
+      "fetchError": "Nie udało się wygenerować sugestii budżetowych. Spróbuj ponownie.",
+      "noPresets": "Brak dostępnych sugestii budżetowych. Dodaj wydatki lub subskrypcje, aby uzyskać spersonalizowane rekomendacje.",
+      "addSuccess": "Budżet \"{name}\" dodany pomyślnie",
+      "addError": "Nie udało się dodać budżetu",
+      "addBudget": "Dodaj Budżet",
+      "priority": {
+        "high": "Niezbędny",
+        "medium": "Ważny",
+        "low": "Opcjonalny"
+      }
+    }
   },
   "analysis": {
     "title": "Analiza budżetu",
@@ -168,15 +184,28 @@
     "other": "Inne",
     "groceries": "Zakupy spożywcze",
     "diningOut": "Restauracje / Dostawa",
+    "dining_out": "Restauracje / Dostawa",
     "clothing": "Odzież",
     "gifts": "Prezenty",
     "personalCare": "Pielęgnacja",
+    "personal_care": "Pielęgnacja",
     "luxuryPremium": "Luksus & Premium",
     "postalShipping": "Poczta & Wysyłka",
     "miscellaneous": "Różne",
     "educationLearning": "Edukacja",
     "travelVacations": "Podróże & Wakacje",
-    "vehicle": "Pojazd"
+    "travel": "Podróże",
+    "vehicle": "Pojazd",
+    "subscriptions": "Subskrypcje",
+    "insurance": "Ubezpieczenie",
+    "debt_payments": "Spłata długów",
+    "debtpayments": "Spłata długów",
+    "childcare": "Opieka nad dziećmi",
+    "pet_expenses": "Wydatki na zwierzęta",
+    "gifts_donations": "Prezenty i darowizny",
+    "savings_investments": "Oszczędności i inwestycje",
+    "business_expenses": "Wydatki biznesowe",
+    "taxes": "Podatki"
   },
   "detail": {
     "notFound": "Nie znaleziono budżetu",

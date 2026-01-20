@@ -62,7 +62,23 @@
     "ongoing": "en cours",
     "to": "à",
     "base": "Base",
-    "rollover": "Report"
+    "rollover": "Report",
+    "aiPresets": {
+      "button": "Modèles IA",
+      "title": "Suggestions de Budget IA",
+      "description": "Obtenez des recommandations de budget personnalisées basées sur vos habitudes de dépenses",
+      "loading": "Analyse de vos données financières...",
+      "fetchError": "Échec de la génération des suggestions de budget. Veuillez réessayer.",
+      "noPresets": "Aucune suggestion de budget disponible. Ajoutez des dépenses ou des abonnements pour obtenir des recommandations personnalisées.",
+      "addSuccess": "Budget \"{name}\" ajouté avec succès",
+      "addError": "Échec de l'ajout du budget",
+      "addBudget": "Ajouter un budget",
+      "priority": {
+        "high": "Essentiel",
+        "medium": "Important",
+        "low": "Optionnel"
+      }
+    }
   },
   "analysis": {
     "title": "Analyse des budgets",
@@ -168,15 +184,28 @@
     "other": "Autre",
     "groceries": "Courses",
     "diningOut": "Restaurant / Livraison",
+    "dining_out": "Restaurant / Livraison",
     "clothing": "Vêtements",
     "gifts": "Cadeaux",
     "personalCare": "Soins personnels",
+    "personal_care": "Soins personnels",
     "luxuryPremium": "Luxe & Premium",
     "postalShipping": "Poste & Livraison",
     "miscellaneous": "Divers",
     "educationLearning": "Éducation",
     "travelVacations": "Voyages & Vacances",
-    "vehicle": "Véhicule"
+    "travel": "Voyages",
+    "vehicle": "Véhicule",
+    "subscriptions": "Abonnements",
+    "insurance": "Assurance",
+    "debt_payments": "Remboursement de dettes",
+    "debtpayments": "Remboursement de dettes",
+    "childcare": "Garde d'enfants",
+    "pet_expenses": "Animaux de compagnie",
+    "gifts_donations": "Cadeaux et dons",
+    "savings_investments": "Épargne et investissements",
+    "business_expenses": "Frais professionnels",
+    "taxes": "Impôts"
   },
   "detail": {
     "notFound": "Budget introuvable",
