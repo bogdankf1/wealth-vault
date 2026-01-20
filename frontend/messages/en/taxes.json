@@ -60,7 +60,26 @@
     "taxes": "taxes",
     "description": "Description",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "aiSearch": {
+      "button": "AI Tax Search",
+      "title": "AI Tax Presets",
+      "description": "Get tax presets based on your country and occupation settings",
+      "loading": "Finding relevant tax presets...",
+      "missingSettings": "Please set your country and occupation in Settings > Account to use this feature",
+      "fetchError": "Failed to fetch tax presets. Please try again.",
+      "noPresets": "No tax presets found. Try adjusting your settings.",
+      "deductible": "Deductible",
+      "addSuccess": "\"{name}\" added successfully",
+      "addError": "Failed to add tax preset",
+      "paymentAccount": "Payment Account",
+      "selectAccount": "Select account",
+      "noAccount": "No account",
+      "incomeSource": "Income Source",
+      "selectIncome": "Select income source",
+      "allIncome": "All income sources",
+      "addTax": "Add Tax"
+    }
   },
   "analysis": {
     "title": "Taxes Analysis",

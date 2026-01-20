@@ -60,7 +60,26 @@
     "taxes": "podatki",
     "description": "Opis",
     "active": "Aktywny",
-    "inactive": "Nieaktywny"
+    "inactive": "Nieaktywny",
+    "aiSearch": {
+      "button": "Wyszukiwanie podatkowe AI",
+      "title": "Szablony podatkowe AI",
+      "description": "Uzyskaj szablony podatkowe na podstawie kraju i zawodu",
+      "loading": "Wyszukiwanie odpowiednich szablonów podatkowych...",
+      "missingSettings": "Ustaw swój kraj i zawód w Ustawienia > Konto",
+      "fetchError": "Nie udało się pobrać szablonów podatkowych. Spróbuj ponownie.",
+      "noPresets": "Nie znaleziono szablonów podatkowych. Spróbuj zmienić ustawienia.",
+      "deductible": "Podlegający odliczeniu",
+      "addSuccess": "\"{name}\" dodano pomyślnie",
+      "addError": "Nie udało się dodać szablonu podatkowego",
+      "paymentAccount": "Konto płatności",
+      "selectAccount": "Wybierz konto",
+      "noAccount": "Brak konta",
+      "incomeSource": "Źródło dochodu",
+      "selectIncome": "Wybierz źródło dochodu",
+      "allIncome": "Wszystkie źródła dochodu",
+      "addTax": "Dodaj podatek"
+    }
   },
   "analysis": {
     "title": "Analiza podatków",

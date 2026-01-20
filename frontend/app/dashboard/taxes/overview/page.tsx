@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, CheckCircle, Clock } from 'lucide-react';
+import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, CheckCircle, Clock, Sparkles, AlertCircle, Plus, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
@@ -33,8 +33,29 @@ import {
   useUpdateTaxMutation,
   useDeleteTaxMutation,
   useBatchDeleteTaxRecordsMutation,
+  useCreateTaxMutation,
   type Tax,
 } from '@/lib/api/taxesApi';
+import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
+import { useGetTaxPresetsMutation, type TaxPreset } from '@/lib/api/aiApi';
+import { useListAccountsQuery } from '@/lib/api/savingsApi';
+import { useListIncomeSourcesQuery } from '@/lib/api/incomeApi';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { toast } from 'sonner';
@@ -69,9 +90,26 @@ export default function TaxesPage() {
 
   const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery({ is_active: true });
   const { data: stats } = useGetTaxStatsQuery();
+  const { data: preferences } = useGetMyPreferencesQuery();
+  const { data: accountsData } = useListAccountsQuery({});
+  const { data: incomeSourcesData } = useListIncomeSourcesQuery({ is_active: true });
   const [updateTax] = useUpdateTaxMutation();
   const [deleteTax] = useDeleteTaxMutation();
+  const [createTax] = useCreateTaxMutation();
   const [batchDeleteTaxRecords, { isLoading: isBatchDeleting }] = useBatchDeleteTaxRecordsMutation();
+  const [getTaxPresets, { isLoading: isLoadingPresets }] = useGetTaxPresetsMutation();
+
+  // AI Tax Presets state
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [taxPresets, setTaxPresets] = useState<TaxPreset[]>([]);
+  const [presetsDisclaimer, setPresetsDisclaimer] = useState('');
+  const [presetsError, setPresetsError] = useState<string | null>(null);
+  const [addingPresets, setAddingPresets] = useState<Set<number>>(new Set());
+  const [presetSelections, setPresetSelections] = useState<Record<number, { accountId?: string; incomeSourceId?: string }>>({});
+
+  // Get accounts and income sources for selection
+  const accounts = accountsData?.items || [];
+  const incomeSources = incomeSourcesData?.items || [];
 
   const handleEdit = (taxId: string) => {
     setEditingTaxId(taxId);
@@ -169,6 +207,81 @@ export default function TaxesPage() {
     setIsFormOpen(true);
   }, []);
 
+  // AI Tax Search handlers
+  const handleOpenAiSearch = useCallback(async () => {
+    setAiDialogOpen(true);
+    setTaxPresets([]);
+    setPresetsError(null);
+    setPresetsDisclaimer('');
+    setPresetSelections({});
+
+    // Check if user has country and occupation set
+    if (!preferences?.country || !preferences?.occupation) {
+      setPresetsError(tOverview('aiSearch.missingSettings'));
+      return;
+    }
+
+    try {
+      const result = await getTaxPresets({
+        country: preferences.country,
+        occupation: preferences.occupation,
+      }).unwrap();
+
+      setTaxPresets(result.presets);
+      setPresetsDisclaimer(result.disclaimer);
+    } catch (err) {
+      setPresetsError(tOverview('aiSearch.fetchError'));
+    }
+  }, [preferences, getTaxPresets, tOverview]);
+
+  const handlePresetSelectionChange = useCallback((index: number, field: 'accountId' | 'incomeSourceId', value: string | undefined) => {
+    setPresetSelections(prev => ({
+      ...prev,
+      [index]: {
+        ...prev[index],
+        [field]: value === 'none' ? undefined : value,
+      },
+    }));
+  }, []);
+
+  const handleAddPresetAsTax = useCallback(async (preset: TaxPreset, index: number) => {
+    setAddingPresets(prev => new Set(prev).add(index));
+
+    const selection = presetSelections[index] || {};
+
+    try {
+      await createTax({
+        name: preset.name,
+        description: preset.description,
+        tax_type: preset.tax_type,
+        percentage: preset.tax_type === 'percentage' ? preset.rate * 100 : undefined,
+        fixed_amount: preset.tax_type === 'fixed' ? preset.rate : undefined,
+        currency: preferences?.currency || 'USD',
+        frequency: preset.frequency,
+        notes: preset.notes || undefined,
+        is_active: true,
+        payment_account_id: selection.accountId || null,
+        income_source_id: selection.incomeSourceId || null,
+      }).unwrap();
+
+      toast.success(tOverview('aiSearch.addSuccess', { name: preset.name }));
+
+      // Reset the selection for this preset so user can add again with different account/income
+      setPresetSelections(prev => ({
+        ...prev,
+        [index]: { accountId: undefined, incomeSourceId: undefined },
+      }));
+    } catch (err) {
+      toast.error(tOverview('aiSearch.addError'));
+    } finally {
+      setAddingPresets(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    }
+  }, [createTax, preferences?.currency, tOverview, presetSelections]);
+
   // Set action buttons in layout
   React.useEffect(() => {
     setActions(
@@ -195,6 +308,10 @@ export default function TaxesPage() {
             </Button>
           </>
         )}
+        <Button onClick={handleOpenAiSearch} variant="outline" size="default" className="w-full sm:w-auto">
+          <Sparkles className="mr-2 h-4 w-4" />
+          <span className="truncate">{tOverview('aiSearch.button')}</span>
+        </Button>
         <Button onClick={handleAddTax} size="default" className="w-full sm:w-auto">
           <DollarSign className="mr-2 h-4 w-4" />
           <span className="truncate">{tOverview('addTax')}</span>
@@ -203,7 +320,7 @@ export default function TaxesPage() {
     );
 
     return () => setActions(null);
-  }, [selectedTaxIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddTax, tOverview]);
+  }, [selectedTaxIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddTax, handleOpenAiSearch, tOverview]);
 
   const confirmBatchDelete = async () => {
     if (selectedTaxIds.size === 0) return;
@@ -801,6 +918,167 @@ export default function TaxesPage() {
         itemName={tOverview('tax')}
         isDeleting={isBatchDeleting}
       />
+
+      {/* AI Tax Presets Dialog */}
+      <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              {tOverview('aiSearch.title')}
+            </DialogTitle>
+            <DialogDescription>
+              {tOverview('aiSearch.description')}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Loading state */}
+            {isLoadingPresets && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">{tOverview('aiSearch.loading')}</span>
+              </div>
+            )}
+
+            {/* Error state */}
+            {presetsError && !isLoadingPresets && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{presetsError}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Presets list */}
+            {!isLoadingPresets && !presetsError && taxPresets.length > 0 && (
+              <>
+                <div className="max-h-[400px] overflow-y-auto pr-2">
+                  <div className="space-y-3">
+                    {taxPresets.map((preset, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium truncate">{preset.name}</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                                {preset.description}
+                              </p>
+                              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                <Badge variant="outline" className="text-xs">
+                                  {preset.tax_type === 'percentage' ? (
+                                    <><Percent className="h-3 w-3 mr-1" />{(preset.rate * 100).toFixed(1)}%</>
+                                  ) : (
+                                    <><DollarSign className="h-3 w-3 mr-1" />{preset.rate}</>
+                                  )}
+                                </Badge>
+                                <Badge variant="secondary" className="text-xs capitalize">
+                                  {tFrequencies(preset.frequency as 'monthly' | 'quarterly' | 'annually')}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {preset.category}
+                                </Badge>
+                                {preset.is_deductible && (
+                                  <Badge variant="default" className="text-xs bg-green-600">
+                                    {tOverview('aiSearch.deductible')}
+                                  </Badge>
+                                )}
+                              </div>
+                              {preset.notes && (
+                                <p className="text-xs text-muted-foreground mt-2 italic">
+                                  {preset.notes}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Account and Income Source Selection */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t">
+                            <div className="space-y-1">
+                              <Label className="text-xs">{tOverview('aiSearch.paymentAccount')}</Label>
+                              <Select
+                                value={presetSelections[index]?.accountId || 'none'}
+                                onValueChange={(value) => handlePresetSelectionChange(index, 'accountId', value)}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder={tOverview('aiSearch.selectAccount')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">{tOverview('aiSearch.noAccount')}</SelectItem>
+                                  {accounts.map((account) => (
+                                    <SelectItem key={account.id} value={account.id}>
+                                      {account.name} ({account.currency})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {preset.tax_type === 'percentage' && (
+                              <div className="space-y-1">
+                                <Label className="text-xs">{tOverview('aiSearch.incomeSource')}</Label>
+                                <Select
+                                  value={presetSelections[index]?.incomeSourceId || 'none'}
+                                  onValueChange={(value) => handlePresetSelectionChange(index, 'incomeSourceId', value)}
+                                >
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder={tOverview('aiSearch.selectIncome')} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">{tOverview('aiSearch.allIncome')}</SelectItem>
+                                    {incomeSources.map((source) => (
+                                      <SelectItem key={source.id} value={source.id}>
+                                        {source.name} ({source.currency})
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Add Button */}
+                          <div className="flex justify-end pt-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddPresetAsTax(preset, index)}
+                              disabled={addingPresets.has(index)}
+                            >
+                              {addingPresets.has(index) ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Plus className="h-4 w-4 mr-2" />
+                              )}
+                              {tOverview('aiSearch.addTax')}
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Disclaimer */}
+                {presetsDisclaimer && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      {presetsDisclaimer}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </>
+            )}
+
+            {/* Empty state */}
+            {!isLoadingPresets && !presetsError && taxPresets.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>{tOverview('aiSearch.noPresets')}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

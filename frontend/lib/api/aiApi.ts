@@ -207,6 +207,31 @@ export interface ParseInstallmentScreenshotsResponse {
   monthly_payment: number;
 }
 
+// Tax Presets Types
+export interface TaxPreset {
+  name: string;
+  description: string;
+  rate: number;
+  tax_type: 'percentage' | 'fixed';
+  frequency: 'monthly' | 'quarterly' | 'annually';
+  is_deductible: boolean;
+  category: 'Income' | 'Social' | 'Property' | 'Business' | 'Healthcare' | 'Pension' | 'Other';
+  notes?: string;
+}
+
+export interface GetTaxPresetsRequest {
+  country: string;
+  occupation: string;
+}
+
+export interface GetTaxPresetsResponse {
+  presets: TaxPreset[];
+  country: string;
+  occupation: string;
+  total_count: number;
+  disclaimer: string;
+}
+
 export const aiApi = createApi({
   reducerPath: 'aiApi',
   baseQuery: fetchBaseQuery({
@@ -331,6 +356,15 @@ export const aiApi = createApi({
         body,
       }),
     }),
+
+    // Get AI-generated tax presets based on country and occupation
+    getTaxPresets: builder.mutation<GetTaxPresetsResponse, GetTaxPresetsRequest>({
+      query: (body) => ({
+        url: '/tax-presets',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -347,4 +381,5 @@ export const {
   useParsePortfolioScreenshotsMutation,
   useParseSubscriptionScreenshotsMutation,
   useParseInstallmentScreenshotsMutation,
+  useGetTaxPresetsMutation,
 } = aiApi;

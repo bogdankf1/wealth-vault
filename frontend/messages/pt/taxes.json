@@ -60,7 +60,26 @@
     "taxes": "impostos",
     "description": "Descrição",
     "active": "Ativo",
-    "inactive": "Inativo"
+    "inactive": "Inativo",
+    "aiSearch": {
+      "button": "Pesquisa fiscal IA",
+      "title": "Modelos fiscais IA",
+      "description": "Obtenha modelos fiscais com base no seu país e ocupação",
+      "loading": "Procurando modelos fiscais relevantes...",
+      "missingSettings": "Por favor, defina seu país e ocupação em Configurações > Conta",
+      "fetchError": "Não foi possível obter os modelos fiscais. Tente novamente.",
+      "noPresets": "Nenhum modelo fiscal encontrado. Tente ajustar suas configurações.",
+      "deductible": "Dedutível",
+      "addSuccess": "\"{name}\" adicionado com sucesso",
+      "addError": "Não foi possível adicionar o modelo fiscal",
+      "paymentAccount": "Conta de pagamento",
+      "selectAccount": "Selecionar conta",
+      "noAccount": "Sem conta",
+      "incomeSource": "Fonte de renda",
+      "selectIncome": "Selecionar fonte de renda",
+      "allIncome": "Todas as fontes de renda",
+      "addTax": "Adicionar imposto"
+    }
   },
   "analysis": {
     "title": "Análise de Impostos",

@@ -60,7 +60,26 @@
     "taxes": "impôts",
     "description": "Description",
     "active": "Actif",
-    "inactive": "Inactif"
+    "inactive": "Inactif",
+    "aiSearch": {
+      "button": "Recherche fiscale IA",
+      "title": "Modèles d'impôts IA",
+      "description": "Obtenez des modèles d'impôts basés sur votre pays et profession",
+      "loading": "Recherche des modèles d'impôts pertinents...",
+      "missingSettings": "Veuillez définir votre pays et profession dans Paramètres > Compte",
+      "fetchError": "Impossible de récupérer les modèles d'impôts. Veuillez réessayer.",
+      "noPresets": "Aucun modèle d'impôt trouvé. Essayez d'ajuster vos paramètres.",
+      "deductible": "Déductible",
+      "addSuccess": "\"{name}\" ajouté avec succès",
+      "addError": "Impossible d'ajouter le modèle d'impôt",
+      "paymentAccount": "Compte de paiement",
+      "selectAccount": "Sélectionner un compte",
+      "noAccount": "Aucun compte",
+      "incomeSource": "Source de revenus",
+      "selectIncome": "Sélectionner une source de revenus",
+      "allIncome": "Toutes les sources de revenus",
+      "addTax": "Ajouter l'impôt"
+    }
   },
   "analysis": {
     "title": "Analyse des impôts",

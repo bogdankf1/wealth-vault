@@ -60,7 +60,26 @@
     "taxes": "Steuern",
     "description": "Beschreibung",
     "active": "Aktiv",
-    "inactive": "Inaktiv"
+    "inactive": "Inaktiv",
+    "aiSearch": {
+      "button": "KI-Steuersuche",
+      "title": "KI-Steuervorlagen",
+      "description": "Erhalten Sie Steuervorlagen basierend auf Ihrem Land und Beruf",
+      "loading": "Relevante Steuervorlagen werden gesucht...",
+      "missingSettings": "Bitte geben Sie Ihr Land und Ihren Beruf in Einstellungen > Konto an",
+      "fetchError": "Steuervorlagen konnten nicht abgerufen werden. Bitte versuchen Sie es erneut.",
+      "noPresets": "Keine Steuervorlagen gefunden. Versuchen Sie, Ihre Einstellungen anzupassen.",
+      "deductible": "Absetzbar",
+      "addSuccess": "\"{name}\" erfolgreich hinzugefügt",
+      "addError": "Steuervorlage konnte nicht hinzugefügt werden",
+      "paymentAccount": "Zahlungskonto",
+      "selectAccount": "Konto auswählen",
+      "noAccount": "Kein Konto",
+      "incomeSource": "Einkommensquelle",
+      "selectIncome": "Einkommensquelle auswählen",
+      "allIncome": "Alle Einkommensquellen",
+      "addTax": "Steuer hinzufügen"
+    }
   },
   "analysis": {
     "title": "Steueranalyse",

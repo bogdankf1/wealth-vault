@@ -60,7 +60,26 @@
     "taxes": "impuestos",
     "description": "Descripción",
     "active": "Activo",
-    "inactive": "Inactivo"
+    "inactive": "Inactivo",
+    "aiSearch": {
+      "button": "Búsqueda de impuestos IA",
+      "title": "Plantillas de impuestos IA",
+      "description": "Obtén plantillas de impuestos basadas en tu país y ocupación",
+      "loading": "Buscando plantillas de impuestos relevantes...",
+      "missingSettings": "Por favor, configura tu país y ocupación en Configuración > Cuenta",
+      "fetchError": "No se pudieron obtener las plantillas de impuestos. Inténtalo de nuevo.",
+      "noPresets": "No se encontraron plantillas de impuestos. Intenta ajustar tu configuración.",
+      "deductible": "Deducible",
+      "addSuccess": "\"{name}\" añadido exitosamente",
+      "addError": "No se pudo añadir la plantilla de impuesto",
+      "paymentAccount": "Cuenta de pago",
+      "selectAccount": "Seleccionar cuenta",
+      "noAccount": "Sin cuenta",
+      "incomeSource": "Fuente de ingresos",
+      "selectIncome": "Seleccionar fuente de ingresos",
+      "allIncome": "Todas las fuentes de ingresos",
+      "addTax": "Añadir impuesto"
+    }
   },
   "analysis": {
     "title": "Análisis de Impuestos",
