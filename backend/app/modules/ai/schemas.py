@@ -209,3 +209,37 @@ class ParseSubscriptionScreenshotsResponse(BaseModel):
     active_count: int
     monthly_total: float = 0.0  # Total monthly cost (normalized)
     annual_total: float = 0.0  # Total annual cost
+
+
+# Installment Screenshot Parsing Schemas
+class ParsedInstallment(BaseModel):
+    """A single parsed installment from screenshot"""
+    name: str  # Item/product name (e.g., "Зубна щітка Philips", "Airpods Pro 3")
+    description: Optional[str] = None  # Additional details about the item
+    total_amount: float  # Total loan/installment amount
+    amount_per_payment: float  # Monthly payment amount
+    currency: str = "UAH"
+    frequency: str = "monthly"  # weekly, biweekly, monthly
+    number_of_payments: int  # Total number of payments
+    payments_made: int = 0  # Payments already made
+    remaining_balance: Optional[float] = None  # Remaining amount to pay
+    start_date: Optional[str] = None  # First payment date YYYY-MM-DD
+    next_payment_date: Optional[str] = None  # Next scheduled payment YYYY-MM-DD
+    category: Optional[str] = None  # Personal Tech, Kitchen Appliances, etc.
+    status: str = "active"  # active, completed
+    provider: Optional[str] = None  # Monobank, PrivatBank, etc.
+    confidence: str = "medium"  # high, medium, low
+
+
+class ParseInstallmentScreenshotsRequest(BaseModel):
+    """Request to parse installment screenshots"""
+    file_ids: List[UUID]
+
+
+class ParseInstallmentScreenshotsResponse(BaseModel):
+    """Response with parsed installments from screenshots"""
+    installments: List[ParsedInstallment]
+    total_count: int
+    active_count: int
+    total_debt: float = 0.0  # Total remaining balance
+    monthly_payment: float = 0.0  # Total monthly payment

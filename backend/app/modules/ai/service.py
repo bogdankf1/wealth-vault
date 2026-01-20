@@ -14,7 +14,7 @@ from pathlib import Path
 from openai import OpenAI
 
 from app.modules.ai.models import UploadedFile
-from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount, ParsedPortfolioHolding, ParsedSubscription
+from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount, ParsedPortfolioHolding, ParsedSubscription, ParsedInstallment
 from app.services.statement_parser import StatementParser, Transaction
 from app.services.ai_categorizer import AICategorizer, INCOME_CATEGORIES
 
@@ -1106,6 +1106,273 @@ IMPORTANT:
                 )
 
             return subscriptions
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse AI response: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Vision API parsing failed: {str(e)}")
+
+    async def parse_installment_screenshots(
+        self, db: AsyncSession, file_ids: List[UUID], user_id: UUID
+    ) -> List[ParsedInstallment]:
+        """
+        Parse installments from banking app screenshots (Monobank Pay, PrivatBank) using Vision API
+
+        Args:
+            db: Database session
+            file_ids: List of uploaded file IDs (images)
+            user_id: User ID (for security check)
+
+        Returns:
+            List of parsed installments
+        """
+        # Get all files from database
+        result = await db.execute(
+            select(UploadedFile).where(
+                UploadedFile.id.in_(file_ids),
+                UploadedFile.user_id == user_id,
+            )
+        )
+        uploaded_files = result.scalars().all()
+
+        if len(uploaded_files) != len(file_ids):
+            raise ValueError("One or more files not found")
+
+        # Prepare images for Vision API
+        image_contents = []
+        for uploaded_file in uploaded_files:
+            file_path = uploaded_file.file_url
+
+            # Read and encode image to base64
+            with open(file_path, "rb") as f:
+                image_data = base64.standard_b64encode(f.read()).decode("utf-8")
+
+            # Determine MIME type from file_type or file extension
+            file_ext = (uploaded_file.file_type or "").lower()
+            if not file_ext:
+                # Try to get extension from file path
+                file_ext = Path(file_path).suffix.lower().lstrip(".")
+            mime_type = {
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "png": "image/png",
+                "webp": "image/webp",
+            }.get(file_ext, "image/jpeg")
+
+            image_contents.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{mime_type};base64,{image_data}",
+                        "detail": "high",
+                    },
+                }
+            )
+
+        # Build the prompt for Vision API
+        prompt = f"""Analyze these {len(image_contents)} Ukrainian banking app screenshots showing installment plans (payments in parts / "Оплата частинами" / "Покупка в розстрочку").
+
+CRITICAL: You are receiving {len(image_contents)} separate screenshots. Each may show a DIFFERENT installment plan. Analyze EACH screenshot and extract ALL installments from ALL of them.
+
+MONOBANK PAY (Оплата частинами) FORMAT:
+- Product/item name shown at the top (e.g., "Зубна щітка Philips", "Годинник Casio", "Airpods Pro 3", "Шуруповерт Stanley")
+- Total amount shown prominently (e.g., "9 999.00 ₴", "12 099.00 ₴")
+- Circle progress chart showing:
+  - Amount paid: "X XXX ₴ Виплачено" (X XXX ₴ Paid)
+  - Remaining payments text: "Залишився 1 платіж на X XXX ₴" or "Залишилося 2 платежі на X XXX ₴"
+- Payment schedule list with:
+  - Date (e.g., "22 квітня 2025", "4 грудня 2025")
+  - "Щомісячний платіж" = Monthly payment
+  - Amount per payment (e.g., "999.90 ₴", "4 033 ₴")
+  - Checkmark (✓) = paid, Empty circle (○) = upcoming, "Сплатити X XXX ₴" button = next due
+- "Погасити достроково" button = Early payoff option
+
+Ukrainian month names: січня (Jan), лютого (Feb), березня (Mar), квітня (Apr), травня (May), червня (Jun), липня (Jul), серпня (Aug), вересня (Sep), жовтня (Oct), листопада (Nov), грудня (Dec)
+
+PRIVATBANK INSTALLMENT FORMAT:
+- "Розстрочка" or "Оплата частинами" section
+- Product name and total amount
+- Payment schedule with dates and amounts
+
+For each installment found, extract:
+1. name - Product/item name (e.g., "Зубна щітка Philips", "Airpods Pro 3")
+2. description - Any additional details if visible (plan type, store name)
+3. total_amount - Total price of the item (e.g., 9999.00)
+4. amount_per_payment - Monthly payment amount (e.g., 999.90)
+5. currency - Currency code: UAH for ₴
+6. frequency - Payment frequency: "monthly" (Щомісячний платіж = monthly)
+7. number_of_payments - Total number of payments (count all payments in the schedule)
+8. payments_made - Number of payments already made (count checkmarks ✓)
+9. remaining_balance - Remaining amount to pay (from "Залишилось... на X XXX ₴")
+10. start_date - First payment date in YYYY-MM-DD format (first date in schedule)
+11. next_payment_date - Next upcoming payment date in YYYY-MM-DD (payment with "Сплатити" or empty circle)
+12. category - Detect from product name:
+    - Phones, tablets, laptops, headphones, smartwatches = "Personal Tech"
+    - Electric toothbrush, health devices = "Health Tech"
+    - Kitchen appliances, blenders, coffee machines = "Kitchen Appliances"
+    - Tools, drills, equipment = "Home Appliances"
+    - Fitness equipment = "Fitness Equipment"
+    - Furniture, home goods = "Housing Goods"
+    - Cars, motorcycles = "Vehicle"
+    - Other items = "Miscellaneous"
+13. status - "active" if has remaining payments, "completed" if all paid (all checkmarks)
+14. provider - Bank/service name: "Monobank" for Monobank Pay
+15. confidence - "high", "medium", or "low"
+
+Return a JSON object with this exact structure:
+{{
+  "installments": [
+    {{
+      "name": "Зубна щітка Philips",
+      "description": null,
+      "total_amount": 9999.00,
+      "amount_per_payment": 999.90,
+      "currency": "UAH",
+      "frequency": "monthly",
+      "number_of_payments": 10,
+      "payments_made": 5,
+      "remaining_balance": 4995.00,
+      "start_date": "2025-04-22",
+      "next_payment_date": "2025-09-22",
+      "category": "Health Tech",
+      "status": "active",
+      "provider": "Monobank",
+      "confidence": "high"
+    }},
+    {{
+      "name": "Airpods Pro 3",
+      "description": null,
+      "total_amount": 12099.00,
+      "amount_per_payment": 4033.00,
+      "currency": "UAH",
+      "frequency": "monthly",
+      "number_of_payments": 3,
+      "payments_made": 2,
+      "remaining_balance": 4033.00,
+      "start_date": "2025-12-04",
+      "next_payment_date": "2026-02-04",
+      "category": "Personal Tech",
+      "status": "active",
+      "provider": "Monobank",
+      "confidence": "high"
+    }}
+  ]
+}}
+
+If no installments are found, return:
+{{"installments": []}}
+
+IMPORTANT:
+- Extract ALL installments from ALL screenshots
+- Count payments accurately by looking at the payment schedule list
+- Payments with checkmarks (✓) are completed, others are pending
+- Convert Ukrainian dates to YYYY-MM-DD format
+- The "Виплачено" amount is total paid so far
+- Calculate remaining_balance from the schedule or "Залишилось" text"""
+
+        try:
+            # Call Vision API
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial data extraction assistant specialized in parsing Ukrainian banking app screenshots showing installment payment plans. Extract installment details accurately and return valid JSON.",
+                    },
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": prompt}, *image_contents],
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=4096,
+                response_format={"type": "json_object"},
+            )
+
+            # Parse the response
+            content = response.choices[0].message.content
+            parsed_data = json.loads(content)
+
+            # Convert to ParsedInstallment objects
+            installments = []
+            valid_frequencies = ["weekly", "biweekly", "monthly"]
+            valid_statuses = ["active", "completed"]
+            valid_categories = [
+                "Personal Tech", "Kitchen Appliances", "Health Tech",
+                "Home Appliances", "Miscellaneous", "Fitness Equipment",
+                "Housing Goods", "Vehicle", "Property & Real Estate"
+            ]
+
+            for inst in parsed_data.get("installments", []):
+                # Validate frequency
+                frequency = (inst.get("frequency") or "monthly").lower()
+                if frequency not in valid_frequencies:
+                    frequency = "monthly"
+
+                # Validate status
+                status = (inst.get("status") or "active").lower()
+                if status not in valid_statuses:
+                    status = "active"
+
+                # Validate category
+                category = inst.get("category")
+                if category not in valid_categories:
+                    category = "Miscellaneous"
+
+                # Parse amounts
+                total_amount = inst.get("total_amount", 0)
+                try:
+                    total_amount = float(total_amount)
+                except (ValueError, TypeError):
+                    total_amount = 0.0
+
+                amount_per_payment = inst.get("amount_per_payment", 0)
+                try:
+                    amount_per_payment = float(amount_per_payment)
+                except (ValueError, TypeError):
+                    amount_per_payment = 0.0
+
+                remaining_balance = inst.get("remaining_balance")
+                if remaining_balance is not None:
+                    try:
+                        remaining_balance = float(remaining_balance)
+                    except (ValueError, TypeError):
+                        remaining_balance = None
+
+                # Parse payment counts
+                number_of_payments = inst.get("number_of_payments", 1)
+                try:
+                    number_of_payments = int(number_of_payments)
+                except (ValueError, TypeError):
+                    number_of_payments = 1
+
+                payments_made = inst.get("payments_made", 0)
+                try:
+                    payments_made = int(payments_made)
+                except (ValueError, TypeError):
+                    payments_made = 0
+
+                installments.append(
+                    ParsedInstallment(
+                        name=inst.get("name") or "Unknown",
+                        description=inst.get("description"),
+                        total_amount=total_amount,
+                        amount_per_payment=amount_per_payment,
+                        currency=inst.get("currency") or "UAH",
+                        frequency=frequency,
+                        number_of_payments=number_of_payments,
+                        payments_made=payments_made,
+                        remaining_balance=remaining_balance,
+                        start_date=inst.get("start_date"),
+                        next_payment_date=inst.get("next_payment_date"),
+                        category=category,
+                        status=status,
+                        provider=inst.get("provider"),
+                        confidence=inst.get("confidence") or "medium",
+                    )
+                )
+
+            return installments
 
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse AI response: {str(e)}")
