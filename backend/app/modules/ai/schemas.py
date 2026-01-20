@@ -180,3 +180,32 @@ class ParsePortfolioScreenshotsResponse(BaseModel):
     total_value: float = 0.0  # Total portfolio value
     total_cost: float = 0.0  # Total cost basis
     total_gain_loss: float = 0.0  # Total unrealized gain/loss
+
+
+# Subscription Screenshot Parsing Schemas
+class ParsedSubscription(BaseModel):
+    """A single parsed subscription from screenshot"""
+    name: str  # Subscription name (e.g., "Apple Music", "Netflix", "Spotify")
+    description: Optional[str] = None  # Plan description (e.g., "Individual", "Family Plan")
+    amount: float  # Subscription cost
+    currency: str = "USD"
+    frequency: str = "monthly"  # monthly, quarterly, annually, biannually
+    category: Optional[str] = None  # Entertainment, Productivity, Storage, etc.
+    next_payment_date: Optional[str] = None  # YYYY-MM-DD format
+    status: str = "active"  # active, expired, cancelled
+    provider: Optional[str] = None  # Apple, Google, etc.
+    confidence: str = "medium"  # high, medium, low
+
+
+class ParseSubscriptionScreenshotsRequest(BaseModel):
+    """Request to parse subscription screenshots"""
+    file_ids: List[UUID]
+
+
+class ParseSubscriptionScreenshotsResponse(BaseModel):
+    """Response with parsed subscriptions from screenshots"""
+    subscriptions: List[ParsedSubscription]
+    total_count: int
+    active_count: int
+    monthly_total: float = 0.0  # Total monthly cost (normalized)
+    annual_total: float = 0.0  # Total annual cost

@@ -439,6 +439,64 @@ async def parse_portfolio_screenshots(
         )
 
 
+@router.post(
+    "/parse-subscription-screenshots", response_model=schemas.ParseSubscriptionScreenshotsResponse
+)
+@require_feature("ai_categorization")
+async def parse_subscription_screenshots(
+    request: schemas.ParseSubscriptionScreenshotsRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Parse uploaded screenshots to extract subscriptions using AI Vision
+
+    Uses GPT-4o Vision to analyze subscription management screenshots and extract subscription details.
+    Supports Apple Subscriptions, Google Play Subscriptions, and similar platforms.
+
+    **Requires:** Growth tier or higher
+    """
+    try:
+        subscriptions = await ai_service.parse_subscription_screenshots(
+            db=db,
+            file_ids=request.file_ids,
+            user_id=current_user.id,
+        )
+
+        # Calculate totals
+        active_count = sum(1 for s in subscriptions if s.status == "active")
+
+        # Calculate monthly total (normalize all frequencies to monthly)
+        monthly_total = 0.0
+        for sub in subscriptions:
+            if sub.status == "active":
+                if sub.frequency == "monthly":
+                    monthly_total += sub.amount
+                elif sub.frequency == "quarterly":
+                    monthly_total += sub.amount / 3
+                elif sub.frequency == "biannually":
+                    monthly_total += sub.amount / 6
+                elif sub.frequency == "annually":
+                    monthly_total += sub.amount / 12
+
+        annual_total = monthly_total * 12
+
+        return schemas.ParseSubscriptionScreenshotsResponse(
+            subscriptions=subscriptions,
+            total_count=len(subscriptions),
+            active_count=active_count,
+            monthly_total=round(monthly_total, 2),
+            annual_total=round(annual_total, 2),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse subscription screenshots: {str(e)}",
+        )
+
+
 @router.get("/insights")
 @require_feature("ai_insights")
 async def get_financial_insights(

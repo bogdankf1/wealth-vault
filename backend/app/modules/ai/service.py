@@ -14,7 +14,7 @@ from pathlib import Path
 from openai import OpenAI
 
 from app.modules.ai.models import UploadedFile
-from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount, ParsedPortfolioHolding
+from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount, ParsedPortfolioHolding, ParsedSubscription
 from app.services.statement_parser import StatementParser, Transaction
 from app.services.ai_categorizer import AICategorizer, INCOME_CATEGORIES
 
@@ -229,8 +229,11 @@ class AIService:
             with open(file_path, "rb") as f:
                 image_data = base64.standard_b64encode(f.read()).decode("utf-8")
 
-            # Determine MIME type
-            file_ext = uploaded_file.file_type.lower()
+            # Determine MIME type from file_type or file extension
+            file_ext = (uploaded_file.file_type or "").lower()
+            if not file_ext:
+                # Try to get extension from file path
+                file_ext = Path(file_path).suffix.lower().lstrip(".")
             mime_type = {
                 "jpg": "image/jpeg",
                 "jpeg": "image/jpeg",
@@ -407,8 +410,11 @@ IMPORTANT: Only extract INCOME (money received). Look for "Поповнення"
             with open(file_path, "rb") as f:
                 image_data = base64.standard_b64encode(f.read()).decode("utf-8")
 
-            # Determine MIME type
-            file_ext = uploaded_file.file_type.lower()
+            # Determine MIME type from file_type or file extension
+            file_ext = (uploaded_file.file_type or "").lower()
+            if not file_ext:
+                # Try to get extension from file path
+                file_ext = Path(file_path).suffix.lower().lstrip(".")
             mime_type = {
                 "jpg": "image/jpeg",
                 "jpeg": "image/jpeg",
@@ -608,8 +614,11 @@ If no accounts are found in the screenshots, return:
             with open(file_path, "rb") as f:
                 image_data = base64.standard_b64encode(f.read()).decode("utf-8")
 
-            # Determine MIME type
-            file_ext = uploaded_file.file_type.lower()
+            # Determine MIME type from file_type or file extension
+            file_ext = (uploaded_file.file_type or "").lower()
+            if not file_ext:
+                # Try to get extension from file path
+                file_ext = Path(file_path).suffix.lower().lstrip(".")
             mime_type = {
                 "jpg": "image/jpeg",
                 "jpeg": "image/jpeg",
@@ -862,6 +871,241 @@ IMPORTANT:
                 )
 
             return holdings
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse AI response: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Vision API parsing failed: {str(e)}")
+
+    async def parse_subscription_screenshots(
+        self, db: AsyncSession, file_ids: List[UUID], user_id: UUID
+    ) -> List[ParsedSubscription]:
+        """
+        Parse subscriptions from app screenshots (Apple Subscriptions, Google Play, etc.) using Vision API
+
+        Args:
+            db: Database session
+            file_ids: List of uploaded file IDs (images)
+            user_id: User ID (for security check)
+
+        Returns:
+            List of parsed subscriptions
+        """
+        # Get all files from database
+        result = await db.execute(
+            select(UploadedFile).where(
+                UploadedFile.id.in_(file_ids),
+                UploadedFile.user_id == user_id,
+            )
+        )
+        uploaded_files = result.scalars().all()
+
+        if len(uploaded_files) != len(file_ids):
+            raise ValueError("One or more files not found")
+
+        # Prepare images for Vision API
+        image_contents = []
+        for uploaded_file in uploaded_files:
+            file_path = uploaded_file.file_url
+
+            # Read and encode image to base64
+            with open(file_path, "rb") as f:
+                image_data = base64.standard_b64encode(f.read()).decode("utf-8")
+
+            # Determine MIME type from file_type or file extension
+            file_ext = (uploaded_file.file_type or "").lower()
+            if not file_ext:
+                # Try to get extension from file path
+                file_ext = Path(file_path).suffix.lower().lstrip(".")
+            mime_type = {
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "png": "image/png",
+                "webp": "image/webp",
+            }.get(file_ext, "image/jpeg")
+
+            image_contents.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{mime_type};base64,{image_data}",
+                        "detail": "high",
+                    },
+                }
+            )
+
+        # Build the prompt for Vision API
+        prompt = f"""Analyze these {len(image_contents)} subscription management screenshots and extract ALL subscriptions.
+
+CRITICAL: You are receiving {len(image_contents)} separate screenshots. Analyze EACH screenshot and extract ALL subscriptions from ALL of them.
+
+COMMON SUBSCRIPTION SCREENSHOT FORMATS:
+
+1. APPLE SUBSCRIPTIONS (iOS Settings > Apple ID > Subscriptions):
+   - Shows app icon, subscription name, plan type
+   - Price with currency (e.g., "49,00 US$", "2,99 US$")
+   - Renewal info: "Renews 12 November" or "Expires on 20 January"
+   - Status sections: "Active" and "Inactive" (expired)
+   - Example: "Apple Music | Individual | 49,00 US$ | Renews 12 November"
+
+2. GOOGLE PLAY SUBSCRIPTIONS:
+   - App name and icon
+   - Price per billing period
+   - "Renews on" date
+   - Status: Active, Paused, Cancelled
+
+3. GENERAL SUBSCRIPTION LISTS:
+   - Service name (Netflix, Spotify, YouTube Premium, etc.)
+   - Monthly/Yearly price
+   - Next billing date or renewal date
+
+For each subscription found, extract:
+1. name - Service/app name (e.g., "Apple Music", "Netflix", "iCloud+", "Duolingo")
+2. description - Plan description if shown (e.g., "Individual", "Family Plan", "Super Duolingo", "50 GB of storage")
+3. amount - Subscription price as a number (e.g., 49.00, 2.99, 149.00)
+4. currency - Currency code (USD, EUR, UAH, etc.) - parse from formats like "US$", "€", "₴"
+5. frequency - Billing frequency: "monthly", "quarterly", "biannually", "annually"
+   - Default to "monthly" unless stated otherwise
+   - "Annual" or "Yearly" = "annually"
+   - "Every 3 months" = "quarterly"
+   - "Every 6 months" = "biannually"
+6. category - Category: Entertainment, Productivity, Storage, Education, Health & Fitness, News, Utilities, Gaming, Music, Video, Other
+7. next_payment_date - Next renewal/payment date in YYYY-MM-DD format
+   - Parse from "Renews 12 November" -> current/next year
+   - Parse from "Expires on 20 January" -> that date
+8. status - "active", "expired", or "cancelled"
+   - If in "Active" section or "Renews" -> "active"
+   - If in "Inactive" section or "Expired" -> "expired"
+9. provider - Platform provider: "Apple", "Google", or null if unknown
+10. confidence - "high", "medium", or "low"
+
+CATEGORY MAPPING:
+- Music streaming (Spotify, Apple Music, YouTube Music) -> Music
+- Video streaming (Netflix, Disney+, Apple TV+, MEGOGO) -> Video
+- Cloud storage (iCloud+, Google One, Dropbox) -> Storage
+- Learning (Duolingo, DataCamp, Coursera, Skillshare) -> Education
+- News (Apple News+, NY Times, Medium) -> News
+- Fitness (Strava, MyFitnessPal) -> Health & Fitness
+- Gaming (Apple Arcade, Xbox Game Pass) -> Gaming
+- Productivity (Microsoft 365, Notion, Evernote) -> Productivity
+- Other apps -> Other
+
+Return a JSON object with this exact structure:
+{{
+  "subscriptions": [
+    {{
+      "name": "Apple Music",
+      "description": "Individual",
+      "amount": 49.00,
+      "currency": "USD",
+      "frequency": "monthly",
+      "category": "Music",
+      "next_payment_date": "2026-11-12",
+      "status": "active",
+      "provider": "Apple",
+      "confidence": "high"
+    }},
+    {{
+      "name": "iCloud+",
+      "description": "50 GB of storage",
+      "amount": 0.99,
+      "currency": "USD",
+      "frequency": "monthly",
+      "category": "Storage",
+      "next_payment_date": "2026-02-05",
+      "status": "active",
+      "provider": "Apple",
+      "confidence": "high"
+    }},
+    {{
+      "name": "Cocktail Flow - Drink Recipes",
+      "description": "1 Year Subscription",
+      "amount": 29.99,
+      "currency": "USD",
+      "frequency": "annually",
+      "category": "Other",
+      "next_payment_date": null,
+      "status": "expired",
+      "provider": "Apple",
+      "confidence": "medium"
+    }}
+  ]
+}}
+
+If no subscriptions are found, return:
+{{"subscriptions": []}}
+
+IMPORTANT:
+- Extract ALL subscriptions from ALL screenshots
+- Parse prices correctly (49,00 US$ -> 49.00 USD)
+- Determine frequency from context (most subscriptions are monthly)
+- For annual subscriptions, extract the annual price (don't divide by 12)
+- Convert dates to YYYY-MM-DD format
+- Mark expired/inactive subscriptions with status "expired"
+- Include the plan description if visible"""
+
+        try:
+            # Call Vision API
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a subscription data extraction assistant specialized in parsing subscription management screenshots from iOS, Android, and web apps. Extract subscription details accurately and return valid JSON.",
+                    },
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": prompt}, *image_contents],
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=4096,
+                response_format={"type": "json_object"},
+            )
+
+            # Parse the response
+            content = response.choices[0].message.content
+            parsed_data = json.loads(content)
+
+            # Convert to ParsedSubscription objects
+            subscriptions = []
+            valid_frequencies = ["monthly", "quarterly", "biannually", "annually"]
+            valid_statuses = ["active", "expired", "cancelled"]
+
+            for sub in parsed_data.get("subscriptions", []):
+                # Validate frequency (use 'or' to handle None values)
+                frequency = (sub.get("frequency") or "monthly").lower()
+                if frequency not in valid_frequencies:
+                    frequency = "monthly"
+
+                # Validate status (use 'or' to handle None values)
+                status = (sub.get("status") or "active").lower()
+                if status not in valid_statuses:
+                    status = "active"
+
+                # Parse amount
+                amount = sub.get("amount", 0)
+                try:
+                    amount = float(amount)
+                except (ValueError, TypeError):
+                    amount = 0.0
+
+                subscriptions.append(
+                    ParsedSubscription(
+                        name=sub.get("name") or "Unknown",
+                        description=sub.get("description"),
+                        amount=amount,
+                        currency=sub.get("currency") or "USD",
+                        frequency=frequency,
+                        category=sub.get("category"),
+                        next_payment_date=sub.get("next_payment_date"),
+                        status=status,
+                        provider=sub.get("provider"),
+                        confidence=sub.get("confidence") or "medium",
+                    )
+                )
+
+            return subscriptions
 
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse AI response: {str(e)}")
