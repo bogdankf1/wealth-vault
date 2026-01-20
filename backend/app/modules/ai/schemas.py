@@ -243,3 +243,31 @@ class ParseInstallmentScreenshotsResponse(BaseModel):
     active_count: int
     total_debt: float = 0.0  # Total remaining balance
     monthly_payment: float = 0.0  # Total monthly payment
+
+
+# AI Tax Presets Schemas
+class TaxPreset(BaseModel):
+    """A single tax preset suggestion"""
+    name: str  # Tax name (e.g., "Income Tax", "Social Security Contribution")
+    description: str  # What this tax is for
+    rate: float  # Tax rate as decimal (e.g., 0.18 for 18%)
+    tax_type: str = "percentage"  # percentage or fixed
+    frequency: str = "monthly"  # monthly, quarterly, annually
+    is_deductible: bool = False  # Whether this is a deduction
+    category: str  # Tax category: Income, Social, Property, Business, Other
+    notes: Optional[str] = None  # Additional notes about this tax
+
+
+class GetTaxPresetsRequest(BaseModel):
+    """Request to get tax presets based on country and occupation"""
+    country: str = Field(..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code")
+    occupation: str = Field(..., description="User's occupation type")
+
+
+class GetTaxPresetsResponse(BaseModel):
+    """Response with tax presets for the user's profile"""
+    presets: List[TaxPreset]
+    country: str
+    occupation: str
+    total_count: int
+    disclaimer: str  # Legal disclaimer about tax advice

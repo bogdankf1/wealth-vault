@@ -14,7 +14,7 @@ from pathlib import Path
 from openai import OpenAI
 
 from app.modules.ai.models import UploadedFile
-from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount, ParsedPortfolioHolding, ParsedSubscription, ParsedInstallment
+from app.modules.ai.schemas import ParsedTransaction, ParsedIncomeTransaction, ParsedAccount, ParsedPortfolioHolding, ParsedSubscription, ParsedInstallment, TaxPreset
 from app.services.statement_parser import StatementParser, Transaction
 from app.services.ai_categorizer import AICategorizer, INCOME_CATEGORIES
 
@@ -1378,3 +1378,151 @@ IMPORTANT:
             raise ValueError(f"Failed to parse AI response: {str(e)}")
         except Exception as e:
             raise ValueError(f"Vision API parsing failed: {str(e)}")
+
+    async def get_tax_presets(
+        self, country: str, occupation: str
+    ) -> List[TaxPreset]:
+        """
+        Get tax presets based on country and occupation using AI
+
+        Args:
+            country: ISO 3166-1 alpha-2 country code (e.g., "UA", "US", "DE")
+            occupation: User's occupation type (e.g., "employed", "self_employed", "freelancer")
+
+        Returns:
+            List of relevant tax presets
+        """
+        # Map occupation codes to readable names
+        occupation_names = {
+            "employed": "Employee (working for a company)",
+            "self_employed": "Self-employed individual",
+            "business_owner": "Business owner / Entrepreneur",
+            "freelancer": "Freelancer / Independent contractor",
+            "retired": "Retired person",
+            "student": "Student",
+            "unemployed": "Unemployed",
+            "homemaker": "Homemaker",
+            "military": "Military / Armed forces",
+            "government": "Government employee",
+            "other": "Other occupation",
+        }
+
+        occupation_name = occupation_names.get(occupation, occupation)
+
+        # Build the prompt
+        prompt = f"""You are a tax expert assistant. Based on the user's country and occupation, provide a list of common tax obligations and deductions they should be aware of.
+
+Country: {country} (ISO 3166-1 alpha-2 code)
+Occupation: {occupation_name}
+
+Provide relevant tax presets that this person would typically need to pay or can deduct. Include:
+1. Income taxes (federal, state/regional if applicable)
+2. Social security contributions (employee and/or self-employed portions)
+3. Healthcare/medical insurance contributions if mandatory
+4. Pension contributions if mandatory
+5. Professional taxes if applicable
+6. Any occupation-specific taxes or deductions
+
+For each tax preset, provide:
+1. name - Tax name in English
+2. description - Brief description of what this tax is for
+3. rate - Tax rate as a decimal (e.g., 0.18 for 18%). For progressive taxes, use the most common rate or mid-bracket rate.
+4. tax_type - "percentage" for rate-based taxes, "fixed" for fixed amounts
+5. frequency - How often it's paid: "monthly", "quarterly", or "annually"
+6. is_deductible - true if this is a deduction that reduces taxable income, false if it's a tax payment
+7. category - One of: "Income", "Social", "Property", "Business", "Healthcare", "Pension", "Other"
+8. notes - Any important notes (optional, include if there are important conditions or thresholds)
+
+Return a JSON object with this structure:
+{{
+  "presets": [
+    {{
+      "name": "Personal Income Tax",
+      "description": "Tax on personal income from employment",
+      "rate": 0.18,
+      "tax_type": "percentage",
+      "frequency": "monthly",
+      "is_deductible": false,
+      "category": "Income",
+      "notes": "18% flat rate on employment income"
+    }}
+  ]
+}}
+
+Important:
+- Only include taxes that are actually applicable in the specified country
+- Use current tax rates (as of your knowledge cutoff)
+- For self-employed/freelancers, include both personal taxes and business-related taxes
+- For employees, include the employee portion of social contributions
+- Be accurate with rates - don't guess if unsure, use approximate rates and note uncertainty"""
+
+        try:
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a tax expert assistant providing accurate tax information. Always return valid JSON with tax presets relevant to the user's country and occupation.",
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+                temperature=0.3,
+                max_tokens=2048,
+                response_format={"type": "json_object"},
+            )
+
+            # Parse the response
+            content = response.choices[0].message.content
+            parsed_data = json.loads(content)
+
+            # Convert to TaxPreset objects
+            presets = []
+            valid_tax_types = ["percentage", "fixed"]
+            valid_frequencies = ["monthly", "quarterly", "annually"]
+            valid_categories = ["Income", "Social", "Property", "Business", "Healthcare", "Pension", "Other"]
+
+            for preset in parsed_data.get("presets", []):
+                # Validate tax_type
+                tax_type = preset.get("tax_type", "percentage")
+                if tax_type not in valid_tax_types:
+                    tax_type = "percentage"
+
+                # Validate frequency
+                frequency = preset.get("frequency", "monthly")
+                if frequency not in valid_frequencies:
+                    frequency = "monthly"
+
+                # Validate category
+                category = preset.get("category", "Other")
+                if category not in valid_categories:
+                    category = "Other"
+
+                # Parse rate
+                rate = preset.get("rate", 0)
+                try:
+                    rate = float(rate)
+                except (ValueError, TypeError):
+                    rate = 0.0
+
+                presets.append(
+                    TaxPreset(
+                        name=preset.get("name", "Unknown Tax"),
+                        description=preset.get("description", ""),
+                        rate=rate,
+                        tax_type=tax_type,
+                        frequency=frequency,
+                        is_deductible=bool(preset.get("is_deductible", False)),
+                        category=category,
+                        notes=preset.get("notes"),
+                    )
+                )
+
+            return presets
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse AI response: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"AI tax presets generation failed: {str(e)}")

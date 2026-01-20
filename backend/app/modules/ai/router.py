@@ -597,3 +597,46 @@ async def get_financial_insights(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate insights: {str(e)}",
         )
+
+
+@router.post("/tax-presets", response_model=schemas.GetTaxPresetsResponse)
+@require_feature("ai_categorization")
+async def get_tax_presets(
+    request: schemas.GetTaxPresetsRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get AI-generated tax presets based on country and occupation
+
+    Uses GPT-4o to generate relevant tax presets for the user's country and occupation.
+    Returns a list of common taxes, contributions, and deductions that may apply.
+
+    **Requires:** Growth tier or higher
+    """
+    try:
+        presets = await ai_service.get_tax_presets(
+            country=request.country,
+            occupation=request.occupation,
+        )
+
+        disclaimer = (
+            "This information is for general guidance only and should not be considered tax advice. "
+            "Tax rates and regulations change frequently. Please consult a qualified tax professional "
+            "or your local tax authority for accurate and up-to-date information specific to your situation."
+        )
+
+        return schemas.GetTaxPresetsResponse(
+            presets=presets,
+            country=request.country,
+            occupation=request.occupation,
+            total_count=len(presets),
+            disclaimer=disclaimer,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get tax presets: {str(e)}",
+        )
