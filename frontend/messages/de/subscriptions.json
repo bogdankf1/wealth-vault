@@ -3,7 +3,8 @@
     "overview": "Übersicht",
     "analysis": "Analyse",
     "history": "Verlauf",
-    "archive": "Archiv"
+    "archive": "Archiv",
+    "import": "Import"
   },
   "layout": {
     "title": "Abonnements",
@@ -158,7 +159,14 @@
     "sideProjects": "Nebenprojekte",
     "aiTools": "KI-Tools",
     "gaming": "Gaming",
-    "miscellaneous": "Sonstiges"
+    "miscellaneous": "Sonstiges",
+    "entertainment": "Unterhaltung",
+    "productivity": "Produktivität",
+    "storage": "Speicher",
+    "healthFitness": "Gesundheit & Fitness",
+    "news": "Nachrichten",
+    "utilities": "Dienstprogramme",
+    "other": "Sonstiges"
   },
   "status": {
     "active": "Aktiv",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Verlängert morgen",
     "renewsInDays": "Verlängert in {days} Tagen",
     "renewsIn1Day": "Verlängert in {days} Tag"
+  },
+  "import": {
+    "steps": {
+      "upload": "Hochladen",
+      "parse": "Analysieren",
+      "review": "Überprüfen",
+      "import": "Importieren"
+    },
+    "uploadTitle": "Screenshots hochladen",
+    "uploadDescription": "Laden Sie Screenshots von Apple Subscriptions, Google Play oder anderen Abonnementverwaltungen hoch",
+    "uploading": "Wird hochgeladen...",
+    "continueButton": "Fortfahren",
+    "parseTitle": "Screenshots analysieren",
+    "parseDescription": "KI analysiert Ihre Screenshots und extrahiert Abonnementinformationen",
+    "parsing": "Screenshots werden mit KI analysiert...",
+    "parseButton": "Screenshots mit KI analysieren",
+    "parseError": "Screenshots konnten nicht analysiert werden",
+    "backButton": "Zurück",
+    "reviewTitle": "Überprüfen & Bearbeiten",
+    "reviewDescription": "{count} extrahierte Abonnement(s) überprüfen. Details vor dem Import bearbeiten.",
+    "subscriptionsFound": "{count} Abonnement(s) gefunden",
+    "paymentAccount": "Zahlungskonto",
+    "selectAccount": "Konto auswählen...",
+    "noPaymentAccount": "Kein Zahlungskonto",
+    "paymentAccountHelp": "Zahlungskonto für automatische Zahlungsverfolgung verknüpfen",
+    "autoPay": "Automatische Zahlung aktivieren",
+    "syncHistorical": "Historische Zahlungen synchronisieren",
+    "tabs": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "expired": "Abgelaufen"
+    },
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Auswahl aufheben",
+    "removeSelected": "Entfernen ({count})",
+    "columns": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "amount": "Betrag",
+      "currency": "Währung",
+      "frequency": "Frequenz",
+      "category": "Kategorie",
+      "nextPayment": "Nächste Zahlung",
+      "status": "Status",
+      "linkedAccount": "Verknüpftes Konto"
+    },
+    "descriptionPlaceholder": "Plandetails...",
+    "statusActive": "Aktiv",
+    "statusExpired": "Abgelaufen",
+    "selectedCount": "{count} Abonnement(s) ausgewählt",
+    "totalSubscriptions": "Abonnements gesamt",
+    "monthlyTotal": "Monatliche Summe",
+    "annualTotal": "Jährliche Summe",
+    "breakdown": "Aufschlüsselung",
+    "breakdownLabels": "aktiv / abgelaufen",
+    "readyToParse": "{count} Screenshot(s) bereit zur Analyse",
+    "startOver": "Neu beginnen",
+    "importButton": "{count} Abonnement(s) importieren",
+    "importTitle": "Abonnements werden importiert",
+    "importDescription": "Ihre Abonnements werden importiert...",
+    "importProgress": "Import {current} von {total}",
+    "successCount": "{count} erfolgreich",
+    "failedCount": "{count} fehlgeschlagen",
+    "importComplete": "Import abgeschlossen!",
+    "importSummary": "{success} Abonnement(s) erfolgreich importiert. {failed} fehlgeschlagen.",
+    "importSuccess": "{count} Abonnement(s) erfolgreich importiert",
+    "importPartial": "{success} Abonnement(s) importiert, {failed} fehlgeschlagen",
+    "importMoreButton": "Weitere Abonnements importieren",
+    "uploadError": "Bilder konnten nicht hochgeladen werden"
+  },
+  "frequency": {
+    "monthly": "Monatlich",
+    "quarterly": "Vierteljährlich",
+    "biannually": "Halbjährlich",
+    "annually": "Jährlich"
   }
 }

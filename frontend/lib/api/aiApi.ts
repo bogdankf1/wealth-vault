@@ -150,6 +150,32 @@ export interface ParsePortfolioScreenshotsResponse {
   total_gain_loss: number;
 }
 
+// Subscription Screenshot Parsing Types
+export interface ParsedSubscription {
+  name: string;
+  description?: string;
+  amount: number;
+  currency: string;
+  frequency: 'monthly' | 'quarterly' | 'biannually' | 'annually';
+  category?: string;
+  next_payment_date?: string;
+  status: 'active' | 'expired' | 'cancelled';
+  provider?: string;
+  confidence: string;
+}
+
+export interface ParseSubscriptionScreenshotsRequest {
+  file_ids: string[];
+}
+
+export interface ParseSubscriptionScreenshotsResponse {
+  subscriptions: ParsedSubscription[];
+  total_count: number;
+  active_count: number;
+  monthly_total: number;
+  annual_total: number;
+}
+
 export const aiApi = createApi({
   reducerPath: 'aiApi',
   baseQuery: fetchBaseQuery({
@@ -256,6 +282,15 @@ export const aiApi = createApi({
         body,
       }),
     }),
+
+    // Parse subscription screenshots with AI Vision
+    parseSubscriptionScreenshots: builder.mutation<ParseSubscriptionScreenshotsResponse, ParseSubscriptionScreenshotsRequest>({
+      query: (body) => ({
+        url: '/parse-subscription-screenshots',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -270,4 +305,5 @@ export const {
   useParseIncomeScreenshotsMutation,
   useParseAccountScreenshotsMutation,
   useParsePortfolioScreenshotsMutation,
+  useParseSubscriptionScreenshotsMutation,
 } = aiApi;

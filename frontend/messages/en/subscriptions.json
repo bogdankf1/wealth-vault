@@ -3,7 +3,8 @@
     "overview": "Overview",
     "analysis": "Analysis",
     "history": "History",
-    "archive": "Archive"
+    "archive": "Archive",
+    "import": "Import"
   },
   "layout": {
     "title": "Subscriptions",
@@ -158,7 +159,14 @@
     "sideProjects": "Side Projects",
     "aiTools": "AI Tools",
     "gaming": "Gaming",
-    "miscellaneous": "Miscellaneous"
+    "miscellaneous": "Miscellaneous",
+    "entertainment": "Entertainment",
+    "productivity": "Productivity",
+    "storage": "Storage",
+    "healthFitness": "Health & Fitness",
+    "news": "News",
+    "utilities": "Utilities",
+    "other": "Other"
   },
   "status": {
     "active": "Active",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Renews tomorrow",
     "renewsInDays": "Renews in {days} days",
     "renewsIn1Day": "Renews in {days} day"
+  },
+  "import": {
+    "steps": {
+      "upload": "Upload",
+      "parse": "Parse",
+      "review": "Review",
+      "import": "Import"
+    },
+    "uploadTitle": "Upload Screenshots",
+    "uploadDescription": "Upload screenshots from Apple Subscriptions, Google Play, or other subscription management screens",
+    "uploading": "Uploading...",
+    "continueButton": "Continue",
+    "parseTitle": "Parse Screenshots",
+    "parseDescription": "AI will analyze your screenshots and extract subscription information",
+    "parsing": "Analyzing screenshots with AI...",
+    "parseButton": "Parse Screenshots with AI",
+    "parseError": "Failed to parse screenshots",
+    "backButton": "Back",
+    "reviewTitle": "Review & Edit",
+    "reviewDescription": "Review {count} extracted subscription(s). Edit details before importing.",
+    "subscriptionsFound": "{count} subscription(s) found",
+    "paymentAccount": "Payment Account",
+    "selectAccount": "Select account...",
+    "noPaymentAccount": "No payment account",
+    "paymentAccountHelp": "Link a payment account for automatic payment tracking",
+    "autoPay": "Enable auto-pay",
+    "syncHistorical": "Sync historical payments",
+    "tabs": {
+      "all": "All",
+      "active": "Active",
+      "expired": "Expired"
+    },
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "removeSelected": "Remove ({count})",
+    "columns": {
+      "name": "Name",
+      "description": "Description",
+      "amount": "Amount",
+      "currency": "Currency",
+      "frequency": "Frequency",
+      "category": "Category",
+      "nextPayment": "Next Payment",
+      "status": "Status",
+      "linkedAccount": "Linked Account"
+    },
+    "descriptionPlaceholder": "Plan details...",
+    "statusActive": "Active",
+    "statusExpired": "Expired",
+    "selectedCount": "{count} subscription(s) selected",
+    "totalSubscriptions": "Total Subscriptions",
+    "monthlyTotal": "Monthly Total",
+    "annualTotal": "Annual Total",
+    "breakdown": "Breakdown",
+    "breakdownLabels": "active / expired",
+    "readyToParse": "{count} screenshot(s) ready to parse",
+    "startOver": "Start over",
+    "importButton": "Import {count} subscription(s)",
+    "importTitle": "Importing Subscriptions",
+    "importDescription": "Your subscriptions are being imported...",
+    "importProgress": "Importing {current} of {total}",
+    "successCount": "{count} succeeded",
+    "failedCount": "{count} failed",
+    "importComplete": "Import Complete!",
+    "importSummary": "Successfully imported {success} subscription(s). {failed} failed.",
+    "importSuccess": "Successfully imported {count} subscription(s)",
+    "importPartial": "Imported {success} subscription(s), {failed} failed",
+    "importMoreButton": "Import more subscriptions",
+    "uploadError": "Failed to upload images"
+  },
+  "frequency": {
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "biannually": "Bi-annually",
+    "annually": "Annually"
   }
 }

@@ -3,7 +3,8 @@
     "overview": "Panoramica",
     "analysis": "Analisi",
     "history": "Storico",
-    "archive": "Archivio"
+    "archive": "Archivio",
+    "import": "Importa"
   },
   "layout": {
     "title": "Abbonamenti",
@@ -158,7 +159,14 @@
     "sideProjects": "Progetti Secondari",
     "aiTools": "Strumenti AI",
     "gaming": "Gaming",
-    "miscellaneous": "Varie"
+    "miscellaneous": "Varie",
+    "entertainment": "Intrattenimento",
+    "productivity": "Produttività",
+    "storage": "Archiviazione",
+    "healthFitness": "Salute e Fitness",
+    "news": "Notizie",
+    "utilities": "Utilità",
+    "other": "Altro"
   },
   "status": {
     "active": "Attivo",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Si rinnova domani",
     "renewsInDays": "Si rinnova tra {days} giorni",
     "renewsIn1Day": "Si rinnova tra {days} giorno"
+  },
+  "import": {
+    "steps": {
+      "upload": "Carica",
+      "parse": "Analizza",
+      "review": "Rivedi",
+      "import": "Importa"
+    },
+    "uploadTitle": "Carica screenshot",
+    "uploadDescription": "Carica screenshot da Apple Subscriptions, Google Play o altre schermate di gestione abbonamenti",
+    "uploading": "Caricamento...",
+    "continueButton": "Continua",
+    "parseTitle": "Analizza screenshot",
+    "parseDescription": "L'IA analizzerà i tuoi screenshot ed estrarrà le informazioni sugli abbonamenti",
+    "parsing": "Analisi degli screenshot con l'IA...",
+    "parseButton": "Analizza screenshot con l'IA",
+    "parseError": "Impossibile analizzare gli screenshot",
+    "backButton": "Indietro",
+    "reviewTitle": "Rivedi e modifica",
+    "reviewDescription": "Rivedi {count} abbonamento/i estratto/i. Modifica i dettagli prima dell'importazione.",
+    "subscriptionsFound": "{count} abbonamento/i trovato/i",
+    "paymentAccount": "Conto pagamenti",
+    "selectAccount": "Seleziona conto...",
+    "noPaymentAccount": "Nessun conto pagamenti",
+    "paymentAccountHelp": "Collega un conto pagamenti per il tracciamento automatico dei pagamenti",
+    "autoPay": "Abilita pagamento automatico",
+    "syncHistorical": "Sincronizza pagamenti storici",
+    "tabs": {
+      "all": "Tutti",
+      "active": "Attivi",
+      "expired": "Scaduti"
+    },
+    "selectAll": "Seleziona tutti",
+    "deselectAll": "Deseleziona tutti",
+    "removeSelected": "Rimuovi ({count})",
+    "columns": {
+      "name": "Nome",
+      "description": "Descrizione",
+      "amount": "Importo",
+      "currency": "Valuta",
+      "frequency": "Frequenza",
+      "category": "Categoria",
+      "nextPayment": "Prossimo pagamento",
+      "status": "Stato",
+      "linkedAccount": "Conto collegato"
+    },
+    "descriptionPlaceholder": "Dettagli del piano...",
+    "statusActive": "Attivo",
+    "statusExpired": "Scaduto",
+    "selectedCount": "{count} abbonamento/i selezionato/i",
+    "totalSubscriptions": "Abbonamenti totali",
+    "monthlyTotal": "Totale mensile",
+    "annualTotal": "Totale annuale",
+    "breakdown": "Ripartizione",
+    "breakdownLabels": "attivi / scaduti",
+    "readyToParse": "{count} screenshot pronti per l'analisi",
+    "startOver": "Ricomincia",
+    "importButton": "Importa {count} abbonamento/i",
+    "importTitle": "Importazione abbonamenti",
+    "importDescription": "I tuoi abbonamenti sono in fase di importazione...",
+    "importProgress": "Importazione {current} di {total}",
+    "successCount": "{count} riuscito/i",
+    "failedCount": "{count} fallito/i",
+    "importComplete": "Importazione completata!",
+    "importSummary": "{success} abbonamento/i importato/i con successo. {failed} fallito/i.",
+    "importSuccess": "{count} abbonamento/i importato/i con successo",
+    "importPartial": "{success} abbonamento/i importato/i, {failed} fallito/i",
+    "importMoreButton": "Importa altri abbonamenti",
+    "uploadError": "Impossibile caricare le immagini"
+  },
+  "frequency": {
+    "monthly": "Mensile",
+    "quarterly": "Trimestrale",
+    "biannually": "Semestrale",
+    "annually": "Annuale"
   }
 }

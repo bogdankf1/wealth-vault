@@ -3,7 +3,8 @@
     "overview": "Resumen",
     "analysis": "Análisis",
     "history": "Historial",
-    "archive": "Archivo"
+    "archive": "Archivo",
+    "import": "Importar"
   },
   "layout": {
     "title": "Suscripciones",
@@ -158,7 +159,14 @@
     "sideProjects": "Proyectos Secundarios",
     "aiTools": "Herramientas IA",
     "gaming": "Juegos",
-    "miscellaneous": "Misceláneos"
+    "miscellaneous": "Misceláneos",
+    "entertainment": "Entretenimiento",
+    "productivity": "Productividad",
+    "storage": "Almacenamiento",
+    "healthFitness": "Salud y Fitness",
+    "news": "Noticias",
+    "utilities": "Utilidades",
+    "other": "Otro"
   },
   "status": {
     "active": "Activa",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Se renueva mañana",
     "renewsInDays": "Se renueva en {days} días",
     "renewsIn1Day": "Se renueva en {days} día"
+  },
+  "import": {
+    "steps": {
+      "upload": "Subir",
+      "parse": "Analizar",
+      "review": "Revisar",
+      "import": "Importar"
+    },
+    "uploadTitle": "Subir capturas",
+    "uploadDescription": "Sube capturas de Apple Subscriptions, Google Play u otras pantallas de gestión de suscripciones",
+    "uploading": "Subiendo...",
+    "continueButton": "Continuar",
+    "parseTitle": "Analizar capturas",
+    "parseDescription": "La IA analizará tus capturas y extraerá la información de suscripciones",
+    "parsing": "Analizando capturas con IA...",
+    "parseButton": "Analizar capturas con IA",
+    "parseError": "Error al analizar las capturas",
+    "backButton": "Atrás",
+    "reviewTitle": "Revisar y editar",
+    "reviewDescription": "Revisa {count} suscripción(es) extraída(s). Edita los detalles antes de importar.",
+    "subscriptionsFound": "{count} suscripción(es) encontrada(s)",
+    "paymentAccount": "Cuenta de pago",
+    "selectAccount": "Seleccionar cuenta...",
+    "noPaymentAccount": "Sin cuenta de pago",
+    "paymentAccountHelp": "Vincula una cuenta de pago para seguimiento automático de pagos",
+    "autoPay": "Habilitar pago automático",
+    "syncHistorical": "Sincronizar pagos históricos",
+    "tabs": {
+      "all": "Todas",
+      "active": "Activas",
+      "expired": "Expiradas"
+    },
+    "selectAll": "Seleccionar todas",
+    "deselectAll": "Deseleccionar todas",
+    "removeSelected": "Eliminar ({count})",
+    "columns": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "amount": "Monto",
+      "currency": "Moneda",
+      "frequency": "Frecuencia",
+      "category": "Categoría",
+      "nextPayment": "Próximo pago",
+      "status": "Estado",
+      "linkedAccount": "Cuenta vinculada"
+    },
+    "descriptionPlaceholder": "Detalles del plan...",
+    "statusActive": "Activa",
+    "statusExpired": "Expirada",
+    "selectedCount": "{count} suscripción(es) seleccionada(s)",
+    "totalSubscriptions": "Total de suscripciones",
+    "monthlyTotal": "Total mensual",
+    "annualTotal": "Total anual",
+    "breakdown": "Desglose",
+    "breakdownLabels": "activas / expiradas",
+    "readyToParse": "{count} captura(s) de pantalla lista(s) para analizar",
+    "startOver": "Empezar de nuevo",
+    "importButton": "Importar {count} suscripción(es)",
+    "importTitle": "Importando suscripciones",
+    "importDescription": "Tus suscripciones se están importando...",
+    "importProgress": "Importando {current} de {total}",
+    "successCount": "{count} exitosa(s)",
+    "failedCount": "{count} fallida(s)",
+    "importComplete": "¡Importación completa!",
+    "importSummary": "Se importaron {success} suscripción(es) exitosamente. {failed} fallaron.",
+    "importSuccess": "Se importaron {count} suscripción(es) exitosamente",
+    "importPartial": "Se importaron {success} suscripción(es), {failed} fallaron",
+    "importMoreButton": "Importar más suscripciones",
+    "uploadError": "Error al subir las imágenes"
+  },
+  "frequency": {
+    "monthly": "Mensual",
+    "quarterly": "Trimestral",
+    "biannually": "Semestral",
+    "annually": "Anual"
   }
 }

@@ -7,7 +7,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, History, Archive, BarChart3 } from 'lucide-react';
+import { LayoutGrid, History, Archive, BarChart3, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { SubscriptionsActionsContext } from './context';
@@ -46,6 +46,12 @@ export default function SubscriptionsLayout({
       label: t('navigation.archive'),
       icon: Archive,
       href: '/dashboard/subscriptions/archive',
+    },
+    {
+      value: 'import',
+      label: t('navigation.import'),
+      icon: Upload,
+      href: '/dashboard/subscriptions/import',
     },
   ];
 

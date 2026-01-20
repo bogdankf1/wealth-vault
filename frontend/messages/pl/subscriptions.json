@@ -3,7 +3,8 @@
     "overview": "Przegląd",
     "analysis": "Analiza",
     "history": "Historia",
-    "archive": "Archiwum"
+    "archive": "Archiwum",
+    "import": "Import"
   },
   "layout": {
     "title": "Subskrypcje",
@@ -158,7 +159,14 @@
     "sideProjects": "Projekty poboczne",
     "aiTools": "Narzędzia AI",
     "gaming": "Gry",
-    "miscellaneous": "Różne"
+    "miscellaneous": "Różne",
+    "entertainment": "Rozrywka",
+    "productivity": "Produktywność",
+    "storage": "Przechowywanie",
+    "healthFitness": "Zdrowie i Fitness",
+    "news": "Wiadomości",
+    "utilities": "Narzędzia",
+    "other": "Inne"
   },
   "status": {
     "active": "Aktywna",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Odnawia się jutro",
     "renewsInDays": "Odnawia się za {days} dni",
     "renewsIn1Day": "Odnawia się za {days} dzień"
+  },
+  "import": {
+    "steps": {
+      "upload": "Prześlij",
+      "parse": "Analizuj",
+      "review": "Przejrzyj",
+      "import": "Importuj"
+    },
+    "uploadTitle": "Prześlij zrzuty ekranu",
+    "uploadDescription": "Prześlij zrzuty ekranu z Apple Subscriptions, Google Play lub innych ekranów zarządzania subskrypcjami",
+    "uploading": "Przesyłanie...",
+    "continueButton": "Kontynuuj",
+    "parseTitle": "Analizuj zrzuty ekranu",
+    "parseDescription": "AI przeanalizuje twoje zrzuty ekranu i wyodrębni informacje o subskrypcjach",
+    "parsing": "Analiza zrzutów ekranu za pomocą AI...",
+    "parseButton": "Analizuj zrzuty z AI",
+    "parseError": "Nie udało się przeanalizować zrzutów ekranu",
+    "backButton": "Wstecz",
+    "reviewTitle": "Przejrzyj i edytuj",
+    "reviewDescription": "Przejrzyj {count} wyodrębnionych subskrypcji. Edytuj szczegóły przed importem.",
+    "subscriptionsFound": "Znaleziono {count} subskrypcji",
+    "paymentAccount": "Konto płatnicze",
+    "selectAccount": "Wybierz konto...",
+    "noPaymentAccount": "Brak konta płatniczego",
+    "paymentAccountHelp": "Połącz konto płatnicze do automatycznego śledzenia płatności",
+    "autoPay": "Włącz automatyczną płatność",
+    "syncHistorical": "Synchronizuj historyczne płatności",
+    "tabs": {
+      "all": "Wszystkie",
+      "active": "Aktywne",
+      "expired": "Wygasłe"
+    },
+    "selectAll": "Zaznacz wszystkie",
+    "deselectAll": "Odznacz wszystkie",
+    "removeSelected": "Usuń ({count})",
+    "columns": {
+      "name": "Nazwa",
+      "description": "Opis",
+      "amount": "Kwota",
+      "currency": "Waluta",
+      "frequency": "Częstotliwość",
+      "category": "Kategoria",
+      "nextPayment": "Następna płatność",
+      "status": "Status",
+      "linkedAccount": "Powiązane konto"
+    },
+    "descriptionPlaceholder": "Szczegóły planu...",
+    "statusActive": "Aktywna",
+    "statusExpired": "Wygasła",
+    "selectedCount": "Wybrano {count} subskrypcji",
+    "totalSubscriptions": "Łączna liczba subskrypcji",
+    "monthlyTotal": "Suma miesięczna",
+    "annualTotal": "Suma roczna",
+    "breakdown": "Podział",
+    "breakdownLabels": "aktywne / wygasłe",
+    "readyToParse": "{count} zrzut(ów) ekranu gotowych do analizy",
+    "startOver": "Zacznij od nowa",
+    "importButton": "Importuj {count} subskrypcji",
+    "importTitle": "Importowanie subskrypcji",
+    "importDescription": "Twoje subskrypcje są importowane...",
+    "importProgress": "Import {current} z {total}",
+    "successCount": "{count} udanych",
+    "failedCount": "{count} nieudanych",
+    "importComplete": "Import zakończony!",
+    "importSummary": "Pomyślnie zaimportowano {success} subskrypcji. {failed} nie powiodło się.",
+    "importSuccess": "Pomyślnie zaimportowano {count} subskrypcji",
+    "importPartial": "Zaimportowano {success} subskrypcji, {failed} nie powiodło się",
+    "importMoreButton": "Importuj więcej subskrypcji",
+    "uploadError": "Nie udało się przesłać obrazów"
+  },
+  "frequency": {
+    "monthly": "Miesięcznie",
+    "quarterly": "Kwartalnie",
+    "biannually": "Półrocznie",
+    "annually": "Rocznie"
   }
 }

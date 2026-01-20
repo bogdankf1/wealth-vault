@@ -3,7 +3,8 @@
     "overview": "Vue d'ensemble",
     "analysis": "Analyse",
     "history": "Historique",
-    "archive": "Archive"
+    "archive": "Archive",
+    "import": "Importer"
   },
   "layout": {
     "title": "Abonnements",
@@ -158,7 +159,14 @@
     "sideProjects": "Projets parallèles",
     "aiTools": "Outils IA",
     "gaming": "Jeux",
-    "miscellaneous": "Divers"
+    "miscellaneous": "Divers",
+    "entertainment": "Divertissement",
+    "productivity": "Productivité",
+    "storage": "Stockage",
+    "healthFitness": "Santé et Fitness",
+    "news": "Actualités",
+    "utilities": "Utilitaires",
+    "other": "Autre"
   },
   "status": {
     "active": "Actif",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Renouvellement demain",
     "renewsInDays": "Renouvellement dans {days} jours",
     "renewsIn1Day": "Renouvellement dans {days} jour"
+  },
+  "import": {
+    "steps": {
+      "upload": "Télécharger",
+      "parse": "Analyser",
+      "review": "Réviser",
+      "import": "Importer"
+    },
+    "uploadTitle": "Télécharger des captures d'écran",
+    "uploadDescription": "Téléchargez des captures d'écran d'Apple Subscriptions, Google Play ou d'autres écrans de gestion d'abonnements",
+    "uploading": "Téléchargement...",
+    "continueButton": "Continuer",
+    "parseTitle": "Analyser les captures d'écran",
+    "parseDescription": "L'IA analysera vos captures d'écran et extraira les informations d'abonnement",
+    "parsing": "Analyse des captures d'écran avec l'IA...",
+    "parseButton": "Analyser les captures avec l'IA",
+    "parseError": "Échec de l'analyse des captures d'écran",
+    "backButton": "Retour",
+    "reviewTitle": "Réviser et modifier",
+    "reviewDescription": "Révisez {count} abonnement(s) extrait(s). Modifiez les détails avant l'importation.",
+    "subscriptionsFound": "{count} abonnement(s) trouvé(s)",
+    "paymentAccount": "Compte de paiement",
+    "selectAccount": "Sélectionner un compte...",
+    "noPaymentAccount": "Aucun compte de paiement",
+    "paymentAccountHelp": "Liez un compte de paiement pour le suivi automatique des paiements",
+    "autoPay": "Activer le paiement automatique",
+    "syncHistorical": "Synchroniser les paiements historiques",
+    "tabs": {
+      "all": "Tous",
+      "active": "Actifs",
+      "expired": "Expirés"
+    },
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "removeSelected": "Supprimer ({count})",
+    "columns": {
+      "name": "Nom",
+      "description": "Description",
+      "amount": "Montant",
+      "currency": "Devise",
+      "frequency": "Fréquence",
+      "category": "Catégorie",
+      "nextPayment": "Prochain paiement",
+      "status": "Statut",
+      "linkedAccount": "Compte lié"
+    },
+    "descriptionPlaceholder": "Détails du plan...",
+    "statusActive": "Actif",
+    "statusExpired": "Expiré",
+    "selectedCount": "{count} abonnement(s) sélectionné(s)",
+    "totalSubscriptions": "Abonnements totaux",
+    "monthlyTotal": "Total mensuel",
+    "annualTotal": "Total annuel",
+    "breakdown": "Répartition",
+    "breakdownLabels": "actifs / expirés",
+    "readyToParse": "{count} capture(s) d'écran prête(s) à analyser",
+    "startOver": "Recommencer",
+    "importButton": "Importer {count} abonnement(s)",
+    "importTitle": "Importation des abonnements",
+    "importDescription": "Vos abonnements sont en cours d'importation...",
+    "importProgress": "Importation {current} sur {total}",
+    "successCount": "{count} réussi(s)",
+    "failedCount": "{count} échoué(s)",
+    "importComplete": "Importation terminée !",
+    "importSummary": "{success} abonnement(s) importé(s) avec succès. {failed} échoué(s).",
+    "importSuccess": "{count} abonnement(s) importé(s) avec succès",
+    "importPartial": "{success} abonnement(s) importé(s), {failed} échoué(s)",
+    "importMoreButton": "Importer plus d'abonnements",
+    "uploadError": "Échec du téléchargement des images"
+  },
+  "frequency": {
+    "monthly": "Mensuel",
+    "quarterly": "Trimestriel",
+    "biannually": "Semestriel",
+    "annually": "Annuel"
   }
 }

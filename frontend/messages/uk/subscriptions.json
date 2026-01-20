@@ -3,7 +3,8 @@
     "overview": "Огляд",
     "analysis": "Аналіз",
     "history": "Історія",
-    "archive": "Архів"
+    "archive": "Архів",
+    "import": "Імпорт"
   },
   "layout": {
     "title": "Підписки",
@@ -158,7 +159,14 @@
     "sideProjects": "Побічні проєкти",
     "aiTools": "AI інструменти",
     "gaming": "Ігри",
-    "miscellaneous": "Інше"
+    "miscellaneous": "Інше",
+    "entertainment": "Розваги",
+    "productivity": "Продуктивність",
+    "storage": "Сховище",
+    "healthFitness": "Здоров'я та фітнес",
+    "news": "Новини",
+    "utilities": "Утиліти",
+    "other": "Інше"
   },
   "status": {
     "active": "Активна",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Продовжується завтра",
     "renewsInDays": "Продовжується через {days} днів",
     "renewsIn1Day": "Продовжується через {days} день"
+  },
+  "import": {
+    "steps": {
+      "upload": "Завантаження",
+      "parse": "Аналіз",
+      "review": "Перегляд",
+      "import": "Імпорт"
+    },
+    "uploadTitle": "Завантажте скріншоти",
+    "uploadDescription": "Завантажте скріншоти з Apple Subscriptions, Google Play або інших екранів управління підписками",
+    "uploading": "Завантаження...",
+    "continueButton": "Продовжити",
+    "parseTitle": "Аналіз скріншотів",
+    "parseDescription": "ШІ проаналізує ваші скріншоти та витягне інформацію про підписки",
+    "parsing": "Аналіз скріншотів за допомогою ШІ...",
+    "parseButton": "Аналізувати скріншоти з ШІ",
+    "parseError": "Не вдалося проаналізувати скріншоти",
+    "backButton": "Назад",
+    "reviewTitle": "Перегляд та редагування",
+    "reviewDescription": "Перегляньте {count} витягнутих підписок. Відредагуйте деталі перед імпортом.",
+    "subscriptionsFound": "Знайдено {count} підписок",
+    "paymentAccount": "Платіжний рахунок",
+    "selectAccount": "Оберіть рахунок...",
+    "noPaymentAccount": "Без платіжного рахунку",
+    "paymentAccountHelp": "Прив'яжіть платіжний рахунок для автоматичного відстеження платежів",
+    "autoPay": "Увімкнути автооплату",
+    "syncHistorical": "Синхронізувати історичні платежі",
+    "tabs": {
+      "all": "Всі",
+      "active": "Активні",
+      "expired": "Завершені"
+    },
+    "selectAll": "Обрати всі",
+    "deselectAll": "Скасувати вибір",
+    "removeSelected": "Видалити ({count})",
+    "columns": {
+      "name": "Назва",
+      "description": "Опис",
+      "amount": "Сума",
+      "currency": "Валюта",
+      "frequency": "Частота",
+      "category": "Категорія",
+      "nextPayment": "Наступний платіж",
+      "status": "Статус",
+      "linkedAccount": "Пов'язаний рахунок"
+    },
+    "descriptionPlaceholder": "Деталі плану...",
+    "statusActive": "Активна",
+    "statusExpired": "Завершена",
+    "selectedCount": "Обрано {count} підписок",
+    "totalSubscriptions": "Всього підписок",
+    "monthlyTotal": "Місячна сума",
+    "annualTotal": "Річна сума",
+    "breakdown": "Розподіл",
+    "breakdownLabels": "активних / завершених",
+    "readyToParse": "{count} знімок(ів) готово до аналізу",
+    "startOver": "Почати спочатку",
+    "importButton": "Імпортувати {count} підписок",
+    "importTitle": "Імпорт підписок",
+    "importDescription": "Ваші підписки імпортуються...",
+    "importProgress": "Імпорт {current} з {total}",
+    "successCount": "{count} успішно",
+    "failedCount": "{count} не вдалося",
+    "importComplete": "Імпорт завершено!",
+    "importSummary": "Успішно імпортовано {success} підписок. {failed} не вдалося.",
+    "importSuccess": "Успішно імпортовано {count} підписок",
+    "importPartial": "Імпортовано {success} підписок, {failed} не вдалося",
+    "importMoreButton": "Імпортувати ще підписки",
+    "uploadError": "Не вдалося завантажити зображення"
+  },
+  "frequency": {
+    "monthly": "Щомісяця",
+    "quarterly": "Щокварталу",
+    "biannually": "Раз на півроку",
+    "annually": "Щороку"
   }
 }

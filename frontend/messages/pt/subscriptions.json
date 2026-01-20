@@ -3,7 +3,8 @@
     "overview": "Visão Geral",
     "analysis": "Análise",
     "history": "Histórico",
-    "archive": "Arquivo"
+    "archive": "Arquivo",
+    "import": "Importar"
   },
   "layout": {
     "title": "Assinaturas",
@@ -158,7 +159,14 @@
     "sideProjects": "Projetos Paralelos",
     "aiTools": "Ferramentas de IA",
     "gaming": "Jogos",
-    "miscellaneous": "Diversos"
+    "miscellaneous": "Diversos",
+    "entertainment": "Entretenimento",
+    "productivity": "Produtividade",
+    "storage": "Armazenamento",
+    "healthFitness": "Saúde e Fitness",
+    "news": "Notícias",
+    "utilities": "Utilitários",
+    "other": "Outro"
   },
   "status": {
     "active": "Ativo",
@@ -227,5 +235,80 @@
     "renewsTomorrow": "Renova amanhã",
     "renewsInDays": "Renova em {days} dias",
     "renewsIn1Day": "Renova em {days} dia"
+  },
+  "import": {
+    "steps": {
+      "upload": "Carregar",
+      "parse": "Analisar",
+      "review": "Revisar",
+      "import": "Importar"
+    },
+    "uploadTitle": "Carregar capturas de tela",
+    "uploadDescription": "Carregue capturas de tela de Apple Subscriptions, Google Play ou outras telas de gerenciamento de assinaturas",
+    "uploading": "Carregando...",
+    "continueButton": "Continuar",
+    "parseTitle": "Analisar capturas de tela",
+    "parseDescription": "A IA analisará suas capturas de tela e extrairá informações de assinaturas",
+    "parsing": "Analisando capturas de tela com IA...",
+    "parseButton": "Analisar capturas com IA",
+    "parseError": "Falha ao analisar capturas de tela",
+    "backButton": "Voltar",
+    "reviewTitle": "Revisar e editar",
+    "reviewDescription": "Revise {count} assinatura(s) extraída(s). Edite os detalhes antes de importar.",
+    "subscriptionsFound": "{count} assinatura(s) encontrada(s)",
+    "paymentAccount": "Conta de pagamento",
+    "selectAccount": "Selecionar conta...",
+    "noPaymentAccount": "Sem conta de pagamento",
+    "paymentAccountHelp": "Vincule uma conta de pagamento para rastreamento automático de pagamentos",
+    "autoPay": "Habilitar pagamento automático",
+    "syncHistorical": "Sincronizar pagamentos históricos",
+    "tabs": {
+      "all": "Todas",
+      "active": "Ativas",
+      "expired": "Expiradas"
+    },
+    "selectAll": "Selecionar todas",
+    "deselectAll": "Desmarcar todas",
+    "removeSelected": "Remover ({count})",
+    "columns": {
+      "name": "Nome",
+      "description": "Descrição",
+      "amount": "Valor",
+      "currency": "Moeda",
+      "frequency": "Frequência",
+      "category": "Categoria",
+      "nextPayment": "Próximo pagamento",
+      "status": "Status",
+      "linkedAccount": "Conta vinculada"
+    },
+    "descriptionPlaceholder": "Detalhes do plano...",
+    "statusActive": "Ativa",
+    "statusExpired": "Expirada",
+    "selectedCount": "{count} assinatura(s) selecionada(s)",
+    "totalSubscriptions": "Total de assinaturas",
+    "monthlyTotal": "Total mensal",
+    "annualTotal": "Total anual",
+    "breakdown": "Detalhamento",
+    "breakdownLabels": "ativas / expiradas",
+    "readyToParse": "{count} captura(s) de tela pronta(s) para analisar",
+    "startOver": "Recomeçar",
+    "importButton": "Importar {count} assinatura(s)",
+    "importTitle": "Importando assinaturas",
+    "importDescription": "Suas assinaturas estão sendo importadas...",
+    "importProgress": "Importando {current} de {total}",
+    "successCount": "{count} sucesso",
+    "failedCount": "{count} falhou",
+    "importComplete": "Importação completa!",
+    "importSummary": "{success} assinatura(s) importada(s) com sucesso. {failed} falhou.",
+    "importSuccess": "{count} assinatura(s) importada(s) com sucesso",
+    "importPartial": "{success} assinatura(s) importada(s), {failed} falhou",
+    "importMoreButton": "Importar mais assinaturas",
+    "uploadError": "Falha ao carregar imagens"
+  },
+  "frequency": {
+    "monthly": "Mensal",
+    "quarterly": "Trimestral",
+    "biannually": "Semestral",
+    "annually": "Anual"
   }
 }
