@@ -122,7 +122,7 @@ export function PayPalCheckoutModal({
           ) : (
             <PayPalScriptProvider
               options={{
-                clientId,
+                clientId: clientId,
                 vault: true,
                 intent: 'subscription',
                 components: 'buttons',
@@ -160,9 +160,33 @@ function PayPalButtonsWrapper({
   onError: (err: Record<string, unknown>) => void;
   onCancel: () => void;
 }) {
-  const [{ isPending, isResolved, isRejected }] = usePayPalScriptReducer();
+  const [{ isPending, isRejected }] = usePayPalScriptReducer();
+  const [isPayPalReady, setIsPayPalReady] = useState(false);
 
-  if (isPending) {
+  useEffect(() => {
+    // Check if PayPal is actually available on window
+    const checkPayPal = () => {
+      if (typeof window !== 'undefined' && window.paypal?.Buttons) {
+        setIsPayPalReady(true);
+      }
+    };
+
+    // Check immediately
+    checkPayPal();
+
+    // Also set up an interval to check periodically
+    const interval = setInterval(checkPayPal, 100);
+
+    // Clean up after 10 seconds or when ready
+    const timeout = setTimeout(() => clearInterval(interval), 10000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [isPending]);
+
+  if (isPending || !isPayPalReady) {
     return (
       <div className="flex flex-col items-center justify-center py-8 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -179,25 +203,21 @@ function PayPalButtonsWrapper({
     );
   }
 
-  if (isResolved) {
-    return (
-      <PayPalButtons
-        style={{
-          layout: 'vertical',
-          shape: 'rect',
-          label: 'subscribe',
-        }}
-        createSubscription={(data, actions) => {
-          return actions.subscription.create({
-            plan_id: planId,
-          });
-        }}
-        onApprove={onApprove}
-        onError={onError}
-        onCancel={onCancel}
-      />
-    );
-  }
-
-  return null;
+  return (
+    <PayPalButtons
+      style={{
+        layout: 'vertical',
+        shape: 'rect',
+        label: 'subscribe',
+      }}
+      createSubscription={(data, actions) => {
+        return actions.subscription.create({
+          plan_id: planId,
+        });
+      }}
+      onApprove={onApprove}
+      onError={onError}
+      onCancel={onCancel}
+    />
+  );
 }
