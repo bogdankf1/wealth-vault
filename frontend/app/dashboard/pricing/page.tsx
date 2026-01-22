@@ -12,6 +12,7 @@ import { useCreateCheckoutSessionMutation, useGetTiersQuery } from '@/lib/api/bi
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useTranslations } from 'next-intl';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { PaymentMethodModal, type PaymentMethod } from '@/components/pricing/payment-method-modal';
 import { PayPalCheckoutModal } from '@/components/pricing/paypal-checkout-modal';
 
@@ -332,18 +333,27 @@ export default function PricingPage() {
         />
       )}
 
-      {/* PayPal Checkout Modal */}
-      {selectedTier && (
-        <PayPalCheckoutModal
-          isOpen={showPayPalModal}
-          onClose={handlePayPalModalClose}
-          tierName={selectedTier.name}
-          tierDisplayName={selectedTier.display_name}
-          tierPrice={selectedTier.price_monthly}
-          planId={paypalPlanIdMap[selectedTier.name] || ''}
-          currency={displayCurrency}
-        />
-      )}
+      {/* PayPal Checkout Modal - Provider at page level to avoid re-initialization */}
+      <PayPalScriptProvider
+        options={{
+          clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
+          vault: true,
+          intent: 'subscription',
+          components: 'buttons',
+        }}
+      >
+        {selectedTier && (
+          <PayPalCheckoutModal
+            isOpen={showPayPalModal}
+            onClose={handlePayPalModalClose}
+            tierName={selectedTier.name}
+            tierDisplayName={selectedTier.display_name}
+            tierPrice={selectedTier.price_monthly}
+            planId={paypalPlanIdMap[selectedTier.name] || ''}
+            currency={displayCurrency}
+          />
+        )}
+      </PayPalScriptProvider>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PayPalScriptProvider, PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import {
@@ -39,11 +39,9 @@ export function PayPalCheckoutModal({
   const [activateSubscription] = useActivatePayPalSubscriptionMutation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
+  const [{ isPending, isResolved, isRejected }] = usePayPalScriptReducer();
 
   useEffect(() => {
-    // Reset state when modal opens
     if (isOpen) {
       setError(null);
       setIsProcessing(false);
@@ -67,7 +65,6 @@ export function PayPalCheckoutModal({
       if (result.success) {
         toast.success(t('success', { tier: tierDisplayName }));
         onClose();
-        // Redirect to dashboard with success message
         router.push('/dashboard?subscription=success');
       }
     } catch (err: unknown) {
@@ -81,14 +78,7 @@ export function PayPalCheckoutModal({
     }
   };
 
-  const handleError = (err: Record<string, unknown>) => {
-    console.error('PayPal error:', err);
-    setError(t('errors.paypalError'));
-  };
-
-  const handleCancel = () => {
-    setError(null);
-  };
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
   if (!clientId) {
     return (
@@ -119,23 +109,34 @@ export function PayPalCheckoutModal({
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">{t('processing')}</p>
             </div>
-          ) : (
-            <PayPalScriptProvider
-              options={{
-                clientId: clientId,
-                vault: true,
-                intent: 'subscription',
-                components: 'buttons',
+          ) : isPending ? (
+            <div className="flex flex-col items-center justify-center py-8 space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading PayPal...</p>
+            </div>
+          ) : isRejected ? (
+            <div className="flex flex-col items-center justify-center py-8 space-y-4">
+              <p className="text-sm text-destructive">Failed to load PayPal. Please refresh the page.</p>
+            </div>
+          ) : isResolved ? (
+            <PayPalButtons
+              style={{
+                layout: 'vertical',
+                shape: 'rect',
+                label: 'subscribe',
               }}
-            >
-              <PayPalButtonsWrapper
-                planId={planId}
-                onApprove={handleApprove}
-                onError={handleError}
-                onCancel={handleCancel}
-              />
-            </PayPalScriptProvider>
-          )}
+              createSubscription={(_data, actions) => {
+                return actions.subscription.create({
+                  plan_id: planId,
+                });
+              }}
+              onApprove={handleApprove}
+              onError={(err) => {
+                console.error('PayPal error:', err);
+                setError(t('errors.paypalError'));
+              }}
+            />
+          ) : null}
 
           {error && (
             <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
@@ -145,79 +146,5 @@ export function PayPalCheckoutModal({
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-// Wrapper component to handle PayPal script loading state
-function PayPalButtonsWrapper({
-  planId,
-  onApprove,
-  onError,
-  onCancel,
-}: {
-  planId: string;
-  onApprove: (data: { subscriptionID?: string | null }) => Promise<void>;
-  onError: (err: Record<string, unknown>) => void;
-  onCancel: () => void;
-}) {
-  const [{ isPending, isRejected }] = usePayPalScriptReducer();
-  const [isPayPalReady, setIsPayPalReady] = useState(false);
-
-  useEffect(() => {
-    // Check if PayPal is actually available on window
-    const checkPayPal = () => {
-      if (typeof window !== 'undefined' && window.paypal?.Buttons) {
-        setIsPayPalReady(true);
-      }
-    };
-
-    // Check immediately
-    checkPayPal();
-
-    // Also set up an interval to check periodically
-    const interval = setInterval(checkPayPal, 100);
-
-    // Clean up after 10 seconds or when ready
-    const timeout = setTimeout(() => clearInterval(interval), 10000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [isPending]);
-
-  if (isPending || !isPayPalReady) {
-    return (
-      <div className="flex flex-col items-center justify-center py-8 space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading PayPal...</p>
-      </div>
-    );
-  }
-
-  if (isRejected) {
-    return (
-      <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-        <p className="text-sm text-destructive">Failed to load PayPal. Please try again.</p>
-      </div>
-    );
-  }
-
-  return (
-    <PayPalButtons
-      style={{
-        layout: 'vertical',
-        shape: 'rect',
-        label: 'subscribe',
-      }}
-      createSubscription={(data, actions) => {
-        return actions.subscription.create({
-          plan_id: planId,
-        });
-      }}
-      onApprove={onApprove}
-      onError={onError}
-      onCancel={onCancel}
-    />
   );
 }
