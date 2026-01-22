@@ -91,5 +91,18 @@
       "name": "Bank Transfer",
       "description": "Direct bank transfer payment"
     }
+  },
+  "paypalCheckout": {
+    "title": "Complete Your Subscription",
+    "description": "Subscribe to {tier} for ${price} {currency}/month",
+    "processing": "Activating your subscription...",
+    "success": "Successfully subscribed to {tier}!",
+    "configError": "Configuration Error",
+    "configErrorDesc": "PayPal is not configured properly. Please contact support.",
+    "errors": {
+      "noSubscriptionId": "No subscription ID received from PayPal",
+      "activationFailed": "Failed to activate subscription. Please try again.",
+      "paypalError": "An error occurred with PayPal. Please try again."
+    }
   }
 }

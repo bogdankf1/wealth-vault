@@ -43,12 +43,42 @@ class UpdateSubscriptionRequest(BaseModel):
     new_price_id: str = Field(..., description="New Stripe price ID")
 
 
+# PayPal-specific schemas
+class PayPalActivateSubscriptionRequest(BaseModel):
+    """Request to activate a PayPal subscription after user approval."""
+    subscription_id: str = Field(..., description="PayPal subscription ID from frontend")
+
+
+class PayPalActivateSubscriptionResponse(BaseModel):
+    """Response after activating PayPal subscription."""
+    success: bool
+    subscription_id: str
+    tier: str
+    status: str
+
+
+class PayPalCancelSubscriptionRequest(BaseModel):
+    """Request to cancel a PayPal subscription."""
+    reason: str = Field(default="User requested cancellation", description="Cancellation reason")
+
+
+class PayPalUpdateSubscriptionRequest(BaseModel):
+    """Request to update/change PayPal subscription plan."""
+    new_plan_id: str = Field(..., description="New PayPal plan ID")
+
+
 class SubscriptionResponse(BaseModel):
     """Subscription details response."""
     id: UUID
-    stripe_subscription_id: str
-    stripe_customer_id: str
-    stripe_price_id: str
+    payment_provider: str = "stripe"
+    # Stripe fields (optional for PayPal subscriptions)
+    stripe_subscription_id: Optional[str] = None
+    stripe_customer_id: Optional[str] = None
+    stripe_price_id: Optional[str] = None
+    # PayPal fields (optional for Stripe subscriptions)
+    paypal_subscription_id: Optional[str] = None
+    paypal_plan_id: Optional[str] = None
+    # Common fields
     status: str
     current_period_start: Optional[datetime] = None
     current_period_end: Optional[datetime] = None
@@ -67,6 +97,14 @@ class SubscriptionResponse(BaseModel):
             return bool(v)
         return v
 
+    @field_validator('payment_provider', mode='before')
+    @classmethod
+    def convert_payment_provider(cls, v):
+        """Convert PaymentProvider enum to string."""
+        if hasattr(v, 'value'):
+            return v.value
+        return v or "stripe"
+
     class Config:
         from_attributes = True
 
@@ -74,8 +112,14 @@ class SubscriptionResponse(BaseModel):
 class PaymentHistoryResponse(BaseModel):
     """Payment history item response."""
     id: UUID
+    payment_provider: str = "stripe"
+    # Stripe fields
     stripe_invoice_id: Optional[str] = None
     stripe_payment_intent_id: Optional[str] = None
+    # PayPal fields
+    paypal_transaction_id: Optional[str] = None
+    paypal_subscription_id: Optional[str] = None
+    # Common fields
     amount: int  # Amount in cents
     currency: str
     status: str
@@ -85,6 +129,14 @@ class PaymentHistoryResponse(BaseModel):
     failed_at: Optional[datetime] = None
     refunded_at: Optional[datetime] = None
     created_at: datetime
+
+    @field_validator('payment_provider', mode='before')
+    @classmethod
+    def convert_payment_provider(cls, v):
+        """Convert PaymentProvider enum to string."""
+        if hasattr(v, 'value'):
+            return v.value
+        return v or "stripe"
 
     class Config:
         from_attributes = True
@@ -102,6 +154,7 @@ class SubscriptionStatusResponse(BaseModel):
     subscription: Optional[SubscriptionResponse] = None
     tier_name: Optional[str] = None
     tier_display_name: Optional[str] = None
+    payment_provider: Optional[str] = None  # "stripe" or "paypal"
     can_upgrade: bool = Field(..., description="Whether user can upgrade to a higher tier")
     can_downgrade: bool = Field(..., description="Whether user can downgrade to a lower tier")
     available_tiers: List[dict] = Field(..., description="List of available tiers to upgrade/downgrade to")

@@ -91,5 +91,18 @@
       "name": "Przelew bankowy",
       "description": "Płatność przelewem bankowym"
     }
+  },
+  "paypalCheckout": {
+    "title": "Dokończ subskrypcję",
+    "description": "Subskrybuj {tier} za ${price} {currency}/miesiąc",
+    "processing": "Aktywacja subskrypcji...",
+    "success": "Pomyślnie zasubskrybowano {tier}!",
+    "configError": "Błąd konfiguracji",
+    "configErrorDesc": "PayPal nie jest prawidłowo skonfigurowany. Skontaktuj się ze wsparciem.",
+    "errors": {
+      "noSubscriptionId": "Nie otrzymano ID subskrypcji od PayPal",
+      "activationFailed": "Nie udało się aktywować subskrypcji. Spróbuj ponownie.",
+      "paypalError": "Wystąpił błąd z PayPal. Spróbuj ponownie."
+    }
   }
 }

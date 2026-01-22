@@ -91,5 +91,18 @@
       "name": "Transferência bancária",
       "description": "Pagamento por transferência bancária direta"
     }
+  },
+  "paypalCheckout": {
+    "title": "Complete sua assinatura",
+    "description": "Assine {tier} por ${price} {currency}/mês",
+    "processing": "Ativando sua assinatura...",
+    "success": "Assinatura de {tier} realizada com sucesso!",
+    "configError": "Erro de configuração",
+    "configErrorDesc": "O PayPal não está configurado corretamente. Por favor, entre em contato com o suporte.",
+    "errors": {
+      "noSubscriptionId": "Nenhum ID de assinatura recebido do PayPal",
+      "activationFailed": "Falha ao ativar a assinatura. Por favor, tente novamente.",
+      "paypalError": "Ocorreu um erro com o PayPal. Por favor, tente novamente."
+    }
   }
 }

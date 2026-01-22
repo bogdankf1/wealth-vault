@@ -91,5 +91,18 @@
       "name": "Transferencia bancaria",
       "description": "Pago por transferencia bancaria directa"
     }
+  },
+  "paypalCheckout": {
+    "title": "Complete su suscripción",
+    "description": "Suscríbase a {tier} por ${price} {currency}/mes",
+    "processing": "Activando su suscripción...",
+    "success": "¡Suscrito exitosamente a {tier}!",
+    "configError": "Error de configuración",
+    "configErrorDesc": "PayPal no está configurado correctamente. Por favor contacte al soporte.",
+    "errors": {
+      "noSubscriptionId": "No se recibió ID de suscripción de PayPal",
+      "activationFailed": "Error al activar la suscripción. Por favor intente de nuevo.",
+      "paypalError": "Ocurrió un error con PayPal. Por favor intente de nuevo."
+    }
   }
 }

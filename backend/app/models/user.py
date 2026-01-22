@@ -39,6 +39,9 @@ class User(BaseModel):
     stripe_customer_id = Column(String(255), unique=True, nullable=True)
     stripe_subscription_id = Column(String(255), unique=True, nullable=True)
 
+    # PayPal integration
+    paypal_subscription_id = Column(String(255), unique=True, nullable=True)
+
     # Relationships
     tier = relationship("Tier", back_populates="users")
     income_sources = relationship("IncomeSource", back_populates="user", cascade="all, delete-orphan")

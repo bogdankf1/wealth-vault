@@ -48,6 +48,14 @@ class Settings(BaseSettings):
     STRIPE_GROWTH_PRICE_ID: str = ""
     STRIPE_WEALTH_PRICE_ID: str = ""
 
+    # PayPal
+    PAYPAL_CLIENT_ID: str = ""
+    PAYPAL_CLIENT_SECRET: str = ""
+    PAYPAL_MODE: str = "sandbox"  # "sandbox" or "live"
+    PAYPAL_WEBHOOK_ID: str = ""
+    PAYPAL_GROWTH_PLAN_ID: str = ""
+    PAYPAL_WEALTH_PLAN_ID: str = ""
+
     # Email (for future use)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587

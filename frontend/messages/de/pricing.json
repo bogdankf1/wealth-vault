@@ -91,5 +91,18 @@
       "name": "Banküberweisung",
       "description": "Direkte Banküberweisung"
     }
+  },
+  "paypalCheckout": {
+    "title": "Abonnement abschließen",
+    "description": "Abonnieren Sie {tier} für ${price} {currency}/Monat",
+    "processing": "Ihr Abonnement wird aktiviert...",
+    "success": "Erfolgreich für {tier} abonniert!",
+    "configError": "Konfigurationsfehler",
+    "configErrorDesc": "PayPal ist nicht richtig konfiguriert. Bitte kontaktieren Sie den Support.",
+    "errors": {
+      "noSubscriptionId": "Keine Abonnement-ID von PayPal erhalten",
+      "activationFailed": "Abonnement konnte nicht aktiviert werden. Bitte versuchen Sie es erneut.",
+      "paypalError": "Bei PayPal ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+    }
   }
 }

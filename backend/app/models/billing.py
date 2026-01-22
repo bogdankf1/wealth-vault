@@ -29,9 +29,15 @@ class PaymentStatus(str, enum.Enum):
     REFUNDED = "refunded"
 
 
+class PaymentProvider(str, enum.Enum):
+    """Payment provider enumeration."""
+    STRIPE = "stripe"
+    PAYPAL = "paypal"
+
+
 class UserSubscription(BaseModel):
     """
-    User subscription details from Stripe.
+    User subscription details from payment providers.
     Tracks the current subscription state for a user.
     """
 
@@ -39,10 +45,21 @@ class UserSubscription(BaseModel):
 
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
 
-    # Stripe IDs
-    stripe_subscription_id = Column(String(255), unique=True, nullable=False, index=True)
-    stripe_customer_id = Column(String(255), nullable=False, index=True)
-    stripe_price_id = Column(String(255), nullable=False)
+    # Payment provider (stripe or paypal)
+    payment_provider = Column(
+        Enum(PaymentProvider, native_enum=False, length=20),
+        nullable=False,
+        default=PaymentProvider.STRIPE
+    )
+
+    # Stripe IDs (nullable for PayPal subscriptions)
+    stripe_subscription_id = Column(String(255), unique=True, nullable=True, index=True)
+    stripe_customer_id = Column(String(255), nullable=True, index=True)
+    stripe_price_id = Column(String(255), nullable=True)
+
+    # PayPal IDs (nullable for Stripe subscriptions)
+    paypal_subscription_id = Column(String(255), unique=True, nullable=True, index=True)
+    paypal_plan_id = Column(String(255), nullable=True)
 
     # Subscription details
     status = Column(
@@ -80,10 +97,21 @@ class PaymentHistory(BaseModel):
 
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # Payment provider
+    payment_provider = Column(
+        Enum(PaymentProvider, native_enum=False, length=20),
+        nullable=False,
+        default=PaymentProvider.STRIPE
+    )
+
     # Stripe IDs
     stripe_payment_intent_id = Column(String(255), unique=True, nullable=True, index=True)
     stripe_invoice_id = Column(String(255), unique=True, nullable=True, index=True)
     stripe_subscription_id = Column(String(255), nullable=True)
+
+    # PayPal IDs
+    paypal_transaction_id = Column(String(255), unique=True, nullable=True, index=True)
+    paypal_subscription_id = Column(String(255), nullable=True)
 
     # Payment details
     amount = Column(Integer, nullable=False)  # Amount in cents

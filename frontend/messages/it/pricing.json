@@ -91,5 +91,18 @@
       "name": "Bonifico bancario",
       "description": "Pagamento tramite bonifico bancario diretto"
     }
+  },
+  "paypalCheckout": {
+    "title": "Completi il Suo abbonamento",
+    "description": "Si abboni a {tier} per ${price} {currency}/mese",
+    "processing": "Attivazione dell'abbonamento in corso...",
+    "success": "Abbonamento a {tier} completato con successo!",
+    "configError": "Errore di configurazione",
+    "configErrorDesc": "PayPal non è configurato correttamente. Contatti l'assistenza.",
+    "errors": {
+      "noSubscriptionId": "Nessun ID abbonamento ricevuto da PayPal",
+      "activationFailed": "Impossibile attivare l'abbonamento. Riprovi.",
+      "paypalError": "Si è verificato un errore con PayPal. Riprovi."
+    }
   }
 }

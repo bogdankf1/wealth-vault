@@ -65,7 +65,7 @@ export function PaymentMethodModal({
       name: 'PayPal',
       description: t('paypal.description'),
       icon: Wallet,
-      available: false,
+      available: true,
     },
     {
       id: 'mono' as PaymentMethod,

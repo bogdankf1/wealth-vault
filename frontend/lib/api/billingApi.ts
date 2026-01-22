@@ -1,5 +1,5 @@
 /**
- * Billing API for Stripe integration
+ * Billing API for Stripe and PayPal integration
  */
 import { apiSlice } from './apiSlice';
 
@@ -32,9 +32,15 @@ export interface UpdateSubscriptionRequest {
 
 export interface Subscription {
   id: string;
-  stripe_subscription_id: string;
-  stripe_customer_id: string;
-  stripe_price_id: string;
+  payment_provider: 'stripe' | 'paypal';
+  // Stripe fields
+  stripe_subscription_id?: string;
+  stripe_customer_id?: string;
+  stripe_price_id?: string;
+  // PayPal fields
+  paypal_subscription_id?: string;
+  paypal_plan_id?: string;
+  // Common fields
   status: string;
   current_period_start: string;
   current_period_end: string;
@@ -52,6 +58,7 @@ export interface TierOption {
   display_name: string;
   price_monthly: number;
   stripe_price_id: string;
+  paypal_plan_id: string;
   action: 'upgrade' | 'downgrade' | 'current';
 }
 
@@ -60,6 +67,7 @@ export interface SubscriptionStatusResponse {
   subscription?: Subscription;
   tier_name?: string;
   tier_display_name?: string;
+  payment_provider?: 'stripe' | 'paypal';
   can_upgrade: boolean;
   can_downgrade: boolean;
   available_tiers: TierOption[];
@@ -67,8 +75,14 @@ export interface SubscriptionStatusResponse {
 
 export interface PaymentHistory {
   id: string;
+  payment_provider: 'stripe' | 'paypal';
+  // Stripe fields
   stripe_invoice_id?: string;
   stripe_payment_intent_id?: string;
+  // PayPal fields
+  paypal_transaction_id?: string;
+  paypal_subscription_id?: string;
+  // Common fields
   amount: number;
   currency: string;
   status: string;
@@ -95,6 +109,33 @@ export interface Tier {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// PayPal-specific interfaces
+export interface PayPalActivateSubscriptionRequest {
+  subscription_id: string;
+}
+
+export interface PayPalActivateSubscriptionResponse {
+  success: boolean;
+  subscription_id: string;
+  tier: string;
+  status: string;
+}
+
+export interface PayPalCancelSubscriptionRequest {
+  reason?: string;
+}
+
+export interface PayPalUpdateSubscriptionRequest {
+  new_plan_id: string;
+}
+
+export interface PayPalUpdateSubscriptionResponse {
+  success: boolean;
+  subscription_id: string;
+  requires_approval: boolean;
+  approval_url?: string;
 }
 
 export const billingApi = apiSlice.injectEndpoints({
@@ -164,6 +205,43 @@ export const billingApi = apiSlice.injectEndpoints({
         params,
       }),
     }),
+
+    // PayPal endpoints
+    activatePayPalSubscription: builder.mutation<
+      PayPalActivateSubscriptionResponse,
+      PayPalActivateSubscriptionRequest
+    >({
+      query: (body) => ({
+        url: '/api/v1/billing/paypal/activate',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Subscription', 'User'],
+    }),
+
+    cancelPayPalSubscription: builder.mutation<
+      { status: string; message: string },
+      PayPalCancelSubscriptionRequest
+    >({
+      query: (body) => ({
+        url: '/api/v1/billing/paypal/cancel',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Subscription'],
+    }),
+
+    updatePayPalSubscription: builder.mutation<
+      PayPalUpdateSubscriptionResponse,
+      PayPalUpdateSubscriptionRequest
+    >({
+      query: (body) => ({
+        url: '/api/v1/billing/paypal/update',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Subscription'],
+    }),
   }),
   overrideExisting: true,
 });
@@ -176,4 +254,8 @@ export const {
   useCancelSubscriptionMutation,
   useUpdateSubscriptionMutation,
   useGetPaymentHistoryQuery,
+  // PayPal hooks
+  useActivatePayPalSubscriptionMutation,
+  useCancelPayPalSubscriptionMutation,
+  useUpdatePayPalSubscriptionMutation,
 } = billingApi;

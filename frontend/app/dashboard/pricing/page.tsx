@@ -13,6 +13,7 @@ import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useTranslations } from 'next-intl';
 import { PaymentMethodModal, type PaymentMethod } from '@/components/pricing/payment-method-modal';
+import { PayPalCheckoutModal } from '@/components/pricing/paypal-checkout-modal';
 
 interface TierFeature {
   name: string;
@@ -84,7 +85,10 @@ export default function PricingPage() {
 
   // Payment method modal state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<{ id: string; name: string; price_monthly: number } | null>(null);
+  const [selectedTier, setSelectedTier] = useState<{ id: string; name: string; display_name: string; price_monthly: number } | null>(null);
+
+  // PayPal checkout modal state
+  const [showPayPalModal, setShowPayPalModal] = useState(false);
 
   const displayCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
@@ -94,7 +98,13 @@ export default function PricingPage() {
     wealth: process.env.NEXT_PUBLIC_STRIPE_WEALTH_PRICE_ID || '',
   };
 
-  const handleSubscribe = (tier: { id: string; name: string; price_monthly: number }) => {
+  // PayPal plan ID mapping
+  const paypalPlanIdMap: Record<string, string> = {
+    growth: process.env.NEXT_PUBLIC_PAYPAL_GROWTH_PLAN_ID || '',
+    wealth: process.env.NEXT_PUBLIC_PAYPAL_WEALTH_PLAN_ID || '',
+  };
+
+  const handleSubscribe = (tier: { id: string; name: string; display_name: string; price_monthly: number }) => {
     if (!user) {
       router.push('/auth/signin?redirect=/dashboard/pricing');
       return;
@@ -135,9 +145,16 @@ export default function PricingPage() {
         // Redirect to Stripe checkout
         window.location.href = result.url;
       } else if (paymentMethod === 'paypal') {
-        // PayPal flow - to be implemented later
-        // TODO: Implement PayPal checkout flow
+        // PayPal flow - show PayPal checkout modal
+        const paypalPlanId = paypalPlanIdMap[selectedTier.name];
+        if (!paypalPlanId) {
+          setShowPaymentModal(false);
+          setLoadingTier(null);
+          return;
+        }
+        // Close payment method modal and open PayPal modal
         setShowPaymentModal(false);
+        setShowPayPalModal(true);
         setLoadingTier(null);
       }
     } catch (error) {
@@ -152,6 +169,11 @@ export default function PricingPage() {
       setSelectedTier(null);
       setLoadingTier(null);
     }
+  };
+
+  const handlePayPalModalClose = () => {
+    setShowPayPalModal(false);
+    setSelectedTier(null);
   };
 
   const currentTierName = user?.tier?.name || 'starter';
@@ -264,7 +286,7 @@ export default function PricingPage() {
                         className="w-full"
                         variant={isRecommended ? 'default' : 'outline'}
                         size="lg"
-                        onClick={() => handleSubscribe(tier)}
+                        onClick={() => handleSubscribe({ ...tier, display_name: tier.display_name })}
                         disabled={isCurrentTier || (isLoading && loadingTier === tier.name)}
                       >
                         {isCurrentTier
@@ -307,6 +329,19 @@ export default function PricingPage() {
           tierPrice={selectedTier.price_monthly}
           currency={displayCurrency}
           isLoading={isLoading}
+        />
+      )}
+
+      {/* PayPal Checkout Modal */}
+      {selectedTier && (
+        <PayPalCheckoutModal
+          isOpen={showPayPalModal}
+          onClose={handlePayPalModalClose}
+          tierName={selectedTier.name}
+          tierDisplayName={selectedTier.display_name}
+          tierPrice={selectedTier.price_monthly}
+          planId={paypalPlanIdMap[selectedTier.name] || ''}
+          currency={displayCurrency}
         />
       )}
     </div>

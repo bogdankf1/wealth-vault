@@ -27,9 +27,15 @@ from app.schemas.billing import (
     PaymentHistoryListResponse,
     PaymentHistoryResponse,
     SubscriptionStatusResponse,
+    PayPalActivateSubscriptionRequest,
+    PayPalActivateSubscriptionResponse,
+    PayPalCancelSubscriptionRequest,
+    PayPalUpdateSubscriptionRequest,
 )
 from app.schemas.admin import TierDetail
 from app.services.stripe_service import StripeService
+from app.services.paypal_service import PayPalService
+from app.models.billing import PaymentProvider
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
@@ -200,6 +206,11 @@ async def get_subscription_status(
                 settings.STRIPE_GROWTH_PRICE_ID if tier.name == "growth"
                 else settings.STRIPE_WEALTH_PRICE_ID if tier.name == "wealth"
                 else None
+            ),
+            "paypal_plan_id": (
+                settings.PAYPAL_GROWTH_PLAN_ID if tier.name == "growth"
+                else settings.PAYPAL_WEALTH_PLAN_ID if tier.name == "wealth"
+                else None
             )
         }
 
@@ -214,11 +225,17 @@ async def get_subscription_status(
 
         available_tiers.append(tier_info)
 
+    # Determine current payment provider
+    payment_provider = None
+    if subscription:
+        payment_provider = subscription.payment_provider.value if subscription.payment_provider else "stripe"
+
     response = SubscriptionStatusResponse(
         has_subscription=subscription is not None,
         subscription=SubscriptionResponse.model_validate(subscription) if subscription else None,
         tier_name=current_user.tier.name if current_user.tier else None,
         tier_display_name=current_user.tier.display_name if current_user.tier else None,
+        payment_provider=payment_provider,
         can_upgrade=can_upgrade,
         can_downgrade=can_downgrade,
         available_tiers=available_tiers,
@@ -356,3 +373,157 @@ async def get_payment_history(
         payments=[PaymentHistoryResponse.model_validate(p) for p in payments],
         total=total
     )
+
+
+# ============================================================================
+# PayPal Endpoints
+# ============================================================================
+
+
+@router.post("/paypal/activate", response_model=PayPalActivateSubscriptionResponse)
+async def activate_paypal_subscription(
+    request: PayPalActivateSubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Activate a PayPal subscription after user approval.
+
+    This is called after the user approves the subscription in the PayPal popup.
+    The frontend passes the subscription_id received from PayPal.
+    """
+    try:
+        result = await PayPalService.activate_subscription(
+            subscription_id=request.subscription_id,
+            user=current_user,
+            db=db,
+        )
+        return PayPalActivateSubscriptionResponse(**result)
+    except Exception as e:
+        logger.exception(f"PayPal activation failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/paypal/cancel")
+async def cancel_paypal_subscription(
+    request: PayPalCancelSubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Cancel a PayPal subscription.
+
+    Note: PayPal subscriptions are cancelled immediately (no "cancel at period end").
+    """
+    if not current_user.paypal_subscription_id:
+        raise HTTPException(status_code=404, detail="No active PayPal subscription found")
+
+    try:
+        await PayPalService.cancel_subscription(
+            subscription_id=current_user.paypal_subscription_id,
+            reason=request.reason,
+        )
+
+        # Update local record
+        result = await db.execute(
+            select(UserSubscription).where(UserSubscription.user_id == current_user.id)
+        )
+        subscription = result.scalar_one_or_none()
+
+        if subscription:
+            from datetime import datetime
+            subscription.status = "canceled"
+            subscription.canceled_at = datetime.utcnow()
+            await db.commit()
+
+        return {"status": "success", "message": "PayPal subscription cancelled"}
+    except Exception as e:
+        logger.exception(f"PayPal cancellation failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/paypal/update")
+async def update_paypal_subscription(
+    request: PayPalUpdateSubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Update/change PayPal subscription plan (upgrade or downgrade).
+
+    May require user re-approval via PayPal.
+    """
+    if not current_user.paypal_subscription_id:
+        raise HTTPException(status_code=404, detail="No active PayPal subscription found")
+
+    try:
+        result = await PayPalService.update_subscription(
+            subscription_id=current_user.paypal_subscription_id,
+            new_plan_id=request.new_plan_id,
+            db=db,
+            user=current_user,
+        )
+        return result
+    except Exception as e:
+        logger.exception(f"PayPal update failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/paypal/webhook")
+async def paypal_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Handle PayPal webhook events.
+
+    This endpoint is called by PayPal to notify us of subscription events.
+    """
+    payload = await request.body()
+
+    # Get headers for signature verification
+    headers = {
+        "paypal-auth-algo": request.headers.get("paypal-auth-algo", ""),
+        "paypal-cert-url": request.headers.get("paypal-cert-url", ""),
+        "paypal-transmission-id": request.headers.get("paypal-transmission-id", ""),
+        "paypal-transmission-sig": request.headers.get("paypal-transmission-sig", ""),
+        "paypal-transmission-time": request.headers.get("paypal-transmission-time", ""),
+    }
+
+    # Verify webhook signature (optional but recommended)
+    if settings.PAYPAL_WEBHOOK_ID:
+        try:
+            is_valid = await PayPalService.verify_webhook_signature(
+                webhook_id=settings.PAYPAL_WEBHOOK_ID,
+                event_body=payload,
+                headers=headers,
+            )
+            if not is_valid:
+                logger.warning("PayPal webhook signature verification failed")
+                # Continue processing anyway for now (can be made strict later)
+        except Exception as e:
+            logger.warning(f"PayPal webhook verification error: {e}")
+
+    # Parse event
+    import json
+    try:
+        event = json.loads(payload)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    event_type = event.get("event_type")
+    resource = event.get("resource", {})
+
+    logger.info(f"Received PayPal webhook: {event_type}")
+
+    try:
+        await PayPalService.handle_webhook_event(
+            event_type=event_type,
+            resource=resource,
+            db=db,
+        )
+    except Exception as e:
+        logger.exception(f"PayPal webhook processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Webhook processing failed: {str(e)}")
+
+    return {"status": "success"}

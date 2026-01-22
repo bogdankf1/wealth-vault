@@ -91,5 +91,18 @@
       "name": "Virement bancaire",
       "description": "Paiement par virement bancaire direct"
     }
+  },
+  "paypalCheckout": {
+    "title": "Finalisez votre abonnement",
+    "description": "Abonnez-vous à {tier} pour ${price} {currency}/mois",
+    "processing": "Activation de votre abonnement...",
+    "success": "Abonnement à {tier} réussi !",
+    "configError": "Erreur de configuration",
+    "configErrorDesc": "PayPal n'est pas configuré correctement. Veuillez contacter le support.",
+    "errors": {
+      "noSubscriptionId": "Aucun ID d'abonnement reçu de PayPal",
+      "activationFailed": "Échec de l'activation de l'abonnement. Veuillez réessayer.",
+      "paypalError": "Une erreur s'est produite avec PayPal. Veuillez réessayer."
+    }
   }
 }
