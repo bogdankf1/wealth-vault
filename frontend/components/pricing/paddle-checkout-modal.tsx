@@ -16,17 +16,31 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 // Paddle types
+interface PaddleEventData {
+  name: string;
+  data?: {
+    subscription_id?: string;
+    transaction_id?: string;
+    id?: string;
+    status?: string;
+  };
+}
+
 declare global {
   interface Window {
     Paddle?: {
       Environment: {
         set: (env: 'sandbox' | 'production') => void;
       };
-      Setup: (options: { token: string }) => void;
+      Setup: (options: {
+        token: string;
+        eventCallback?: (data: PaddleEventData) => void;
+      }) => void;
       Checkout: {
         open: (options: PaddleCheckoutOptions) => void;
       };
     };
+    __paddleEventCallback?: (data: PaddleEventData) => void;
   }
 }
 
@@ -60,13 +74,64 @@ interface PaddleCheckoutModalProps {
 }
 
 // Hook to load Paddle.js
-function usePaddleScript() {
+function usePaddleScript(onCheckoutComplete?: (data: { subscription_id?: string; transaction_id?: string }) => void) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Store the callback in window so it persists across re-renders
+  useEffect(() => {
+    if (onCheckoutComplete) {
+      window.__paddleEventCallback = (eventData: PaddleEventData) => {
+        console.log('Paddle event:', eventData.name, eventData);
+
+        if (eventData.name === 'checkout.completed') {
+          onCheckoutComplete({
+            subscription_id: eventData.data?.subscription_id,
+            transaction_id: eventData.data?.transaction_id || eventData.data?.id,
+          });
+        }
+      };
+    }
+  }, [onCheckoutComplete]);
 
   useEffect(() => {
+    const initializePaddle = () => {
+      if (!window.Paddle || isInitialized) return;
+
+      const paddleEnv = process.env.NEXT_PUBLIC_PADDLE_ENV || 'sandbox';
+      const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '';
+
+      if (!clientToken) {
+        setError('Paddle client token not configured');
+        return;
+      }
+
+      try {
+        // Set environment first
+        window.Paddle.Environment.set(paddleEnv as 'sandbox' | 'production');
+
+        // Initialize with client token and event callback
+        window.Paddle.Setup({
+          token: clientToken,
+          eventCallback: (data: PaddleEventData) => {
+            if (window.__paddleEventCallback) {
+              window.__paddleEventCallback(data);
+            }
+          },
+        });
+
+        setIsInitialized(true);
+        console.log('Paddle initialized successfully');
+      } catch (e) {
+        console.error('Paddle initialization error:', e);
+        setError('Failed to initialize Paddle');
+      }
+    };
+
     // Check if already loaded
     if (window.Paddle) {
+      initializePaddle();
       setIsLoaded(true);
       return;
     }
@@ -74,10 +139,15 @@ function usePaddleScript() {
     // Check if script is already in DOM
     const existingScript = document.querySelector('script[src*="paddle.com"]');
     if (existingScript) {
-      existingScript.addEventListener('load', () => {
+      if (window.Paddle) {
         initializePaddle();
         setIsLoaded(true);
-      });
+      } else {
+        existingScript.addEventListener('load', () => {
+          initializePaddle();
+          setIsLoaded(true);
+        });
+      }
       return;
     }
 
@@ -96,29 +166,7 @@ function usePaddleScript() {
     };
 
     document.head.appendChild(script);
-
-    return () => {
-      // Don't remove the script on cleanup - Paddle expects it to persist
-    };
-  }, []);
-
-  const initializePaddle = () => {
-    if (!window.Paddle) return;
-
-    const paddleEnv = process.env.NEXT_PUBLIC_PADDLE_ENV || 'sandbox';
-    const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '';
-
-    if (!clientToken) {
-      setError('Paddle client token not configured');
-      return;
-    }
-
-    // Set environment first
-    window.Paddle.Environment.set(paddleEnv as 'sandbox' | 'production');
-
-    // Initialize with client token
-    window.Paddle.Setup({ token: clientToken });
-  };
+  }, [isInitialized]);
 
   return { isLoaded, error };
 }
@@ -138,19 +186,12 @@ export function PaddleCheckoutModal({
   const [activateSubscription] = useActivatePaddleSubscriptionMutation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isLoaded: isPaddleLoaded, error: paddleError } = usePaddleScript();
-
-  // Reset state when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setError(null);
-      setIsProcessing(false);
-    }
-  }, [isOpen]);
 
   // Handle checkout completion - this is called by Paddle's event system
   const handleCheckoutComplete = useCallback(
     async (data: { subscription_id?: string; transaction_id?: string }) => {
+      console.log('Checkout complete callback:', data);
+
       if (!data.subscription_id || !data.transaction_id) {
         setError(t('errors.noSubscriptionId'));
         return;
@@ -184,54 +225,57 @@ export function PaddleCheckoutModal({
     [activateSubscription, onClose, router, t, tierDisplayName]
   );
 
+  const { isLoaded: isPaddleLoaded, error: paddleError } = usePaddleScript(handleCheckoutComplete);
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setIsProcessing(false);
+    }
+  }, [isOpen]);
+
   // Open Paddle checkout
   const openPaddleCheckout = useCallback(() => {
-    if (!window.Paddle || !priceId) {
+    if (!window.Paddle) {
+      console.error('Paddle not loaded');
       setError(t('errors.paddleNotReady'));
       return;
     }
 
-    // Set up event listeners for checkout events
-    const handlePaddleEvent = (event: CustomEvent) => {
-      const eventData = event.detail;
+    if (!priceId) {
+      console.error('No price ID provided');
+      setError(t('errors.paddleNotReady'));
+      return;
+    }
 
-      if (eventData?.name === 'checkout.completed') {
-        const checkoutData = eventData.data;
-        handleCheckoutComplete({
-          subscription_id: checkoutData?.subscription_id,
-          transaction_id: checkoutData?.transaction_id,
-        });
-      } else if (eventData?.name === 'checkout.closed') {
-        // User closed checkout without completing
-        setIsProcessing(false);
-      }
-    };
-
-    // Add event listener
-    document.addEventListener('paddle:checkout', handlePaddleEvent as EventListener);
-
-    // Open checkout
-    window.Paddle.Checkout.open({
-      items: [
-        {
-          priceId: priceId,
-          quantity: 1,
-        },
-      ],
-      customer: userEmail ? { email: userEmail } : undefined,
-      settings: {
-        displayMode: 'overlay',
-        theme: 'light',
-        allowLogout: false,
-        successUrl: `${window.location.origin}/dashboard?subscription=success`,
-      },
+    console.log('Opening Paddle checkout:', {
+      priceId,
+      userEmail,
+      env: process.env.NEXT_PUBLIC_PADDLE_ENV,
     });
 
-    // Cleanup listener after a timeout (in case user closes browser)
-    setTimeout(() => {
-      document.removeEventListener('paddle:checkout', handlePaddleEvent as EventListener);
-    }, 600000); // 10 minutes
-  }, [priceId, userEmail, handleCheckoutComplete, t]);
+    try {
+      // Open checkout
+      window.Paddle.Checkout.open({
+        items: [
+          {
+            priceId: priceId,
+            quantity: 1,
+          },
+        ],
+        customer: userEmail ? { email: userEmail } : undefined,
+        settings: {
+          displayMode: 'overlay',
+          theme: 'light',
+          allowLogout: false,
+        },
+      });
+    } catch (e) {
+      console.error('Paddle checkout open error:', e);
+      setError(t('errors.paddleNotReady'));
+    }
+  }, [priceId, userEmail, t]);
 
   const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '';
 
