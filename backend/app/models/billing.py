@@ -47,9 +47,9 @@ class UserSubscription(BaseModel):
 
     # Payment provider (stripe or paypal)
     payment_provider = Column(
-        Enum(PaymentProvider, native_enum=False, length=20),
+        String(20),
         nullable=False,
-        default=PaymentProvider.STRIPE
+        default="stripe"
     )
 
     # Stripe IDs (nullable for PayPal subscriptions)
@@ -99,9 +99,9 @@ class PaymentHistory(BaseModel):
 
     # Payment provider
     payment_provider = Column(
-        Enum(PaymentProvider, native_enum=False, length=20),
+        String(20),
         nullable=False,
-        default=PaymentProvider.STRIPE
+        default="stripe"
     )
 
     # Stripe IDs

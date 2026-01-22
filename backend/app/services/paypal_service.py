@@ -178,7 +178,7 @@ class PayPalService:
 
         subscription_data = {
             "user_id": user.id,
-            "payment_provider": PaymentProvider.PAYPAL,
+            "payment_provider": "paypal",
             "paypal_subscription_id": subscription_id,
             "paypal_plan_id": plan_id,
             "stripe_subscription_id": None,

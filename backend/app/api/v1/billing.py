@@ -228,7 +228,7 @@ async def get_subscription_status(
     # Determine current payment provider
     payment_provider = None
     if subscription:
-        payment_provider = subscription.payment_provider.value if subscription.payment_provider else "stripe"
+        payment_provider = subscription.payment_provider if subscription.payment_provider else "stripe"
 
     response = SubscriptionStatusResponse(
         has_subscription=subscription is not None,
