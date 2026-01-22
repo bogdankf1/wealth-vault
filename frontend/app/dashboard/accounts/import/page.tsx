@@ -106,7 +106,7 @@ export default function AccountsImportPage() {
   const [convertCurrency] = useConvertCurrencyMutation();
   const { data: user } = useGetCurrentUserQuery();
   const { data: preferences } = useGetMyPreferencesQuery();
-  const { data: existingAccountsData } = useListAccountsQuery({ page: 1, page_size: 1000 });
+  const { data: existingAccountsData } = useListAccountsQuery({ page: 1, page_size: 100 });
 
   // Get existing accounts for duplicate detection
   const existingAccounts = existingAccountsData?.items || [];

@@ -13,6 +13,8 @@
     "title": "Przegląd Kont",
     "description": "Opis",
     "addAccount": "Dodaj konto",
+    "importAccounts": "Importuj",
+    "addManually": "Dodaj ręcznie",
     "totalAccounts": "Wszystkie konta",
     "activeAccounts": "Aktywne konta",
     "totalSavings": "Całkowite saldo",

@@ -13,6 +13,8 @@
     "title": "Visão Geral das Contas",
     "description": "Descrição",
     "addAccount": "Adicionar Conta",
+    "importAccounts": "Importar",
+    "addManually": "Adicionar manualmente",
     "totalAccounts": "Total de Contas",
     "activeAccounts": "Contas Ativas",
     "totalSavings": "Total das Contas",

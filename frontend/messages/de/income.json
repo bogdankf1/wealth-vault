@@ -14,6 +14,8 @@
     "title": "Einkommensübersicht",
     "description": "Beschreibung",
     "addIncome": "Einkommen hinzufügen",
+    "importIncome": "Importieren",
+    "addManually": "Manuell hinzufügen",
     "totalIncome": "Gesamteinkommen",
     "periodIncome": "Zeitraumeinkommen",
     "annualIncome": "Jahreseinkommen",

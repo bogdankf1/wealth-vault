@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye } from 'lucide-react';
+import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye, Upload, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -23,6 +23,7 @@ import {
   getRenewalMessage,
 } from '@/lib/utils/subscription-renewal';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -144,6 +145,10 @@ export default function SubscriptionsPage() {
     setEditingSubscriptionId(null);
     setIsFormOpen(true);
   }, []);
+
+  const handleImportSubscriptions = React.useCallback(() => {
+    router.push('/dashboard/subscriptions/import');
+  }, [router]);
 
   const handleEditSubscription = (id: string) => {
     setEditingSubscriptionId(id);
@@ -374,16 +379,25 @@ export default function SubscriptionsPage() {
             </Button>
           </>
         )}
-        <Button onClick={handleAddSubscription} size="default" className="w-full sm:w-auto">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addSubscription')}</span>
-        </Button>
+        <SplitButton
+          primaryLabel={tOverview('importSubscriptions')}
+          onPrimaryClick={handleImportSubscriptions}
+          primaryIcon={<Upload className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddSubscription,
+              icon: <Plus className="h-4 w-4" />,
+            },
+          ]}
+          className="w-full sm:w-auto"
+        />
       </>
     );
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription, tOverview, tActions]);
+  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription, handleImportSubscriptions, tOverview, tActions]);
 
   return (
     <div className="space-y-4 md:space-y-6">

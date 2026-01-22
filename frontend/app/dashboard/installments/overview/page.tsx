@@ -6,7 +6,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye, Upload, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -24,6 +25,7 @@ import {
   calculatePercentPaid,
 } from '@/lib/utils/installment-payment';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -52,6 +54,7 @@ import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
 export default function InstallmentsPage() {
+  const router = useRouter();
   // Translation hooks
   const tOverview = useTranslations('installments.overview');
   const tCommon = useTranslations('common');
@@ -150,6 +153,10 @@ export default function InstallmentsPage() {
     setEditingInstallmentId(null);
     setIsFormOpen(true);
   }, []);
+
+  const handleImportInstallments = React.useCallback(() => {
+    router.push('/dashboard/installments/import');
+  }, [router]);
 
   const handleEditInstallment = React.useCallback((id: string) => {
     setEditingInstallmentId(id);
@@ -383,14 +390,23 @@ export default function InstallmentsPage() {
             </Button>
           </>
         )}
-        <Button onClick={handleAddInstallment} size="default" className="w-full sm:w-auto">
-          <CreditCard className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addInstallment')}</span>
-        </Button>
+        <SplitButton
+          primaryLabel={tOverview('importInstallments')}
+          onPrimaryClick={handleImportInstallments}
+          primaryIcon={<Upload className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddInstallment,
+              icon: <Plus className="h-4 w-4" />,
+            },
+          ]}
+          className="w-full sm:w-auto"
+        />
       </>
     );
     return () => setActions(null);
-  }, [selectedInstallmentIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddInstallment, tOverview]);
+  }, [selectedInstallmentIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddInstallment, handleImportInstallments, tOverview]);
 
   return (
     <div className="space-y-4 md:space-y-6">

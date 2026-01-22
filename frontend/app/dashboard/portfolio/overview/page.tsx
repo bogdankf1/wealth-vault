@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Grid3x3, Rows3, Eye } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Grid3x3, Rows3, Eye, Upload, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   useListPortfolioAssetsQuery,
@@ -16,6 +16,7 @@ import {
   useBatchDeleteAssetsMutation,
 } from '@/lib/api/portfolioApi';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -110,6 +111,10 @@ export default function PortfolioPage() {
     setEditingAssetId(null);
     setIsFormOpen(true);
   }, []);
+
+  const handleImportAssets = useCallback(() => {
+    router.push('/dashboard/portfolio/import');
+  }, [router]);
 
   const handleEditAsset = (id: string) => {
     setEditingAssetId(id);
@@ -230,15 +235,24 @@ export default function PortfolioPage() {
             </Button>
           </>
         )}
-        <Button onClick={handleAddAsset} size="default" className="w-full sm:w-auto">
-          <DollarSign className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addAsset')}</span>
-        </Button>
+        <SplitButton
+          primaryLabel={tOverview('importAssets')}
+          onPrimaryClick={handleImportAssets}
+          primaryIcon={<Upload className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddAsset,
+              icon: <Plus className="h-4 w-4" />,
+            },
+          ]}
+          className="w-full sm:w-auto"
+        />
       </>
     );
 
     return () => setActions(null);
-  }, [selectedAssetIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddAsset, tOverview]);
+  }, [selectedAssetIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddAsset, handleImportAssets, tOverview]);
 
   const confirmBatchDelete = async () => {
     if (selectedAssetIds.size === 0) return;

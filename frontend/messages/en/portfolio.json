@@ -13,6 +13,8 @@
     "title": "Portfolio Overview",
     "description": "Track and manage your investment portfolio",
     "addAsset": "Add Asset",
+    "importAssets": "Import",
+    "addManually": "Add Manually",
     "totalValue": "Total Value",
     "totalInvested": "invested",
     "totalReturn": "Total Return",

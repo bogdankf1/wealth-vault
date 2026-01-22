@@ -6,6 +6,7 @@ import { Edit, Trash2, Archive, Wallet, Target, DollarSign, LayoutGrid, List, Gr
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -383,19 +384,24 @@ export default function BudgetsPage() {
             </Button>
           </>
         )}
-        <Button onClick={handleOpenAiPresets} variant="outline" size="default" className="w-full sm:w-auto">
-          <Sparkles className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('aiPresets.button')}</span>
-        </Button>
-        <Button onClick={handleAddBudget} size="default" className="w-full sm:w-auto">
-          <Wallet className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addBudget')}</span>
-        </Button>
+        <SplitButton
+          primaryLabel={tOverview('aiPresets.button')}
+          onPrimaryClick={handleOpenAiPresets}
+          primaryIcon={<Sparkles className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddBudget,
+              icon: <Plus className="h-4 w-4" />,
+            },
+          ]}
+          className="w-full sm:w-auto"
+        />
       </>
     );
 
     return () => setActions(null);
-  }, [selectedBudgetIds.size, setActions, tOverview, handleOpenAiPresets]);
+  }, [selectedBudgetIds.size, setActions, tOverview, handleOpenAiPresets, handleAddBudget]);
 
   // Prepare stats cards data from overview
   const statsCards: StatCard[] = overview?.stats

@@ -12,6 +12,7 @@
     "title": "Resumen de Presupuestos",
     "description": "Descripción",
     "addBudget": "Agregar Presupuesto",
+    "addManually": "Agregar manualmente",
     "totalBudgets": "Total de Presupuestos",
     "activeBudgets": "Presupuestos Activos",
     "totalBudgeted": "Total Presupuestado",

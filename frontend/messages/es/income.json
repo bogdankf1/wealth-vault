@@ -14,6 +14,8 @@
     "title": "Resumen de ingresos",
     "description": "Descripción",
     "addIncome": "Agregar ingreso",
+    "importIncome": "Importar",
+    "addManually": "Agregar manualmente",
     "totalIncome": "Total de ingresos",
     "periodIncome": "Ingresos del período",
     "annualIncome": "Ingresos anuales",

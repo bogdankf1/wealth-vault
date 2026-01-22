@@ -12,6 +12,7 @@
     "title": "Taxes Overview",
     "description": "Manage your tax obligations and estimates",
     "addTax": "Add Tax",
+    "addManually": "Add Manually",
     "totalTaxes": "Total Taxes",
     "fixedTaxes": "Fixed Taxes",
     "percentageBased": "Percentage-Based",

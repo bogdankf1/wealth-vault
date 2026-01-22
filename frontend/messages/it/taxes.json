@@ -12,6 +12,7 @@
     "title": "Panoramica Tasse",
     "description": "Gestisca i suoi obblighi fiscali e le sue stime",
     "addTax": "Aggiungi Tassa",
+    "addManually": "Aggiungi manualmente",
     "totalTaxes": "Tasse Totali",
     "fixedTaxes": "Tasse Fisse",
     "percentageBased": "Basate su Percentuale",

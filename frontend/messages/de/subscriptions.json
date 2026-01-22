@@ -14,6 +14,8 @@
     "title": "Abonnementübersicht",
     "description": "Verfolgen und verwalten Sie Ihre wiederkehrenden Abonnements",
     "addSubscription": "Abonnement hinzufügen",
+    "importSubscriptions": "Importieren",
+    "addManually": "Manuell hinzufügen",
     "totalSubscriptions": "Abonnements insgesamt",
     "activeSubscriptions": "Aktive Abonnements",
     "monthlyCost": "Monatliche Kosten",

@@ -14,6 +14,8 @@
     "title": "Ratenzahlungsübersicht",
     "description": "Verfolgen und verwalten Sie Ihre Ratenzahlungen",
     "addInstallment": "Ratenzahlung hinzufügen",
+    "importInstallments": "Importieren",
+    "addManually": "Manuell hinzufügen",
     "totalInstallments": "Ratenzahlungen insgesamt",
     "activeInstallments": "aktiv",
     "activeInMonth": "aktiv in",

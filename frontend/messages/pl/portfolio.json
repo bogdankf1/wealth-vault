@@ -13,6 +13,8 @@
     "title": "Przegląd portfela",
     "description": "Śledź i zarządzaj swoim portfelem inwestycyjnym",
     "addAsset": "Dodaj aktywo",
+    "importAssets": "Importuj",
+    "addManually": "Dodaj ręcznie",
     "totalValue": "Całkowita wartość",
     "totalInvested": "zainwestowano",
     "totalReturn": "Całkowity zwrot",

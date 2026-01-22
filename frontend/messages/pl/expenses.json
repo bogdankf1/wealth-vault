@@ -14,6 +14,8 @@
     "title": "Przegląd wydatków",
     "description": "Śledź i zarządzaj swoimi wydatkami",
     "addExpense": "Dodaj wydatek",
+    "importExpenses": "Importuj",
+    "addManually": "Dodaj ręcznie",
     "batchAddExpense": "Dodaj Wydatki Masowo",
     "totalExpenses": "Wszystkie wydatki",
     "periodSpending": "Wydatki w okresie",

@@ -14,6 +14,8 @@
     "title": "Ausgabenübersicht",
     "description": "Verfolgen und verwalten Sie Ihre Ausgaben",
     "addExpense": "Ausgabe hinzufügen",
+    "importExpenses": "Importieren",
+    "addManually": "Manuell hinzufügen",
     "batchAddExpense": "Ausgaben Stapelweise Hinzufügen",
     "totalExpenses": "Ausgaben insgesamt",
     "periodSpending": "Zeitraumausgaben",

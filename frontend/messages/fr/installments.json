@@ -14,6 +14,8 @@
     "title": "Vue d'ensemble des versements",
     "description": "Suivez et gérez vos paiements en plusieurs versements",
     "addInstallment": "Ajouter un versement",
+    "importInstallments": "Importer",
+    "addManually": "Ajouter manuellement",
     "totalInstallments": "Versements totaux",
     "activeInstallments": "actif",
     "activeInMonth": "actif dans",

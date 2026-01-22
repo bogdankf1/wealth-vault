@@ -12,6 +12,7 @@
     "title": "Resumen de Impuestos",
     "description": "Gestionar obligaciones fiscales y estimaciones",
     "addTax": "Agregar Impuesto",
+    "addManually": "Agregar manualmente",
     "totalTaxes": "Total de Impuestos",
     "fixedTaxes": "Impuestos Fijos",
     "percentageBased": "Basado en Porcentaje",

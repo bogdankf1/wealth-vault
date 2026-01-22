@@ -13,6 +13,8 @@
     "title": "Огляд Рахунків",
     "description": "Опис",
     "addAccount": "Додати рахунок",
+    "importAccounts": "Імпорт",
+    "addManually": "Додати вручну",
     "totalAccounts": "Всього рахунків",
     "activeAccounts": "Активні рахунки",
     "totalSavings": "Загальний баланс",

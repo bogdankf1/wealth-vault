@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Wallet, TrendingUp, PiggyBank, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, ArrowLeftRight } from 'lucide-react';
+import { Wallet, TrendingUp, PiggyBank, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, ArrowLeftRight, Upload, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { StatsCards } from '@/components/ui/stats-cards';
@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SavingsAccountForm } from '@/components/savings/savings-account-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -168,6 +169,10 @@ export default function SavingsPage() {
     setIsFormOpen(true);
   }, []);
 
+  const handleImportAccounts = useCallback(() => {
+    router.push('/dashboard/accounts/import');
+  }, [router]);
+
   // Set action buttons in layout
   React.useEffect(() => {
     setActions(
@@ -194,15 +199,24 @@ export default function SavingsPage() {
             </Button>
           </>
         )}
-        <Button onClick={handleAddAccount} size="default" className="w-full sm:w-auto">
-          <Wallet className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addAccount')}</span>
-        </Button>
+        <SplitButton
+          primaryLabel={tOverview('importAccounts')}
+          onPrimaryClick={handleImportAccounts}
+          primaryIcon={<Upload className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddAccount,
+              icon: <Plus className="h-4 w-4" />,
+            },
+          ]}
+          className="w-full sm:w-auto"
+        />
       </>
     );
 
     return () => setActions(null);
-  }, [selectedAccountIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddAccount, tOverview]);
+  }, [selectedAccountIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddAccount, handleImportAccounts, tOverview]);
 
   const confirmBatchDelete = async () => {
     if (selectedAccountIds.size === 0) return;

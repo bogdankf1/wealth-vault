@@ -13,6 +13,8 @@
     "title": "Aperçu des Comptes",
     "description": "Description",
     "addAccount": "Ajouter un compte",
+    "importAccounts": "Importer",
+    "addManually": "Ajouter manuellement",
     "totalAccounts": "Comptes totaux",
     "activeAccounts": "Comptes actifs",
     "totalSavings": "Solde total",

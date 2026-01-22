@@ -14,6 +14,8 @@
     "title": "Огляд розстрочок",
     "description": "Відстежуйте та керуйте платежами в розстрочку",
     "addInstallment": "Додати розстрочку",
+    "importInstallments": "Імпорт",
+    "addManually": "Додати вручну",
     "totalInstallments": "Всього розстрочок",
     "activeInstallments": "активних",
     "activeInMonth": "активних у",

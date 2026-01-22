@@ -18,6 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TaxForm } from '@/components/taxes/tax-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -308,14 +309,19 @@ export default function TaxesPage() {
             </Button>
           </>
         )}
-        <Button onClick={handleOpenAiSearch} variant="outline" size="default" className="w-full sm:w-auto">
-          <Sparkles className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('aiSearch.button')}</span>
-        </Button>
-        <Button onClick={handleAddTax} size="default" className="w-full sm:w-auto">
-          <DollarSign className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addTax')}</span>
-        </Button>
+        <SplitButton
+          primaryLabel={tOverview('aiSearch.button')}
+          onPrimaryClick={handleOpenAiSearch}
+          primaryIcon={<Sparkles className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddTax,
+              icon: <Plus className="h-4 w-4" />,
+            },
+          ]}
+          className="w-full sm:w-auto"
+        />
       </div>
     );
 

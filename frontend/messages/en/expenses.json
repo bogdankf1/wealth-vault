@@ -14,6 +14,8 @@
     "title": "Expenses Overview",
     "description": "Track and manage your expenses",
     "addExpense": "Add Expense",
+    "importExpenses": "Import",
+    "addManually": "Add Manually",
     "batchAddExpense": "Batch Add Expenses",
     "totalExpenses": "Total Expenses",
     "periodSpending": "Period Spending",

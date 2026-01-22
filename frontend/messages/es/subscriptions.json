@@ -14,6 +14,8 @@
     "title": "Resumen de Suscripciones",
     "description": "Rastrea y gestiona tus suscripciones recurrentes",
     "addSubscription": "Agregar Suscripción",
+    "importSubscriptions": "Importar",
+    "addManually": "Agregar manualmente",
     "totalSubscriptions": "Total de Suscripciones",
     "activeSubscriptions": "Suscripciones activas",
     "monthlyCost": "Costo Mensual",

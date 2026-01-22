@@ -14,6 +14,8 @@
     "title": "Resumen de gastos",
     "description": "Rastrea y gestiona tus gastos",
     "addExpense": "Agregar gasto",
+    "importExpenses": "Importar",
+    "addManually": "Agregar manualmente",
     "batchAddExpense": "Añadir Gastos en Lote",
     "totalExpenses": "Total de gastos",
     "periodSpending": "Gasto del período",

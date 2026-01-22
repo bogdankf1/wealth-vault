@@ -14,6 +14,8 @@
     "title": "Przegląd subskrypcji",
     "description": "Śledź i zarządzaj swoimi cyklicznymi subskrypcjami",
     "addSubscription": "Dodaj subskrypcję",
+    "importSubscriptions": "Importuj",
+    "addManually": "Dodaj ręcznie",
     "totalSubscriptions": "Wszystkie subskrypcje",
     "activeSubscriptions": "Aktywne subskrypcje",
     "monthlyCost": "Koszt miesięczny",

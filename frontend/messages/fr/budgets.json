@@ -12,6 +12,7 @@
     "title": "Vue d'ensemble des budgets",
     "description": "Description",
     "addBudget": "Ajouter un budget",
+    "addManually": "Ajouter manuellement",
     "totalBudgets": "Budgets totaux",
     "activeBudgets": "Budgets actifs",
     "totalBudgeted": "Total budgétisé",

@@ -12,6 +12,7 @@
     "title": "Vue d'ensemble des impôts",
     "description": "Gérez vos obligations et estimations fiscales",
     "addTax": "Ajouter un impôt",
+    "addManually": "Ajouter manuellement",
     "totalTaxes": "Impôts totaux",
     "fixedTaxes": "Impôts fixes",
     "percentageBased": "Basé sur le pourcentage",

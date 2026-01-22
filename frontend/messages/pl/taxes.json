@@ -12,6 +12,7 @@
     "title": "Przegląd podatków",
     "description": "Zarządzaj swoimi zobowiązaniami podatkowymi i szacunkami",
     "addTax": "Dodaj podatek",
+    "addManually": "Dodaj ręcznie",
     "totalTaxes": "Wszystkie podatki",
     "fixedTaxes": "Podatki stałe",
     "percentageBased": "Oparte na procencie",

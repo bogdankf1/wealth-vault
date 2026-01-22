@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Layers, Eye } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Layers, Eye, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -17,6 +17,7 @@ import {
   useBatchDeleteExpensesMutation,
 } from '@/lib/api/expensesApi';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -132,6 +133,10 @@ export default function ExpensesPage() {
     setEditingExpenseId(null);
     setIsFormOpen(true);
   }, []);
+
+  const handleImportExpenses = React.useCallback(() => {
+    router.push('/dashboard/expenses/import');
+  }, [router]);
 
   const handleBatchAddExpense = React.useCallback(() => {
     setIsBatchFormOpen(true);
@@ -312,22 +317,34 @@ export default function ExpensesPage() {
             </Button>
           </>
         )}
-        <Button onClick={handleAddExpense} size="default" className="w-full sm:w-auto">
-          <DollarSign className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addExpense')}</span>
-        </Button>
-        {hasBatchOperations && (
-          <Button onClick={handleBatchAddExpense} variant="outline" size="default" className="w-full sm:w-auto">
-            <Layers className="mr-2 h-4 w-4" />
-            <span className="truncate">{tOverview('batchAddExpense')}</span>
-          </Button>
-        )}
+        <SplitButton
+          primaryLabel={tOverview('importExpenses')}
+          onPrimaryClick={handleImportExpenses}
+          primaryIcon={<Upload className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddExpense,
+              icon: <Plus className="h-4 w-4" />,
+            },
+            ...(hasBatchOperations
+              ? [
+                  {
+                    label: tOverview('batchAddExpense'),
+                    onClick: handleBatchAddExpense,
+                    icon: <Layers className="h-4 w-4" />,
+                  },
+                ]
+              : []),
+          ]}
+          className="w-full sm:w-auto"
+        />
       </>
     );
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleBatchAddExpense, hasBatchOperations, tOverview]);
+  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleImportExpenses, handleBatchAddExpense, hasBatchOperations, tOverview]);
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats

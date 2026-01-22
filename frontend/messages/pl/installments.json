@@ -14,6 +14,8 @@
     "title": "Przegląd rat",
     "description": "Śledź i zarządzaj swoimi płatnościami ratalnymi",
     "addInstallment": "Dodaj ratę",
+    "importInstallments": "Importuj",
+    "addManually": "Dodaj ręcznie",
     "totalInstallments": "Wszystkie raty",
     "activeInstallments": "aktywne",
     "activeInMonth": "aktywne w",

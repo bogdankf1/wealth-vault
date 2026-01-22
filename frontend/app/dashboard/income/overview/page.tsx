@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TrendingUp, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye } from 'lucide-react';
+import { TrendingUp, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye, Upload, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -17,6 +17,7 @@ import {
   useBatchDeleteIncomeSourcesMutation,
 } from '@/lib/api/incomeApi';
 import { Button } from '@/components/ui/button';
+import { SplitButton } from '@/components/ui/split-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -142,6 +143,10 @@ export default function IncomePage() {
     setEditingSourceId(null);
     setIsFormOpen(true);
   }, [tierCheck.canAdd]);
+
+  const handleImportIncome = React.useCallback(() => {
+    router.push('/dashboard/income/import');
+  }, [router]);
 
   const handleEditSource = (id: string) => {
     setEditingSourceId(id);
@@ -362,16 +367,25 @@ export default function IncomePage() {
             </Button>
           </>
         )}
-        <Button onClick={handleAddSource} size="default" className="w-full sm:w-auto">
-          <TrendingUp className="mr-2 h-4 w-4" />
-          <span className="truncate">{tOverview('addIncome')}</span>
-        </Button>
+        <SplitButton
+          primaryLabel={tOverview('importIncome')}
+          onPrimaryClick={handleImportIncome}
+          primaryIcon={<Upload className="h-4 w-4" />}
+          options={[
+            {
+              label: tOverview('addManually'),
+              onClick: handleAddSource,
+              icon: <Plus className="h-4 w-4" />,
+            },
+          ]}
+          className="w-full sm:w-auto"
+        />
       </>
     );
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSourceIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSource, tOverview]);
+  }, [selectedSourceIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSource, handleImportIncome, tOverview]);
 
   return (
     <div className="space-y-4 md:space-y-6">

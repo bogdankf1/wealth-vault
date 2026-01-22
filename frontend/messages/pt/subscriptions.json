@@ -14,6 +14,8 @@
     "title": "Visão Geral de Assinaturas",
     "description": "Acompanhe e gerencie suas assinaturas recorrentes",
     "addSubscription": "Adicionar Assinatura",
+    "importSubscriptions": "Importar",
+    "addManually": "Adicionar manualmente",
     "totalSubscriptions": "Total de Assinaturas",
     "activeSubscriptions": "Assinaturas ativas",
     "monthlyCost": "Custo Mensal",

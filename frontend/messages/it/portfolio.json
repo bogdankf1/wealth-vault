@@ -13,6 +13,8 @@
     "title": "Panoramica Portafoglio",
     "description": "Monitora e gestisci il tuo portafoglio di investimenti",
     "addAsset": "Aggiungi Asset",
+    "importAssets": "Importa",
+    "addManually": "Aggiungi manualmente",
     "totalValue": "Valore Totale",
     "totalInvested": "investito",
     "totalReturn": "Rendimento Totale",

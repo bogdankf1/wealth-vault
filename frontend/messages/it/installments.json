@@ -14,6 +14,8 @@
     "title": "Panoramica Rate",
     "description": "Tracci e gestisca i suoi pagamenti rateali",
     "addInstallment": "Aggiungi Rata",
+    "importInstallments": "Importa",
+    "addManually": "Aggiungi manualmente",
     "totalInstallments": "Rate Totali",
     "activeInstallments": "attive",
     "activeInMonth": "attive in",

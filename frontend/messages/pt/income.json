@@ -14,6 +14,8 @@
     "title": "Visão Geral de Receitas",
     "description": "Descrição",
     "addIncome": "Adicionar Receita",
+    "importIncome": "Importar",
+    "addManually": "Adicionar manualmente",
     "totalIncome": "Receita Total",
     "periodIncome": "Receita do Período",
     "annualIncome": "Receita Anual",

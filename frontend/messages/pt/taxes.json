@@ -12,6 +12,7 @@
     "title": "Visão Geral de Impostos",
     "description": "Gerencie suas obrigações fiscais e estimativas",
     "addTax": "Adicionar Imposto",
+    "addManually": "Adicionar manualmente",
     "totalTaxes": "Total de Impostos",
     "fixedTaxes": "Impostos Fixos",
     "percentageBased": "Baseado em Porcentagem",

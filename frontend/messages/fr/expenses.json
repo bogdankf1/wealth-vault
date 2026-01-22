@@ -14,6 +14,8 @@
     "title": "Vue d'ensemble des dépenses",
     "description": "Suivez et gérez vos dépenses",
     "addExpense": "Ajouter une dépense",
+    "importExpenses": "Importer",
+    "addManually": "Ajouter manuellement",
     "batchAddExpense": "Ajout en Lot de Dépenses",
     "totalExpenses": "Dépenses totales",
     "periodSpending": "Dépenses de la période",

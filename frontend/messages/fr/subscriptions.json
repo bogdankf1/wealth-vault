@@ -14,6 +14,8 @@
     "title": "Vue d'ensemble des abonnements",
     "description": "Suivez et gérez vos abonnements récurrents",
     "addSubscription": "Ajouter un abonnement",
+    "importSubscriptions": "Importer",
+    "addManually": "Ajouter manuellement",
     "totalSubscriptions": "Abonnements totaux",
     "activeSubscriptions": "Abonnements actifs",
     "monthlyCost": "Coût mensuel",

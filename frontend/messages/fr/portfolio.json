@@ -13,6 +13,8 @@
     "title": "Vue d'ensemble du portefeuille",
     "description": "Suivez et gérez votre portefeuille d'investissement",
     "addAsset": "Ajouter un actif",
+    "importAssets": "Importer",
+    "addManually": "Ajouter manuellement",
     "totalValue": "Valeur totale",
     "totalInvested": "investi",
     "totalReturn": "Rendement total",

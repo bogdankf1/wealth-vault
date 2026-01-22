@@ -14,6 +14,8 @@
     "title": "Visão Geral de Parcelamentos",
     "description": "Acompanhe e gerencie seus pagamentos parcelados",
     "addInstallment": "Adicionar Parcelamento",
+    "importInstallments": "Importar",
+    "addManually": "Adicionar manualmente",
     "totalInstallments": "Total de Parcelamentos",
     "activeInstallments": "ativo",
     "activeInMonth": "ativo em",

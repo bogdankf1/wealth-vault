@@ -14,6 +14,8 @@
     "title": "Income Overview",
     "description": "Description",
     "addIncome": "Add Income",
+    "importIncome": "Import",
+    "addManually": "Add Manually",
     "totalIncome": "Total Income",
     "periodIncome": "Period Income",
     "annualIncome": "Annual Income",

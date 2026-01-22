@@ -14,6 +14,8 @@
     "title": "Panoramica Entrate",
     "description": "Descrizione",
     "addIncome": "Aggiungi Entrata",
+    "importIncome": "Importa",
+    "addManually": "Aggiungi manualmente",
     "totalIncome": "Entrate Totali",
     "periodIncome": "Entrate Periodo",
     "annualIncome": "Entrate Annuali",

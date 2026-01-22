@@ -13,6 +13,8 @@
     "title": "Resumen de Cartera",
     "description": "Rastrea y gestiona tu cartera de inversiones",
     "addAsset": "Agregar Activo",
+    "importAssets": "Importar",
+    "addManually": "Agregar manualmente",
     "totalValue": "Valor Total",
     "totalInvested": "invertido",
     "totalReturn": "Retorno Total",

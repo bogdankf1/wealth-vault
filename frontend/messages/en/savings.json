@@ -13,6 +13,8 @@
     "title": "Accounts Overview",
     "description": "Track and manage your accounts",
     "addAccount": "Add Account",
+    "importAccounts": "Import",
+    "addManually": "Add Manually",
     "totalAccounts": "Total Accounts",
     "activeAccounts": "Active Accounts",
     "totalSavings": "Total Balance",

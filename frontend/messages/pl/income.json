@@ -14,6 +14,8 @@
     "title": "Przegląd dochodów",
     "description": "Opis",
     "addIncome": "Dodaj dochód",
+    "importIncome": "Importuj",
+    "addManually": "Dodaj ręcznie",
     "totalIncome": "Całkowity dochód",
     "periodIncome": "Dochód w okresie",
     "annualIncome": "Dochód roczny",

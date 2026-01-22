@@ -12,6 +12,7 @@
     "title": "Steuerübersicht",
     "description": "Verwalten Sie Ihre Steuerverpflichtungen und Schätzungen",
     "addTax": "Steuer hinzufügen",
+    "addManually": "Manuell hinzufügen",
     "totalTaxes": "Steuern insgesamt",
     "fixedTaxes": "Fixe Steuern",
     "percentageBased": "Prozentbasiert",

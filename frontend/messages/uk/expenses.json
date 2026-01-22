@@ -14,6 +14,8 @@
     "title": "Огляд витрат",
     "description": "Відстежуйте та керуйте своїми витратами",
     "addExpense": "Додати витрату",
+    "importExpenses": "Імпорт",
+    "addManually": "Додати вручну",
     "batchAddExpense": "Масове додавання витрат",
     "totalExpenses": "Всього витрат",
     "periodSpending": "Витрати за період",
