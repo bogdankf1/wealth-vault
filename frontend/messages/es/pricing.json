@@ -81,6 +81,9 @@
     "paypal": {
       "description": "Paga con tu cuenta de PayPal"
     },
+    "paddle": {
+      "description": "Paga de forma segura con cálculo automático de impuestos"
+    },
     "mono": {
       "description": "Paga con Monobank (Ucrania)"
     },
@@ -103,6 +106,22 @@
       "noSubscriptionId": "No se recibió ID de suscripción de PayPal",
       "activationFailed": "Error al activar la suscripción. Por favor intente de nuevo.",
       "paypalError": "Ocurrió un error con PayPal. Por favor intente de nuevo."
+    }
+  },
+  "paddleCheckout": {
+    "title": "Complete su suscripción",
+    "description": "Suscríbase a {tier} por ${price} {currency}/mes",
+    "loadingPaddle": "Cargando pago...",
+    "clickToProceed": "Haga clic en el botón de abajo para continuar al pago seguro",
+    "proceedToCheckout": "Continuar al pago",
+    "processing": "Activando su suscripción...",
+    "success": "¡Suscrito exitosamente a {tier}!",
+    "configError": "Error de configuración",
+    "configErrorDesc": "Paddle no está configurado correctamente. Por favor contacte al soporte.",
+    "errors": {
+      "noSubscriptionId": "No se recibió ID de suscripción",
+      "activationFailed": "Error al activar la suscripción. Por favor intente de nuevo.",
+      "paddleNotReady": "El pago no está listo. Por favor intente de nuevo."
     }
   }
 }

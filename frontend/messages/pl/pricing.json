@@ -81,6 +81,9 @@
     "paypal": {
       "description": "Zapłać za pomocą konta PayPal"
     },
+    "paddle": {
+      "description": "Zapłać bezpiecznie z automatycznym naliczeniem podatków"
+    },
     "mono": {
       "description": "Zapłać przez Monobank (Ukraina)"
     },
@@ -103,6 +106,22 @@
       "noSubscriptionId": "Nie otrzymano ID subskrypcji od PayPal",
       "activationFailed": "Nie udało się aktywować subskrypcji. Spróbuj ponownie.",
       "paypalError": "Wystąpił błąd z PayPal. Spróbuj ponownie."
+    }
+  },
+  "paddleCheckout": {
+    "title": "Dokończ subskrypcję",
+    "description": "Subskrybuj {tier} za ${price} {currency}/miesiąc",
+    "loadingPaddle": "Ładowanie płatności...",
+    "clickToProceed": "Kliknij przycisk poniżej, aby przejść do bezpiecznej płatności",
+    "proceedToCheckout": "Przejdź do płatności",
+    "processing": "Aktywacja subskrypcji...",
+    "success": "Pomyślnie zasubskrybowano {tier}!",
+    "configError": "Błąd konfiguracji",
+    "configErrorDesc": "Paddle nie jest prawidłowo skonfigurowany. Skontaktuj się ze wsparciem.",
+    "errors": {
+      "noSubscriptionId": "Nie otrzymano ID subskrypcji",
+      "activationFailed": "Nie udało się aktywować subskrypcji. Spróbuj ponownie.",
+      "paddleNotReady": "Płatność nie jest gotowa. Spróbuj ponownie."
     }
   }
 }

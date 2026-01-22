@@ -67,17 +67,49 @@ class PayPalUpdateSubscriptionRequest(BaseModel):
     new_plan_id: str = Field(..., description="New PayPal plan ID")
 
 
+# Paddle-specific schemas
+class PaddleActivateSubscriptionRequest(BaseModel):
+    """Request to activate a Paddle subscription after checkout."""
+    subscription_id: str = Field(..., description="Paddle subscription ID from checkout")
+    transaction_id: str = Field(..., description="Paddle transaction ID from checkout")
+
+
+class PaddleActivateSubscriptionResponse(BaseModel):
+    """Response after activating Paddle subscription."""
+    success: bool
+    subscription_id: str
+    tier: str
+    status: str
+
+
+class PaddleCancelSubscriptionRequest(BaseModel):
+    """Request to cancel a Paddle subscription."""
+    effective_from: str = Field(
+        default="next_billing_period",
+        description="When cancellation takes effect: 'immediately' or 'next_billing_period'"
+    )
+
+
+class PaddleUpdateSubscriptionRequest(BaseModel):
+    """Request to update/change Paddle subscription plan."""
+    new_price_id: str = Field(..., description="New Paddle price ID")
+
+
 class SubscriptionResponse(BaseModel):
     """Subscription details response."""
     id: UUID
     payment_provider: str = "stripe"
-    # Stripe fields (optional for PayPal subscriptions)
+    # Stripe fields (optional for PayPal/Paddle subscriptions)
     stripe_subscription_id: Optional[str] = None
     stripe_customer_id: Optional[str] = None
     stripe_price_id: Optional[str] = None
-    # PayPal fields (optional for Stripe subscriptions)
+    # PayPal fields (optional for Stripe/Paddle subscriptions)
     paypal_subscription_id: Optional[str] = None
     paypal_plan_id: Optional[str] = None
+    # Paddle fields (optional for Stripe/PayPal subscriptions)
+    paddle_subscription_id: Optional[str] = None
+    paddle_customer_id: Optional[str] = None
+    paddle_price_id: Optional[str] = None
     # Common fields
     status: str
     current_period_start: Optional[datetime] = None
@@ -119,6 +151,9 @@ class PaymentHistoryResponse(BaseModel):
     # PayPal fields
     paypal_transaction_id: Optional[str] = None
     paypal_subscription_id: Optional[str] = None
+    # Paddle fields
+    paddle_transaction_id: Optional[str] = None
+    paddle_subscription_id: Optional[str] = None
     # Common fields
     amount: int  # Amount in cents
     currency: str

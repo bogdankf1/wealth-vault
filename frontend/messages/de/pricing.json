@@ -81,6 +81,9 @@
     "paypal": {
       "description": "Mit Ihrem PayPal-Konto bezahlen"
     },
+    "paddle": {
+      "description": "Sicher bezahlen mit automatischer Steuerberechnung"
+    },
     "mono": {
       "description": "Mit Monobank bezahlen (Ukraine)"
     },
@@ -103,6 +106,22 @@
       "noSubscriptionId": "Keine Abonnement-ID von PayPal erhalten",
       "activationFailed": "Abonnement konnte nicht aktiviert werden. Bitte versuchen Sie es erneut.",
       "paypalError": "Bei PayPal ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+    }
+  },
+  "paddleCheckout": {
+    "title": "Abonnement abschließen",
+    "description": "Abonnieren Sie {tier} für ${price} {currency}/Monat",
+    "loadingPaddle": "Zahlung wird geladen...",
+    "clickToProceed": "Klicken Sie auf die Schaltfläche unten, um zur sicheren Zahlung zu gelangen",
+    "proceedToCheckout": "Zur Kasse gehen",
+    "processing": "Ihr Abonnement wird aktiviert...",
+    "success": "Erfolgreich für {tier} abonniert!",
+    "configError": "Konfigurationsfehler",
+    "configErrorDesc": "Paddle ist nicht richtig konfiguriert. Bitte kontaktieren Sie den Support.",
+    "errors": {
+      "noSubscriptionId": "Keine Abonnement-ID erhalten",
+      "activationFailed": "Abonnement konnte nicht aktiviert werden. Bitte versuchen Sie es erneut.",
+      "paddleNotReady": "Zahlung ist nicht bereit. Bitte versuchen Sie es erneut."
     }
   }
 }

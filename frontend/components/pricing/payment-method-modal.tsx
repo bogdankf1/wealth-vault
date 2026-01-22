@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CreditCard, Wallet, Banknote, Globe, Building2 } from 'lucide-react';
+import { CreditCard, Wallet, Banknote, Globe, Building2, CircleDollarSign } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 
-export type PaymentMethod = 'stripe' | 'paypal' | 'mono' | 'payoneer' | 'bank_transfer';
+export type PaymentMethod = 'stripe' | 'paypal' | 'paddle' | 'mono' | 'payoneer' | 'bank_transfer';
 
 interface PaymentMethodModalProps {
   isOpen: boolean;
@@ -65,6 +65,13 @@ export function PaymentMethodModal({
       name: 'PayPal',
       description: t('paypal.description'),
       icon: Wallet,
+      available: true,
+    },
+    {
+      id: 'paddle' as PaymentMethod,
+      name: 'Paddle',
+      description: t('paddle.description'),
+      icon: CircleDollarSign,
       available: true,
     },
     {

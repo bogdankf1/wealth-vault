@@ -33,6 +33,7 @@ class PaymentProvider(str, enum.Enum):
     """Payment provider enumeration."""
     STRIPE = "stripe"
     PAYPAL = "paypal"
+    PADDLE = "paddle"
 
 
 class UserSubscription(BaseModel):
@@ -60,6 +61,11 @@ class UserSubscription(BaseModel):
     # PayPal IDs (nullable for Stripe subscriptions)
     paypal_subscription_id = Column(String(255), unique=True, nullable=True, index=True)
     paypal_plan_id = Column(String(255), nullable=True)
+
+    # Paddle IDs (nullable for Stripe/PayPal subscriptions)
+    paddle_subscription_id = Column(String(255), unique=True, nullable=True, index=True)
+    paddle_customer_id = Column(String(255), nullable=True, index=True)
+    paddle_price_id = Column(String(255), nullable=True)
 
     # Subscription details
     status = Column(
@@ -112,6 +118,10 @@ class PaymentHistory(BaseModel):
     # PayPal IDs
     paypal_transaction_id = Column(String(255), unique=True, nullable=True, index=True)
     paypal_subscription_id = Column(String(255), nullable=True)
+
+    # Paddle IDs
+    paddle_transaction_id = Column(String(255), unique=True, nullable=True, index=True)
+    paddle_subscription_id = Column(String(255), nullable=True)
 
     # Payment details
     amount = Column(Integer, nullable=False)  # Amount in cents

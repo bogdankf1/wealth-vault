@@ -56,6 +56,14 @@ class Settings(BaseSettings):
     PAYPAL_GROWTH_PLAN_ID: str = ""
     PAYPAL_WEALTH_PLAN_ID: str = ""
 
+    # Paddle
+    PADDLE_API_KEY: str = ""
+    PADDLE_WEBHOOK_SECRET: str = ""
+    PADDLE_SELLER_ID: str = ""
+    PADDLE_ENV: str = "sandbox"  # "sandbox" or "production"
+    PADDLE_GROWTH_PRICE_ID: str = ""
+    PADDLE_WEALTH_PRICE_ID: str = ""
+
     # Email (for future use)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587

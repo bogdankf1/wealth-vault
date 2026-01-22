@@ -15,6 +15,7 @@ import { useTranslations } from 'next-intl';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { PaymentMethodModal, type PaymentMethod } from '@/components/pricing/payment-method-modal';
 import { PayPalCheckoutModal } from '@/components/pricing/paypal-checkout-modal';
+import { PaddleCheckoutModal } from '@/components/pricing/paddle-checkout-modal';
 
 interface TierFeature {
   name: string;
@@ -91,6 +92,9 @@ export default function PricingPage() {
   // PayPal checkout modal state
   const [showPayPalModal, setShowPayPalModal] = useState(false);
 
+  // Paddle checkout modal state
+  const [showPaddleModal, setShowPaddleModal] = useState(false);
+
   const displayCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
   // Stripe price ID mapping
@@ -103,6 +107,12 @@ export default function PricingPage() {
   const paypalPlanIdMap: Record<string, string> = {
     growth: process.env.NEXT_PUBLIC_PAYPAL_GROWTH_PLAN_ID || '',
     wealth: process.env.NEXT_PUBLIC_PAYPAL_WEALTH_PLAN_ID || '',
+  };
+
+  // Paddle price ID mapping
+  const paddlePriceIdMap: Record<string, string> = {
+    growth: process.env.NEXT_PUBLIC_PADDLE_GROWTH_PRICE_ID || '',
+    wealth: process.env.NEXT_PUBLIC_PADDLE_WEALTH_PRICE_ID || '',
   };
 
   const handleSubscribe = (tier: { id: string; name: string; display_name: string; price_monthly: number }) => {
@@ -157,6 +167,18 @@ export default function PricingPage() {
         setShowPaymentModal(false);
         setShowPayPalModal(true);
         setLoadingTier(null);
+      } else if (paymentMethod === 'paddle') {
+        // Paddle flow - show Paddle checkout modal
+        const paddlePriceId = paddlePriceIdMap[selectedTier.name];
+        if (!paddlePriceId) {
+          setShowPaymentModal(false);
+          setLoadingTier(null);
+          return;
+        }
+        // Close payment method modal and open Paddle modal
+        setShowPaymentModal(false);
+        setShowPaddleModal(true);
+        setLoadingTier(null);
       }
     } catch (error) {
       setShowPaymentModal(false);
@@ -174,6 +196,11 @@ export default function PricingPage() {
 
   const handlePayPalModalClose = () => {
     setShowPayPalModal(false);
+    setSelectedTier(null);
+  };
+
+  const handlePaddleModalClose = () => {
+    setShowPaddleModal(false);
     setSelectedTier(null);
   };
 
@@ -354,6 +381,20 @@ export default function PricingPage() {
           />
         )}
       </PayPalScriptProvider>
+
+      {/* Paddle Checkout Modal */}
+      {selectedTier && (
+        <PaddleCheckoutModal
+          isOpen={showPaddleModal}
+          onClose={handlePaddleModalClose}
+          tierName={selectedTier.name}
+          tierDisplayName={selectedTier.display_name}
+          tierPrice={selectedTier.price_monthly}
+          priceId={paddlePriceIdMap[selectedTier.name] || ''}
+          currency={displayCurrency}
+          userEmail={user?.email}
+        />
+      )}
     </div>
   );
 }

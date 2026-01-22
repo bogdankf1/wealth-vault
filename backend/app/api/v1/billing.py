@@ -31,10 +31,15 @@ from app.schemas.billing import (
     PayPalActivateSubscriptionResponse,
     PayPalCancelSubscriptionRequest,
     PayPalUpdateSubscriptionRequest,
+    PaddleActivateSubscriptionRequest,
+    PaddleActivateSubscriptionResponse,
+    PaddleCancelSubscriptionRequest,
+    PaddleUpdateSubscriptionRequest,
 )
 from app.schemas.admin import TierDetail
 from app.services.stripe_service import StripeService
 from app.services.paypal_service import PayPalService
+from app.services.paddle_service import PaddleService
 from app.models.billing import PaymentProvider
 
 router = APIRouter(prefix="/billing", tags=["billing"])
@@ -210,6 +215,11 @@ async def get_subscription_status(
             "paypal_plan_id": (
                 settings.PAYPAL_GROWTH_PLAN_ID if tier.name == "growth"
                 else settings.PAYPAL_WEALTH_PLAN_ID if tier.name == "wealth"
+                else None
+            ),
+            "paddle_price_id": (
+                settings.PADDLE_GROWTH_PRICE_ID if tier.name == "growth"
+                else settings.PADDLE_WEALTH_PRICE_ID if tier.name == "wealth"
                 else None
             )
         }
@@ -524,6 +534,153 @@ async def paypal_webhook(
         )
     except Exception as e:
         logger.exception(f"PayPal webhook processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Webhook processing failed: {str(e)}")
+
+    return {"status": "success"}
+
+
+# ============================================================================
+# Paddle Endpoints
+# ============================================================================
+
+
+@router.post("/paddle/activate", response_model=PaddleActivateSubscriptionResponse)
+async def activate_paddle_subscription(
+    request: PaddleActivateSubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Activate a Paddle subscription after checkout.
+
+    This is called after the user completes the Paddle checkout.
+    The frontend passes the subscription_id and transaction_id received from Paddle.
+    """
+    try:
+        result = await PaddleService.activate_subscription(
+            subscription_id=request.subscription_id,
+            transaction_id=request.transaction_id,
+            user=current_user,
+            db=db,
+        )
+        return PaddleActivateSubscriptionResponse(**result)
+    except Exception as e:
+        logger.exception(f"Paddle activation failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/paddle/cancel")
+async def cancel_paddle_subscription(
+    request: PaddleCancelSubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Cancel a Paddle subscription.
+
+    Can cancel immediately or at the end of the billing period.
+    """
+    if not current_user.paddle_subscription_id:
+        raise HTTPException(status_code=404, detail="No active Paddle subscription found")
+
+    try:
+        await PaddleService.cancel_subscription(
+            subscription_id=current_user.paddle_subscription_id,
+            effective_from=request.effective_from,
+        )
+
+        # Update local record
+        result = await db.execute(
+            select(UserSubscription).where(UserSubscription.user_id == current_user.id)
+        )
+        subscription = result.scalar_one_or_none()
+
+        if subscription:
+            from datetime import datetime
+            if request.effective_from == "immediately":
+                subscription.status = "canceled"
+                subscription.canceled_at = datetime.utcnow()
+            else:
+                subscription.cancel_at_period_end = 1
+                subscription.canceled_at = datetime.utcnow()
+            await db.commit()
+
+        return {"status": "success", "message": "Paddle subscription cancelled"}
+    except Exception as e:
+        logger.exception(f"Paddle cancellation failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/paddle/update")
+async def update_paddle_subscription(
+    request: PaddleUpdateSubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Update/change Paddle subscription plan (upgrade or downgrade).
+    """
+    if not current_user.paddle_subscription_id:
+        raise HTTPException(status_code=404, detail="No active Paddle subscription found")
+
+    try:
+        result = await PaddleService.update_subscription(
+            subscription_id=current_user.paddle_subscription_id,
+            new_price_id=request.new_price_id,
+            db=db,
+            user=current_user,
+        )
+        return result
+    except Exception as e:
+        logger.exception(f"Paddle update failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/paddle/webhook")
+async def paddle_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Handle Paddle webhook events.
+
+    This endpoint is called by Paddle to notify us of subscription and transaction events.
+    """
+    payload = await request.body()
+
+    # Get signature header for verification
+    signature = request.headers.get("Paddle-Signature", "")
+
+    # Verify webhook signature
+    if settings.PADDLE_WEBHOOK_SECRET:
+        is_valid = PaddleService.verify_webhook_signature(
+            payload=payload,
+            signature=signature,
+        )
+        if not is_valid:
+            logger.warning("Paddle webhook signature verification failed")
+            raise HTTPException(status_code=400, detail="Invalid signature")
+
+    # Parse event
+    import json
+    try:
+        event = json.loads(payload)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    event_type = event.get("event_type")
+    data = event.get("data", {})
+
+    logger.info(f"Received Paddle webhook: {event_type}")
+
+    try:
+        await PaddleService.handle_webhook_event(
+            event_type=event_type,
+            data=data,
+            db=db,
+        )
+    except Exception as e:
+        logger.exception(f"Paddle webhook processing failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Webhook processing failed: {str(e)}")
 
     return {"status": "success"}

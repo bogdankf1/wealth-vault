@@ -32,7 +32,7 @@ export interface UpdateSubscriptionRequest {
 
 export interface Subscription {
   id: string;
-  payment_provider: 'stripe' | 'paypal';
+  payment_provider: 'stripe' | 'paypal' | 'paddle';
   // Stripe fields
   stripe_subscription_id?: string;
   stripe_customer_id?: string;
@@ -40,6 +40,10 @@ export interface Subscription {
   // PayPal fields
   paypal_subscription_id?: string;
   paypal_plan_id?: string;
+  // Paddle fields
+  paddle_subscription_id?: string;
+  paddle_customer_id?: string;
+  paddle_price_id?: string;
   // Common fields
   status: string;
   current_period_start: string;
@@ -59,6 +63,7 @@ export interface TierOption {
   price_monthly: number;
   stripe_price_id: string;
   paypal_plan_id: string;
+  paddle_price_id: string;
   action: 'upgrade' | 'downgrade' | 'current';
 }
 
@@ -67,7 +72,7 @@ export interface SubscriptionStatusResponse {
   subscription?: Subscription;
   tier_name?: string;
   tier_display_name?: string;
-  payment_provider?: 'stripe' | 'paypal';
+  payment_provider?: 'stripe' | 'paypal' | 'paddle';
   can_upgrade: boolean;
   can_downgrade: boolean;
   available_tiers: TierOption[];
@@ -75,13 +80,16 @@ export interface SubscriptionStatusResponse {
 
 export interface PaymentHistory {
   id: string;
-  payment_provider: 'stripe' | 'paypal';
+  payment_provider: 'stripe' | 'paypal' | 'paddle';
   // Stripe fields
   stripe_invoice_id?: string;
   stripe_payment_intent_id?: string;
   // PayPal fields
   paypal_transaction_id?: string;
   paypal_subscription_id?: string;
+  // Paddle fields
+  paddle_transaction_id?: string;
+  paddle_subscription_id?: string;
   // Common fields
   amount: number;
   currency: string;
@@ -136,6 +144,33 @@ export interface PayPalUpdateSubscriptionResponse {
   subscription_id: string;
   requires_approval: boolean;
   approval_url?: string;
+}
+
+// Paddle-specific interfaces
+export interface PaddleActivateSubscriptionRequest {
+  subscription_id: string;
+  transaction_id: string;
+}
+
+export interface PaddleActivateSubscriptionResponse {
+  success: boolean;
+  subscription_id: string;
+  tier: string;
+  status: string;
+}
+
+export interface PaddleCancelSubscriptionRequest {
+  effective_from?: 'immediately' | 'next_billing_period';
+}
+
+export interface PaddleUpdateSubscriptionRequest {
+  new_price_id: string;
+}
+
+export interface PaddleUpdateSubscriptionResponse {
+  success: boolean;
+  subscription_id: string;
+  new_price_id: string;
 }
 
 export const billingApi = apiSlice.injectEndpoints({
@@ -242,6 +277,43 @@ export const billingApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Subscription'],
     }),
+
+    // Paddle endpoints
+    activatePaddleSubscription: builder.mutation<
+      PaddleActivateSubscriptionResponse,
+      PaddleActivateSubscriptionRequest
+    >({
+      query: (body) => ({
+        url: '/api/v1/billing/paddle/activate',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Subscription', 'User'],
+    }),
+
+    cancelPaddleSubscription: builder.mutation<
+      { status: string; message: string },
+      PaddleCancelSubscriptionRequest
+    >({
+      query: (body) => ({
+        url: '/api/v1/billing/paddle/cancel',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Subscription'],
+    }),
+
+    updatePaddleSubscription: builder.mutation<
+      PaddleUpdateSubscriptionResponse,
+      PaddleUpdateSubscriptionRequest
+    >({
+      query: (body) => ({
+        url: '/api/v1/billing/paddle/update',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Subscription'],
+    }),
   }),
   overrideExisting: true,
 });
@@ -258,4 +330,8 @@ export const {
   useActivatePayPalSubscriptionMutation,
   useCancelPayPalSubscriptionMutation,
   useUpdatePayPalSubscriptionMutation,
+  // Paddle hooks
+  useActivatePaddleSubscriptionMutation,
+  useCancelPaddleSubscriptionMutation,
+  useUpdatePaddleSubscriptionMutation,
 } = billingApi;
