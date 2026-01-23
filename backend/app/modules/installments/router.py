@@ -38,6 +38,7 @@ from app.modules.installments.service import (
     reactivate_installment,
     get_installment_payments,
     process_installment_payment,
+    get_due_installments,
 )
 
 router = APIRouter(prefix="/api/v1/installments", tags=["installments"])
@@ -528,3 +529,128 @@ async def record_installment_payment(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process payment: {str(e)}"
         )
+
+
+@router.post("/process-due-payments", status_code=status.HTTP_200_OK)
+@require_feature("installment_tracking")
+async def process_due_payments_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Process all due installment payments for the current user.
+
+    This endpoint simulates what the Celery scheduled task does,
+    but only for the current user's installments. Useful for:
+    - Local development without Celery
+    - Manual processing of missed payments
+    - Testing auto-pay functionality
+
+    For each due installment:
+    1. Creates an expense record
+    2. If auto_pay is enabled, deducts from linked account
+    3. Records payment in installment_payments table
+    4. Updates next_payment_date and payments_made
+    """
+    from datetime import timezone
+    from app.modules.notifications.service import NotificationService
+    from app.core.events import event_dispatcher, InstallmentEvents
+
+    now = datetime.now(timezone.utc)
+
+    # Get all due installments for this user
+    all_due = await get_due_installments(db, now)
+    user_due = [i for i in all_due if i.user_id == current_user.id]
+
+    processed = 0
+    auto_paid = 0
+    completed = 0
+    failed_payments = []
+    errors = []
+
+    for installment in user_due:
+        try:
+            payment = await process_installment_payment(
+                db=db,
+                installment=installment,
+                payment_date=now.replace(tzinfo=None),
+                notes="Auto-processed installment payment (manual trigger)"
+            )
+
+            if payment:
+                processed += 1
+
+                if payment.account_transaction_id:
+                    auto_paid += 1
+
+                if installment.status == "completed":
+                    completed += 1
+                    await event_dispatcher.dispatch(
+                        InstallmentEvents.COMPLETED,
+                        user_id=installment.user_id,
+                        installment_id=str(installment.id),
+                        installment_name=installment.name,
+                        total_paid=float(installment.total_amount),
+                        currency=installment.currency,
+                    )
+                else:
+                    await event_dispatcher.dispatch(
+                        InstallmentEvents.PAYMENT_PROCESSED,
+                        user_id=installment.user_id,
+                        installment_id=str(installment.id),
+                        installment_name=installment.name,
+                        payment_number=payment.payment_number,
+                        amount=float(payment.actual_amount or payment.scheduled_amount),
+                        currency=installment.currency,
+                        next_payment_date=installment.next_payment_date.isoformat() if installment.next_payment_date else None,
+                        auto_paid=payment.account_transaction_id is not None,
+                        payments_remaining=installment.number_of_payments - installment.payments_made,
+                    )
+
+        except InsufficientFundsError as e:
+            failed_payments.append({
+                "installment_id": str(installment.id),
+                "installment_name": installment.name,
+                "reason": "insufficient_funds",
+                "amount": float(installment.amount_per_payment),
+                "currency": installment.currency
+            })
+
+            # Get account details for notification
+            account_result = await db.execute(
+                select(SavingsAccount).where(SavingsAccount.id == installment.payment_account_id)
+            )
+            account = account_result.scalar_one_or_none()
+            account_name = account.name if account else "Unknown"
+            current_balance = float(account.current_balance) if account else None
+
+            notification_service = NotificationService(db)
+            await notification_service.create_payment_failed_notification(
+                user_id=installment.user_id,
+                payment_type="installment",
+                amount=installment.amount_per_payment,
+                currency=installment.currency,
+                account_name=account_name,
+                item_name=installment.name,
+                current_balance=current_balance
+            )
+
+        except Exception as e:
+            errors.append({
+                "installment_id": str(installment.id),
+                "installment_name": installment.name,
+                "error": str(e)
+            })
+
+    await db.commit()
+
+    return {
+        "status": "success",
+        "due_count": len(user_due),
+        "processed": processed,
+        "auto_paid": auto_paid,
+        "completed": completed,
+        "failed_payments": failed_payments,
+        "errors": errors,
+        "timestamp": now.isoformat()
+    }

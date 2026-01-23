@@ -23,7 +23,10 @@ from app.modules.taxes.schemas import (
     TaxPaymentListResponse,
     LinkedIncomeSourceInfo,
     PayTaxRequest,
-    PayTaxResponse)
+    PayTaxResponse,
+    ProcessDuePaymentsResponse,
+    FailedTaxPaymentInfo,
+    TaxPaymentError)
 
 router = APIRouter(prefix="/taxes", tags=["taxes"])
 
@@ -375,4 +378,133 @@ async def list_payments_for_tax(
         total=total,
         page=page,
         page_size=page_size
+    )
+
+
+# ============================================================================
+# Process Due Payments
+# ============================================================================
+
+@router.post("/process-due-payments", response_model=ProcessDuePaymentsResponse)
+@require_feature("tax_tracking")
+async def process_due_payments(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Process all due tax payments for the current user.
+
+    This endpoint manually triggers processing of due tax payments that would
+    normally be processed by the scheduled Celery task. It checks for taxes with:
+    - auto_pay enabled
+    - payment_account_id set
+    - next_payment_date <= now
+
+    Returns a summary of processed payments, including any failures.
+    """
+    from datetime import datetime
+    from decimal import Decimal
+
+    now = datetime.utcnow()
+    processed = 0
+    auto_paid = 0
+    failed_payments = []
+    errors = []
+
+    # Get all taxes due for auto-pay for this specific user
+    from sqlalchemy import select, and_
+    from sqlalchemy.orm import selectinload
+    from app.modules.taxes.models import Tax
+
+    query = (
+        select(Tax)
+        .options(
+            selectinload(Tax.income_source),
+            selectinload(Tax.payment_account)
+        )
+        .where(
+            and_(
+                Tax.user_id == current_user.id,
+                Tax.auto_pay == True,
+                Tax.is_active == True,
+                Tax.deleted_at.is_(None),
+                Tax.payment_account_id.isnot(None),
+                Tax.next_payment_date <= now
+            )
+        )
+    )
+    result = await db.execute(query)
+    due_taxes = list(result.scalars().all())
+
+    for tax in due_taxes:
+        try:
+            # Convert tax to display currency to get calculated amount
+            await service.convert_tax_to_display_currency(db, current_user.id, tax)
+
+            # Get payment amount (use calculated_amount for percentage taxes, fixed_amount for fixed)
+            payment_amount = Decimal("0")
+            currency = tax.currency
+
+            if tax.tax_type == "fixed" and tax.fixed_amount:
+                payment_amount = tax.fixed_amount
+            elif tax.calculated_amount:
+                payment_amount = tax.calculated_amount
+                currency = tax.display_currency or tax.currency
+
+            if payment_amount <= 0:
+                errors.append(TaxPaymentError(
+                    tax_id=tax.id,
+                    tax_name=tax.name,
+                    error="Could not calculate tax amount"
+                ))
+                continue
+
+            # Attempt to pay
+            payment, transaction_id = await service.pay_tax(
+                db=db,
+                user_id=current_user.id,
+                tax_id=tax.id,
+                request=None,
+                is_auto_pay=True
+            )
+
+            processed += 1
+            auto_paid += 1
+
+        except ValueError as e:
+            error_str = str(e)
+            if "Insufficient balance" in error_str:
+                # Get payment amount for the failure info
+                payment_amount = tax.calculated_amount or tax.fixed_amount or Decimal("0")
+                currency = tax.display_currency or tax.currency
+
+                failed_payments.append(FailedTaxPaymentInfo(
+                    tax_id=tax.id,
+                    tax_name=tax.name,
+                    reason="Insufficient funds in payment account",
+                    amount=payment_amount,
+                    currency=currency
+                ))
+            else:
+                errors.append(TaxPaymentError(
+                    tax_id=tax.id,
+                    tax_name=tax.name,
+                    error=error_str
+                ))
+
+        except Exception as e:
+            errors.append(TaxPaymentError(
+                tax_id=tax.id,
+                tax_name=tax.name,
+                error=str(e)
+            ))
+
+    return ProcessDuePaymentsResponse(
+        status="completed",
+        due_count=len(due_taxes),
+        processed=processed,
+        auto_paid=auto_paid,
+        failed_payments=failed_payments,
+        errors=errors,
+        timestamp=now
     )

@@ -481,3 +481,153 @@ async def cancel_expense(
             detail="Expense not found"
         )
     return expense
+
+
+@router.post("/process-due-payments", status_code=status.HTTP_200_OK)
+@require_feature("expense_tracking")
+async def process_due_payments_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Process all due recurring expense payments for the current user.
+
+    This endpoint simulates what the Celery scheduled task does,
+    but only for the current user's expenses. Useful for:
+    - Local development without Celery
+    - Manual processing of missed payments
+    - Testing auto-pay functionality
+
+    For each due recurring expense with auto_pay enabled:
+    1. Checks if payment is due today based on frequency
+    2. If auto_pay is enabled, deducts from linked account
+    3. Marks expense as paid
+    """
+    from datetime import timezone
+    from sqlalchemy import select, and_
+    from app.modules.expenses.models import Expense as ExpenseModel, ExpenseFrequency, ExpenseStatus
+    from app.modules.savings.transaction_service import InsufficientFundsError
+    from app.modules.savings.models import SavingsAccount
+    from app.modules.notifications.service import NotificationService
+
+    def is_expense_due_today(frequency: str, start_date: datetime) -> bool:
+        """Check if an expense is due today based on its frequency and start date."""
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        start = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if start > today:
+            return False
+
+        days_since_start = (today - start).days
+
+        if frequency == 'daily':
+            return True
+        elif frequency == 'weekly':
+            return days_since_start % 7 == 0
+        elif frequency == 'biweekly':
+            return days_since_start % 14 == 0
+        elif frequency == 'monthly':
+            return today.day == start.day
+        elif frequency == 'quarterly':
+            months_diff = (today.year - start.year) * 12 + (today.month - start.month)
+            return months_diff % 3 == 0 and today.day == start.day
+        elif frequency == 'annually':
+            return today.month == start.month and today.day == start.day
+        return False
+
+    now = datetime.now(timezone.utc)
+
+    # Get all active recurring expenses with auto_pay enabled for this user
+    result = await db.execute(
+        select(ExpenseModel).where(
+            and_(
+                ExpenseModel.user_id == current_user.id,
+                ExpenseModel.is_active == True,
+                ExpenseModel.deleted_at.is_(None),
+                ExpenseModel.auto_pay == True,
+                ExpenseModel.payment_account_id.isnot(None),
+                ExpenseModel.frequency != ExpenseFrequency.ONE_TIME.value,
+                ExpenseModel.start_date.isnot(None)
+            )
+        )
+    )
+    expenses = list(result.scalars().all())
+
+    due_count = 0
+    processed = 0
+    auto_paid = 0
+    failed_payments = []
+    errors = []
+
+    for expense in expenses:
+        try:
+            # Skip if not due today
+            freq_value = expense.frequency.value if hasattr(expense.frequency, 'value') else expense.frequency
+            if not is_expense_due_today(freq_value, expense.start_date):
+                continue
+
+            # Skip if already paid today
+            if expense.paid_date and expense.paid_date.date() == datetime.utcnow().date():
+                continue
+
+            due_count += 1
+
+            # Reset status to pending
+            expense.status = ExpenseStatus.PENDING.value
+
+            # Try to pay from linked account
+            try:
+                pay_request = PayExpenseRequest(
+                    account_id=expense.payment_account_id,
+                    description=f"Auto-payment for recurring expense: {expense.name} (manual trigger)"
+                )
+                await service.pay_expense(db, current_user.id, expense.id, pay_request)
+                auto_paid += 1
+                processed += 1
+            except InsufficientFundsError as e:
+                expense.status = ExpenseStatus.PAYMENT_FAILED.value
+                failed_payments.append({
+                    "expense_id": str(expense.id),
+                    "expense_name": expense.name,
+                    "reason": "insufficient_funds",
+                    "amount": float(expense.amount),
+                    "currency": expense.currency
+                })
+
+                # Get account details for notification
+                account_result = await db.execute(
+                    select(SavingsAccount).where(SavingsAccount.id == expense.payment_account_id)
+                )
+                account = account_result.scalar_one_or_none()
+                account_name = account.name if account else "Unknown"
+                current_balance = float(account.current_balance) if account else None
+
+                notification_service = NotificationService(db)
+                await notification_service.create_payment_failed_notification(
+                    user_id=expense.user_id,
+                    payment_type="expense",
+                    amount=expense.amount,
+                    currency=expense.currency,
+                    account_name=account_name,
+                    item_name=expense.name,
+                    current_balance=current_balance
+                )
+
+        except Exception as e:
+            errors.append({
+                "expense_id": str(expense.id),
+                "expense_name": expense.name,
+                "error": str(e)
+            })
+
+    await db.commit()
+
+    return {
+        "status": "success",
+        "due_count": due_count,
+        "processed": processed,
+        "auto_paid": auto_paid,
+        "failed_payments": failed_payments,
+        "errors": errors,
+        "timestamp": now.isoformat()
+    }

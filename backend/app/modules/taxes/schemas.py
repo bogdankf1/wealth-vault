@@ -262,3 +262,34 @@ class PayTaxResponse(BaseModel):
     payment: TaxPaymentResponse
     transaction_id: Optional[UUID] = None
     message: str
+
+
+# ============================================================================
+# Process Due Payments Schemas
+# ============================================================================
+
+class FailedTaxPaymentInfo(BaseModel):
+    """Schema for failed tax payment information"""
+    tax_id: UUID
+    tax_name: str
+    reason: str
+    amount: Decimal
+    currency: str
+
+
+class TaxPaymentError(BaseModel):
+    """Schema for tax payment error"""
+    tax_id: UUID
+    tax_name: str
+    error: str
+
+
+class ProcessDuePaymentsResponse(BaseModel):
+    """Schema for process due payments response"""
+    status: str
+    due_count: int
+    processed: int
+    auto_paid: int
+    failed_payments: List[FailedTaxPaymentInfo] = []
+    errors: List[TaxPaymentError] = []
+    timestamp: datetime

@@ -38,6 +38,7 @@ from app.modules.subscriptions.service import (
     cancel_subscription,
     get_subscription_payments,
     process_subscription_payment,
+    get_due_subscriptions,
 )
 
 router = APIRouter(prefix="/api/v1/subscriptions", tags=["subscriptions"])
@@ -507,3 +508,113 @@ async def record_subscription_payment(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process payment: {str(e)}"
         )
+
+
+@router.post("/process-due-payments", status_code=status.HTTP_200_OK)
+@require_feature("subscription_tracking")
+async def process_due_payments_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Process all due subscription payments for the current user.
+
+    This endpoint simulates what the Celery scheduled task does,
+    but only for the current user's subscriptions. Useful for:
+    - Local development without Celery
+    - Manual processing of missed payments
+    - Testing auto-pay functionality
+
+    For each due subscription:
+    1. Creates an expense record
+    2. If auto_pay is enabled, deducts from linked account
+    3. Records payment in subscription_payments table
+    4. Updates next_payment_date
+    """
+    from datetime import timezone
+    from app.modules.notifications.service import NotificationService
+    from app.core.events import event_dispatcher, SubscriptionEvents
+
+    now = datetime.now(timezone.utc)
+
+    # Get all due subscriptions for this user
+    all_due = await get_due_subscriptions(db, now)
+    user_due = [s for s in all_due if s.user_id == current_user.id]
+
+    processed = 0
+    auto_paid = 0
+    failed_payments = []
+    errors = []
+
+    for subscription in user_due:
+        try:
+            payment = await process_subscription_payment(
+                db=db,
+                subscription=subscription,
+                payment_date=now.replace(tzinfo=None),
+                notes="Auto-processed subscription payment (manual trigger)"
+            )
+
+            if payment:
+                processed += 1
+
+                if payment.account_transaction_id:
+                    auto_paid += 1
+
+                await event_dispatcher.dispatch(
+                    SubscriptionEvents.RENEWAL_PROCESSED,
+                    user_id=subscription.user_id,
+                    subscription_id=str(subscription.id),
+                    subscription_name=subscription.name,
+                    amount=float(payment.amount),
+                    currency=subscription.currency,
+                    next_payment_date=subscription.next_payment_date.isoformat() if subscription.next_payment_date else None,
+                    auto_paid=payment.account_transaction_id is not None,
+                )
+
+        except InsufficientFundsError as e:
+            failed_payments.append({
+                "subscription_id": str(subscription.id),
+                "subscription_name": subscription.name,
+                "reason": "insufficient_funds",
+                "amount": float(subscription.amount),
+                "currency": subscription.currency
+            })
+
+            # Get account details for notification
+            account_result = await db.execute(
+                select(SavingsAccount).where(SavingsAccount.id == subscription.payment_account_id)
+            )
+            account = account_result.scalar_one_or_none()
+            account_name = account.name if account else "Unknown"
+            current_balance = float(account.current_balance) if account else None
+
+            notification_service = NotificationService(db)
+            await notification_service.create_payment_failed_notification(
+                user_id=subscription.user_id,
+                payment_type="subscription",
+                amount=subscription.amount,
+                currency=subscription.currency,
+                account_name=account_name,
+                item_name=subscription.name,
+                current_balance=current_balance
+            )
+
+        except Exception as e:
+            errors.append({
+                "subscription_id": str(subscription.id),
+                "subscription_name": subscription.name,
+                "error": str(e)
+            })
+
+    await db.commit()
+
+    return {
+        "status": "success",
+        "due_count": len(user_due),
+        "processed": processed,
+        "auto_paid": auto_paid,
+        "failed_payments": failed_payments,
+        "errors": errors,
+        "timestamp": now.isoformat()
+    }
