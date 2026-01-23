@@ -88,6 +88,10 @@
     "institution": "Institución",
     "accountNumber": "Número de cuenta",
     "view": "Ver",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "columns": "Columnas",
+    "showAll": "Mostrar todas",
+    "status": "Estado",
+    "frequency": "Frecuencia"
   }
 }

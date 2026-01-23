@@ -36,8 +36,10 @@ import {
   type SavingsAccount,
 } from '@/lib/api/savingsApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { toast } from 'sonner';
 
 export default function SavingsPage() {
@@ -75,6 +77,24 @@ export default function SavingsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('name'), locked: true },
+    { id: 'institution', label: tCommon('common.institution') },
+    { id: 'accountType', label: tOverview('accountType') },
+    { id: 'currentBalance', label: tOverview('currentBalance') },
+    { id: 'accountNumber', label: tCommon('common.accountNumber') },
+    { id: 'originalAmount', label: tCommon('common.originalAmount') },
+    { id: 'status', label: tOverview('status') },
+  ], [tOverview, tCommon]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('accounts', columnConfig);
 
   const { data: accountsData, isLoading, error, refetch } = useListAccountsQuery({ is_active: true });
   const { data: stats } = useGetSavingsStatsQuery();
@@ -388,6 +408,16 @@ export default function SavingsPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
             <Button
               variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -556,13 +586,27 @@ export default function SavingsPage() {
                       aria-label="Select all"
                     />
                   </TableHead>
-                  <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
-                  <TableHead className="hidden md:table-cell">{tCommon('common.institution')}</TableHead>
-                  <TableHead className="hidden lg:table-cell">{tOverview('accountType')}</TableHead>
-                  <TableHead className="text-right">{tOverview('currentBalance')}</TableHead>
-                  <TableHead className="hidden sm:table-cell">{tCommon('common.accountNumber')}</TableHead>
-                  <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
-                  <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                  {isColumnVisible('name') && (
+                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                  )}
+                  {isColumnVisible('institution') && (
+                    <TableHead className="hidden md:table-cell">{tCommon('common.institution')}</TableHead>
+                  )}
+                  {isColumnVisible('accountType') && (
+                    <TableHead className="hidden lg:table-cell">{tOverview('accountType')}</TableHead>
+                  )}
+                  {isColumnVisible('currentBalance') && (
+                    <TableHead className="text-right">{tOverview('currentBalance')}</TableHead>
+                  )}
+                  {isColumnVisible('accountNumber') && (
+                    <TableHead className="hidden sm:table-cell">{tCommon('common.accountNumber')}</TableHead>
+                  )}
+                  {isColumnVisible('originalAmount') && (
+                    <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                  )}
+                  {isColumnVisible('status') && (
+                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                  )}
                   <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -576,55 +620,71 @@ export default function SavingsPage() {
                         aria-label={`Select ${account.name}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                      <div className="max-w-[200px]">
-                        <p className="truncate">{account.name}</p>
-                        <p className="text-xs text-muted-foreground md:hidden truncate">
-                          {account.institution}
+                    {isColumnVisible('name') && (
+                      <TableCell className="font-medium">
+                        <div className="max-w-[200px]">
+                          <p className="truncate">{account.name}</p>
+                          {!isColumnVisible('institution') && (
+                            <p className="text-xs text-muted-foreground md:hidden truncate">
+                              {account.institution}
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible('institution') && (
+                      <TableCell className="hidden md:table-cell">
+                        <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                          {account.institution || '-'}
                         </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <p className="max-w-[250px] truncate text-sm text-muted-foreground">
-                        {account.institution || '-'}
-                      </p>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <Badge variant="outline" className="text-xs">
-                        {ACCOUNT_TYPE_LABELS[account.account_type] || account.account_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <CurrencyDisplay
-                        amount={account.display_current_balance ?? account.current_balance}
-                        currency={account.display_currency ?? account.currency}
-                        showSymbol={true}
-                        showCode={false}
-                      />
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      {account.account_number_last4 ? (
-                        <span className="text-sm text-muted-foreground">
-                          ••••{account.account_number_last4}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden 2xl:table-cell text-right">
-                      {account.display_currency && account.display_currency !== account.currency ? (
-                        <span className="text-sm text-muted-foreground">
-                          {account.current_balance} {account.currency}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <Badge variant={account.is_active ? 'default' : 'secondary'} className="text-xs">
-                        {account.is_active ? tStatus('active') : tStatus('inactive')}
-                      </Badge>
-                    </TableCell>
+                      </TableCell>
+                    )}
+                    {isColumnVisible('accountType') && (
+                      <TableCell className="hidden lg:table-cell">
+                        <Badge variant="outline" className="text-xs">
+                          {ACCOUNT_TYPE_LABELS[account.account_type] || account.account_type}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {isColumnVisible('currentBalance') && (
+                      <TableCell className="text-right font-semibold">
+                        <CurrencyDisplay
+                          amount={account.display_current_balance ?? account.current_balance}
+                          currency={account.display_currency ?? account.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </TableCell>
+                    )}
+                    {isColumnVisible('accountNumber') && (
+                      <TableCell className="hidden sm:table-cell">
+                        {account.account_number_last4 ? (
+                          <span className="text-sm text-muted-foreground">
+                            ••••{account.account_number_last4}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {isColumnVisible('originalAmount') && (
+                      <TableCell className="hidden 2xl:table-cell text-right">
+                        {account.display_currency && account.display_currency !== account.currency ? (
+                          <span className="text-sm text-muted-foreground">
+                            {account.current_balance} {account.currency}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableCell className="hidden sm:table-cell">
+                        <Badge variant={account.is_active ? 'default' : 'secondary'} className="text-xs">
+                          {account.is_active ? tStatus('active') : tStatus('inactive')}
+                        </Badge>
+                      </TableCell>
+                    )}
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
                         <Button

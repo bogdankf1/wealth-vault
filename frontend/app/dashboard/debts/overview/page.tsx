@@ -37,8 +37,10 @@ import {
   type Debt,
 } from '@/lib/api/debtsApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { toast } from 'sonner';
 
 export default function DebtsPage() {
@@ -64,6 +66,25 @@ export default function DebtsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'debtor', label: tOverview('debtor'), locked: true },
+    { id: 'description', label: tOverview('description') },
+    { id: 'paid', label: tOverview('paid') },
+    { id: 'total', label: tOverview('total') },
+    { id: 'progress', label: tOverview('progress') },
+    { id: 'dates', label: tOverview('dates') },
+    { id: 'originalTotal', label: tOverview('originalTotal') },
+    { id: 'status', label: tOverview('status') },
+  ], [tOverview]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('debts', columnConfig);
 
   const { data: debtsData, isLoading, error, refetch } = useListDebtsQuery({ is_active: true });
   const { data: stats } = useGetDebtStatsQuery();
@@ -374,6 +395,16 @@ export default function DebtsPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -610,14 +641,30 @@ export default function DebtsPage() {
                       aria-label="Select all debts"
                     />
                   </TableHead>
-                  <TableHead className="w-[200px]">{tOverview('debtor')}</TableHead>
-                  <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
-                  <TableHead className="text-right">{tOverview('paid')}</TableHead>
-                  <TableHead className="text-right">{tOverview('total')}</TableHead>
-                  <TableHead className="hidden lg:table-cell text-right">{tOverview('progress')}</TableHead>
-                  <TableHead className="hidden xl:table-cell">{tOverview('dates')}</TableHead>
-                  <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTotal')}</TableHead>
-                  <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                  {isColumnVisible('debtor') && (
+                    <TableHead className="w-[200px]">{tOverview('debtor')}</TableHead>
+                  )}
+                  {isColumnVisible('description') && (
+                    <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                  )}
+                  {isColumnVisible('paid') && (
+                    <TableHead className="text-right">{tOverview('paid')}</TableHead>
+                  )}
+                  {isColumnVisible('total') && (
+                    <TableHead className="text-right">{tOverview('total')}</TableHead>
+                  )}
+                  {isColumnVisible('progress') && (
+                    <TableHead className="hidden lg:table-cell text-right">{tOverview('progress')}</TableHead>
+                  )}
+                  {isColumnVisible('dates') && (
+                    <TableHead className="hidden xl:table-cell">{tOverview('dates')}</TableHead>
+                  )}
+                  {isColumnVisible('originalTotal') && (
+                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTotal')}</TableHead>
+                  )}
+                  {isColumnVisible('status') && (
+                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                  )}
                   <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -631,86 +678,104 @@ export default function DebtsPage() {
                         aria-label={`Select ${debt.debtor_name}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                      <div className="max-w-[200px]">
-                        <Link href={`/dashboard/debts/${debt.id}`} className="hover:text-primary hover:underline">
-                          <p className="truncate">{debt.debtor_name}</p>
-                        </Link>
-                        <p className="text-xs text-muted-foreground md:hidden truncate">
-                          {debt.description}
+                    {isColumnVisible('debtor') && (
+                      <TableCell className="font-medium">
+                        <div className="max-w-[200px]">
+                          <Link href={`/dashboard/debts/${debt.id}`} className="hover:text-primary hover:underline">
+                            <p className="truncate">{debt.debtor_name}</p>
+                          </Link>
+                          {!isColumnVisible('description') && (
+                            <p className="text-xs text-muted-foreground md:hidden truncate">
+                              {debt.description}
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible('description') && (
+                      <TableCell className="hidden md:table-cell">
+                        <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                          {debt.description || '-'}
                         </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <p className="max-w-[250px] truncate text-sm text-muted-foreground">
-                        {debt.description || '-'}
-                      </p>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      <CurrencyDisplay
-                        amount={debt.display_amount_paid ?? debt.amount_paid}
-                        currency={debt.display_currency ?? debt.currency}
-                        showSymbol={true}
-                        showCode={false}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span className="text-sm text-muted-foreground">
+                      </TableCell>
+                    )}
+                    {isColumnVisible('paid') && (
+                      <TableCell className="text-right font-semibold">
                         <CurrencyDisplay
-                          amount={debt.display_amount ?? debt.amount}
+                          amount={debt.display_amount_paid ?? debt.amount_paid}
                           currency={debt.display_currency ?? debt.currency}
                           showSymbol={true}
                           showCode={false}
                         />
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-right">
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="text-sm font-semibold">{Math.round(debt.progress_percentage || 0)}%</span>
-                        <Progress value={debt.progress_percentage || 0} className="h-1 w-16" />
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden xl:table-cell">
-                      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                        {debt.paid_date && (
-                          <span className="flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" />
-                            {tOverview('paidDate', { date: new Date(debt.paid_date).toLocaleDateString() })}
-                          </span>
-                        )}
-                        {debt.due_date && !debt.is_paid && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {tOverview('dueDate', { date: new Date(debt.due_date).toLocaleDateString() })}
-                          </span>
-                        )}
-                        {!debt.paid_date && !debt.due_date && <span>-</span>}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden 2xl:table-cell text-right">
-                      {debt.display_currency && debt.display_currency !== debt.currency ? (
+                      </TableCell>
+                    )}
+                    {isColumnVisible('total') && (
+                      <TableCell className="text-right">
                         <span className="text-sm text-muted-foreground">
-                          {debt.amount} {debt.currency}
+                          <CurrencyDisplay
+                            amount={debt.display_amount ?? debt.amount}
+                            currency={debt.display_currency ?? debt.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
                         </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      {debt.is_paid ? (
-                        <Badge variant="default" className="bg-green-600 dark:bg-green-500 text-xs">
-                          {tStatus('paid')}
-                        </Badge>
-                      ) : debt.is_overdue ? (
-                        <Badge variant="destructive" className="text-xs">
-                          {tStatus('overdue')}
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs">
-                          {tStatus('active')}
-                        </Badge>
-                      )}
-                    </TableCell>
+                      </TableCell>
+                    )}
+                    {isColumnVisible('progress') && (
+                      <TableCell className="hidden lg:table-cell text-right">
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-sm font-semibold">{Math.round(debt.progress_percentage || 0)}%</span>
+                          <Progress value={debt.progress_percentage || 0} className="h-1 w-16" />
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible('dates') && (
+                      <TableCell className="hidden xl:table-cell">
+                        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                          {debt.paid_date && (
+                            <span className="flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              {tOverview('paidDate', { date: new Date(debt.paid_date).toLocaleDateString() })}
+                            </span>
+                          )}
+                          {debt.due_date && !debt.is_paid && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {tOverview('dueDate', { date: new Date(debt.due_date).toLocaleDateString() })}
+                            </span>
+                          )}
+                          {!debt.paid_date && !debt.due_date && <span>-</span>}
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible('originalTotal') && (
+                      <TableCell className="hidden 2xl:table-cell text-right">
+                        {debt.display_currency && debt.display_currency !== debt.currency ? (
+                          <span className="text-sm text-muted-foreground">
+                            {debt.amount} {debt.currency}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableCell className="hidden sm:table-cell">
+                        {debt.is_paid ? (
+                          <Badge variant="default" className="bg-green-600 dark:bg-green-500 text-xs">
+                            {tStatus('paid')}
+                          </Badge>
+                        ) : debt.is_overdue ? (
+                          <Badge variant="destructive" className="text-xs">
+                            {tStatus('overdue')}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs">
+                            {tStatus('active')}
+                          </Badge>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
                         <Button

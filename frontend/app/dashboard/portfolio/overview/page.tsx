@@ -40,6 +40,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { toast } from 'sonner';
@@ -91,6 +93,20 @@ export default function PortfolioPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column visibility configuration
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'asset', label: tOverview('asset'), locked: true },
+    { id: 'type', label: tOverview('type') },
+    { id: 'currentValue', label: tOverview('currentValue') },
+    { id: 'return', label: tOverview('return') },
+    { id: 'quantity', label: tOverview('quantity') },
+    { id: 'currentPrice', label: tOverview('currentPrice') },
+    { id: 'originalValue', label: tOverview('originalValue') },
+    { id: 'status', label: tCommon('common.status') },
+  ], [tOverview, tCommon]);
+
+  const { visibleColumns, toggleColumn, showAllColumns, isColumnVisible } = useColumnVisibility('portfolio', columnConfig);
 
   const {
     data: portfolioData,
@@ -447,6 +463,16 @@ export default function PortfolioPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -726,14 +752,30 @@ export default function PortfolioPage() {
                         aria-label="Select all assets"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">{tOverview('asset')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{tOverview('type')}</TableHead>
-                    <TableHead className="text-right">{tOverview('currentValue')}</TableHead>
-                    <TableHead className="hidden md:table-cell text-right">{tOverview('return')}</TableHead>
-                    <TableHead className="hidden sm:table-cell text-right">{tOverview('quantity')}</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">{tOverview('currentPrice')}</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalValue')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    {isColumnVisible('asset') && (
+                      <TableHead className="w-[200px]">{tOverview('asset')}</TableHead>
+                    )}
+                    {isColumnVisible('type') && (
+                      <TableHead className="hidden lg:table-cell">{tOverview('type')}</TableHead>
+                    )}
+                    {isColumnVisible('currentValue') && (
+                      <TableHead className="text-right">{tOverview('currentValue')}</TableHead>
+                    )}
+                    {isColumnVisible('return') && (
+                      <TableHead className="hidden md:table-cell text-right">{tOverview('return')}</TableHead>
+                    )}
+                    {isColumnVisible('quantity') && (
+                      <TableHead className="hidden sm:table-cell text-right">{tOverview('quantity')}</TableHead>
+                    )}
+                    {isColumnVisible('currentPrice') && (
+                      <TableHead className="hidden xl:table-cell text-right">{tOverview('currentPrice')}</TableHead>
+                    )}
+                    {isColumnVisible('originalValue') && (
+                      <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalValue')}</TableHead>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableHead className="hidden sm:table-cell">{tCommon('common.status')}</TableHead>
+                    )}
                     <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -755,80 +797,96 @@ export default function PortfolioPage() {
                             aria-label={`Select ${asset.asset_name}`}
                           />
                         </TableCell>
-                        <TableCell className="font-medium">
-                          <div className="max-w-[200px]">
-                            <p
-                              className="truncate cursor-pointer hover:text-primary transition-colors"
-                              onClick={() => handleViewAsset(asset.id)}
-                            >
-                              {asset.asset_name}
-                            </p>
-                            {asset.symbol && (
-                              <p className="text-xs text-muted-foreground font-mono truncate">
-                                {asset.symbol}
+                        {isColumnVisible('asset') && (
+                          <TableCell className="font-medium">
+                            <div className="max-w-[200px]">
+                              <p
+                                className="truncate cursor-pointer hover:text-primary transition-colors"
+                                onClick={() => handleViewAsset(asset.id)}
+                              >
+                                {asset.asset_name}
                               </p>
+                              {asset.symbol && (
+                                <p className="text-xs text-muted-foreground font-mono truncate">
+                                  {asset.symbol}
+                                </p>
+                              )}
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('type') && (
+                          <TableCell className="hidden lg:table-cell">
+                            {asset.asset_type ? (
+                              <Badge variant="outline" className="text-xs">{translateAssetType(asset.asset_type)}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
                             )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {asset.asset_type ? (
-                            <Badge variant="outline" className="text-xs">{translateAssetType(asset.asset_type)}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          <CurrencyDisplay
-                            amount={displayCurrentValue}
-                            currency={displayCurrency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-right">
-                          <div className="flex flex-col items-end">
-                            <span className={`font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('currentValue') && (
+                          <TableCell className="text-right font-semibold">
+                            <CurrencyDisplay
+                              amount={displayCurrentValue}
+                              currency={displayCurrency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </TableCell>
+                        )}
+                        {isColumnVisible('return') && (
+                          <TableCell className="hidden md:table-cell text-right">
+                            <div className="flex flex-col items-end">
+                              <span className={`font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                <CurrencyDisplay
+                                  amount={displayTotalReturn}
+                                  currency={displayCurrency}
+                                  showSymbol={true}
+                                  showCode={false}
+                                />
+                              </span>
+                              <span className={`text-xs ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {formatPercentage(returnPercentage)}
+                              </span>
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('quantity') && (
+                          <TableCell className="hidden sm:table-cell text-right">
+                            <span className="text-sm">
+                              {parseFloat(asset.quantity.toString()).toFixed(2)}
+                            </span>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('currentPrice') && (
+                          <TableCell className="hidden xl:table-cell text-right">
+                            <span className="text-sm">
                               <CurrencyDisplay
-                                amount={displayTotalReturn}
+                                amount={displayCurrentPrice}
                                 currency={displayCurrency}
                                 showSymbol={true}
                                 showCode={false}
                               />
                             </span>
-                            <span className={`text-xs ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                              {formatPercentage(returnPercentage)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell text-right">
-                          <span className="text-sm">
-                            {parseFloat(asset.quantity.toString()).toFixed(2)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell text-right">
-                          <span className="text-sm">
-                            <CurrencyDisplay
-                              amount={displayCurrentPrice}
-                              currency={displayCurrency}
-                              showSymbol={true}
-                              showCode={false}
-                            />
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden 2xl:table-cell text-right">
-                          {asset.display_currency && asset.display_currency !== asset.currency ? (
-                            <span className="text-sm text-muted-foreground">
-                              {asset.current_value || 0} {asset.currency}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant={asset.is_active ? 'secondary' : 'outline'} className="text-xs">
-                            {asset.is_active ? tStatus('active') : tStatus('inactive')}
-                          </Badge>
-                        </TableCell>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('originalValue') && (
+                          <TableCell className="hidden 2xl:table-cell text-right">
+                            {asset.display_currency && asset.display_currency !== asset.currency ? (
+                              <span className="text-sm text-muted-foreground">
+                                {asset.current_value || 0} {asset.currency}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('status') && (
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge variant={asset.is_active ? 'secondary' : 'outline'} className="text-xs">
+                              {asset.is_active ? tStatus('active') : tStatus('inactive')}
+                            </Badge>
+                          </TableCell>
+                        )}
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
                             <Button

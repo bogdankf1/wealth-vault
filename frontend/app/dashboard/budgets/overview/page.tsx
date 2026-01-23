@@ -38,8 +38,10 @@ import { SearchFilter } from '@/components/ui/search-filter';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { BudgetsActionsContext } from '../context';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { toast } from 'sonner';
 import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
@@ -85,6 +87,25 @@ export default function BudgetsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('name'), locked: true },
+    { id: 'description', label: tOverview('description') },
+    { id: 'category', label: tOverview('category') },
+    { id: 'amount', label: tOverview('amount') },
+    { id: 'period', label: tOverview('period') },
+    { id: 'dateRange', label: tOverview('dateRange') },
+    { id: 'originalAmount', label: tOverview('originalAmount') },
+    { id: 'status', label: tOverview('status') },
+  ], [tOverview]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('budgets', columnConfig);
 
   // Get context for setting actions
   const { setActions } = React.useContext(BudgetsActionsContext);
@@ -550,6 +571,16 @@ export default function BudgetsPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -744,14 +775,30 @@ export default function BudgetsPage() {
                         aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
-                    <TableHead className="text-right">{tOverview('amount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('period')}</TableHead>
-                    <TableHead className="hidden xl:table-cell">{tOverview('dateRange')}</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    {isColumnVisible('name') && (
+                      <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    )}
+                    {isColumnVisible('description') && (
+                      <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                    )}
+                    {isColumnVisible('category') && (
+                      <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
+                    )}
+                    {isColumnVisible('amount') && (
+                      <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                    )}
+                    {isColumnVisible('period') && (
+                      <TableHead className="hidden sm:table-cell">{tOverview('period')}</TableHead>
+                    )}
+                    {isColumnVisible('dateRange') && (
+                      <TableHead className="hidden xl:table-cell">{tOverview('dateRange')}</TableHead>
+                    )}
+                    {isColumnVisible('originalAmount') && (
+                      <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    )}
                     <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -765,71 +812,89 @@ export default function BudgetsPage() {
                           aria-label={`Select ${budget.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="max-w-[200px]">
-                          <p className="truncate">{budget.name}</p>
-                          <p className="text-xs text-muted-foreground md:hidden truncate">
-                            {budget.description}
+                      {isColumnVisible('name') && (
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px]">
+                            <p className="truncate">{budget.name}</p>
+                            {!isColumnVisible('description') && (
+                              <p className="text-xs text-muted-foreground md:hidden truncate">
+                                {budget.description}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('description') && (
+                        <TableCell className="hidden md:table-cell">
+                          <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                            {budget.description || '-'}
                           </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <p className="max-w-[250px] truncate text-sm text-muted-foreground">
-                          {budget.description || '-'}
-                        </p>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {budget.category ? (
-                          <Badge variant="outline" className="text-xs">{translateCategory(budget.category)}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        <div>
-                          <CurrencyDisplay
-                            amount={budget.effective_amount ?? budget.display_amount ?? budget.amount}
-                            currency={budget.display_currency ?? budget.currency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
-                          {budget.rollover_unused && budget.rollover_amount > 0 && (
-                            <div className="text-xs text-green-600 dark:text-green-400 font-normal">
-                              +<CurrencyDisplay
-                                amount={budget.rollover_amount}
-                                currency={budget.currency}
-                                showSymbol={true}
-                                showCode={false}
-                              /> {tOverview('rollover')}
-                            </div>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('category') && (
+                        <TableCell className="hidden lg:table-cell">
+                          {budget.category ? (
+                            <Badge variant="outline" className="text-xs">{translateCategory(budget.category)}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <span className="text-sm text-muted-foreground">
-                          {PERIOD_LABELS[budget.period] || budget.period}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden xl:table-cell">
-                        <span className="text-sm text-muted-foreground">
-                          {budget.start_date.split('T')[0]}
-                          {budget.end_date ? ` ${tOverview('to')} ${budget.end_date.split('T')[0]}` : ` (${tOverview('ongoing')})`}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden 2xl:table-cell text-right">
-                        {budget.display_currency && budget.display_currency !== budget.currency ? (
+                        </TableCell>
+                      )}
+                      {isColumnVisible('amount') && (
+                        <TableCell className="text-right font-semibold">
+                          <div>
+                            <CurrencyDisplay
+                              amount={budget.effective_amount ?? budget.display_amount ?? budget.amount}
+                              currency={budget.display_currency ?? budget.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                            {budget.rollover_unused && budget.rollover_amount > 0 && (
+                              <div className="text-xs text-green-600 dark:text-green-400 font-normal">
+                                +<CurrencyDisplay
+                                  amount={budget.rollover_amount}
+                                  currency={budget.currency}
+                                  showSymbol={true}
+                                  showCode={false}
+                                /> {tOverview('rollover')}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('period') && (
+                        <TableCell className="hidden sm:table-cell">
                           <span className="text-sm text-muted-foreground">
-                            {budget.amount} {budget.currency}
+                            {PERIOD_LABELS[budget.period] || budget.period}
                           </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <Badge variant={budget.is_active ? 'default' : 'secondary'} className="text-xs">
-                          {budget.is_active ? tStatus('active') : tStatus('inactive')}
-                        </Badge>
-                      </TableCell>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('dateRange') && (
+                        <TableCell className="hidden xl:table-cell">
+                          <span className="text-sm text-muted-foreground">
+                            {budget.start_date.split('T')[0]}
+                            {budget.end_date ? ` ${tOverview('to')} ${budget.end_date.split('T')[0]}` : ` (${tOverview('ongoing')})`}
+                          </span>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('originalAmount') && (
+                        <TableCell className="hidden 2xl:table-cell text-right">
+                          {budget.display_currency && budget.display_currency !== budget.currency ? (
+                            <span className="text-sm text-muted-foreground">
+                              {budget.amount} {budget.currency}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {isColumnVisible('status') && (
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant={budget.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {budget.is_active ? tStatus('active') : tStatus('inactive')}
+                          </Badge>
+                        </TableCell>
+                      )}
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                           <Button

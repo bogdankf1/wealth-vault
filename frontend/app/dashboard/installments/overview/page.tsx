@@ -50,8 +50,10 @@ import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { Progress } from '@/components/ui/progress';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
@@ -120,6 +122,25 @@ export default function InstallmentsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('name'), locked: true },
+    { id: 'category', label: tOverview('category') },
+    { id: 'remaining', label: tOverview('remaining') },
+    { id: 'payment', label: tOverview('payment') },
+    { id: 'progress', label: tOverview('progress') },
+    { id: 'nextPayment', label: tOverview('nextPayment') },
+    { id: 'originalTotal', label: tOverview('originalTotal') },
+    { id: 'status', label: tCommon('common.status') },
+  ], [tOverview, tCommon]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('installments', columnConfig);
 
   const {
     data: installmentsData,
@@ -541,6 +562,16 @@ export default function InstallmentsPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -838,14 +869,30 @@ export default function InstallmentsPage() {
                         aria-label="Select all installments"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{tOverview('category')}</TableHead>
-                    <TableHead className="text-right">{tOverview('remaining')}</TableHead>
-                    <TableHead className="hidden sm:table-cell text-right">{tOverview('payment')}</TableHead>
-                    <TableHead className="hidden lg:table-cell text-right">{tOverview('progress')}</TableHead>
-                    <TableHead className="hidden xl:table-cell">{tOverview('nextPayment')}</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTotal')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    {isColumnVisible('name') && (
+                      <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    )}
+                    {isColumnVisible('category') && (
+                      <TableHead className="hidden md:table-cell">{tOverview('category')}</TableHead>
+                    )}
+                    {isColumnVisible('remaining') && (
+                      <TableHead className="text-right">{tOverview('remaining')}</TableHead>
+                    )}
+                    {isColumnVisible('payment') && (
+                      <TableHead className="hidden sm:table-cell text-right">{tOverview('payment')}</TableHead>
+                    )}
+                    {isColumnVisible('progress') && (
+                      <TableHead className="hidden lg:table-cell text-right">{tOverview('progress')}</TableHead>
+                    )}
+                    {isColumnVisible('nextPayment') && (
+                      <TableHead className="hidden xl:table-cell">{tOverview('nextPayment')}</TableHead>
+                    )}
+                    {isColumnVisible('originalTotal') && (
+                      <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTotal')}</TableHead>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableHead className="hidden sm:table-cell">{tCommon('common.status')}</TableHead>
+                    )}
                     <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -874,86 +921,102 @@ export default function InstallmentsPage() {
                             aria-label={`Select ${installment.name}`}
                           />
                         </TableCell>
-                        <TableCell className="font-medium">
-                          <div className="max-w-[200px]">
-                            <Link href={`/dashboard/installments/${installment.id}`} className="hover:underline">
-                              <p className="truncate">{installment.name}</p>
-                            </Link>
-                            <p className="text-xs text-muted-foreground md:hidden truncate">
-                              {installment.description}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {installment.category ? (
-                            <Badge variant="outline" className="text-xs">{translateCategory(installment.category)}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          <CurrencyDisplay
-                            amount={installment.display_remaining_balance ?? installment.remaining_balance ?? installment.display_total_amount ?? installment.total_amount}
-                            currency={installment.display_currency ?? installment.currency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell text-right">
-                          <div className="flex flex-col items-end">
-                            <span className="text-sm">
-                              <CurrencyDisplay
-                                amount={installment.display_amount_per_payment ?? installment.amount_per_payment}
-                                currency={installment.display_currency ?? installment.currency}
-                                showSymbol={true}
-                                showCode={false}
-                              />
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell text-right">
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="text-sm">{installment.payments_made}/{installment.number_of_payments}</span>
-                            <Progress value={percentPaid} className="h-1 w-16" />
-                            <span className="text-xs text-muted-foreground">{percentPaid}%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          {nextPayment ? (
-                            <div className="flex flex-col gap-1">
-                              <span className="text-sm">
-                                {formatPaymentDate(nextPayment)}
-                              </span>
-                              <Badge
-                                variant={getPaymentBadgeVariant(urgency)}
-                                className="text-xs w-fit"
-                              >
-                                {paymentMessage}
-                              </Badge>
+                        {isColumnVisible('name') && (
+                          <TableCell className="font-medium">
+                            <div className="max-w-[200px]">
+                              <Link href={`/dashboard/installments/${installment.id}`} className="hover:underline">
+                                <p className="truncate">{installment.name}</p>
+                              </Link>
+                              <p className="text-xs text-muted-foreground md:hidden truncate">
+                                {installment.description}
+                              </p>
                             </div>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">
-                              {isPaidOff ? tOverview('paidOff') : '-'}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden 2xl:table-cell text-right">
-                          {installment.display_currency && installment.display_currency !== installment.currency ? (
-                            <span className="text-sm text-muted-foreground">
-                              {installment.total_amount} {installment.currency}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs">
-                            {installment.is_active ? tOverview('active') : tOverview('inactive')}
-                          </Badge>
-                        </TableCell>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('category') && (
+                          <TableCell className="hidden md:table-cell">
+                            {installment.category ? (
+                              <Badge variant="outline" className="text-xs">{translateCategory(installment.category)}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('remaining') && (
+                          <TableCell className="text-right font-semibold">
+                            <CurrencyDisplay
+                              amount={installment.display_remaining_balance ?? installment.remaining_balance ?? installment.display_total_amount ?? installment.total_amount}
+                              currency={installment.display_currency ?? installment.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </TableCell>
+                        )}
+                        {isColumnVisible('payment') && (
+                          <TableCell className="hidden sm:table-cell text-right">
+                            <div className="flex flex-col items-end">
+                              <span className="text-sm">
+                                <CurrencyDisplay
+                                  amount={installment.display_amount_per_payment ?? installment.amount_per_payment}
+                                  currency={installment.display_currency ?? installment.currency}
+                                  showSymbol={true}
+                                  showCode={false}
+                                />
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {FREQUENCY_LABELS[installment.frequency] || installment.frequency}
+                              </span>
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('progress') && (
+                          <TableCell className="hidden lg:table-cell text-right">
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-sm">{installment.payments_made}/{installment.number_of_payments}</span>
+                              <Progress value={percentPaid} className="h-1 w-16" />
+                              <span className="text-xs text-muted-foreground">{percentPaid}%</span>
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('nextPayment') && (
+                          <TableCell className="hidden xl:table-cell">
+                            {nextPayment ? (
+                              <div className="flex flex-col gap-1">
+                                <span className="text-sm">
+                                  {formatPaymentDate(nextPayment)}
+                                </span>
+                                <Badge
+                                  variant={getPaymentBadgeVariant(urgency)}
+                                  className="text-xs w-fit"
+                                >
+                                  {paymentMessage}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">
+                                {isPaidOff ? tOverview('paidOff') : '-'}
+                              </span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('originalTotal') && (
+                          <TableCell className="hidden 2xl:table-cell text-right">
+                            {installment.display_currency && installment.display_currency !== installment.currency ? (
+                              <span className="text-sm text-muted-foreground">
+                                {installment.total_amount} {installment.currency}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('status') && (
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge variant={installment.is_active ? 'default' : 'secondary'} className="text-xs">
+                              {installment.is_active ? tOverview('active') : tOverview('inactive')}
+                            </Badge>
+                          </TableCell>
+                        )}
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
                             <Link href={`/dashboard/installments/${installment.id}`}>

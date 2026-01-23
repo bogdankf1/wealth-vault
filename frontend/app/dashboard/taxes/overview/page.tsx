@@ -59,6 +59,8 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { toast } from 'sonner';
@@ -91,6 +93,21 @@ export default function TaxesPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column visibility configuration
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('name'), locked: true },
+    { id: 'description', label: tOverview('description') },
+    { id: 'type', label: tOverview('type') },
+    { id: 'amount', label: tOverview('amount') },
+    { id: 'frequency', label: tCommon('common.frequency') },
+    { id: 'notes', label: tCommon('common.description') },
+    { id: 'originalAmount', label: tCommon('common.originalAmount') },
+    { id: 'status', label: tCommon('common.status') },
+    { id: 'periodStatus', label: tPayment('periodStatus') },
+  ], [tOverview, tCommon, tPayment]);
+
+  const { visibleColumns, toggleColumn, showAllColumns, isColumnVisible } = useColumnVisibility('taxes', columnConfig);
 
   const { data: taxesData, isLoading, error, refetch } = useListTaxesQuery({ is_active: true });
   const { data: stats } = useGetTaxStatsQuery();
@@ -543,6 +560,16 @@ export default function TaxesPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -774,15 +801,33 @@ export default function TaxesPage() {
                     aria-label="Select all taxes"
                   />
                 </TableHead>
-                <TableHead>{tOverview('name')}</TableHead>
-                <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
-                <TableHead>{tOverview('type')}</TableHead>
-                <TableHead className="text-right">{tOverview('amount')}</TableHead>
-                <TableHead className="hidden lg:table-cell">{tOverview('frequency')}</TableHead>
-                <TableHead className="hidden xl:table-cell">{tCommon('common.description')}</TableHead>
-                <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
-                <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
-                <TableHead className="hidden md:table-cell">{tPayment('periodStatus')}</TableHead>
+                {isColumnVisible('name') && (
+                  <TableHead>{tOverview('name')}</TableHead>
+                )}
+                {isColumnVisible('description') && (
+                  <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
+                )}
+                {isColumnVisible('type') && (
+                  <TableHead>{tOverview('type')}</TableHead>
+                )}
+                {isColumnVisible('amount') && (
+                  <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                )}
+                {isColumnVisible('frequency') && (
+                  <TableHead className="hidden lg:table-cell">{tCommon('common.frequency')}</TableHead>
+                )}
+                {isColumnVisible('notes') && (
+                  <TableHead className="hidden xl:table-cell">{tCommon('common.description')}</TableHead>
+                )}
+                {isColumnVisible('originalAmount') && (
+                  <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                )}
+                {isColumnVisible('status') && (
+                  <TableHead className="hidden sm:table-cell">{tCommon('common.status')}</TableHead>
+                )}
+                {isColumnVisible('periodStatus') && (
+                  <TableHead className="hidden md:table-cell">{tPayment('periodStatus')}</TableHead>
+                )}
                 <TableHead className="text-right w-[200px]">{tOverview('actions')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -796,101 +841,119 @@ export default function TaxesPage() {
                       aria-label={`Select ${tax.name}`}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{tax.name}</span>
-                      <span className="text-xs text-muted-foreground md:hidden line-clamp-1">
-                        {tax.description}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <span className="text-sm line-clamp-2">{tax.description || '-'}</span>
-                  </TableCell>
-                  <TableCell>
-                    {tax.tax_type === 'fixed' ? (
-                      <Badge variant="outline" className="text-xs">
-                        <DollarSign className="h-3 w-3 mr-1" />
-                        {tTypes('fixed')}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-xs">
-                        <Percent className="h-3 w-3 mr-1" />
-                        {tTypes('percentage')}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {tax.tax_type === 'fixed' && tax.fixed_amount ? (
-                      <div className="flex flex-col items-end">
-                        <span className="font-semibold">
-                          <CurrencyDisplay
-                            amount={tax.display_fixed_amount ?? tax.fixed_amount}
-                            currency={tax.display_currency ?? tax.currency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
+                  {isColumnVisible('name') && (
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{tax.name}</span>
+                        <span className="text-xs text-muted-foreground md:hidden line-clamp-1">
+                          {tax.description}
                         </span>
                       </div>
-                    ) : tax.tax_type === 'percentage' && tax.percentage ? (
-                      <div className="flex flex-col items-end">
-                        <span className="font-semibold">{tax.percentage}%</span>
-                        {tax.calculated_amount !== undefined && (
-                          <span className="text-xs text-muted-foreground">
-                            ~<CurrencyDisplay
-                              amount={tax.calculated_amount}
-                              currency={tax.display_currency ?? 'USD'}
+                    </TableCell>
+                  )}
+                  {isColumnVisible('description') && (
+                    <TableCell className="hidden md:table-cell">
+                      <span className="text-sm line-clamp-2">{tax.description || '-'}</span>
+                    </TableCell>
+                  )}
+                  {isColumnVisible('type') && (
+                    <TableCell>
+                      {tax.tax_type === 'fixed' ? (
+                        <Badge variant="outline" className="text-xs">
+                          <DollarSign className="h-3 w-3 mr-1" />
+                          {tTypes('fixed')}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">
+                          <Percent className="h-3 w-3 mr-1" />
+                          {tTypes('percentage')}
+                        </Badge>
+                      )}
+                    </TableCell>
+                  )}
+                  {isColumnVisible('amount') && (
+                    <TableCell className="text-right">
+                      {tax.tax_type === 'fixed' && tax.fixed_amount ? (
+                        <div className="flex flex-col items-end">
+                          <span className="font-semibold">
+                            <CurrencyDisplay
+                              amount={tax.display_fixed_amount ?? tax.fixed_amount}
+                              currency={tax.display_currency ?? tax.currency}
                               showSymbol={true}
                               showCode={false}
                             />
                           </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <Badge variant="secondary" className="text-xs capitalize">
-                      {tFrequencies(tax.frequency as 'monthly' | 'quarterly' | 'annually')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden xl:table-cell">
-                    <span className="text-sm line-clamp-2">{tax.notes || '-'}</span>
-                  </TableCell>
-                  <TableCell className="hidden 2xl:table-cell text-right">
-                    {tax.display_currency && tax.display_currency !== tax.currency && tax.tax_type === 'fixed' ? (
-                      <span className="text-sm text-muted-foreground">
-                        {tax.fixed_amount} {tax.currency}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {tax.is_active ? (
-                      <Badge variant="default" className="bg-green-600 text-xs">
-                        {tStatus('active')}
+                        </div>
+                      ) : tax.tax_type === 'percentage' && tax.percentage ? (
+                        <div className="flex flex-col items-end">
+                          <span className="font-semibold">{tax.percentage}%</span>
+                          {tax.calculated_amount !== undefined && (
+                            <span className="text-xs text-muted-foreground">
+                              ~<CurrencyDisplay
+                                amount={tax.calculated_amount}
+                                currency={tax.display_currency ?? 'USD'}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {isColumnVisible('frequency') && (
+                    <TableCell className="hidden lg:table-cell">
+                      <Badge variant="secondary" className="text-xs capitalize">
+                        {tFrequencies(tax.frequency as 'monthly' | 'quarterly' | 'annually')}
                       </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="text-xs">
-                        {tStatus('inactive')}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {tax.is_paid_current_period ? (
-                      <Badge variant="default" className="text-xs bg-emerald-600">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        {tPayment('paid')}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {tPayment('due')}
-                      </Badge>
-                    )}
-                  </TableCell>
+                    </TableCell>
+                  )}
+                  {isColumnVisible('notes') && (
+                    <TableCell className="hidden xl:table-cell">
+                      <span className="text-sm line-clamp-2">{tax.notes || '-'}</span>
+                    </TableCell>
+                  )}
+                  {isColumnVisible('originalAmount') && (
+                    <TableCell className="hidden 2xl:table-cell text-right">
+                      {tax.display_currency && tax.display_currency !== tax.currency && tax.tax_type === 'fixed' ? (
+                        <span className="text-sm text-muted-foreground">
+                          {tax.fixed_amount} {tax.currency}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {isColumnVisible('status') && (
+                    <TableCell className="hidden sm:table-cell">
+                      {tax.is_active ? (
+                        <Badge variant="default" className="bg-green-600 text-xs">
+                          {tStatus('active')}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">
+                          {tStatus('inactive')}
+                        </Badge>
+                      )}
+                    </TableCell>
+                  )}
+                  {isColumnVisible('periodStatus') && (
+                    <TableCell className="hidden md:table-cell">
+                      {tax.is_paid_current_period ? (
+                        <Badge variant="default" className="text-xs bg-emerald-600">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          {tPayment('paid')}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {tPayment('due')}
+                        </Badge>
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <Button

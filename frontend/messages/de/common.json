@@ -88,6 +88,10 @@
     "institution": "Institut",
     "accountNumber": "Kontonummer",
     "view": "Ansehen",
-    "actions": "Aktionen"
+    "actions": "Aktionen",
+    "columns": "Spalten",
+    "showAll": "Alle anzeigen",
+    "status": "Status",
+    "frequency": "Häufigkeit"
   }
 }

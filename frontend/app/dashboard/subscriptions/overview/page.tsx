@@ -47,8 +47,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 
@@ -109,6 +111,25 @@ export default function SubscriptionsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('name'), locked: true },
+    { id: 'description', label: tCommon('common.description') },
+    { id: 'category', label: tOverview('category') },
+    { id: 'amount', label: tOverview('amount') },
+    { id: 'frequency', label: tOverview('frequency') },
+    { id: 'nextRenewal', label: tOverview('nextRenewal') },
+    { id: 'originalAmount', label: tCommon('common.originalAmount') },
+    { id: 'status', label: tCommon('common.status') },
+  ], [tOverview, tCommon]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('subscriptions', columnConfig);
 
   // Context to set action buttons in layout
   const { setActions } = React.useContext(SubscriptionsActionsContext);
@@ -544,6 +565,16 @@ export default function SubscriptionsPage() {
               sortAscendingLabel={tCommon('common.sortAscending')}
               sortDescendingLabel={tCommon('common.sortDescending')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -793,14 +824,30 @@ export default function SubscriptionsPage() {
                         aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{tCommon('common.description')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
-                    <TableHead className="text-right">{tOverview('amount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('frequency')}</TableHead>
-                    <TableHead className="hidden xl:table-cell">{tOverview('nextRenewal')}</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    {isColumnVisible('name') && (
+                      <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    )}
+                    {isColumnVisible('description') && (
+                      <TableHead className="hidden md:table-cell">{tCommon('common.description')}</TableHead>
+                    )}
+                    {isColumnVisible('category') && (
+                      <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
+                    )}
+                    {isColumnVisible('amount') && (
+                      <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                    )}
+                    {isColumnVisible('frequency') && (
+                      <TableHead className="hidden sm:table-cell">{tOverview('frequency')}</TableHead>
+                    )}
+                    {isColumnVisible('nextRenewal') && (
+                      <TableHead className="hidden xl:table-cell">{tOverview('nextRenewal')}</TableHead>
+                    )}
+                    {isColumnVisible('originalAmount') && (
+                      <TableHead className="hidden 2xl:table-cell text-right">{tCommon('common.originalAmount')}</TableHead>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableHead className="hidden sm:table-cell">{tCommon('common.status')}</TableHead>
+                    )}
                     <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -836,77 +883,95 @@ export default function SubscriptionsPage() {
                             aria-label={`Select ${subscription.name}`}
                           />
                         </TableCell>
-                        <TableCell className="font-medium">
-                          <div className="max-w-[200px]">
-                            <button
-                              onClick={() => router.push(`/dashboard/subscriptions/${subscription.id}`)}
-                              className="truncate hover:underline text-left font-medium"
-                            >
-                              {subscription.name}
-                            </button>
-                            <p className="text-xs text-muted-foreground md:hidden truncate">
-                              {subscription.description}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <p className="max-w-[250px] truncate text-sm text-muted-foreground">
-                            {subscription.description || '-'}
-                          </p>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {subscription.category ? (
-                            <Badge variant="outline" className="text-xs">{translateCategory(subscription.category)}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          <CurrencyDisplay
-                            amount={subscription.display_amount ?? subscription.amount}
-                            currency={subscription.display_currency ?? subscription.currency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <span className="text-sm text-muted-foreground">
-                            {FREQUENCY_LABELS[subscription.frequency] || subscription.frequency}
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          {nextRenewal ? (
-                            <div className="flex flex-col gap-1">
-                              <span className="text-sm">
-                                {formatRenewalDate(nextRenewal, tRenewal('noUpcomingRenewal'), 'uk-UA')}
-                              </span>
-                              <Badge
-                                variant={getRenewalBadgeVariant(urgency)}
-                                className="text-xs w-fit"
+                        {isColumnVisible('name') && (
+                          <TableCell className="font-medium">
+                            <div className="max-w-[200px]">
+                              <button
+                                onClick={() => router.push(`/dashboard/subscriptions/${subscription.id}`)}
+                                className="truncate hover:underline text-left font-medium"
                               >
-                                {renewalMessage}
-                              </Badge>
+                                {subscription.name}
+                              </button>
+                              {!isColumnVisible('description') && (
+                                <p className="text-xs text-muted-foreground md:hidden truncate">
+                                  {subscription.description}
+                                </p>
+                              )}
                             </div>
-                          ) : (
+                          </TableCell>
+                        )}
+                        {isColumnVisible('description') && (
+                          <TableCell className="hidden md:table-cell">
+                            <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                              {subscription.description || '-'}
+                            </p>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('category') && (
+                          <TableCell className="hidden lg:table-cell">
+                            {subscription.category ? (
+                              <Badge variant="outline" className="text-xs">{translateCategory(subscription.category)}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('amount') && (
+                          <TableCell className="text-right font-semibold">
+                            <CurrencyDisplay
+                              amount={subscription.display_amount ?? subscription.amount}
+                              currency={subscription.display_currency ?? subscription.currency}
+                              showSymbol={true}
+                              showCode={false}
+                            />
+                          </TableCell>
+                        )}
+                        {isColumnVisible('frequency') && (
+                          <TableCell className="hidden sm:table-cell">
                             <span className="text-sm text-muted-foreground">
-                              {isEnded ? 'Ended' : '-'}
+                              {FREQUENCY_LABELS[subscription.frequency] || subscription.frequency}
                             </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden 2xl:table-cell text-right">
-                          {subscription.display_currency && subscription.display_currency !== subscription.currency ? (
-                            <span className="text-sm text-muted-foreground">
-                              {subscription.amount} {subscription.currency}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs">
-                            {subscription.is_active ? tStatus('active') : tStatus('archived')}
-                          </Badge>
-                        </TableCell>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('nextRenewal') && (
+                          <TableCell className="hidden xl:table-cell">
+                            {nextRenewal ? (
+                              <div className="flex flex-col gap-1">
+                                <span className="text-sm">
+                                  {formatRenewalDate(nextRenewal, tRenewal('noUpcomingRenewal'), 'uk-UA')}
+                                </span>
+                                <Badge
+                                  variant={getRenewalBadgeVariant(urgency)}
+                                  className="text-xs w-fit"
+                                >
+                                  {renewalMessage}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">
+                                {isEnded ? 'Ended' : '-'}
+                              </span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('originalAmount') && (
+                          <TableCell className="hidden 2xl:table-cell text-right">
+                            {subscription.display_currency && subscription.display_currency !== subscription.currency ? (
+                              <span className="text-sm text-muted-foreground">
+                                {subscription.amount} {subscription.currency}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('status') && (
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge variant={subscription.is_active ? 'default' : 'secondary'} className="text-xs">
+                              {subscription.is_active ? tStatus('active') : tStatus('archived')}
+                            </Badge>
+                          </TableCell>
+                        )}
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
                             <Button

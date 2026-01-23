@@ -40,8 +40,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { Progress } from '@/components/ui/progress';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { toast } from 'sonner';
 
 export default function GoalsPage() {
@@ -112,6 +114,26 @@ export default function GoalsPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('name'), locked: true },
+    { id: 'category', label: tOverview('category') },
+    { id: 'saved', label: tOverview('saved') },
+    { id: 'target', label: tOverview('target') },
+    { id: 'progress', label: tOverview('progress') },
+    { id: 'monthlyContribution', label: tOverview('monthlyContribution') },
+    { id: 'originalTarget', label: tOverview('originalTarget') },
+    { id: 'targetDate', label: tOverview('targetDate') },
+    { id: 'status', label: tOverview('status') },
+  ], [tOverview]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('goals', columnConfig);
 
   const {
     data: goalsData,
@@ -448,6 +470,16 @@ export default function GoalsPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -707,15 +739,33 @@ export default function GoalsPage() {
                         aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{tOverview('category')}</TableHead>
-                    <TableHead className="text-right">{tOverview('saved')}</TableHead>
-                    <TableHead className="text-right">{tOverview('target')}</TableHead>
-                    <TableHead className="hidden sm:table-cell text-right">{tOverview('progress')}</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyContribution')}</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTarget')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{tOverview('targetDate')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    {isColumnVisible('name') && (
+                      <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    )}
+                    {isColumnVisible('category') && (
+                      <TableHead className="hidden md:table-cell">{tOverview('category')}</TableHead>
+                    )}
+                    {isColumnVisible('saved') && (
+                      <TableHead className="text-right">{tOverview('saved')}</TableHead>
+                    )}
+                    {isColumnVisible('target') && (
+                      <TableHead className="text-right">{tOverview('target')}</TableHead>
+                    )}
+                    {isColumnVisible('progress') && (
+                      <TableHead className="hidden sm:table-cell text-right">{tOverview('progress')}</TableHead>
+                    )}
+                    {isColumnVisible('monthlyContribution') && (
+                      <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyContribution')}</TableHead>
+                    )}
+                    {isColumnVisible('originalTarget') && (
+                      <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalTarget')}</TableHead>
+                    )}
+                    {isColumnVisible('targetDate') && (
+                      <TableHead className="hidden lg:table-cell">{tOverview('targetDate')}</TableHead>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    )}
                     <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -735,99 +785,117 @@ export default function GoalsPage() {
                             aria-label={`Select ${goal.name}`}
                           />
                         </TableCell>
-                        <TableCell className="font-medium">
-                          <div className="max-w-[200px]">
-                            <p
-                              className="truncate cursor-pointer hover:text-primary transition-colors"
-                              onClick={() => router.push(`/dashboard/goals/${goal.id}`)}
-                            >
-                              {goal.name}
-                              {goal.auto_track_progress && (
-                                <Link2 className="h-3 w-3 inline ml-2 text-blue-500 dark:text-blue-400" />
-                              )}
-                            </p>
-                            <p className="text-xs text-muted-foreground md:hidden truncate">
-                              {goal.description}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {goal.category ? (
-                            <Badge variant="outline" className="text-xs">{translateCategory(goal.category)}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          <CurrencyDisplay
-                            amount={displayCurrent}
-                            currency={displayCurrency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className="text-sm text-muted-foreground">
+                        {isColumnVisible('name') && (
+                          <TableCell className="font-medium">
+                            <div className="max-w-[200px]">
+                              <p
+                                className="truncate cursor-pointer hover:text-primary transition-colors"
+                                onClick={() => router.push(`/dashboard/goals/${goal.id}`)}
+                              >
+                                {goal.name}
+                                {goal.auto_track_progress && (
+                                  <Link2 className="h-3 w-3 inline ml-2 text-blue-500 dark:text-blue-400" />
+                                )}
+                              </p>
+                              <p className="text-xs text-muted-foreground md:hidden truncate">
+                                {goal.description}
+                              </p>
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('category') && (
+                          <TableCell className="hidden md:table-cell">
+                            {goal.category ? (
+                              <Badge variant="outline" className="text-xs">{translateCategory(goal.category)}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('saved') && (
+                          <TableCell className="text-right font-semibold">
                             <CurrencyDisplay
-                              amount={displayTarget}
+                              amount={displayCurrent}
                               currency={displayCurrency}
                               showSymbol={true}
                               showCode={false}
                             />
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell text-right">
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="text-sm font-semibold">{Math.round(progress)}%</span>
-                            <Progress value={progress} className="h-1 w-16" />
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell text-right">
-                          {goal.monthly_contribution && goal.monthly_contribution > 0 ? (
-                            <span className="text-sm">
+                          </TableCell>
+                        )}
+                        {isColumnVisible('target') && (
+                          <TableCell className="text-right">
+                            <span className="text-sm text-muted-foreground">
                               <CurrencyDisplay
-                                amount={goal.display_monthly_contribution ?? goal.monthly_contribution}
+                                amount={displayTarget}
                                 currency={displayCurrency}
                                 showSymbol={true}
                                 showCode={false}
                               />
                             </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden 2xl:table-cell text-right">
-                          {goal.display_currency && goal.display_currency !== goal.currency ? (
-                            <span className="text-sm text-muted-foreground">
-                              {goal.target_amount} {goal.currency}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {goal.target_date ? (
-                            <span className="text-sm text-muted-foreground">
-                              {new Date(goal.target_date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'} className="text-xs">
-                            {goal.is_completed ? (
-                              <span className="flex items-center gap-1">
-                                <CheckCircle2 className="h-3 w-3" />
-                                {tStatus('done')}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('progress') && (
+                          <TableCell className="hidden sm:table-cell text-right">
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-sm font-semibold">{Math.round(progress)}%</span>
+                              <Progress value={progress} className="h-1 w-16" />
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible('monthlyContribution') && (
+                          <TableCell className="hidden xl:table-cell text-right">
+                            {goal.monthly_contribution && goal.monthly_contribution > 0 ? (
+                              <span className="text-sm">
+                                <CurrencyDisplay
+                                  amount={goal.display_monthly_contribution ?? goal.monthly_contribution}
+                                  currency={displayCurrency}
+                                  showSymbol={true}
+                                  showCode={false}
+                                />
                               </span>
-                            ) : goal.is_active ? tStatus('active') : tStatus('paused')}
-                          </Badge>
-                        </TableCell>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('originalTarget') && (
+                          <TableCell className="hidden 2xl:table-cell text-right">
+                            {goal.display_currency && goal.display_currency !== goal.currency ? (
+                              <span className="text-sm text-muted-foreground">
+                                {goal.target_amount} {goal.currency}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('targetDate') && (
+                          <TableCell className="hidden lg:table-cell">
+                            {goal.target_date ? (
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(goal.target_date).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        )}
+                        {isColumnVisible('status') && (
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge variant={goal.is_completed ? 'default' : goal.is_active ? 'secondary' : 'outline'} className="text-xs">
+                              {goal.is_completed ? (
+                                <span className="flex items-center gap-1">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  {tStatus('done')}
+                                </span>
+                              ) : goal.is_active ? tStatus('active') : tStatus('paused')}
+                            </Badge>
+                          </TableCell>
+                        )}
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
                             <Button

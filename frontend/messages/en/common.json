@@ -88,6 +88,10 @@
     "institution": "Institution",
     "accountNumber": "Account Number",
     "view": "View",
-    "actions": "Actions"
+    "actions": "Actions",
+    "columns": "Columns",
+    "showAll": "Show All",
+    "status": "Status",
+    "frequency": "Frequency"
   }
 }

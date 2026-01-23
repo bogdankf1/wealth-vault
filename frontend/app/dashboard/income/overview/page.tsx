@@ -40,10 +40,12 @@ import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-d
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { useTierCheck, getFeatureDisplayName } from '@/lib/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
 import { INCOME_CATEGORY_NAME_TO_KEY, INCOME_CATEGORY_KEYS } from '@/lib/constants/income-categories';
@@ -92,6 +94,25 @@ export default function IncomePage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('name'), locked: true },
+    { id: 'description', label: tCommon('common.description') },
+    { id: 'category', label: tOverview('category') },
+    { id: 'amount', label: tOverview('amount') },
+    { id: 'frequency', label: tOverview('frequency') },
+    { id: 'monthlyEquivalent', label: tOverview('monthlyEquivalent') },
+    { id: 'originalAmount', label: tOverview('originalAmount') },
+    { id: 'status', label: tCommon('common.status') },
+  ], [tOverview, tCommon]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('income', columnConfig);
 
   // Context to set action buttons in layout
   const { setActions } = React.useContext(IncomeActionsContext);
@@ -485,6 +506,16 @@ export default function IncomePage() {
                 onSortDirectionChange={setSortDirection}
                 sortByLabel={tCommon('common.sortBy')}
               />
+              {viewMode === 'list' && (
+                <ColumnSelector
+                  columns={columnConfig}
+                  visibleColumns={visibleColumns}
+                  onToggleColumn={toggleColumn}
+                  onShowAllColumns={showAllColumns}
+                  label={tCommon('common.columns')}
+                  showAllLabel={tCommon('common.showAll')}
+                />
+              )}
               <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
                 <Button
                   variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -717,14 +748,30 @@ export default function IncomePage() {
                         aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{tOverview('description')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
-                    <TableHead className="text-right">{tOverview('amount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('frequency')}</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyEquivalent')}</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('status')}</TableHead>
+                    {isColumnVisible('name') && (
+                      <TableHead className="w-[200px]">{tOverview('name')}</TableHead>
+                    )}
+                    {isColumnVisible('description') && (
+                      <TableHead className="hidden md:table-cell">{tCommon('common.description')}</TableHead>
+                    )}
+                    {isColumnVisible('category') && (
+                      <TableHead className="hidden lg:table-cell">{tOverview('category')}</TableHead>
+                    )}
+                    {isColumnVisible('amount') && (
+                      <TableHead className="text-right">{tOverview('amount')}</TableHead>
+                    )}
+                    {isColumnVisible('frequency') && (
+                      <TableHead className="hidden sm:table-cell">{tOverview('frequency')}</TableHead>
+                    )}
+                    {isColumnVisible('monthlyEquivalent') && (
+                      <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyEquivalent')}</TableHead>
+                    )}
+                    {isColumnVisible('originalAmount') && (
+                      <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableHead className="hidden sm:table-cell">{tCommon('common.status')}</TableHead>
+                    )}
                     <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -738,67 +785,85 @@ export default function IncomePage() {
                           aria-label={`Select ${source.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="max-w-[200px]">
-                          <p className="truncate">{source.name}</p>
-                          <p className="text-xs text-muted-foreground md:hidden truncate">
-                            {source.description}
+                      {isColumnVisible('name') && (
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px]">
+                            <p className="truncate">{source.name}</p>
+                            {!isColumnVisible('description') && (
+                              <p className="text-xs text-muted-foreground md:hidden truncate">
+                                {source.description}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('description') && (
+                        <TableCell className="hidden md:table-cell">
+                          <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                            {source.description || '-'}
                           </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <p className="max-w-[250px] truncate text-sm text-muted-foreground">
-                          {source.description || '-'}
-                        </p>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {source.category ? (
-                          <Badge variant="outline" className="text-xs">{translateCategory(source.category)}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        <CurrencyDisplay
-                          amount={source.display_amount ?? source.amount}
-                          currency={source.display_currency ?? source.currency}
-                          showSymbol={true}
-                          showCode={false}
-                        />
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <span className="text-sm text-muted-foreground">
-                          {getFrequencyLabel(source.frequency)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden xl:table-cell text-right">
-                        {(source.display_monthly_equivalent ?? source.monthly_equivalent) ? (
-                          <span className="text-sm">
-                            <CurrencyDisplay
-                              amount={source.display_monthly_equivalent ?? source.monthly_equivalent ?? 0}
-                              currency={source.display_currency ?? source.currency}
-                              showSymbol={true}
-                              showCode={false}
-                            />
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden 2xl:table-cell text-right">
-                        {source.display_currency && source.display_currency !== source.currency ? (
+                        </TableCell>
+                      )}
+                      {isColumnVisible('category') && (
+                        <TableCell className="hidden lg:table-cell">
+                          {source.category ? (
+                            <Badge variant="outline" className="text-xs">{translateCategory(source.category)}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {isColumnVisible('amount') && (
+                        <TableCell className="text-right font-semibold">
+                          <CurrencyDisplay
+                            amount={source.display_amount ?? source.amount}
+                            currency={source.display_currency ?? source.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </TableCell>
+                      )}
+                      {isColumnVisible('frequency') && (
+                        <TableCell className="hidden sm:table-cell">
                           <span className="text-sm text-muted-foreground">
-                            {source.amount} {source.currency}
+                            {getFrequencyLabel(source.frequency)}
                           </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <Badge variant={source.is_active ? 'default' : 'secondary'} className="text-xs">
-                          {source.is_active ? tStatus('active') : tStatus('inactive')}
-                        </Badge>
-                      </TableCell>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('monthlyEquivalent') && (
+                        <TableCell className="hidden xl:table-cell text-right">
+                          {(source.display_monthly_equivalent ?? source.monthly_equivalent) ? (
+                            <span className="text-sm">
+                              <CurrencyDisplay
+                                amount={source.display_monthly_equivalent ?? source.monthly_equivalent ?? 0}
+                                currency={source.display_currency ?? source.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {isColumnVisible('originalAmount') && (
+                        <TableCell className="hidden 2xl:table-cell text-right">
+                          {source.display_currency && source.display_currency !== source.currency ? (
+                            <span className="text-sm text-muted-foreground">
+                              {source.amount} {source.currency}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {isColumnVisible('status') && (
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant={source.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {source.is_active ? tStatus('active') : tStatus('inactive')}
+                          </Badge>
+                        </TableCell>
+                      )}
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                           <Button

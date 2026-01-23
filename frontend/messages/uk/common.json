@@ -88,6 +88,10 @@
     "institution": "Установа",
     "accountNumber": "Номер рахунку",
     "view": "Переглянути",
-    "actions": "Дії"
+    "actions": "Дії",
+    "columns": "Колонки",
+    "showAll": "Показати всі",
+    "status": "Статус",
+    "frequency": "Частота"
   }
 }

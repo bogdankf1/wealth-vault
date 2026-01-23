@@ -41,9 +41,11 @@ import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-d
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { ColumnSelector } from '@/components/ui/column-selector';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { ExpenseActionsContext } from '../context';
 import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
@@ -87,6 +89,26 @@ export default function ExpensesPage() {
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
+
+  // Column configuration for list view
+  const columnConfig: ColumnConfig[] = React.useMemo(() => [
+    { id: 'name', label: tOverview('table.name'), locked: true },
+    { id: 'description', label: tOverview('table.description') },
+    { id: 'category', label: tOverview('table.category') },
+    { id: 'amount', label: tOverview('table.amount') },
+    { id: 'frequency', label: tOverview('table.frequency') },
+    { id: 'date', label: tOverview('table.date') },
+    { id: 'monthlyEquiv', label: tOverview('table.monthlyEquiv') },
+    { id: 'originalAmount', label: tOverview('table.originalAmount') },
+    { id: 'status', label: tOverview('table.status') },
+  ], [tOverview]);
+
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAllColumns,
+    isColumnVisible,
+  } = useColumnVisibility('expenses', columnConfig);
 
   // Context to set action buttons in layout
   const { setActions } = React.useContext(ExpenseActionsContext);
@@ -521,6 +543,16 @@ export default function ExpensesPage() {
               onSortDirectionChange={setSortDirection}
               sortByLabel={tCommon('common.sortBy')}
             />
+            {viewMode === 'list' && (
+              <ColumnSelector
+                columns={columnConfig}
+                visibleColumns={visibleColumns}
+                onToggleColumn={toggleColumn}
+                onShowAllColumns={showAllColumns}
+                label={tCommon('common.columns')}
+                showAllLabel={tCommon('common.showAll')}
+              />
+            )}
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
               <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
@@ -770,15 +802,33 @@ export default function ExpensesPage() {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead className="w-[200px]">{tOverview('table.name')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{tOverview('table.description')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{tOverview('table.category')}</TableHead>
-                    <TableHead className="text-right">{tOverview('table.amount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('table.frequency')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{tOverview('table.date')}</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">{tOverview('table.monthlyEquiv')}</TableHead>
-                    <TableHead className="hidden 2xl:table-cell text-right">{tOverview('table.originalAmount')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{tOverview('table.status')}</TableHead>
+                    {isColumnVisible('name') && (
+                      <TableHead className="w-[200px]">{tOverview('table.name')}</TableHead>
+                    )}
+                    {isColumnVisible('description') && (
+                      <TableHead className="hidden md:table-cell">{tOverview('table.description')}</TableHead>
+                    )}
+                    {isColumnVisible('category') && (
+                      <TableHead className="hidden lg:table-cell">{tOverview('table.category')}</TableHead>
+                    )}
+                    {isColumnVisible('amount') && (
+                      <TableHead className="text-right">{tOverview('table.amount')}</TableHead>
+                    )}
+                    {isColumnVisible('frequency') && (
+                      <TableHead className="hidden sm:table-cell">{tOverview('table.frequency')}</TableHead>
+                    )}
+                    {isColumnVisible('date') && (
+                      <TableHead className="hidden lg:table-cell">{tOverview('table.date')}</TableHead>
+                    )}
+                    {isColumnVisible('monthlyEquiv') && (
+                      <TableHead className="hidden xl:table-cell text-right">{tOverview('table.monthlyEquiv')}</TableHead>
+                    )}
+                    {isColumnVisible('originalAmount') && (
+                      <TableHead className="hidden 2xl:table-cell text-right">{tOverview('table.originalAmount')}</TableHead>
+                    )}
+                    {isColumnVisible('status') && (
+                      <TableHead className="hidden sm:table-cell">{tOverview('table.status')}</TableHead>
+                    )}
                     <TableHead className="text-right w-[180px]">{tOverview('table.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -792,81 +842,101 @@ export default function ExpensesPage() {
                           aria-label={`Select ${expense.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="max-w-[200px]">
-                          <p className="truncate">{expense.name}</p>
-                          <p className="text-xs text-muted-foreground md:hidden truncate">
-                            {expense.description}
+                      {isColumnVisible('name') && (
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px]">
+                            <p className="truncate">{expense.name}</p>
+                            {!isColumnVisible('description') && (
+                              <p className="text-xs text-muted-foreground md:hidden truncate">
+                                {expense.description}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('description') && (
+                        <TableCell className="hidden md:table-cell">
+                          <p className="max-w-[250px] truncate text-sm text-muted-foreground">
+                            {expense.description || '-'}
                           </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <p className="max-w-[250px] truncate text-sm text-muted-foreground">
-                          {expense.description || '-'}
-                        </p>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {expense.category ? (
-                          <Badge variant="outline" className="text-xs">{translateCategory(expense.category)}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        <CurrencyDisplay
-                          amount={expense.display_amount ?? expense.amount}
-                          currency={expense.display_currency ?? expense.currency}
-                          showSymbol={true}
-                          showCode={false}
-                        />
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <span className="text-sm text-muted-foreground">
-                          {tFrequency(expense.frequency)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <span className="text-sm text-muted-foreground">
-                          {(() => {
-                            const dateValue = expense.date || expense.start_date;
-                            return dateValue
-                              ? new Date(dateValue).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                })
-                              : '-';
-                          })()}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden xl:table-cell text-right">
-                        {(expense.display_monthly_equivalent ?? expense.monthly_equivalent) ? (
-                          <span className="text-sm">
-                            <CurrencyDisplay
-                              amount={expense.display_monthly_equivalent ?? expense.monthly_equivalent ?? 0}
-                              currency={expense.display_currency ?? expense.currency}
-                              showSymbol={true}
-                              showCode={false}
-                            />
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden 2xl:table-cell text-right">
-                        {expense.display_currency && expense.display_currency !== expense.currency ? (
+                        </TableCell>
+                      )}
+                      {isColumnVisible('category') && (
+                        <TableCell className="hidden lg:table-cell">
+                          {expense.category ? (
+                            <Badge variant="outline" className="text-xs">{translateCategory(expense.category)}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {isColumnVisible('amount') && (
+                        <TableCell className="text-right font-semibold">
+                          <CurrencyDisplay
+                            amount={expense.display_amount ?? expense.amount}
+                            currency={expense.display_currency ?? expense.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </TableCell>
+                      )}
+                      {isColumnVisible('frequency') && (
+                        <TableCell className="hidden sm:table-cell">
                           <span className="text-sm text-muted-foreground">
-                            {expense.amount} {expense.currency}
+                            {tFrequency(expense.frequency)}
                           </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs">
-                          {expense.is_active ? tStatus('active') : tStatus('inactive')}
-                        </Badge>
-                      </TableCell>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('date') && (
+                        <TableCell className="hidden lg:table-cell">
+                          <span className="text-sm text-muted-foreground">
+                            {(() => {
+                              const dateValue = expense.date || expense.start_date;
+                              return dateValue
+                                ? new Date(dateValue).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  })
+                                : '-';
+                            })()}
+                          </span>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('monthlyEquiv') && (
+                        <TableCell className="hidden xl:table-cell text-right">
+                          {(expense.display_monthly_equivalent ?? expense.monthly_equivalent) ? (
+                            <span className="text-sm">
+                              <CurrencyDisplay
+                                amount={expense.display_monthly_equivalent ?? expense.monthly_equivalent ?? 0}
+                                currency={expense.display_currency ?? expense.currency}
+                                showSymbol={true}
+                                showCode={false}
+                              />
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {isColumnVisible('originalAmount') && (
+                        <TableCell className="hidden 2xl:table-cell text-right">
+                          {expense.display_currency && expense.display_currency !== expense.currency ? (
+                            <span className="text-sm text-muted-foreground">
+                              {expense.amount} {expense.currency}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {isColumnVisible('status') && (
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant={expense.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {expense.is_active ? tStatus('active') : tStatus('inactive')}
+                          </Badge>
+                        </TableCell>
+                      )}
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                           <Button
