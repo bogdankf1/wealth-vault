@@ -61,6 +61,12 @@
     "archiveError": "Échec de l'archivage de la dépense",
     "batchArchiveSuccess": "{count} dépense(s) archivée(s) avec succès",
     "batchArchiveError": "Échec de l'archivage de {count} dépense(s)",
+    "processDuePayments": "Traiter les paiements dus",
+    "processingPayments": "Traitement...",
+    "noDuePayments": "Aucun paiement dû à traiter",
+    "paymentsProcessed": "{processed} paiement(s) traité(s) : {autoPaid} payé(s) automatiquement",
+    "paymentFailed": "{name} : {reason}",
+    "processPaymentsError": "Échec du traitement des paiements",
     "table": {
       "name": "Nom",
       "description": "Description",

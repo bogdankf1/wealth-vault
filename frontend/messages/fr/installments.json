@@ -71,7 +71,13 @@
     "batchDeleteTitle": "Supprimer {count} versement(s) ?",
     "batchDeleteDescription": "Cette action est irréversible. Cela supprimera définitivement {count} versement(s) du système.",
     "installment": "versement",
-    "installments": "versements"
+    "installments": "versements",
+    "processDuePayments": "Traiter les paiements dus",
+    "processingPayments": "Traitement...",
+    "noDuePayments": "Aucun paiement dû à traiter",
+    "paymentsProcessed": "{processed} paiement(s) traité(s) : {autoPaid} payé(s) automatiquement, {completed} terminé(s)",
+    "paymentFailed": "{name} : {reason}",
+    "processPaymentsError": "Échec du traitement des paiements"
   },
   "analysis": {
     "title": "Analyse des versements",

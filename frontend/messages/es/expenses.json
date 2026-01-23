@@ -61,6 +61,12 @@
     "archiveError": "Error al archivar gasto",
     "batchArchiveSuccess": "Se archivaron exitosamente {count} gasto(s)",
     "batchArchiveError": "Error al archivar {count} gasto(s)",
+    "processDuePayments": "Procesar pagos pendientes",
+    "processingPayments": "Procesando...",
+    "noDuePayments": "No hay pagos pendientes para procesar",
+    "paymentsProcessed": "Se procesaron {processed} pago(s): {autoPaid} pagados automáticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Error al procesar los pagos",
     "table": {
       "name": "Nombre",
       "description": "Descripción",

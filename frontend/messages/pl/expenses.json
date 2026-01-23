@@ -61,6 +61,12 @@
     "archiveError": "Nie udało się zarchiwizować wydatku",
     "batchArchiveSuccess": "Pomyślnie zarchiwizowano {count} wydatek(ów)",
     "batchArchiveError": "Nie udało się zarchiwizować {count} wydatek(ów)",
+    "processDuePayments": "Przetwórz zaległe płatności",
+    "processingPayments": "Przetwarzanie...",
+    "noDuePayments": "Brak zaległych płatności do przetworzenia",
+    "paymentsProcessed": "Przetworzono {processed} płatności: {autoPaid} opłaconych automatycznie",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Nie udało się przetworzyć płatności",
     "table": {
       "name": "Nazwa",
       "description": "Opis",

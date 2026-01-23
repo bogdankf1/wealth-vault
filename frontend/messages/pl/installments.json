@@ -71,7 +71,13 @@
     "batchDeleteTitle": "Usunąć {count} ratę(y)?",
     "batchDeleteDescription": "Tej operacji nie można cofnąć. To trwale usunie {count} ratę(y) z systemu.",
     "installment": "rata",
-    "installments": "raty"
+    "installments": "raty",
+    "processDuePayments": "Przetwórz zaległe płatności",
+    "processingPayments": "Przetwarzanie...",
+    "noDuePayments": "Brak zaległych płatności do przetworzenia",
+    "paymentsProcessed": "Przetworzono {processed} płatności: {autoPaid} opłaconych automatycznie, {completed} zakończonych",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Nie udało się przetworzyć płatności"
   },
   "analysis": {
     "title": "Analiza rat",

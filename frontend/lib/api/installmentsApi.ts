@@ -177,6 +177,27 @@ export interface InstallmentBatchDeleteResponse {
   failed_ids: string[];
 }
 
+export interface ProcessDuePaymentsResponse {
+  status: string;
+  due_count: number;
+  processed: number;
+  auto_paid: number;
+  completed: number;
+  failed_payments: Array<{
+    installment_id: string;
+    installment_name: string;
+    reason: string;
+    amount: number;
+    currency: string;
+  }>;
+  errors: Array<{
+    installment_id: string;
+    installment_name: string;
+    error: string;
+  }>;
+  timestamp: string;
+}
+
 export const installmentsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List installments with pagination and filters
@@ -359,6 +380,21 @@ export const installmentsApi = apiSlice.injectEndpoints({
         'Saving',
       ],
     }),
+
+    // Process all due installment payments (manual trigger for auto-pay)
+    processInstallmentDuePayments: builder.mutation<ProcessDuePaymentsResponse, void>({
+      query: () => ({
+        url: '/api/v1/installments/process-due-payments',
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        { type: 'Installments', id: 'LIST' },
+        { type: 'Installments', id: 'STATS' },
+        { type: 'Installments', id: 'HISTORY' },
+        'Dashboard',
+        'Saving',
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -378,4 +414,5 @@ export const {
   useReactivateInstallmentMutation,
   useGetInstallmentPaymentsQuery,
   useRecordInstallmentPaymentMutation,
+  useProcessInstallmentDuePaymentsMutation,
 } = installmentsApi;

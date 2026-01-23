@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye, Upload, Plus } from 'lucide-react';
+import { Calendar, TrendingDown, RefreshCw, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye, Upload, Plus, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -15,6 +15,7 @@ import {
   useUpdateSubscriptionMutation,
   useDeleteSubscriptionMutation,
   useBatchDeleteSubscriptionsMutation,
+  useProcessSubscriptionDuePaymentsMutation,
 } from '@/lib/api/subscriptionsApi';
 import {
   calculateNextRenewalDate,
@@ -140,6 +141,7 @@ export default function SubscriptionsPage() {
   const [updateSubscription] = useUpdateSubscriptionMutation();
   const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
   const [batchDeleteSubscriptions, { isLoading: isBatchDeleting }] = useBatchDeleteSubscriptionsMutation();
+  const [processSubscriptionDuePayments, { isLoading: isProcessingPayments }] = useProcessSubscriptionDuePaymentsMutation();
 
   const handleAddSubscription = React.useCallback(() => {
     setEditingSubscriptionId(null);
@@ -149,6 +151,28 @@ export default function SubscriptionsPage() {
   const handleImportSubscriptions = React.useCallback(() => {
     router.push('/dashboard/subscriptions/import');
   }, [router]);
+
+  const handleProcessDuePayments = React.useCallback(async () => {
+    try {
+      const result = await processSubscriptionDuePayments().unwrap();
+      if (result.due_count === 0) {
+        toast.info(tOverview('noDuePayments'));
+      } else if (result.processed > 0) {
+        toast.success(tOverview('paymentsProcessed', {
+          processed: result.processed,
+          autoPaid: result.auto_paid
+        }));
+      }
+      if (result.failed_payments.length > 0) {
+        result.failed_payments.forEach((failure) => {
+          toast.error(tOverview('paymentFailed', { name: failure.subscription_name, reason: failure.reason }));
+        });
+      }
+      refetchSubscriptions();
+    } catch (error) {
+      toast.error(tOverview('processPaymentsError'));
+    }
+  }, [processSubscriptionDuePayments, refetchSubscriptions, tOverview]);
 
   const handleEditSubscription = (id: string) => {
     setEditingSubscriptionId(id);
@@ -379,6 +403,16 @@ export default function SubscriptionsPage() {
             </Button>
           </>
         )}
+        <Button
+          onClick={handleProcessDuePayments}
+          variant="outline"
+          size="default"
+          className="w-full sm:w-auto"
+          disabled={isProcessingPayments}
+        >
+          <Play className="mr-2 h-4 w-4" />
+          <span className="truncate">{isProcessingPayments ? tOverview('processingPayments') : tOverview('processDuePayments')}</span>
+        </Button>
         <SplitButton
           primaryLabel={tOverview('importSubscriptions')}
           onPrimaryClick={handleImportSubscriptions}
@@ -397,7 +431,7 @@ export default function SubscriptionsPage() {
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription, handleImportSubscriptions, tOverview, tActions]);
+  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription, handleImportSubscriptions, handleProcessDuePayments, isProcessingPayments, tOverview, tActions]);
 
   return (
     <div className="space-y-4 md:space-y-6">

@@ -61,6 +61,12 @@
     "archiveError": "Ausgabe konnte nicht archiviert werden",
     "batchArchiveSuccess": "{count} Ausgabe(n) erfolgreich archiviert",
     "batchArchiveError": "{count} Ausgabe(n) konnten nicht archiviert werden",
+    "processDuePayments": "Fällige Zahlungen verarbeiten",
+    "processingPayments": "Verarbeitung...",
+    "noDuePayments": "Keine fälligen Zahlungen zu verarbeiten",
+    "paymentsProcessed": "{processed} Zahlung(en) verarbeitet: {autoPaid} automatisch bezahlt",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Zahlungen konnten nicht verarbeitet werden",
     "table": {
       "name": "Name",
       "description": "Beschreibung",

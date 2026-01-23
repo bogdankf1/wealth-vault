@@ -62,6 +62,12 @@
     "description": "Description",
     "active": "Actif",
     "inactive": "Inactif",
+    "processDuePayments": "Traiter les paiements dus",
+    "processingPayments": "Traitement...",
+    "noDuePayments": "Aucun paiement dû à traiter",
+    "paymentsProcessed": "{processed} paiement(s) traité(s) : {autoPaid} payé(s) automatiquement",
+    "paymentFailed": "{name} : {reason}",
+    "processPaymentsError": "Échec du traitement des paiements",
     "aiSearch": {
       "button": "Recherche fiscale IA",
       "title": "Modèles d'impôts IA",

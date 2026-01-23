@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye, Upload, Plus } from 'lucide-react';
+import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Eye, Upload, Plus, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -16,6 +16,7 @@ import {
   useUpdateInstallmentMutation,
   useDeleteInstallmentMutation,
   useBatchDeleteInstallmentsMutation,
+  useProcessInstallmentDuePaymentsMutation,
 } from '@/lib/api/installmentsApi';
 import {
   calculateNextPaymentDate,
@@ -148,6 +149,7 @@ export default function InstallmentsPage() {
   const [updateInstallment] = useUpdateInstallmentMutation();
   const [deleteInstallment, { isLoading: isDeleting }] = useDeleteInstallmentMutation();
   const [batchDeleteInstallments, { isLoading: isBatchDeleting }] = useBatchDeleteInstallmentsMutation();
+  const [processInstallmentDuePayments, { isLoading: isProcessingPayments }] = useProcessInstallmentDuePaymentsMutation();
 
   const handleAddInstallment = React.useCallback(() => {
     setEditingInstallmentId(null);
@@ -157,6 +159,29 @@ export default function InstallmentsPage() {
   const handleImportInstallments = React.useCallback(() => {
     router.push('/dashboard/installments/import');
   }, [router]);
+
+  const handleProcessDuePayments = React.useCallback(async () => {
+    try {
+      const result = await processInstallmentDuePayments().unwrap();
+      if (result.due_count === 0) {
+        toast.info(tOverview('noDuePayments'));
+      } else if (result.processed > 0) {
+        toast.success(tOverview('paymentsProcessed', {
+          processed: result.processed,
+          autoPaid: result.auto_paid,
+          completed: result.completed
+        }));
+      }
+      if (result.failed_payments.length > 0) {
+        result.failed_payments.forEach((failure) => {
+          toast.error(tOverview('paymentFailed', { name: failure.installment_name, reason: failure.reason }));
+        });
+      }
+      refetchInstallments();
+    } catch (error) {
+      toast.error(tOverview('processPaymentsError'));
+    }
+  }, [processInstallmentDuePayments, refetchInstallments, tOverview]);
 
   const handleEditInstallment = React.useCallback((id: string) => {
     setEditingInstallmentId(id);
@@ -390,6 +415,16 @@ export default function InstallmentsPage() {
             </Button>
           </>
         )}
+        <Button
+          onClick={handleProcessDuePayments}
+          variant="outline"
+          size="default"
+          className="w-full sm:w-auto"
+          disabled={isProcessingPayments}
+        >
+          <Play className="mr-2 h-4 w-4" />
+          <span className="truncate">{isProcessingPayments ? tOverview('processingPayments') : tOverview('processDuePayments')}</span>
+        </Button>
         <SplitButton
           primaryLabel={tOverview('importInstallments')}
           onPrimaryClick={handleImportInstallments}
@@ -406,7 +441,7 @@ export default function InstallmentsPage() {
       </>
     );
     return () => setActions(null);
-  }, [selectedInstallmentIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddInstallment, handleImportInstallments, tOverview]);
+  }, [selectedInstallmentIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddInstallment, handleImportInstallments, handleProcessDuePayments, isProcessingPayments, tOverview]);
 
   return (
     <div className="space-y-4 md:space-y-6">

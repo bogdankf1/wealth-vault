@@ -61,6 +61,12 @@
     "archiveError": "Falha ao arquivar despesa",
     "batchArchiveSuccess": "Arquivadas com sucesso {count} despesa(s)",
     "batchArchiveError": "Falha ao arquivar {count} despesa(s)",
+    "processDuePayments": "Processar pagamentos pendentes",
+    "processingPayments": "Processando...",
+    "noDuePayments": "Nenhum pagamento pendente para processar",
+    "paymentsProcessed": "Processados {processed} pagamento(s): {autoPaid} pagos automaticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Falha ao processar pagamentos",
     "table": {
       "name": "Nome",
       "description": "Descrição",

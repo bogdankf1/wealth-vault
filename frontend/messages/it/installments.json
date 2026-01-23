@@ -71,7 +71,13 @@
     "batchDeleteTitle": "Eliminare {count} rate?",
     "batchDeleteDescription": "Questa azione non può essere annullata. Questo eliminerà permanentemente {count} rate dal sistema.",
     "installment": "rata",
-    "installments": "rate"
+    "installments": "rate",
+    "processDuePayments": "Elabora pagamenti scaduti",
+    "processingPayments": "Elaborazione...",
+    "noDuePayments": "Nessun pagamento scaduto da elaborare",
+    "paymentsProcessed": "Elaborati {processed} pagamento(i): {autoPaid} pagati automaticamente, {completed} completati",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Impossibile elaborare i pagamenti"
   },
   "analysis": {
     "title": "Analisi Rate",

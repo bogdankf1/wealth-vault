@@ -51,7 +51,13 @@
     "batchArchiveSuccess": "Se archivaron exitosamente {count} suscripción/suscripciones",
     "batchArchiveError": "Error al archivar {count} suscripción/suscripciones",
     "calendarView": "Vista de Calendario",
-    "listView": "Vista de Lista"
+    "listView": "Vista de Lista",
+    "processDuePayments": "Procesar pagos pendientes",
+    "processingPayments": "Procesando...",
+    "noDuePayments": "No hay pagos pendientes para procesar",
+    "paymentsProcessed": "Se procesaron {processed} pago(s): {autoPaid} pagados automáticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Error al procesar los pagos"
   },
   "analysis": {
     "title": "Análisis de Suscripciones",

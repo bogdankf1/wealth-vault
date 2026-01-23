@@ -62,6 +62,12 @@
     "description": "Descrizione",
     "active": "Attivo",
     "inactive": "Inattivo",
+    "processDuePayments": "Elabora pagamenti scaduti",
+    "processingPayments": "Elaborazione...",
+    "noDuePayments": "Nessun pagamento scaduto da elaborare",
+    "paymentsProcessed": "Elaborati {processed} pagamento(i): {autoPaid} pagati automaticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Impossibile elaborare i pagamenti",
     "aiSearch": {
       "button": "Ricerca fiscale IA",
       "title": "Modelli fiscali IA",

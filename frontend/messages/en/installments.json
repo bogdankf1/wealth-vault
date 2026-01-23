@@ -71,7 +71,13 @@
     "batchDeleteTitle": "Delete {count} installment(s)?",
     "batchDeleteDescription": "This action cannot be undone. This will permanently delete {count} installment(s) from the system.",
     "installment": "installment",
-    "installments": "installments"
+    "installments": "installments",
+    "processDuePayments": "Process Due Payments",
+    "processingPayments": "Processing...",
+    "noDuePayments": "No due payments to process",
+    "paymentsProcessed": "Processed {processed} payment(s): {autoPaid} auto-paid, {completed} completed",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Failed to process payments"
   },
   "analysis": {
     "title": "Installments Analysis",

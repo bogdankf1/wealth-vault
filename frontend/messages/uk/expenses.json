@@ -61,6 +61,12 @@
     "archiveError": "Не вдалося архівувати витрату",
     "batchArchiveSuccess": "Успішно архівовано {count} витрат(и)",
     "batchArchiveError": "Не вдалося архівувати {count} витрат(и)",
+    "processDuePayments": "Обробити платежі",
+    "processingPayments": "Обробка...",
+    "noDuePayments": "Немає платежів для обробки",
+    "paymentsProcessed": "Оброблено {processed} платіж(ів): {autoPaid} автоплатежів",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Не вдалося обробити платежі",
     "table": {
       "name": "Назва",
       "description": "Опис",

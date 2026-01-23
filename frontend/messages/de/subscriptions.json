@@ -51,7 +51,13 @@
     "batchArchiveSuccess": "{count} Abonnement(s) erfolgreich archiviert",
     "batchArchiveError": "{count} Abonnement(s) konnten nicht archiviert werden",
     "calendarView": "Kalenderansicht",
-    "listView": "Listenansicht"
+    "listView": "Listenansicht",
+    "processDuePayments": "Fällige Zahlungen verarbeiten",
+    "processingPayments": "Verarbeitung...",
+    "noDuePayments": "Keine fälligen Zahlungen zu verarbeiten",
+    "paymentsProcessed": "{processed} Zahlung(en) verarbeitet: {autoPaid} automatisch bezahlt",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Zahlungen konnten nicht verarbeitet werden"
   },
   "analysis": {
     "title": "Abonnementanalyse",

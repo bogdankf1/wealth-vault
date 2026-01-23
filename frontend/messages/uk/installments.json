@@ -71,7 +71,13 @@
     "batchDeleteTitle": "Видалити {count} розстрочку/розстрочок?",
     "batchDeleteDescription": "Цю дію неможливо скасувати. Це назавжди видалить {count} розстрочку/розстрочок із системи.",
     "installment": "розстрочка",
-    "installments": "розстрочок"
+    "installments": "розстрочок",
+    "processDuePayments": "Обробити платежі",
+    "processingPayments": "Обробка...",
+    "noDuePayments": "Немає платежів для обробки",
+    "paymentsProcessed": "Оброблено {processed} платіж(ів): {autoPaid} автоплатежів, {completed} завершено",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Не вдалося обробити платежі"
   },
   "analysis": {
     "title": "Аналіз розстрочок",

@@ -144,6 +144,26 @@ export interface SubscriptionBatchDeleteResponse {
   failed_ids: string[];
 }
 
+export interface ProcessDuePaymentsResponse {
+  status: string;
+  due_count: number;
+  processed: number;
+  auto_paid: number;
+  failed_payments: Array<{
+    subscription_id: string;
+    subscription_name: string;
+    reason: string;
+    amount: number;
+    currency: string;
+  }>;
+  errors: Array<{
+    subscription_id: string;
+    subscription_name: string;
+    error: string;
+  }>;
+  timestamp: string;
+}
+
 export const subscriptionsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List subscriptions with pagination and filters
@@ -318,6 +338,22 @@ export const subscriptionsApi = apiSlice.injectEndpoints({
         'Saving',
       ],
     }),
+
+    // Process all due subscription payments (manual trigger for auto-pay)
+    processSubscriptionDuePayments: builder.mutation<ProcessDuePaymentsResponse, void>({
+      query: () => ({
+        url: '/api/v1/subscriptions/process-due-payments',
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        { type: 'Subscriptions', id: 'LIST' },
+        { type: 'Subscriptions', id: 'STATS' },
+        { type: 'Subscriptions', id: 'HISTORY' },
+        'Dashboard',
+        'Expense',
+        'Saving',
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -336,4 +372,5 @@ export const {
   useCancelSubscriptionMutation,
   useGetSubscriptionPaymentsQuery,
   useRecordSubscriptionPaymentMutation,
+  useProcessSubscriptionDuePaymentsMutation,
 } = subscriptionsApi;

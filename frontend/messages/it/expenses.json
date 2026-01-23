@@ -61,6 +61,12 @@
     "archiveError": "Impossibile archiviare la spesa",
     "batchArchiveSuccess": "Archiviate con successo {count} spese",
     "batchArchiveError": "Impossibile archiviare {count} spese",
+    "processDuePayments": "Elabora pagamenti scaduti",
+    "processingPayments": "Elaborazione...",
+    "noDuePayments": "Nessun pagamento scaduto da elaborare",
+    "paymentsProcessed": "Elaborati {processed} pagamento(i): {autoPaid} pagati automaticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Impossibile elaborare i pagamenti",
     "table": {
       "name": "Nome",
       "description": "Descrizione",

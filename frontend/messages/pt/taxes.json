@@ -62,6 +62,12 @@
     "description": "Descrição",
     "active": "Ativo",
     "inactive": "Inativo",
+    "processDuePayments": "Processar pagamentos pendentes",
+    "processingPayments": "Processando...",
+    "noDuePayments": "Nenhum pagamento pendente para processar",
+    "paymentsProcessed": "Processados {processed} pagamento(s): {autoPaid} pagos automaticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Falha ao processar pagamentos",
     "aiSearch": {
       "button": "Pesquisa fiscal IA",
       "title": "Modelos fiscais IA",

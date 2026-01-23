@@ -61,6 +61,12 @@
     "archiveError": "Failed to archive expense",
     "batchArchiveSuccess": "Successfully archived {count} expense(s)",
     "batchArchiveError": "Failed to archive {count} expense(s)",
+    "processDuePayments": "Process Due Payments",
+    "processingPayments": "Processing...",
+    "noDuePayments": "No due payments to process",
+    "paymentsProcessed": "Processed {processed} payment(s): {autoPaid} auto-paid",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Failed to process payments",
     "table": {
       "name": "Name",
       "description": "Description",

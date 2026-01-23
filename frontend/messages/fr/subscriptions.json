@@ -51,7 +51,13 @@
     "batchArchiveSuccess": "{count} abonnement(s) archivé(s) avec succès",
     "batchArchiveError": "Échec de l'archivage de {count} abonnement(s)",
     "calendarView": "Vue calendrier",
-    "listView": "Vue liste"
+    "listView": "Vue liste",
+    "processDuePayments": "Traiter les paiements dus",
+    "processingPayments": "Traitement...",
+    "noDuePayments": "Aucun paiement dû à traiter",
+    "paymentsProcessed": "{processed} paiement(s) traité(s) : {autoPaid} payé(s) automatiquement",
+    "paymentFailed": "{name} : {reason}",
+    "processPaymentsError": "Échec du traitement des paiements"
   },
   "analysis": {
     "title": "Analyse des abonnements",

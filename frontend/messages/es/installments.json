@@ -71,7 +71,13 @@
     "batchDeleteTitle": "¿Eliminar {count} cuota(s)?",
     "batchDeleteDescription": "Esta acción no se puede deshacer. Esto eliminará permanentemente {count} cuota(s) del sistema.",
     "installment": "cuota",
-    "installments": "cuotas"
+    "installments": "cuotas",
+    "processDuePayments": "Procesar pagos pendientes",
+    "processingPayments": "Procesando...",
+    "noDuePayments": "No hay pagos pendientes para procesar",
+    "paymentsProcessed": "Se procesaron {processed} pago(s): {autoPaid} pagados automáticamente, {completed} completados",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Error al procesar los pagos"
   },
   "analysis": {
     "title": "Análisis de Cuotas",

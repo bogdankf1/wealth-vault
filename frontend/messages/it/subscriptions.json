@@ -51,7 +51,13 @@
     "batchArchiveSuccess": "Archiviati con successo {count} abbonamenti",
     "batchArchiveError": "Impossibile archiviare {count} abbonamenti",
     "calendarView": "Vista Calendario",
-    "listView": "Vista Elenco"
+    "listView": "Vista Elenco",
+    "processDuePayments": "Elabora pagamenti scaduti",
+    "processingPayments": "Elaborazione...",
+    "noDuePayments": "Nessun pagamento scaduto da elaborare",
+    "paymentsProcessed": "Elaborati {processed} pagamento(i): {autoPaid} pagati automaticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Impossibile elaborare i pagamenti"
   },
   "analysis": {
     "title": "Analisi Abbonamenti",

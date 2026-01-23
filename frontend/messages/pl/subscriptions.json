@@ -51,7 +51,13 @@
     "batchArchiveSuccess": "Pomyślnie zarchiwizowano {count} subskrypcję(e)",
     "batchArchiveError": "Nie udało się zarchiwizować {count} subskrypcję(e)",
     "calendarView": "Widok kalendarza",
-    "listView": "Widok listy"
+    "listView": "Widok listy",
+    "processDuePayments": "Przetwórz zaległe płatności",
+    "processingPayments": "Przetwarzanie...",
+    "noDuePayments": "Brak zaległych płatności do przetworzenia",
+    "paymentsProcessed": "Przetworzono {processed} płatności: {autoPaid} opłaconych automatycznie",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Nie udało się przetworzyć płatności"
   },
   "analysis": {
     "title": "Analiza subskrypcji",

@@ -71,7 +71,13 @@
     "batchDeleteTitle": "Excluir {count} parcelamento(s)?",
     "batchDeleteDescription": "Esta ação não pode ser desfeita. Isto excluirá permanentemente {count} parcelamento(s) do sistema.",
     "installment": "parcelamento",
-    "installments": "parcelamentos"
+    "installments": "parcelamentos",
+    "processDuePayments": "Processar pagamentos pendentes",
+    "processingPayments": "Processando...",
+    "noDuePayments": "Nenhum pagamento pendente para processar",
+    "paymentsProcessed": "Processados {processed} pagamento(s): {autoPaid} pagos automaticamente, {completed} concluídos",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Falha ao processar pagamentos"
   },
   "analysis": {
     "title": "Análise de Parcelamentos",

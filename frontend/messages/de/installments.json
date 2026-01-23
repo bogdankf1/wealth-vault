@@ -71,7 +71,13 @@
     "batchDeleteTitle": "{count} Ratenzahlung(en) löschen?",
     "batchDeleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Dies wird {count} Ratenzahlung(en) dauerhaft aus dem System löschen.",
     "installment": "Ratenzahlung",
-    "installments": "Ratenzahlungen"
+    "installments": "Ratenzahlungen",
+    "processDuePayments": "Fällige Zahlungen verarbeiten",
+    "processingPayments": "Verarbeitung...",
+    "noDuePayments": "Keine fälligen Zahlungen zu verarbeiten",
+    "paymentsProcessed": "{processed} Zahlung(en) verarbeitet: {autoPaid} automatisch bezahlt, {completed} abgeschlossen",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Zahlungen konnten nicht verarbeitet werden"
   },
   "analysis": {
     "title": "Ratenzahlungsanalyse",

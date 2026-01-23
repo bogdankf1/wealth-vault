@@ -62,6 +62,12 @@
     "description": "Beschreibung",
     "active": "Aktiv",
     "inactive": "Inaktiv",
+    "processDuePayments": "Fällige Zahlungen verarbeiten",
+    "processingPayments": "Verarbeitung...",
+    "noDuePayments": "Keine fälligen Zahlungen zu verarbeiten",
+    "paymentsProcessed": "{processed} Zahlung(en) verarbeitet: {autoPaid} automatisch bezahlt",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Zahlungen konnten nicht verarbeitet werden",
     "aiSearch": {
       "button": "KI-Steuersuche",
       "title": "KI-Steuervorlagen",

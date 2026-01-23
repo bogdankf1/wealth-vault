@@ -178,6 +178,26 @@ export interface ExpenseBatchCreateResponse {
   }>;
 }
 
+export interface ProcessDuePaymentsResponse {
+  status: string;
+  due_count: number;
+  processed: number;
+  auto_paid: number;
+  failed_payments: Array<{
+    expense_id: string;
+    expense_name: string;
+    reason: string;
+    amount: number;
+    currency: string;
+  }>;
+  errors: Array<{
+    expense_id: string;
+    expense_name: string;
+    error: string;
+  }>;
+  timestamp: string;
+}
+
 export const expensesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Expense CRUD
@@ -358,6 +378,23 @@ export const expensesApi = apiSlice.injectEndpoints({
       query: () => '/api/v1/expenses/payment-summary',
       providesTags: [{ type: 'Expense', id: 'PAYMENT_SUMMARY' }],
     }),
+
+    // Process all due recurring expense payments (manual trigger for auto-pay)
+    processExpenseDuePayments: builder.mutation<ProcessDuePaymentsResponse, void>({
+      query: () => ({
+        url: '/api/v1/expenses/process-due-payments',
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        { type: 'Expense', id: 'LIST' },
+        { type: 'Expense', id: 'STATS' },
+        { type: 'Expense', id: 'HISTORY' },
+        { type: 'Expense', id: 'PENDING' },
+        { type: 'Expense', id: 'PAYMENT_SUMMARY' },
+        'Dashboard',
+        'Saving',
+      ],
+    }),
   }),
 });
 
@@ -377,4 +414,5 @@ export const {
   useGetPendingExpensesQuery,
   useGetOverdueExpensesQuery,
   useGetExpensePaymentSummaryQuery,
+  useProcessExpenseDuePaymentsMutation,
 } = expensesApi;

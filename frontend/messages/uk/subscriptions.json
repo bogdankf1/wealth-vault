@@ -51,7 +51,13 @@
     "batchArchiveSuccess": "Успішно архівовано {count} підписку/підписок",
     "batchArchiveError": "Не вдалося архівувати {count} підписку/підписок",
     "calendarView": "Вигляд календаря",
-    "listView": "Вигляд списку"
+    "listView": "Вигляд списку",
+    "processDuePayments": "Обробити платежі",
+    "processingPayments": "Обробка...",
+    "noDuePayments": "Немає платежів для обробки",
+    "paymentsProcessed": "Оброблено {processed} платіж(ів): {autoPaid} автоплатежів",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Не вдалося обробити платежі"
   },
   "analysis": {
     "title": "Аналіз підписок",

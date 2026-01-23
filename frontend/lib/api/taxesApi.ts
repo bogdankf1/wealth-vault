@@ -195,6 +195,26 @@ export interface PayTaxResponse {
   message: string;
 }
 
+export interface ProcessDueTaxPaymentsResponse {
+  status: string;
+  due_count: number;
+  processed: number;
+  auto_paid: number;
+  failed_payments: Array<{
+    tax_id: string;
+    tax_name: string;
+    reason: string;
+    amount: number;
+    currency: string;
+  }>;
+  errors: Array<{
+    tax_id: string;
+    tax_name: string;
+    error: string;
+  }>;
+  timestamp: string;
+}
+
 export const taxesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // List taxes with pagination and filters
@@ -361,6 +381,21 @@ export const taxesApi = apiSlice.injectEndpoints({
         { type: 'TaxPayment', id: 'LIST' },
       ],
     }),
+
+    // Process all due tax payments (manual trigger for auto-pay)
+    processTaxDuePayments: builder.mutation<ProcessDueTaxPaymentsResponse, void>({
+      query: () => ({
+        url: '/api/v1/taxes/process-due-payments',
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        { type: 'Tax', id: 'LIST' },
+        { type: 'Tax', id: 'STATS' },
+        { type: 'TaxPayment', id: 'LIST' },
+        'Dashboard',
+        'Saving',
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -380,4 +415,5 @@ export const {
   useCreateTaxPaymentMutation,
   useDeleteTaxPaymentMutation,
   useGetPaymentsForTaxQuery,
+  useProcessTaxDuePaymentsMutation,
 } = taxesApi;

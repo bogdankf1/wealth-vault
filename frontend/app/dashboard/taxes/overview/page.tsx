@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, CheckCircle, Clock, Sparkles, AlertCircle, Plus, Loader2 } from 'lucide-react';
+import { FileText, DollarSign, Percent, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, Eye, CheckCircle, Clock, Sparkles, AlertCircle, Plus, Loader2, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
@@ -35,6 +35,7 @@ import {
   useDeleteTaxMutation,
   useBatchDeleteTaxRecordsMutation,
   useCreateTaxMutation,
+  useProcessTaxDuePaymentsMutation,
   type Tax,
 } from '@/lib/api/taxesApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
@@ -99,6 +100,7 @@ export default function TaxesPage() {
   const [createTax] = useCreateTaxMutation();
   const [batchDeleteTaxRecords, { isLoading: isBatchDeleting }] = useBatchDeleteTaxRecordsMutation();
   const [getTaxPresets, { isLoading: isLoadingPresets }] = useGetTaxPresetsMutation();
+  const [processTaxDuePayments, { isLoading: isProcessingPayments }] = useProcessTaxDuePaymentsMutation();
 
   // AI Tax Presets state
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
@@ -245,6 +247,28 @@ export default function TaxesPage() {
     }));
   }, []);
 
+  const handleProcessDuePayments = useCallback(async () => {
+    try {
+      const result = await processTaxDuePayments().unwrap();
+      if (result.due_count === 0) {
+        toast.info(tOverview('noDuePayments'));
+      } else if (result.processed > 0) {
+        toast.success(tOverview('paymentsProcessed', {
+          processed: result.processed,
+          autoPaid: result.auto_paid
+        }));
+      }
+      if (result.failed_payments.length > 0) {
+        result.failed_payments.forEach((failure) => {
+          toast.error(tOverview('paymentFailed', { name: failure.tax_name, reason: failure.reason }));
+        });
+      }
+      refetch();
+    } catch (error) {
+      toast.error(tOverview('processPaymentsError'));
+    }
+  }, [processTaxDuePayments, refetch, tOverview]);
+
   const handleAddPresetAsTax = useCallback(async (preset: TaxPreset, index: number) => {
     setAddingPresets(prev => new Set(prev).add(index));
 
@@ -309,6 +333,16 @@ export default function TaxesPage() {
             </Button>
           </>
         )}
+        <Button
+          onClick={handleProcessDuePayments}
+          variant="outline"
+          size="default"
+          className="w-full sm:w-auto"
+          disabled={isProcessingPayments}
+        >
+          <Play className="mr-2 h-4 w-4" />
+          <span className="truncate">{isProcessingPayments ? tOverview('processingPayments') : tOverview('processDuePayments')}</span>
+        </Button>
         <SplitButton
           primaryLabel={tOverview('aiSearch.button')}
           onPrimaryClick={handleOpenAiSearch}
@@ -326,7 +360,7 @@ export default function TaxesPage() {
     );
 
     return () => setActions(null);
-  }, [selectedTaxIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddTax, handleOpenAiSearch, tOverview]);
+  }, [selectedTaxIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddTax, handleOpenAiSearch, handleProcessDuePayments, isProcessingPayments, tOverview]);
 
   const confirmBatchDelete = async () => {
     if (selectedTaxIds.size === 0) return;

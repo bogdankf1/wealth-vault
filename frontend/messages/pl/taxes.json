@@ -62,6 +62,12 @@
     "description": "Opis",
     "active": "Aktywny",
     "inactive": "Nieaktywny",
+    "processDuePayments": "Przetwórz zaległe płatności",
+    "processingPayments": "Przetwarzanie...",
+    "noDuePayments": "Brak zaległych płatności do przetworzenia",
+    "paymentsProcessed": "Przetworzono {processed} płatności: {autoPaid} opłaconych automatycznie",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Nie udało się przetworzyć płatności",
     "aiSearch": {
       "button": "Wyszukiwanie podatkowe AI",
       "title": "Szablony podatkowe AI",

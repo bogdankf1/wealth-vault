@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Layers, Eye, Upload, Plus } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Layers, Eye, Upload, Plus, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -15,6 +15,7 @@ import {
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
   useBatchDeleteExpensesMutation,
+  useProcessExpenseDuePaymentsMutation,
 } from '@/lib/api/expensesApi';
 import { Button } from '@/components/ui/button';
 import { SplitButton } from '@/components/ui/split-button';
@@ -128,6 +129,7 @@ export default function ExpensesPage() {
   const [updateExpense] = useUpdateExpenseMutation();
   const [deleteExpense, { isLoading: isDeleting }] = useDeleteExpenseMutation();
   const [batchDeleteExpenses, { isLoading: isBatchDeleting }] = useBatchDeleteExpensesMutation();
+  const [processExpenseDuePayments, { isLoading: isProcessingPayments }] = useProcessExpenseDuePaymentsMutation();
 
   const handleAddExpense = React.useCallback(() => {
     setEditingExpenseId(null);
@@ -141,6 +143,28 @@ export default function ExpensesPage() {
   const handleBatchAddExpense = React.useCallback(() => {
     setIsBatchFormOpen(true);
   }, []);
+
+  const handleProcessDuePayments = React.useCallback(async () => {
+    try {
+      const result = await processExpenseDuePayments().unwrap();
+      if (result.due_count === 0) {
+        toast.info(tOverview('noDuePayments'));
+      } else if (result.processed > 0) {
+        toast.success(tOverview('paymentsProcessed', {
+          processed: result.processed,
+          autoPaid: result.auto_paid
+        }));
+      }
+      if (result.failed_payments.length > 0) {
+        result.failed_payments.forEach((failure) => {
+          toast.error(tOverview('paymentFailed', { name: failure.expense_name, reason: failure.reason }));
+        });
+      }
+      refetchExpenses();
+    } catch (error) {
+      toast.error(tOverview('processPaymentsError'));
+    }
+  }, [processExpenseDuePayments, refetchExpenses, tOverview]);
 
   const handleEditExpense = (id: string) => {
     setEditingExpenseId(id);
@@ -317,6 +341,16 @@ export default function ExpensesPage() {
             </Button>
           </>
         )}
+        <Button
+          onClick={handleProcessDuePayments}
+          variant="outline"
+          size="default"
+          className="w-full sm:w-auto"
+          disabled={isProcessingPayments}
+        >
+          <Play className="mr-2 h-4 w-4" />
+          <span className="truncate">{isProcessingPayments ? tOverview('processingPayments') : tOverview('processDuePayments')}</span>
+        </Button>
         <SplitButton
           primaryLabel={tOverview('importExpenses')}
           onPrimaryClick={handleImportExpenses}
@@ -344,7 +378,7 @@ export default function ExpensesPage() {
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleImportExpenses, handleBatchAddExpense, hasBatchOperations, tOverview]);
+  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleImportExpenses, handleBatchAddExpense, handleProcessDuePayments, isProcessingPayments, hasBatchOperations, tOverview]);
 
   // Prepare stats cards data
   const statsCards: StatCard[] = stats

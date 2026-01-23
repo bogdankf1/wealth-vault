@@ -62,6 +62,12 @@
     "description": "Description",
     "active": "Active",
     "inactive": "Inactive",
+    "processDuePayments": "Process Due Payments",
+    "processingPayments": "Processing...",
+    "noDuePayments": "No due payments to process",
+    "paymentsProcessed": "Processed {processed} payment(s): {autoPaid} auto-paid",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Failed to process payments",
     "aiSearch": {
       "button": "AI Tax Search",
       "title": "AI Tax Presets",

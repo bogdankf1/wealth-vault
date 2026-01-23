@@ -51,7 +51,13 @@
     "batchArchiveSuccess": "Arquivadas com sucesso {count} assinatura(s)",
     "batchArchiveError": "Falha ao arquivar {count} assinatura(s)",
     "calendarView": "Visualização em Calendário",
-    "listView": "Visualização em Lista"
+    "listView": "Visualização em Lista",
+    "processDuePayments": "Processar pagamentos pendentes",
+    "processingPayments": "Processando...",
+    "noDuePayments": "Nenhum pagamento pendente para processar",
+    "paymentsProcessed": "Processados {processed} pagamento(s): {autoPaid} pagos automaticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Falha ao processar pagamentos"
   },
   "analysis": {
     "title": "Análise de Assinaturas",

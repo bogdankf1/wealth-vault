@@ -62,6 +62,12 @@
     "description": "Descripción",
     "active": "Activo",
     "inactive": "Inactivo",
+    "processDuePayments": "Procesar pagos pendientes",
+    "processingPayments": "Procesando...",
+    "noDuePayments": "No hay pagos pendientes para procesar",
+    "paymentsProcessed": "Se procesaron {processed} pago(s): {autoPaid} pagados automáticamente",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Error al procesar los pagos",
     "aiSearch": {
       "button": "Búsqueda de impuestos IA",
       "title": "Plantillas de impuestos IA",

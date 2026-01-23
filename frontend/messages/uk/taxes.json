@@ -62,6 +62,12 @@
     "description": "Опис",
     "active": "Активний",
     "inactive": "Неактивний",
+    "processDuePayments": "Обробити прострочені платежі",
+    "processingPayments": "Обробка...",
+    "noDuePayments": "Немає платежів для обробки",
+    "paymentsProcessed": "Оброблено {processed} платеж(ів): {autoPaid} автоматично",
+    "paymentFailed": "{name}: {reason}",
+    "processPaymentsError": "Не вдалося обробити платежі",
     "aiSearch": {
       "button": "AI Пошук податків",
       "title": "AI Податкові шаблони",
