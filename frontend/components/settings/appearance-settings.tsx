@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Monitor, Palette, Type, CheckCircle2, DollarSign, LayoutGrid, List, Grid3x3, Rows3, Languages } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Type, CheckCircle2, DollarSign, LayoutGrid, List, Grid3x3, Rows3, Languages, ChevronDown, Eye, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useGetMyPreferencesQuery, useUpdateMyPreferencesMutation } from '@/lib/api/preferencesApi';
 import { CurrencySelect } from '@/components/currency';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { localeNames, type Locale } from '@/i18n';
 import { useTranslations } from 'next-intl';
+import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { cn } from '@/lib/utils';
 
 export function AppearanceSettings() {
   const t = useTranslations('settings.appearance');
@@ -22,6 +26,10 @@ export function AppearanceSettings() {
 
   const { data: preferences, isLoading } = useGetMyPreferencesQuery();
   const [updatePreferences] = useUpdateMyPreferencesMutation();
+
+  // UI Visibility settings
+  const { settings: uiVisibility, updateSettings: updateUIVisibility, resetSettings: resetUIVisibility, isLoaded: uiVisibilityLoaded } = useUIVisibility();
+  const [uiElementsExpanded, setUiElementsExpanded] = useState(false);
 
   // Local state
   const [accentColor, setAccentColor] = useState('blue');
@@ -400,6 +408,89 @@ export function AppearanceSettings() {
             />
           </div>
         </CardContent>
+      </Card>
+
+      {/* UI Elements Visibility - Collapsible Section */}
+      <Card>
+        <CardHeader
+          className="cursor-pointer select-none"
+          onClick={() => setUiElementsExpanded(!uiElementsExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              <div>
+                <CardTitle>{t('uiElements.title')}</CardTitle>
+                <CardDescription className="mt-1">
+                  {t('uiElements.description')}
+                </CardDescription>
+              </div>
+            </div>
+            <ChevronDown
+              className={cn(
+                "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                uiElementsExpanded && "rotate-180"
+              )}
+            />
+          </div>
+        </CardHeader>
+        <div className={cn(
+          "overflow-hidden transition-all duration-200",
+          uiElementsExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        )}>
+          <CardContent className="space-y-4 pt-0">
+            {uiVisibilityLoaded && (
+              <>
+                {/* Show Stats Cards Toggle */}
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="showStatsCards" className="text-base font-medium">
+                      {t('uiElements.showStatsCards.label')}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {t('uiElements.showStatsCards.description')}
+                    </p>
+                  </div>
+                  <Switch
+                    id="showStatsCards"
+                    checked={uiVisibility.showStatsCards}
+                    onCheckedChange={(checked) => updateUIVisibility({ showStatsCards: checked })}
+                  />
+                </div>
+
+                {/* Show Page Description Toggle */}
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="showPageDescription" className="text-base font-medium">
+                      {t('uiElements.showPageDescription.label')}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {t('uiElements.showPageDescription.description')}
+                    </p>
+                  </div>
+                  <Switch
+                    id="showPageDescription"
+                    checked={uiVisibility.showPageDescription}
+                    onCheckedChange={(checked) => updateUIVisibility({ showPageDescription: checked })}
+                  />
+                </div>
+
+                {/* Reset Button */}
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={resetUIVisibility}
+                    className="gap-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    {t('uiElements.resetToDefaults')}
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </div>
       </Card>
 
       {/* Default View Preferences */}

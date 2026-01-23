@@ -196,6 +196,19 @@
       "info": "Esta moeda será usada para entrada de dados e exibição de todos os valores",
       "selectPlaceholder": "Selecionar moeda"
     },
+    "uiElements": {
+      "title": "Elementos de interface",
+      "description": "Mostrar ou ocultar elementos comuns da interface em todos os módulos",
+      "showStatsCards": {
+        "label": "Cartões de estatísticas",
+        "description": "Mostrar cartões de estatísticas no topo das páginas de módulos"
+      },
+      "showPageDescription": {
+        "label": "Descrições de página",
+        "description": "Mostrar texto descritivo abaixo dos títulos das páginas"
+      },
+      "resetToDefaults": "Restaurar padrões"
+    },
     "defaultViews": {
       "title": "Preferências de Visualização Padrão",
       "description": "Defina suas visualizações padrão preferidas para páginas de módulos. Você sempre pode substituí-las em páginas individuais.",

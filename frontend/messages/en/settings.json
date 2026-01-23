@@ -196,6 +196,19 @@
       "info": "This currency will be used for data entry and displaying all amounts",
       "selectPlaceholder": "Select currency"
     },
+    "uiElements": {
+      "title": "UI Elements",
+      "description": "Show or hide common interface elements across all modules",
+      "showStatsCards": {
+        "label": "Statistics Cards",
+        "description": "Show statistics cards at the top of module pages"
+      },
+      "showPageDescription": {
+        "label": "Page Descriptions",
+        "description": "Show descriptive text under page titles"
+      },
+      "resetToDefaults": "Reset to Defaults"
+    },
     "defaultViews": {
       "title": "Default View Preferences",
       "description": "Set your preferred default views for module pages. You can always override these on individual pages.",

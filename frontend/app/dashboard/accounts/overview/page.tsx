@@ -37,6 +37,7 @@ import {
 } from '@/lib/api/savingsApi';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { toast } from 'sonner';
 
 export default function SavingsPage() {
@@ -73,6 +74,7 @@ export default function SavingsPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { showStatsCards } = useUIVisibility();
 
   const { data: accountsData, isLoading, error, refetch } = useListAccountsQuery({ is_active: true });
   const { data: stats } = useGetSavingsStatsQuery();
@@ -314,7 +316,7 @@ export default function SavingsPage() {
     <div className="space-y-4 md:space-y-6">
       
 
-      {stats && (
+      {showStatsCards && stats && (
         <div className="space-y-3">
           <div className="flex items-center justify-end">
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>

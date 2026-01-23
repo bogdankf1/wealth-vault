@@ -39,6 +39,7 @@ import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { BudgetsActionsContext } from '../context';
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { toast } from 'sonner';
 import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
@@ -83,6 +84,7 @@ export default function BudgetsPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { showStatsCards } = useUIVisibility();
 
   // Get context for setting actions
   const { setActions } = React.useContext(BudgetsActionsContext);
@@ -458,65 +460,67 @@ export default function BudgetsPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Statistics Cards */}
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="space-y-2">
-                <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      ) : overview?.stats ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-end">
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
-              <Button
-                variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('cards')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('compact')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <Rows3 className="h-4 w-4" />
-              </Button>
-            </div>
+      {showStatsCards && (
+        isLoading ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardHeader className="space-y-2">
+                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                  <div className="h-8 w-32 animate-pulse rounded bg-muted" />
+                </CardHeader>
+              </Card>
+            ))}
           </div>
-
-          {statsViewMode === 'cards' ? (
-            <StatsCards stats={statsCards} />
-          ) : (
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <div className="divide-y">
-                {statsCards.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium truncate">{stat.title}</span>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-lg font-bold">{stat.value}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                      </div>
-                    </div>
-                  );
-                })}
+        ) : overview?.stats ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-end">
+              <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
+                <Button
+                  variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setStatsViewMode('cards')}
+                  className="h-[32px] w-[32px] p-0"
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setStatsViewMode('compact')}
+                  className="h-[32px] w-[32px] p-0"
+                >
+                  <Rows3 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          )}
-        </div>
-      ) : null}
+
+            {statsViewMode === 'cards' ? (
+              <StatsCards stats={statsCards} />
+            ) : (
+              <div className="border rounded-lg overflow-hidden bg-card">
+                <div className="divide-y">
+                  {statsCards.map((stat, index) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-sm font-medium truncate">{stat.title}</span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="text-lg font-bold">{stat.value}</span>
+                          <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null
+      )}
 
       {/* Search, Filters, and View Toggle */}
       {(budgets && budgets.length > 0) && (

@@ -196,6 +196,19 @@
       "info": "Cette devise sera utilisée pour la saisie des données et l'affichage de tous les montants",
       "selectPlaceholder": "Sélectionner la devise"
     },
+    "uiElements": {
+      "title": "Éléments d'interface",
+      "description": "Afficher ou masquer les éléments d'interface communs dans tous les modules",
+      "showStatsCards": {
+        "label": "Cartes de statistiques",
+        "description": "Afficher les cartes de statistiques en haut des pages de modules"
+      },
+      "showPageDescription": {
+        "label": "Descriptions de page",
+        "description": "Afficher le texte descriptif sous les titres de page"
+      },
+      "resetToDefaults": "Réinitialiser par défaut"
+    },
     "defaultViews": {
       "title": "Préférences de vue par défaut",
       "description": "Définissez vos vues par défaut préférées pour les pages de modules. Vous pouvez toujours les remplacer sur les pages individuelles.",

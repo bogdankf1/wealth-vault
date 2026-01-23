@@ -11,10 +11,12 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 import type { ModuleTab } from '@/types/module-layout';
 import { IncomeActionsContext } from './context';
+import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 
 export default function IncomeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
+  const { showPageDescription } = useUIVisibility();
   const tLayout = useTranslations('income.layout');
   const tNav = useTranslations('income.navigation');
 
@@ -35,9 +37,11 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
               {tLayout('title')}
             </h1>
-            <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              {tLayout('description')}
-            </p>
+            {showPageDescription && (
+              <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                {tLayout('description')}
+              </p>
+            )}
           </div>
           {actions && (
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 flex-shrink-0">

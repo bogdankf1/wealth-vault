@@ -196,6 +196,19 @@
       "info": "Esta moneda se utilizará para la entrada de datos y la visualización de todos los importes",
       "selectPlaceholder": "Seleccionar moneda"
     },
+    "uiElements": {
+      "title": "Elementos de interfaz",
+      "description": "Mostrar u ocultar elementos comunes de la interfaz en todos los módulos",
+      "showStatsCards": {
+        "label": "Tarjetas de estadísticas",
+        "description": "Mostrar tarjetas de estadísticas en la parte superior de las páginas de módulos"
+      },
+      "showPageDescription": {
+        "label": "Descripciones de página",
+        "description": "Mostrar texto descriptivo bajo los títulos de página"
+      },
+      "resetToDefaults": "Restablecer valores predeterminados"
+    },
     "defaultViews": {
       "title": "Preferencias de vista predeterminadas",
       "description": "Configura tus vistas predeterminadas preferidas para las páginas de módulos. Siempre puedes cambiarlas en páginas individuales.",

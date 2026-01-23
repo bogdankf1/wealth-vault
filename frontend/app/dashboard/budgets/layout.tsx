@@ -12,6 +12,7 @@ import { LayoutGrid, Archive, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { BudgetsActionsContext } from './context';
+import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 
 export default function BudgetsLayout({
   children,
@@ -20,6 +21,7 @@ export default function BudgetsLayout({
 }) {
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
+  const { showPageDescription } = useUIVisibility();
   const t = useTranslations('budgets');
 
   const BUDGETS_TABS: ModuleTab[] = [
@@ -37,9 +39,11 @@ export default function BudgetsLayout({
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
               {t('layout.title')}
             </h1>
-            <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              {t('layout.description')}
-            </p>
+            {showPageDescription && (
+              <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                {t('layout.description')}
+              </p>
+            )}
           </div>
           {actions && (
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 flex-shrink-0">

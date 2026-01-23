@@ -11,10 +11,12 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import type { ModuleTab } from '@/types/module-layout';
 import { ExpenseActionsContext } from './context';
+import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 
 export default function ExpensesLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [actions, setActions] = React.useState<React.ReactNode>(null);
+  const { showPageDescription } = useUIVisibility();
   const t = useTranslations('expenses');
 
   const EXPENSES_TABS: ModuleTab[] = [
@@ -34,9 +36,11 @@ export default function ExpensesLayout({ children }: { children: React.ReactNode
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
               {t('layout.title')}
             </h1>
-            <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              {t('layout.description')}
-            </p>
+            {showPageDescription && (
+              <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                {t('layout.description')}
+              </p>
+            )}
           </div>
           {actions && (
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 flex-shrink-0">

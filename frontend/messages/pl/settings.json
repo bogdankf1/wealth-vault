@@ -196,6 +196,19 @@
       "info": "Ta waluta będzie używana do wprowadzania danych i wyświetlania wszystkich kwot",
       "selectPlaceholder": "Wybierz walutę"
     },
+    "uiElements": {
+      "title": "Elementy interfejsu",
+      "description": "Pokaż lub ukryj wspólne elementy interfejsu we wszystkich modułach",
+      "showStatsCards": {
+        "label": "Karty statystyk",
+        "description": "Pokaż karty statystyk na górze stron modułów"
+      },
+      "showPageDescription": {
+        "label": "Opisy stron",
+        "description": "Pokaż tekst opisowy pod tytułami stron"
+      },
+      "resetToDefaults": "Przywróć domyślne"
+    },
     "defaultViews": {
       "title": "Preferencje domyślnych widoków",
       "description": "Ustaw preferowane domyślne widoki dla stron modułów. Możesz zawsze je nadpisać na poszczególnych stronach.",

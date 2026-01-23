@@ -196,6 +196,19 @@
       "info": "Questa valuta verrà utilizzata per l'inserimento dati e la visualizzazione di tutti gli importi",
       "selectPlaceholder": "Seleziona valuta"
     },
+    "uiElements": {
+      "title": "Elementi interfaccia",
+      "description": "Mostra o nascondi gli elementi comuni dell'interfaccia in tutti i moduli",
+      "showStatsCards": {
+        "label": "Schede statistiche",
+        "description": "Mostra le schede statistiche nella parte superiore delle pagine dei moduli"
+      },
+      "showPageDescription": {
+        "label": "Descrizioni pagina",
+        "description": "Mostra il testo descrittivo sotto i titoli delle pagine"
+      },
+      "resetToDefaults": "Ripristina predefiniti"
+    },
     "defaultViews": {
       "title": "Preferenze Vista Predefinita",
       "description": "Imposti le sue viste predefinite preferite per le pagine dei moduli. Può sempre sovrascriverle nelle singole pagine.",

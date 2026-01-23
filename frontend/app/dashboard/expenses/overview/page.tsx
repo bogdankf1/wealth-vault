@@ -43,6 +43,7 @@ import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-
 import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { ExpenseActionsContext } from '../context';
 import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
@@ -85,6 +86,7 @@ export default function ExpensesPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { showStatsCards } = useUIVisibility();
 
   // Context to set action buttons in layout
   const { setActions } = React.useContext(ExpenseActionsContext);
@@ -414,7 +416,7 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Statistics Section with Toggle */}
-      {isLoadingStats || statsError || stats ? (
+      {showStatsCards && (isLoadingStats || statsError || stats) ? (
         <div className="space-y-3">
           <div className="flex items-center justify-end">
             <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>

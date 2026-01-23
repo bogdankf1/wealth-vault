@@ -196,6 +196,19 @@
       "info": "Diese Währung wird für die Dateneingabe und Anzeige aller Beträge verwendet",
       "selectPlaceholder": "Währung auswählen"
     },
+    "uiElements": {
+      "title": "UI-Elemente",
+      "description": "Allgemeine Oberflächenelemente in allen Modulen ein- oder ausblenden",
+      "showStatsCards": {
+        "label": "Statistikkarten",
+        "description": "Statistikkarten oben auf Modulseiten anzeigen"
+      },
+      "showPageDescription": {
+        "label": "Seitenbeschreibungen",
+        "description": "Beschreibungstext unter Seitentiteln anzeigen"
+      },
+      "resetToDefaults": "Auf Standard zurücksetzen"
+    },
     "defaultViews": {
       "title": "Standard-Ansichtspräferenzen",
       "description": "Legen Sie Ihre bevorzugten Standardansichten für Modulseiten fest. Sie können diese auf einzelnen Seiten jederzeit überschreiben.",
