@@ -40,7 +40,6 @@ import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
 import { NAVIGATION_FEATURES } from '@/lib/constants/feature-map';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
 import { AuthErrorHandler } from '@/components/auth/auth-error-handler';
-import { NotificationBell } from '@/components/notifications/notification-bell';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 export default function DashboardLayout({
@@ -338,26 +337,16 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile/Tablet header */}
-        <header className="xl:hidden bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-4 py-2.5 flex items-center justify-between sticky top-0 z-30">
+        {/* Mobile/Tablet minimal header - just menu button */}
+        <div className="xl:hidden flex items-center h-10 px-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 touch-manipulation"
+            className="p-1.5 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 touch-manipulation"
             aria-label={t('user.openMenu')}
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           </button>
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <WealthVaultLogo size={28} className="flex-shrink-0" />
-            <span className="text-lg font-bold text-gray-900 dark:text-white">
-              {t('logo.title')}
-            </span>
-          </Link>
-          {/* Notification bell hidden - use Notifications page instead */}
-          <div className="w-10" /> {/* Spacer to maintain header balance */}
-        </header>
-
-        {/* Desktop notification bell hidden - use Notifications page instead */}
+        </div>
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
