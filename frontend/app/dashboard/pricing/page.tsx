@@ -1,25 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
-import { useCreateCheckoutSessionMutation, useGetTiersQuery } from '@/lib/api/billingApi';
+import { useCreateCheckoutSessionMutation, useGetTiersQuery, useActivatePaddleSubscriptionMutation } from '@/lib/api/billingApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useTranslations } from 'next-intl';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { PaymentMethodModal, type PaymentMethod } from '@/components/pricing/payment-method-modal';
 import { PayPalCheckoutModal } from '@/components/pricing/paypal-checkout-modal';
-import { PaddleCheckoutModal } from '@/components/pricing/paddle-checkout-modal';
 
 interface TierFeature {
   name: string;
   included: boolean;
+}
+
+// Paddle types
+interface PaddleEventData {
+  name: string;
+  data?: {
+    subscription_id?: string;
+    transaction_id?: string;
+    id?: string;
+    status?: string;
+  };
+}
+
+declare global {
+  interface Window {
+    Paddle?: {
+      Environment: {
+        set: (env: 'sandbox' | 'production') => void;
+      };
+      Initialize: (options: {
+        token: string;
+        eventCallback?: (event: PaddleEventData) => void;
+      }) => void;
+      Checkout: {
+        open: (options: {
+          items: Array<{ priceId: string; quantity: number }>;
+          customer?: { email: string };
+          customData?: Record<string, string>;
+          settings?: {
+            displayMode?: 'overlay' | 'inline';
+            theme?: 'light' | 'dark';
+          };
+        }) => void;
+      };
+    };
+  }
 }
 
 export default function PricingPage() {
@@ -83,7 +119,122 @@ export default function PricingPage() {
   const { data: tiers, isLoading: tiersLoading } = useGetTiersQuery();
   const { data: preferences } = useGetMyPreferencesQuery();
   const [createCheckoutSession, { isLoading }] = useCreateCheckoutSessionMutation();
+  const [activatePaddleSubscription] = useActivatePaddleSubscriptionMutation();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const [isPaddleReady, setIsPaddleReady] = useState(false);
+  const [isActivatingPaddle, setIsActivatingPaddle] = useState(false);
+
+  // Handle Paddle checkout completion
+  const handlePaddleCheckoutComplete = useCallback(async (data: {
+    subscription_id?: string;
+    transaction_id?: string;
+  }) => {
+    console.log('Paddle checkout completed:', data);
+
+    if (!data.transaction_id) {
+      toast.error('No transaction ID received from checkout');
+      return;
+    }
+
+    setIsActivatingPaddle(true);
+
+    try {
+      const result = await activatePaddleSubscription({
+        subscription_id: data.subscription_id || '',
+        transaction_id: data.transaction_id,
+      }).unwrap();
+
+      if (result.success) {
+        toast.success(`Successfully subscribed to ${result.tier}!`);
+        router.push('/dashboard?subscription=success');
+      }
+    } catch (err: unknown) {
+      console.error('Paddle activation error:', err);
+      const errorMessage =
+        err && typeof err === 'object' && 'data' in err
+          ? ((err.data as { detail?: string })?.detail || 'Failed to activate subscription')
+          : 'Failed to activate subscription';
+      toast.error(errorMessage);
+    } finally {
+      setIsActivatingPaddle(false);
+    }
+  }, [activatePaddleSubscription, router]);
+
+  // Initialize Paddle.js
+  useEffect(() => {
+    const initPaddle = () => {
+      if (!window.Paddle) return;
+
+      const paddleEnv = process.env.NEXT_PUBLIC_PADDLE_ENV || 'sandbox';
+      const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '';
+
+      if (!clientToken) {
+        console.error('Paddle client token not configured');
+        return;
+      }
+
+      try {
+        window.Paddle.Environment.set(paddleEnv as 'sandbox' | 'production');
+        window.Paddle.Initialize({
+          token: clientToken,
+          eventCallback: (event: PaddleEventData) => {
+            console.log('Paddle event:', event.name, event);
+
+            if (event.name === 'checkout.completed') {
+              handlePaddleCheckoutComplete({
+                subscription_id: event.data?.subscription_id,
+                transaction_id: event.data?.transaction_id || event.data?.id,
+              });
+            }
+          },
+        });
+        setIsPaddleReady(true);
+        console.log('Paddle initialized successfully');
+      } catch (e) {
+        console.error('Paddle initialization error:', e);
+      }
+    };
+
+    // Check if already loaded
+    if (window.Paddle) {
+      initPaddle();
+      return;
+    }
+
+    // Check if script exists
+    const existingScript = document.querySelector('script[src*="paddle.com"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', initPaddle);
+      return;
+    }
+
+    // Load Paddle.js
+    const script = document.createElement('script');
+    script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
+    script.async = true;
+    script.onload = initPaddle;
+    document.head.appendChild(script);
+  }, [handlePaddleCheckoutComplete]);
+
+  // Open Paddle checkout
+  const openPaddleCheckout = useCallback((tierName: string, priceId: string, userEmail?: string) => {
+    if (!window.Paddle || !isPaddleReady) {
+      toast.error('Payment system not ready. Please try again.');
+      return;
+    }
+
+    console.log('Opening Paddle checkout:', { priceId, tierName });
+
+    window.Paddle.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+      customer: userEmail ? { email: userEmail } : undefined,
+      customData: { tier: tierName },
+      settings: {
+        displayMode: 'overlay',
+        theme: 'light',
+      },
+    });
+  }, [isPaddleReady]);
 
   // Payment method modal state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -91,9 +242,6 @@ export default function PricingPage() {
 
   // PayPal checkout modal state
   const [showPayPalModal, setShowPayPalModal] = useState(false);
-
-  // Paddle checkout modal state
-  const [showPaddleModal, setShowPaddleModal] = useState(false);
 
   const displayCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 
@@ -168,17 +316,18 @@ export default function PricingPage() {
         setShowPayPalModal(true);
         setLoadingTier(null);
       } else if (paymentMethod === 'paddle') {
-        // Paddle flow - show Paddle checkout modal
+        // Paddle flow - use Paddle.js overlay checkout
         const paddlePriceId = paddlePriceIdMap[selectedTier.name];
         if (!paddlePriceId) {
           setShowPaymentModal(false);
           setLoadingTier(null);
           return;
         }
-        // Close payment method modal and open Paddle modal
+
+        // Close modal and open Paddle overlay
         setShowPaymentModal(false);
-        setShowPaddleModal(true);
         setLoadingTier(null);
+        openPaddleCheckout(selectedTier.name, paddlePriceId, user?.email);
       }
     } catch (error) {
       setShowPaymentModal(false);
@@ -196,11 +345,6 @@ export default function PricingPage() {
 
   const handlePayPalModalClose = () => {
     setShowPayPalModal(false);
-    setSelectedTier(null);
-  };
-
-  const handlePaddleModalClose = () => {
-    setShowPaddleModal(false);
     setSelectedTier(null);
   };
 
@@ -382,19 +526,6 @@ export default function PricingPage() {
         )}
       </PayPalScriptProvider>
 
-      {/* Paddle Checkout Modal */}
-      {selectedTier && (
-        <PaddleCheckoutModal
-          isOpen={showPaddleModal}
-          onClose={handlePaddleModalClose}
-          tierName={selectedTier.name}
-          tierDisplayName={selectedTier.display_name}
-          tierPrice={selectedTier.price_monthly}
-          priceId={paddlePriceIdMap[selectedTier.name] || ''}
-          currency={displayCurrency}
-          userEmail={user?.email}
-        />
-      )}
     </div>
   );
 }
