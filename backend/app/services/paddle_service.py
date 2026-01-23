@@ -105,7 +105,7 @@ class PaddleService:
         We verify the subscription status with Paddle and update our database.
 
         Args:
-            subscription_id: Paddle subscription ID from checkout
+            subscription_id: Paddle subscription ID from checkout (can be empty if using transaction_id)
             transaction_id: Paddle transaction ID from checkout
             user: Current user
             db: Database session
@@ -113,6 +113,28 @@ class PaddleService:
         Returns:
             Result dictionary with success status
         """
+        # If subscription_id is not provided, get it from the transaction
+        if not subscription_id and transaction_id:
+            import asyncio
+
+            # Paddle may take a moment to associate subscription with transaction
+            # Retry a few times with delay
+            for attempt in range(5):
+                transaction = await cls.get_transaction(transaction_id)
+                logger.info(f"Transaction data (attempt {attempt + 1}): {transaction}")
+
+                subscription_id = transaction.get("subscription_id")
+                if subscription_id:
+                    break
+
+                # Wait before retry (1, 2, 3, 4 seconds)
+                if attempt < 4:
+                    await asyncio.sleep(attempt + 1)
+
+            if not subscription_id:
+                logger.error(f"Transaction {transaction_id} has no subscription_id after retries. Transaction: {transaction}")
+                raise ValueError("Transaction does not have an associated subscription. Please try again or contact support.")
+
         # Get subscription details from Paddle
         subscription = await cls.get_subscription(subscription_id)
 
