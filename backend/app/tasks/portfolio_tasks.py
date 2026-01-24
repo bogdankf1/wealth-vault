@@ -40,7 +40,6 @@ def process_dividends(self) -> Dict[str, Any]:
     async def _process():
         from app.modules.portfolio.models import PortfolioAsset, PortfolioTransaction, TransactionType
         from app.modules.savings.transaction_service import TransactionService
-        from app.core.events import event_dispatcher, FinancialEvents
 
         async with get_async_db_session() as db:
             today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)

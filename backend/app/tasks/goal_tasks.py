@@ -46,8 +46,10 @@ def update_goal_progress_from_accounts(self) -> Dict[str, Any]:
 
     async def _update():
         async with get_async_db_session() as db:
-            from app.modules.notifications.service import create_notification
+            from app.modules.notifications.service import NotificationService
+            from app.modules.notifications.models import NotificationType, NotificationCategory
 
+            notification_service = NotificationService(db)
             goals_updated = 0
             goals_completed = 0
             milestones_reached = 0
@@ -89,13 +91,13 @@ def update_goal_progress_from_accounts(self) -> Dict[str, Any]:
 
                         # Send completion notification
                         try:
-                            await create_notification(
-                                db=db,
+                            await notification_service.create_notification(
                                 user_id=goal.user_id,
-                                type="goal_completed",
+                                notification_type=NotificationType.ACHIEVEMENT,
+                                category=NotificationCategory.GOAL,
                                 title="Goal Achieved!",
                                 message=f"Congratulations! You've reached your goal: {goal.name}",
-                                data={"goal_id": str(goal.id), "goal_name": goal.name}
+                                extra_data={"goal_id": str(goal.id), "goal_name": goal.name}
                             )
                             notifications_sent += 1
                         except Exception as e:
@@ -107,13 +109,13 @@ def update_goal_progress_from_accounts(self) -> Dict[str, Any]:
                         if old_progress < milestone <= new_progress_float:
                             milestones_reached += 1
                             try:
-                                await create_notification(
-                                    db=db,
+                                await notification_service.create_notification(
                                     user_id=goal.user_id,
-                                    type="goal_milestone",
+                                    notification_type=NotificationType.ACHIEVEMENT,
+                                    category=NotificationCategory.GOAL,
                                     title=f"Goal Milestone: {milestone}%",
                                     message=f"You've reached {milestone}% of your goal: {goal.name}",
-                                    data={"goal_id": str(goal.id), "milestone": milestone}
+                                    extra_data={"goal_id": str(goal.id), "milestone": milestone}
                                 )
                                 notifications_sent += 1
                             except Exception as e:
@@ -168,9 +170,11 @@ def check_goal_deadlines(self) -> Dict[str, Any]:
 
     async def _check():
         async with get_async_db_session() as db:
-            from app.modules.notifications.service import create_notification
+            from app.modules.notifications.service import NotificationService
+            from app.modules.notifications.models import NotificationType, NotificationCategory
             from app.modules.goals.service import calculate_projected_completion_date
 
+            notification_service = NotificationService(db)
             goals_checked = 0
             approaching_deadline = 0
             behind_schedule = 0
@@ -221,13 +225,13 @@ def check_goal_deadlines(self) -> Dict[str, Any]:
                         if days_until <= 7 and days_until > 0:
                             approaching_deadline += 1
                             try:
-                                await create_notification(
-                                    db=db,
+                                await notification_service.create_notification(
                                     user_id=goal.user_id,
-                                    type="goal_deadline_approaching",
+                                    notification_type=NotificationType.REMINDER,
+                                    category=NotificationCategory.GOAL,
                                     title=f"Goal Deadline in {days_until} days",
                                     message=f"Your goal '{goal.name}' has a deadline in {days_until} days. Current progress: {goal.progress_percentage:.0f}%",
-                                    data={
+                                    extra_data={
                                         "goal_id": str(goal.id),
                                         "days_until": days_until,
                                         "progress": float(goal.progress_percentage or 0)
@@ -240,13 +244,13 @@ def check_goal_deadlines(self) -> Dict[str, Any]:
                         # Warn if behind schedule and deadline in 30 days
                         elif days_until <= 30 and not is_on_track:
                             try:
-                                await create_notification(
-                                    db=db,
+                                await notification_service.create_notification(
                                     user_id=goal.user_id,
-                                    type="goal_behind_schedule",
+                                    notification_type=NotificationType.WARNING,
+                                    category=NotificationCategory.GOAL,
                                     title="Goal Behind Schedule",
                                     message=f"Your goal '{goal.name}' may not meet its deadline. Consider increasing contributions.",
-                                    data={
+                                    extra_data={
                                         "goal_id": str(goal.id),
                                         "target_date": goal.target_date.isoformat(),
                                         "progress": float(goal.progress_percentage or 0)
