@@ -606,19 +606,13 @@ export default function TaxesPage() {
           onAction={() => setIsFormOpen(true)}
         />
       ) : filteredTaxes.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>{tOverview('noFilterResults')}</p>
-          <Button
-            variant="link"
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedType('');
-            }}
-            className="mt-2"
-          >
-            {tOverview('clearFilters')}
-          </Button>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title={tOverview('noFilterResults')}
+          description={tOverview('noTaxesDescription')}
+          actionLabel={tOverview('addTax')}
+          onAction={() => setIsFormOpen(true)}
+        />
       ) : viewMode === 'card' ? (
         <div className="space-y-3">
           {filteredTaxes.length > 0 && (

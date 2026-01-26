@@ -441,19 +441,13 @@ export default function DebtsPage() {
           onAction={() => setIsFormOpen(true)}
         />
       ) : filteredDebts.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>{tOverview('noFilterResults')}</p>
-          <Button
-            variant="link"
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedStatus('');
-            }}
-            className="mt-2"
-          >
-            {tOverview('clearFilters')}
-          </Button>
-        </div>
+        <EmptyState
+          icon={UserMinus}
+          title={tOverview('noFilterResults')}
+          description={tOverview('noDebtsDescription')}
+          actionLabel={tOverview('addDebt')}
+          onAction={() => setIsFormOpen(true)}
+        />
       ) : viewMode === 'card' ? (
         <div className="space-y-3">
           {filteredDebts.length > 0 && (

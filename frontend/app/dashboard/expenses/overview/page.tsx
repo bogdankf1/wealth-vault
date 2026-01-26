@@ -624,23 +624,16 @@ export default function ExpensesPage() {
             onToggleSelect={handleToggleSelect}
           />
         ) : !filteredExpenses || filteredExpenses.length === 0 ? (
-          selectedMonth ? (
-            <EmptyState
-              icon={DollarSign}
-              title={tOverview('noExpensesForMonth')}
-              description={tOverview('noExpensesForMonthDescription', { month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) })}
-              actionLabel={tOverview('clearFilter')}
-              onAction={() => setSelectedMonth(null)}
-            />
-          ) : (
-            <EmptyState
-              icon={DollarSign}
-              title={tOverview('noExpenses')}
-              description={tOverview('noExpensesDescription')}
-              actionLabel={tOverview('addExpense')}
-              onAction={handleAddExpense}
-            />
-          )
+          <EmptyState
+            icon={DollarSign}
+            title={selectedMonth ? tOverview('noExpensesForMonth') : tOverview('noExpenses')}
+            description={selectedMonth
+              ? tOverview('noExpensesForMonthDescription', { month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) })
+              : tOverview('noExpensesDescription')
+            }
+            actionLabel={tOverview('addExpense')}
+            onAction={handleAddExpense}
+          />
         ) : viewMode === 'card' ? (
           <>
             {filteredExpenses.length > 0 && (

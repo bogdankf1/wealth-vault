@@ -588,25 +588,18 @@ export default function IncomePage() {
             onToggleSelect={handleToggleSelect}
           />
         ) : !filteredSources || filteredSources.length === 0 ? (
-          selectedMonth ? (
-            <EmptyState
-              icon={TrendingUp}
-              title={tOverview('noIncomeForMonth')}
-              description={tOverview('noIncomeForMonthDescription', {
-                month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-              })}
-              actionLabel={tOverview('clearFilter')}
-              onAction={() => setSelectedMonth(null)}
-            />
-          ) : (
-            <EmptyState
-              icon={TrendingUp}
-              title={tOverview('noIncome')}
-              description={tOverview('noIncomeDescription')}
-              actionLabel={tOverview('addIncome')}
-              onAction={handleAddSource}
-            />
-          )
+          <EmptyState
+            icon={TrendingUp}
+            title={selectedMonth ? tOverview('noIncomeForMonth') : tOverview('noIncome')}
+            description={selectedMonth
+              ? tOverview('noIncomeForMonthDescription', {
+                  month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                })
+              : tOverview('noIncomeDescription')
+            }
+            actionLabel={tOverview('addIncome')}
+            onAction={handleAddSource}
+          />
         ) : viewMode === 'card' ? (
           <>
             {filteredSources.length > 0 && (

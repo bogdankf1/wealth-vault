@@ -643,26 +643,16 @@ export default function InstallmentsPage() {
             onToggleSelect={handleToggleSelect}
           />
         ) : !filteredInstallments || filteredInstallments.length === 0 ? (
-          selectedMonth ? (
-            <EmptyState
-              icon={CreditCard}
-              title={tOverview('noInstallmentsForMonth')}
-              description={`${tOverview('noInstallmentsForMonthDescription')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`}
-              actionLabel={tOverview('clearFilter')}
-              onAction={() => setSelectedMonth(null)}
-            />
-          ) : (
-            <EmptyState
-              icon={CreditCard}
-              title={tOverview('noFilterResults')}
-              description={tOverview('noFilterResultsDescription')}
-              actionLabel={tOverview('clearFilters')}
-              onAction={() => {
-                setSearchQuery('');
-                setSelectedCategory(null);
-              }}
-            />
-          )
+          <EmptyState
+            icon={CreditCard}
+            title={selectedMonth ? tOverview('noInstallmentsForMonth') : tOverview('noFilterResults')}
+            description={selectedMonth
+              ? `${tOverview('noInstallmentsForMonthDescription')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`
+              : tOverview('noFilterResultsDescription')
+            }
+            actionLabel={tOverview('addInstallment')}
+            onAction={handleAddInstallment}
+          />
         ) : viewMode === 'card' ? (
           <div className="space-y-3">
             {filteredInstallments.length > 0 && (

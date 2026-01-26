@@ -30,6 +30,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { BudgetForm } from '@/components/budgets/budget-form';
+import { EmptyState } from '@/components/ui/empty-state';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -609,10 +610,13 @@ export default function BudgetsPage() {
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground">{tOverview('loading')}</div>
         ) : !budgets || budgets.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>{tOverview('noBudgets')}</p>
-            <p className="text-sm mt-1">{tOverview('noBudgetsDescription')}</p>
-          </div>
+          <EmptyState
+            icon={Wallet}
+            title={tOverview('noBudgets')}
+            description={tOverview('noBudgetsDescription')}
+            actionLabel={tOverview('addBudget')}
+            onAction={handleAddBudget}
+          />
         ) : !filteredBudgets || filteredBudgets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <p>{tOverview('noFilterResults')}</p>

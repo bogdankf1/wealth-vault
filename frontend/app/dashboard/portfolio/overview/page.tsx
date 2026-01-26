@@ -515,6 +515,8 @@ export default function PortfolioPage() {
             icon={Target}
             title={tCommon('common.noResults')}
             description={tOverview('noFilterResults')}
+            actionLabel={tOverview('addAsset')}
+            onAction={handleAddAsset}
           />
         ) : viewMode === 'card' ? (
           <div className="space-y-3">

@@ -456,6 +456,8 @@ export default function SavingsPage() {
           icon={Wallet}
           title={tCommon('common.noResults')}
           description={tOverview('noFilterResults')}
+          actionLabel={tOverview('addAccount')}
+          onAction={() => setIsFormOpen(true)}
         />
       ) : viewMode === 'card' ? (
         <>

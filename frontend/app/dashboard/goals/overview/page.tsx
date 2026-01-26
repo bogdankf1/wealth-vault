@@ -522,11 +522,8 @@ export default function GoalsPage() {
             icon={Target}
             title={tCommon('noResults')}
             description={tOverview('noFilterResults')}
-            actionLabel={tCommon('clearFilters')}
-            onAction={() => {
-              setSearchQuery('');
-              setSelectedCategory(null);
-            }}
+            actionLabel={tOverview('addGoal')}
+            onAction={handleAddGoal}
           />
         ) : viewMode === 'card' ? (
           <div className="space-y-3">
