@@ -1,6 +1,7 @@
 /**
  * Accounts Module Layout
  * Provides tabs navigation and action button injection
+ * Hides tabs and header on detail pages (e.g., /dashboard/accounts/[id])
  */
 'use client';
 
@@ -50,6 +51,21 @@ export default function AccountsLayout({
       href: '/dashboard/accounts/archive',
     },
   ];
+
+  // Check if we're on a detail page (not a known tab route)
+  const knownRoutes = ACCOUNTS_TABS.map(tab => tab.href);
+  const isDetailPage = !knownRoutes.includes(pathname);
+
+  // On detail pages, just render children without the module header and tabs
+  if (isDetailPage) {
+    return (
+      <SavingsActionsContext.Provider value={{ setActions }}>
+        <div className="container mx-auto p-4 md:p-6">
+          {children}
+        </div>
+      </SavingsActionsContext.Provider>
+    );
+  }
 
   return (
     <SavingsActionsContext.Provider value={{ setActions }}>

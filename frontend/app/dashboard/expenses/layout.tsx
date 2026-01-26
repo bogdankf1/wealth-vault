@@ -27,6 +27,21 @@ export default function ExpensesLayout({ children }: { children: React.ReactNode
     { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/expenses/archive' },
   ];
 
+  // Check if we're on a detail page (not a known tab route)
+  const knownRoutes = EXPENSES_TABS.map(tab => tab.href);
+  const isDetailPage = !knownRoutes.includes(pathname);
+
+  // On detail pages, just render children without the module header and tabs
+  if (isDetailPage) {
+    return (
+      <ExpenseActionsContext.Provider value={{ setActions }}>
+        <div className="container mx-auto p-4 md:p-6">
+          {children}
+        </div>
+      </ExpenseActionsContext.Provider>
+    );
+  }
+
   return (
     <ExpenseActionsContext.Provider value={{ setActions }}>
       <div className="container mx-auto p-4 md:p-6">

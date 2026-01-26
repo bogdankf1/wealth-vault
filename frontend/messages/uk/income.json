@@ -225,9 +225,11 @@
     "business": "Бізнес",
     "freelance": "Фріланс",
     "sideProjects": "Побічні проєкти",
+    "sideprojects": "Побічні проєкти",
     "investments": "Інвестиції",
     "gifts": "Подарунки",
     "refundsReimbursements": "Повернення та компенсації",
+    "refundsreimbursements": "Повернення та компенсації",
     "rental": "Оренда",
     "other": "Інше"
   },

@@ -269,7 +269,7 @@ export default function PortfolioDetailPage() {
 
   if (error || !asset) {
     return (
-      <div className="container mx-auto py-8 text-center">
+      <div className="text-center py-8">
         <h1 className="text-2xl font-bold mb-4">{t('notFound')}</h1>
         <p className="text-muted-foreground mb-4">{t('notFoundDescription')}</p>
         <Button onClick={handleBack}>{t('backToPortfolio')}</Button>
@@ -282,7 +282,7 @@ export default function PortfolioDetailPage() {
   const progressPercent = Math.min(100, Math.max(0, ((asset.current_value || 0) / (asset.total_invested || 1)) * 100));
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

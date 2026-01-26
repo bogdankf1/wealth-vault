@@ -188,26 +188,18 @@ export default function GoalDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto py-6 space-y-6">
-        <LoadingCards count={4} />
-      </div>
-    );
+    return <LoadingCards count={4} />;
   }
 
   if (error || !goal) {
-    return (
-      <div className="container mx-auto py-6">
-        <ApiErrorState error={error} />
-      </div>
-    );
+    return <ApiErrorState error={error} />;
   }
 
   const progressValue = Number(goal.progress_percentage) || 0;
   const isCompleted = goal.is_completed;
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

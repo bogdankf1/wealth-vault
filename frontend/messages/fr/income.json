@@ -225,9 +225,11 @@
     "business": "Entreprise",
     "freelance": "Freelance",
     "sideProjects": "Projets secondaires",
+    "sideprojects": "Projets secondaires",
     "investments": "Investissements",
     "gifts": "Cadeaux",
     "refundsReimbursements": "Remboursements",
+    "refundsreimbursements": "Remboursements",
     "rental": "Location",
     "other": "Autre"
   },

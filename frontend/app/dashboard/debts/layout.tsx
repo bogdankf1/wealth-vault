@@ -48,6 +48,21 @@ export default function DebtsLayout({
     },
   ];
 
+  // Check if we're on a detail page (not a known tab route)
+  const knownRoutes = DEBTS_TABS.map(tab => tab.href);
+  const isDetailPage = !knownRoutes.includes(pathname);
+
+  // On detail pages, just render children without the module header and tabs
+  if (isDetailPage) {
+    return (
+      <DebtsActionsContext.Provider value={{ setActions }}>
+        <div className="container mx-auto p-4 md:p-6">
+          {children}
+        </div>
+      </DebtsActionsContext.Provider>
+    );
+  }
+
   return (
     <DebtsActionsContext.Provider value={{ setActions }}>
       <div className="container mx-auto p-4 md:p-6">

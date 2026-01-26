@@ -105,19 +105,11 @@ export default function TaxDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto py-6 space-y-6">
-        <LoadingCards count={4} />
-      </div>
-    );
+    return <LoadingCards count={4} />;
   }
 
   if (error || !tax) {
-    return (
-      <div className="container mx-auto py-6">
-        <ApiErrorState error={error} />
-      </div>
-    );
+    return <ApiErrorState error={error} />;
   }
 
   const calculatedAmount = tax.calculated_amount || tax.display_fixed_amount || tax.fixed_amount || 0;
@@ -125,7 +117,7 @@ export default function TaxDetailPage() {
   const canPay = tax.payment_account_id && tax.payment_account;
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

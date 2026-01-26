@@ -28,6 +28,21 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
     { value: 'archive', label: tNav('archive'), icon: Archive, href: '/dashboard/income/archive' },
   ];
 
+  // Check if we're on a detail page (not a known tab route)
+  const knownRoutes = INCOME_TABS.map(tab => tab.href);
+  const isDetailPage = !knownRoutes.includes(pathname);
+
+  // On detail pages, just render children without the module header and tabs
+  if (isDetailPage) {
+    return (
+      <IncomeActionsContext.Provider value={{ setActions }}>
+        <div className="container mx-auto p-4 md:p-6">
+          {children}
+        </div>
+      </IncomeActionsContext.Provider>
+    );
+  }
+
   return (
     <IncomeActionsContext.Provider value={{ setActions }}>
       <div className="container mx-auto p-4 md:p-6">
