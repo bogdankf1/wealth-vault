@@ -114,6 +114,9 @@ export default function PortfolioDetailPage() {
   const { data: linkedAccount } = useGetAccountQuery(asset?.payment_account_id || '', {
     skip: !asset?.payment_account_id,
   });
+  const { data: dividendAccount } = useGetAccountQuery(asset?.dividend_account_id || '', {
+    skip: !asset?.dividend_account_id,
+  });
 
   // Mutations
   const [buyAsset, { isLoading: isBuying }] = useBuyAssetMutation();
@@ -493,6 +496,40 @@ export default function PortfolioDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dividend Account Card */}
+      {asset.is_dividend_paying && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dividendAccount')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {dividendAccount ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">{dividendAccount.name}</span>
+                  <Badge variant="outline" className="text-xs">
+                    <CurrencyDisplay
+                      amount={dividendAccount.current_balance}
+                      currency={dividendAccount.currency}
+                      showSymbol
+                    />
+                  </Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t('autoDepositDividends')}</span>
+                  <Badge variant={asset.auto_deposit_dividends ? 'default' : 'secondary'}>
+                    {asset.auto_deposit_dividends ? t('enabled') : t('disabled')}
+                  </Badge>
+                </div>
+              </>
+            ) : (
+              <p className="text-muted-foreground">{t('noDividendAccount')}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Transaction History */}
       <Card>

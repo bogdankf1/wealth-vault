@@ -151,6 +151,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
   const [purchasePriceInput, setPurchasePriceInput] = useState<string>('');
   const [tickerValidationState, setTickerValidationState] = useState<'idle' | 'loading' | 'valid' | 'invalid'>('idle');
   const [tickerPrice, setTickerPrice] = useState<number | null>(null);
+  const [prevSymbol, setPrevSymbol] = useState<string>('');
 
   // Queries
   const {
@@ -195,11 +196,31 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
   });
 
   // Watch values
+  const watchSymbol = watch('symbol');
   const watchTicker = watch('ticker');
   const watchUseDynamicPricing = watch('use_dynamic_pricing');
   const watchIsDividendPaying = watch('is_dividend_paying');
   const watchPaymentAccountId = watch('payment_account_id');
   const watchDividendAccountId = watch('dividend_account_id');
+
+  // Auto-fill ticker from symbol when symbol changes
+  // Only sync if ticker is empty or equals the previous symbol (user hasn't manually changed it)
+  useEffect(() => {
+    if (watchSymbol) {
+      const upperSymbol = watchSymbol.toUpperCase();
+      const upperTicker = watchTicker?.toUpperCase() || '';
+      const upperPrevSymbol = prevSymbol.toUpperCase();
+
+      // Sync ticker if: ticker is empty, or ticker matches the previous symbol value
+      if (!watchTicker || upperTicker === upperPrevSymbol) {
+        setValue('ticker', upperSymbol);
+        // Reset validation state when ticker changes
+        setTickerValidationState('idle');
+        setTickerPrice(null);
+      }
+      setPrevSymbol(watchSymbol);
+    }
+  }, [watchSymbol]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load existing asset data
   useEffect(() => {
