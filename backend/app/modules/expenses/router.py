@@ -537,14 +537,13 @@ async def process_due_payments_endpoint(
 
     now = datetime.now(timezone.utc)
 
-    # Get all active recurring expenses with auto_pay enabled for this user
+    # Get all active recurring expenses with payment account for this user (manual processing doesn't require auto_pay)
     result = await db.execute(
         select(ExpenseModel).where(
             and_(
                 ExpenseModel.user_id == current_user.id,
                 ExpenseModel.is_active == True,
                 ExpenseModel.deleted_at.is_(None),
-                ExpenseModel.auto_pay == True,
                 ExpenseModel.payment_account_id.isnot(None),
                 ExpenseModel.frequency != ExpenseFrequency.ONE_TIME.value,
                 ExpenseModel.start_date.isnot(None)

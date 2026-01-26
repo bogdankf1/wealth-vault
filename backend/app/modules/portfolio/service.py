@@ -126,6 +126,17 @@ async def create_asset(
     # Calculate cost basis (purchase price * quantity + any fees would be added on buy)
     cost_basis = total_invested
 
+    # Auto-calculate next_dividend_date if dividend tracking is enabled but date not provided
+    next_dividend_date = asset_data.next_dividend_date
+    if (asset_data.is_dividend_paying and
+        asset_data.dividend_frequency and
+        not next_dividend_date):
+        # Calculate from today based on frequency
+        next_dividend_date = _calculate_next_dividend_date(
+            datetime.utcnow(),
+            asset_data.dividend_frequency
+        )
+
     asset = PortfolioAsset(
         user_id=user_id,
         asset_name=asset_data.asset_name,
@@ -154,7 +165,7 @@ async def create_asset(
         dividend_yield=asset_data.dividend_yield,
         dividend_per_share=asset_data.dividend_per_share,
         dividend_frequency=asset_data.dividend_frequency,
-        next_dividend_date=asset_data.next_dividend_date,
+        next_dividend_date=next_dividend_date,
         total_dividends_received=Decimal('0'),
         # Dividend account
         dividend_account_id=asset_data.dividend_account_id,
@@ -283,6 +294,15 @@ async def update_asset(
         asset.current_value = current_value
         asset.total_return = total_return
         asset.return_percentage = return_percentage
+
+    # Auto-calculate next_dividend_date if dividend tracking is enabled but date not set
+    if (asset.is_dividend_paying and
+        asset.dividend_frequency and
+        not asset.next_dividend_date):
+        asset.next_dividend_date = _calculate_next_dividend_date(
+            datetime.utcnow(),
+            asset.dividend_frequency
+        )
 
     asset.updated_at = datetime.utcnow()
 

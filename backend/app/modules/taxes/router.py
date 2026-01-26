@@ -394,11 +394,11 @@ async def process_due_payments(
     """
     Process all due tax payments for the current user.
 
-    This endpoint manually triggers processing of due tax payments that would
-    normally be processed by the scheduled Celery task. It checks for taxes with:
-    - auto_pay enabled
+    This endpoint manually triggers processing of due tax payments.
+    It checks for taxes with:
+    - is_active = True
     - payment_account_id set
-    - next_payment_date <= now
+    - Not yet paid for the current period
 
     Returns a summary of processed payments, including any failures.
     """
@@ -410,11 +410,13 @@ async def process_due_payments(
     auto_paid = 0
     failed_payments = []
     errors = []
+    skipped_already_paid = 0
 
-    # Get all taxes due for auto-pay for this specific user
+    # Get all active taxes with a payment account for this user
     from sqlalchemy import select, and_
     from sqlalchemy.orm import selectinload
     from app.modules.taxes.models import Tax
+    from app.modules.taxes.service import get_tax_payment_status
 
     query = (
         select(Tax)
@@ -425,16 +427,23 @@ async def process_due_payments(
         .where(
             and_(
                 Tax.user_id == current_user.id,
-                Tax.auto_pay == True,
                 Tax.is_active == True,
                 Tax.deleted_at.is_(None),
-                Tax.payment_account_id.isnot(None),
-                Tax.next_payment_date <= now
+                Tax.payment_account_id.isnot(None)
             )
         )
     )
     result = await db.execute(query)
-    due_taxes = list(result.scalars().all())
+    candidate_taxes = list(result.scalars().all())
+
+    # Filter to only taxes that are not paid for the current period
+    due_taxes = []
+    for tax in candidate_taxes:
+        payment_status = await get_tax_payment_status(db, tax)
+        if not payment_status["is_paid"]:
+            due_taxes.append(tax)
+        else:
+            skipped_already_paid += 1
 
     for tax in due_taxes:
         try:
@@ -459,17 +468,16 @@ async def process_due_payments(
                 ))
                 continue
 
-            # Attempt to pay
+            # Attempt to pay (is_auto_pay=False since this is manual processing)
             payment, transaction_id = await service.pay_tax(
                 db=db,
                 user_id=current_user.id,
                 tax_id=tax.id,
                 request=None,
-                is_auto_pay=True
+                is_auto_pay=False
             )
 
             processed += 1
-            auto_paid += 1
 
         except ValueError as e:
             error_str = str(e)
