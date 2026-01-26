@@ -136,9 +136,9 @@ export default function TaxDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/taxes/overview')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -148,7 +148,7 @@ export default function TaxDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap gap-2">
           {canPay && (
             tax.is_paid_current_period ? (
               <Button size="sm" variant="outline" onClick={() => setIsPayDialogOpen(true)}>
