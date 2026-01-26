@@ -49,7 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { LoadingCards } from '@/components/ui/loading-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { PortfolioForm } from '@/components/portfolio/portfolio-form';
 import { toast } from 'sonner';
@@ -265,7 +265,26 @@ export default function PortfolioDetailPage() {
     return <Badge variant={variants[type] || 'outline'}>{tTransactions(type)}</Badge>;
   };
 
-  if (isLoading) return <LoadingCards count={4} />;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
 
   if (error || !asset) {
     return (

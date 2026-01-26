@@ -12,7 +12,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { LoadingCards } from '@/components/ui/loading-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -105,7 +105,24 @@ export default function TaxDetailPage() {
   };
 
   if (isLoading) {
-    return <LoadingCards count={4} />;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+        <Skeleton className="h-64" />
+      </div>
+    );
   }
 
   if (error || !tax) {
