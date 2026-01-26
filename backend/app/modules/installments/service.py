@@ -837,8 +837,33 @@ async def process_installment_payment(
         # If auto_pay is enabled and account is linked, deduct from account
         if installment.auto_pay and installment.payment_account_id:
             from app.modules.savings.transaction_service import InsufficientFundsError
+            from app.modules.savings.models import SavingsAccount
+            from app.services.currency_service import CurrencyService
             try:
                 transaction_service = TransactionService(db)
+
+                # Get account to check currency
+                account_result = await db.execute(
+                    select(SavingsAccount).where(SavingsAccount.id == installment.payment_account_id)
+                )
+                account = account_result.scalar_one_or_none()
+
+                # Handle currency conversion if needed
+                source_currency = None
+                exchange_rate = None
+                if account and installment.currency != account.currency:
+                    source_currency = installment.currency
+                    currency_service = CurrencyService(db)
+                    exchange_rate = await currency_service.get_exchange_rate(
+                        installment.currency, account.currency
+                    )
+                    if not exchange_rate:
+                        logger.warning(
+                            f"Could not get exchange rate from {installment.currency} to {account.currency} "
+                            f"for installment {installment.id}, using 1:1"
+                        )
+                        exchange_rate = Decimal("1")
+
                 transaction = await transaction_service.create_withdrawal(
                     account_id=installment.payment_account_id,
                     user_id=installment.user_id,
@@ -848,6 +873,8 @@ async def process_installment_payment(
                     source_id=installment.id,
                     transaction_date=payment_date,
                     category=installment.category or "Installments",
+                    source_currency=source_currency,
+                    exchange_rate=exchange_rate,
                 )
                 account_transaction_id = transaction.id
                 expense.account_transaction_id = transaction.id

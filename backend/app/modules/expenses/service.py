@@ -153,10 +153,35 @@ async def backfill_expense_payments(
     """
     from dateutil.relativedelta import relativedelta
     from app.modules.savings.transaction_service import TransactionService
-    from app.modules.savings.models import AccountTransaction
+    from app.modules.savings.models import AccountTransaction, SavingsAccount
+    from app.services.currency_service import CurrencyService
 
     if not expense.payment_account_id:
         return 0
+
+    # Get account to check currency and prepare conversion if needed
+    account_result = await db.execute(
+        select(SavingsAccount).where(SavingsAccount.id == expense.payment_account_id)
+    )
+    account = account_result.scalar_one_or_none()
+    if not account:
+        return 0
+
+    # Handle currency conversion if needed
+    source_currency = None
+    exchange_rate = None
+    if expense.currency and expense.currency != account.currency:
+        source_currency = expense.currency
+        currency_service = CurrencyService(db)
+        exchange_rate = await currency_service.get_exchange_rate(
+            expense.currency, account.currency
+        )
+        if not exchange_rate:
+            logger.warning(
+                f"Could not get exchange rate from {expense.currency} to {account.currency} "
+                f"for expense {expense.id}, using 1:1"
+            )
+            exchange_rate = Decimal("1")
 
     if expense.frequency == ExpenseFrequency.ONE_TIME:
         # For one-time expenses, just pay if date is in the past
@@ -173,6 +198,8 @@ async def backfill_expense_payments(
                         source_id=expense.id,
                         transaction_date=expense.date,
                         category=expense.category,
+                        source_currency=source_currency,
+                        exchange_rate=exchange_rate,
                     )
 
                     expense.status = ExpenseStatus.PAID.value
@@ -233,6 +260,8 @@ async def backfill_expense_payments(
                 source_id=expense.id,
                 transaction_date=current_date,
                 category=expense.category,
+                source_currency=source_currency,
+                exchange_rate=exchange_rate,
             )
 
             payments_created += 1
@@ -809,7 +838,32 @@ async def pay_expense(
 
     # If account specified, create withdrawal transaction
     if account_id:
+        from app.modules.savings.models import SavingsAccount
+        from app.services.currency_service import CurrencyService
+
         transaction_service = TransactionService(db)
+
+        # Get account to check currency
+        account_result = await db.execute(
+            select(SavingsAccount).where(SavingsAccount.id == account_id)
+        )
+        account = account_result.scalar_one_or_none()
+
+        # Handle currency conversion if needed
+        source_currency = None
+        exchange_rate = None
+        if account and expense.currency and expense.currency != account.currency:
+            source_currency = expense.currency
+            currency_service = CurrencyService(db)
+            exchange_rate = await currency_service.get_exchange_rate(
+                expense.currency, account.currency
+            )
+            if not exchange_rate:
+                logger.warning(
+                    f"Could not get exchange rate from {expense.currency} to {account.currency} "
+                    f"for expense {expense_id}, using 1:1"
+                )
+                exchange_rate = Decimal("1")
 
         try:
             # Create withdrawal from the linked account
@@ -822,6 +876,8 @@ async def pay_expense(
                 source_id=expense_id,
                 transaction_date=now,
                 category=expense.category,
+                source_currency=source_currency,
+                exchange_rate=exchange_rate,
             )
             account_transaction_id = transaction.id
             logger.info(f"Created withdrawal transaction {transaction.id} for expense {expense_id}")

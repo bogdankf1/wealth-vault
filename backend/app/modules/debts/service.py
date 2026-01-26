@@ -359,7 +359,31 @@ async def record_debt_payment(
 
     # If auto_deposit or deposit_to_account is True and account is linked, create deposit
     if (debt.auto_deposit or payment_data.deposit_to_account) and debt.deposit_account_id:
+        from app.modules.savings.models import SavingsAccount
+        from app.services.currency_service import CurrencyService
         try:
+            # Get account to check currency
+            account_result = await db.execute(
+                select(SavingsAccount).where(SavingsAccount.id == debt.deposit_account_id)
+            )
+            account = account_result.scalar_one_or_none()
+
+            # Handle currency conversion if needed
+            source_currency = None
+            exchange_rate = None
+            if account and debt.currency and debt.currency != account.currency:
+                source_currency = debt.currency
+                currency_service = CurrencyService(db)
+                exchange_rate = await currency_service.get_exchange_rate(
+                    debt.currency, account.currency
+                )
+                if not exchange_rate:
+                    logger.warning(
+                        f"Could not get exchange rate from {debt.currency} to {account.currency} "
+                        f"for debt {debt.id}, using 1:1"
+                    )
+                    exchange_rate = Decimal("1")
+
             transaction_service = TransactionService(db)
             transaction = await transaction_service.create_deposit(
                 account_id=debt.deposit_account_id,
@@ -370,6 +394,8 @@ async def record_debt_payment(
                 source_id=debt.id,
                 transaction_date=payment_date,
                 category="Debt Collection",
+                source_currency=source_currency,
+                exchange_rate=exchange_rate,
             )
             account_transaction_id = transaction.id
         except Exception as e:
@@ -461,6 +487,31 @@ async def backfill_debt_payments(
     account_transaction_id = None
 
     try:
+        from app.modules.savings.models import SavingsAccount
+        from app.services.currency_service import CurrencyService
+
+        # Get account to check currency
+        account_result = await db.execute(
+            select(SavingsAccount).where(SavingsAccount.id == debt.deposit_account_id)
+        )
+        account = account_result.scalar_one_or_none()
+
+        # Handle currency conversion if needed
+        source_currency = None
+        exchange_rate = None
+        if account and debt.currency and debt.currency != account.currency:
+            source_currency = debt.currency
+            currency_service = CurrencyService(db)
+            exchange_rate = await currency_service.get_exchange_rate(
+                debt.currency, account.currency
+            )
+            if not exchange_rate:
+                logger.warning(
+                    f"Could not get exchange rate from {debt.currency} to {account.currency} "
+                    f"for debt {debt.id}, using 1:1"
+                )
+                exchange_rate = Decimal("1")
+
         transaction_service = TransactionService(db)
         transaction = await transaction_service.create_deposit(
             account_id=debt.deposit_account_id,
@@ -471,6 +522,8 @@ async def backfill_debt_payments(
             source_id=debt.id,
             transaction_date=payment_date,
             category="Debt Collection",
+            source_currency=source_currency,
+            exchange_rate=exchange_rate,
         )
         account_transaction_id = transaction.id
     except Exception as e:

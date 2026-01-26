@@ -352,22 +352,26 @@ def sync_stripe_status(self) -> Dict[str, Any]:
                         updated = True
                         results["discrepancies_found"] += 1
 
-                    # Check period dates
-                    stripe_period_start = datetime.fromtimestamp(stripe_sub.current_period_start)
-                    stripe_period_end = datetime.fromtimestamp(stripe_sub.current_period_end)
+                    # Check period dates (may not exist for certain subscription states)
+                    period_start = getattr(stripe_sub, 'current_period_start', None)
+                    period_end = getattr(stripe_sub, 'current_period_end', None)
 
-                    if local_sub.current_period_start != stripe_period_start:
-                        local_sub.current_period_start = stripe_period_start
-                        updated = True
+                    if period_start is not None:
+                        stripe_period_start = datetime.fromtimestamp(period_start)
+                        if local_sub.current_period_start != stripe_period_start:
+                            local_sub.current_period_start = stripe_period_start
+                            updated = True
 
-                    if local_sub.current_period_end != stripe_period_end:
-                        local_sub.current_period_end = stripe_period_end
-                        updated = True
+                    if period_end is not None:
+                        stripe_period_end = datetime.fromtimestamp(period_end)
+                        if local_sub.current_period_end != stripe_period_end:
+                            local_sub.current_period_end = stripe_period_end
+                            updated = True
 
                     if updated:
                         results["updates_made"] += 1
 
-                except stripe.error.InvalidRequestError as e:
+                except stripe.InvalidRequestError as e:
                     # Subscription doesn't exist in Stripe
                     logger.warning(
                         f"Subscription {local_sub.stripe_subscription_id} not found in Stripe: {e}"

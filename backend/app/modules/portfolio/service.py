@@ -319,8 +319,33 @@ async def _create_account_withdrawal(
     description: str,
     transaction_date: datetime
 ) -> Optional[UUID]:
-    """Create a withdrawal transaction in a savings account."""
+    """Create a withdrawal transaction in a savings account with currency conversion if needed."""
     from app.modules.savings.transaction_service import TransactionService
+    from app.modules.savings.models import SavingsAccount
+    from app.services.currency_service import CurrencyService
+    from sqlalchemy import select
+
+    # Get account to check currency
+    account_result = await db.execute(
+        select(SavingsAccount).where(SavingsAccount.id == account_id)
+    )
+    account = account_result.scalar_one_or_none()
+    if not account:
+        return None
+
+    # Handle currency conversion if needed
+    source_currency = None
+    exchange_rate = None
+    if currency and currency != account.currency:
+        source_currency = currency
+        currency_service = CurrencyService(db)
+        exchange_rate = await currency_service.get_exchange_rate(currency, account.currency)
+        if not exchange_rate:
+            logger.warning(
+                f"Could not get exchange rate from {currency} to {account.currency} "
+                f"for portfolio withdrawal, using 1:1"
+            )
+            exchange_rate = Decimal("1")
 
     tx_service = TransactionService(db)
     transaction = await tx_service.create_withdrawal(
@@ -329,7 +354,9 @@ async def _create_account_withdrawal(
         source_type="portfolio",
         source_id=None,
         description=description,
-        user_id=user_id
+        user_id=user_id,
+        source_currency=source_currency,
+        exchange_rate=exchange_rate,
     )
     return transaction.id if transaction else None
 
@@ -343,8 +370,33 @@ async def _create_account_deposit(
     description: str,
     transaction_date: datetime
 ) -> Optional[UUID]:
-    """Create a deposit transaction in a savings account."""
+    """Create a deposit transaction in a savings account with currency conversion if needed."""
     from app.modules.savings.transaction_service import TransactionService
+    from app.modules.savings.models import SavingsAccount
+    from app.services.currency_service import CurrencyService
+    from sqlalchemy import select
+
+    # Get account to check currency
+    account_result = await db.execute(
+        select(SavingsAccount).where(SavingsAccount.id == account_id)
+    )
+    account = account_result.scalar_one_or_none()
+    if not account:
+        return None
+
+    # Handle currency conversion if needed
+    source_currency = None
+    exchange_rate = None
+    if currency and currency != account.currency:
+        source_currency = currency
+        currency_service = CurrencyService(db)
+        exchange_rate = await currency_service.get_exchange_rate(currency, account.currency)
+        if not exchange_rate:
+            logger.warning(
+                f"Could not get exchange rate from {currency} to {account.currency} "
+                f"for portfolio deposit, using 1:1"
+            )
+            exchange_rate = Decimal("1")
 
     tx_service = TransactionService(db)
     transaction = await tx_service.create_deposit(
@@ -353,7 +405,9 @@ async def _create_account_deposit(
         source_type="portfolio",
         source_id=None,
         description=description,
-        user_id=user_id
+        user_id=user_id,
+        source_currency=source_currency,
+        exchange_rate=exchange_rate,
     )
     return transaction.id if transaction else None
 
