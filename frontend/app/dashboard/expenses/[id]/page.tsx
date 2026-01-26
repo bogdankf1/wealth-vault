@@ -16,9 +16,18 @@ import {
   Repeat,
   DollarSign,
   CreditCard,
+  ChevronDown,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -198,15 +207,25 @@ export default function ExpenseDetailPage({ params }: PageProps) {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsEditFormOpen(true)}>
-            <Edit className="mr-2 h-4 w-4" />
-            {tActions('edit')}
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteDialogOpen(true)}>
-            {tActions('delete')}
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              {t('actions')}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
+              <Edit className="h-4 w-4" />
+              {tActions('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {tActions('delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Description */}

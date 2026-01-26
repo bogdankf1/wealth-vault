@@ -234,6 +234,7 @@
     "other": "Outro"
   },
   "detail": {
+    "actions": "Ações",
     "notFound": "Fonte de renda não encontrada",
     "backToIncome": "Voltar para Receitas",
     "amount": "Valor",

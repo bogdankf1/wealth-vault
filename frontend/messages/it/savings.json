@@ -270,6 +270,7 @@
   "detail": {
     "notFound": "Conto non trovato",
     "backToAccounts": "Torna ai conti",
+    "actions": "Azioni",
     "deposit": "Deposita",
     "withdraw": "Preleva",
     "transfer": "Trasferisci",

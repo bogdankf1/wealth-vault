@@ -323,6 +323,7 @@
   "detail": {
     "notFound": "Expense not found",
     "backToExpenses": "Back to Expenses",
+    "actions": "Actions",
     "amount": "Amount",
     "perPayment": "Per payment",
     "monthlyEquivalent": "Monthly Equivalent",

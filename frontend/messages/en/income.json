@@ -236,6 +236,7 @@
   "detail": {
     "notFound": "Income source not found",
     "backToIncome": "Back to Income",
+    "actions": "Actions",
     "amount": "Amount",
     "perPayment": "Per payment",
     "monthlyEquivalent": "Monthly Equivalent",

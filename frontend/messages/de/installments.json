@@ -234,6 +234,7 @@
   },
   "detail": {
     "notFound": "Ratenzahlung nicht gefunden",
+    "actions": "Aktionen",
     "backToInstallments": "Zurück zu Ratenzahlungen",
     "paymentProgress": "Zahlungsfortschritt",
     "of": "von",

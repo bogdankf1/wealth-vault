@@ -321,6 +321,7 @@
     "entertainment": "Entretenimiento"
   },
   "detail": {
+    "actions": "Acciones",
     "notFound": "Gasto no encontrado",
     "backToExpenses": "Volver a Gastos",
     "amount": "Monto",

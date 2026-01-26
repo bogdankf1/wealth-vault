@@ -269,6 +269,7 @@
   "detail": {
     "notFound": "Compte non trouvé",
     "backToAccounts": "Retour aux comptes",
+    "actions": "Actions",
     "deposit": "Déposer",
     "withdraw": "Retirer",
     "transfer": "Transférer",

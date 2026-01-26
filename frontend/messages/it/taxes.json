@@ -248,6 +248,7 @@
   "detail": {
     "title": "Dettagli Tassa",
     "backToTaxes": "Torna alle Tasse",
+    "actions": "Azioni",
     "payNow": "Paga Ora",
     "payAgain": "Paga di nuovo",
     "editTax": "Modifica Tassa",

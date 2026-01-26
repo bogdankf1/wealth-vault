@@ -173,6 +173,7 @@
   "detail": {
     "backToPortfolio": "Zurück zum Portfolio",
     "notFound": "Vermögenswert nicht gefunden",
+    "actions": "Aktionen",
     "notFoundDescription": "Der gesuchte Vermögenswert existiert nicht oder wurde gelöscht.",
     "shares": "Anteile",
     "refreshPrice": "Preis aktualisieren",

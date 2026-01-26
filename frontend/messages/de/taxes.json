@@ -247,6 +247,7 @@
   },
   "detail": {
     "title": "Steuerdetails",
+    "actions": "Aktionen",
     "backToTaxes": "Zurück zu Steuern",
     "payNow": "Jetzt zahlen",
     "payAgain": "Erneut zahlen",

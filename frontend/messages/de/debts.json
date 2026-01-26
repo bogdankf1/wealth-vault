@@ -255,6 +255,7 @@
     "backToDebts": "Zurück zu Schulden",
     "debtNotFound": "Schuld nicht gefunden",
     "notFound": "Schuld nicht gefunden",
+    "actions": "Aktionen",
     "debtNotFoundDescription": "Die gesuchte Schuld existiert nicht oder wurde gelöscht.",
     "edit": "Bearbeiten",
     "recordPayment": "Zahlung erfassen",

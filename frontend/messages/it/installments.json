@@ -235,6 +235,7 @@
   "detail": {
     "notFound": "Rata non trovata",
     "backToInstallments": "Torna alle rate",
+    "actions": "Azioni",
     "paymentProgress": "Progresso pagamenti",
     "of": "di",
     "payments": "pagamenti",

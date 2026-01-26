@@ -209,6 +209,7 @@
     "taxes": "Impuestos"
   },
   "detail": {
+    "actions": "Acciones",
     "notFound": "Presupuesto no encontrado",
     "backToBudgets": "Volver a Presupuestos",
     "spendingProgress": "Progreso de Gastos",

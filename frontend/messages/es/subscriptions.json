@@ -184,6 +184,7 @@
     "paused": "Pausada"
   },
   "detail": {
+    "actions": "Acciones",
     "notFound": "Suscripción no encontrada",
     "backToSubscriptions": "Volver a suscripciones",
     "subscriptionDetails": "Detalles de la suscripción",

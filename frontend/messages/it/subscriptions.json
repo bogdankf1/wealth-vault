@@ -186,6 +186,7 @@
   "detail": {
     "notFound": "Abbonamento non trovato",
     "backToSubscriptions": "Torna agli abbonamenti",
+    "actions": "Azioni",
     "subscriptionDetails": "Dettagli abbonamento",
     "amount": "Importo",
     "billingAmount": "Importo fatturazione",

@@ -186,6 +186,7 @@
   "detail": {
     "notFound": "Підписку не знайдено",
     "backToSubscriptions": "Повернутися до підписок",
+    "actions": "Дії",
     "subscriptionDetails": "Деталі підписки",
     "amount": "Сума",
     "billingAmount": "Сума оплати",

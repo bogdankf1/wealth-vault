@@ -323,6 +323,7 @@
   "detail": {
     "notFound": "Витрату не знайдено",
     "backToExpenses": "Повернутися до Витрат",
+    "actions": "Дії",
     "amount": "Сума",
     "perPayment": "За платіж",
     "monthlyEquivalent": "Місячний Еквівалент",

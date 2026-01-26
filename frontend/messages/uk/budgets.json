@@ -211,6 +211,7 @@
   "detail": {
     "notFound": "Бюджет не знайдено",
     "backToBudgets": "Повернутися до Бюджетів",
+    "actions": "Дії",
     "spendingProgress": "Прогрес Витрат",
     "of": "з",
     "spent": "Витрачено",

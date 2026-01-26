@@ -185,6 +185,7 @@
   },
   "detail": {
     "notFound": "Abonnement nicht gefunden",
+    "actions": "Aktionen",
     "backToSubscriptions": "Zurück zu Abonnements",
     "subscriptionDetails": "Abonnementdetails",
     "amount": "Betrag",

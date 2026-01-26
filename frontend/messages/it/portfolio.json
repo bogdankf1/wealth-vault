@@ -173,6 +173,7 @@
   "detail": {
     "backToPortfolio": "Torna al Portafoglio",
     "notFound": "Asset Non Trovato",
+    "actions": "Azioni",
     "notFoundDescription": "L'asset che stai cercando non esiste o è stato eliminato.",
     "shares": "azioni",
     "refreshPrice": "Aggiorna Prezzo",

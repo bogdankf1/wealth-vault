@@ -246,6 +246,7 @@
     "annually": "Anual"
   },
   "detail": {
+    "actions": "Acciones",
     "title": "Detalles del Impuesto",
     "backToTaxes": "Volver a Impuestos",
     "payNow": "Pagar ahora",

@@ -322,6 +322,7 @@
   },
   "detail": {
     "notFound": "Ausgabe nicht gefunden",
+    "actions": "Aktionen",
     "backToExpenses": "Zurück zu Ausgaben",
     "amount": "Betrag",
     "perPayment": "Pro Zahlung",

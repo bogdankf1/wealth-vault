@@ -249,6 +249,7 @@
     "paid": "Pago"
   },
   "detail": {
+    "actions": "Ações",
     "backToOverview": "Voltar para Dívidas",
     "backToDebts": "Voltar para Dívidas",
     "debtNotFound": "Dívida não encontrada",

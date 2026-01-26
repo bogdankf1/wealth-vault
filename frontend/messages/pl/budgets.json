@@ -209,6 +209,7 @@
     "taxes": "Podatki"
   },
   "detail": {
+    "actions": "Akcje",
     "notFound": "Nie znaleziono budżetu",
     "backToBudgets": "Wróć do Budżetów",
     "spendingProgress": "Postęp Wydatków",

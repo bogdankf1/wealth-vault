@@ -236,6 +236,7 @@
   "detail": {
     "notFound": "Джерело доходу не знайдено",
     "backToIncome": "Повернутися до Доходів",
+    "actions": "Дії",
     "amount": "Сума",
     "perPayment": "За платіж",
     "monthlyEquivalent": "Місячний Еквівалент",

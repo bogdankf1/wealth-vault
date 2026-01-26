@@ -210,6 +210,7 @@
   },
   "detail": {
     "notFound": "Budget nicht gefunden",
+    "actions": "Aktionen",
     "backToBudgets": "Zurück zu Budgets",
     "spendingProgress": "Ausgabenfortschritt",
     "of": "von",

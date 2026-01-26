@@ -19,9 +19,17 @@ import {
   Clock,
   Bell,
   Receipt,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -226,30 +234,48 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsEditFormOpen(true)}>
-            <Edit className="mr-2 h-4 w-4" />
-            {tActions('edit')}
-          </Button>
-          {canPause && (
-            <Button variant="outline" size="sm" onClick={() => setPauseDialogOpen(true)}>
-              <Pause className="mr-2 h-4 w-4" />
-              {t('pause')}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              {t('actions')}
+              <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-          )}
-          {canResume && (
-            <Button variant="default" size="sm" onClick={handleResume} disabled={isResuming}>
-              <Play className="mr-2 h-4 w-4" />
-              {t('resume')}
-            </Button>
-          )}
-          {canCancel && (
-            <Button variant="destructive" size="sm" onClick={() => setCancelDialogOpen(true)}>
-              <XCircle className="mr-2 h-4 w-4" />
-              {t('cancelSubscription')}
-            </Button>
-          )}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {subscription.auto_pay && subscription.status === 'active' && (
+              <DropdownMenuItem onClick={handleRecordPayment} disabled={isRecordingPayment}>
+                <Receipt className="h-4 w-4" />
+                {t('recordPayment')}
+              </DropdownMenuItem>
+            )}
+            {canPause && (
+              <DropdownMenuItem onClick={() => setPauseDialogOpen(true)}>
+                <Pause className="h-4 w-4" />
+                {t('pause')}
+              </DropdownMenuItem>
+            )}
+            {canResume && (
+              <DropdownMenuItem onClick={handleResume} disabled={isResuming}>
+                <Play className="h-4 w-4" />
+                {t('resume')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
+              <Edit className="h-4 w-4" />
+              {tActions('edit')}
+            </DropdownMenuItem>
+            {canCancel && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={() => setCancelDialogOpen(true)}>
+                  <XCircle className="h-4 w-4" />
+                  {t('cancelSubscription')}
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Description */}

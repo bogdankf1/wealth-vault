@@ -186,6 +186,7 @@
   "detail": {
     "notFound": "Subscription not found",
     "backToSubscriptions": "Back to subscriptions",
+    "actions": "Actions",
     "subscriptionDetails": "Subscription Details",
     "amount": "Amount",
     "billingAmount": "Billing amount",

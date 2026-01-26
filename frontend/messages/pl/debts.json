@@ -249,6 +249,7 @@
     "paid": "Opłacone"
   },
   "detail": {
+    "actions": "Akcje",
     "backToOverview": "Powrót do Długów",
     "backToDebts": "Wróć do wierzytelności",
     "debtNotFound": "Dług nie znaleziony",

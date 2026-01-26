@@ -236,6 +236,7 @@
   "detail": {
     "notFound": "Fonte di reddito non trovata",
     "backToIncome": "Torna ai Redditi",
+    "actions": "Azioni",
     "amount": "Importo",
     "perPayment": "Per pagamento",
     "monthlyEquivalent": "Equivalente Mensile",

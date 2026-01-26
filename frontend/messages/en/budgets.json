@@ -211,6 +211,7 @@
   "detail": {
     "notFound": "Budget not found",
     "backToBudgets": "Back to Budgets",
+    "actions": "Actions",
     "spendingProgress": "Spending Progress",
     "of": "of",
     "spent": "Spent",

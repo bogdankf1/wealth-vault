@@ -251,6 +251,7 @@
     "paid": "Pagada"
   },
   "detail": {
+    "actions": "Acciones",
     "backToOverview": "Volver a Deudas",
     "backToDebts": "Volver a Deudas",
     "debtNotFound": "Deuda no encontrada",

@@ -144,6 +144,7 @@
     "update": "Update Goal"
   },
   "detail": {
+    "actions": "Actions",
     "edit": "Edit",
     "delete": "Delete",
     "active": "Active",

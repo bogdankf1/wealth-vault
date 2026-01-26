@@ -234,6 +234,7 @@
     "other": "Autre"
   },
   "detail": {
+    "actions": "Actions",
     "notFound": "Source de revenus introuvable",
     "backToIncome": "Retour aux Revenus",
     "amount": "Montant",

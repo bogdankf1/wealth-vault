@@ -228,6 +228,7 @@
     "backToOverview": "Back to Debts",
     "backToDebts": "Back to Debts",
     "notFound": "Debt not found",
+    "actions": "Actions",
     "debtNotFound": "Debt not found",
     "debtNotFoundDescription": "The debt you're looking for doesn't exist or has been deleted.",
     "edit": "Edit",

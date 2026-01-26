@@ -321,6 +321,7 @@
     "entertainment": "Divertissement"
   },
   "detail": {
+    "actions": "Actions",
     "notFound": "Dépense introuvable",
     "backToExpenses": "Retour aux Dépenses",
     "amount": "Montant",

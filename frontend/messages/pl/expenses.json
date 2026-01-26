@@ -321,6 +321,7 @@
     "entertainment": "Rozrywka"
   },
   "detail": {
+    "actions": "Akcje",
     "notFound": "Nie znaleziono wydatku",
     "backToExpenses": "Wróć do Wydatków",
     "amount": "Kwota",

@@ -254,6 +254,7 @@
     "backToOverview": "Torna ai Debiti",
     "backToDebts": "Torna ai crediti",
     "debtNotFound": "Debito non trovato",
+    "actions": "Azioni",
     "debtNotFoundDescription": "Il debito che stai cercando non esiste o è stato eliminato.",
     "notFound": "Credito non trovato",
     "edit": "Modifica",

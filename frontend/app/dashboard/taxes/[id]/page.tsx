@@ -52,7 +52,15 @@ import {
   Building2,
   Clock,
   RotateCcw,
+  ChevronDown,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { TaxForm } from '@/components/taxes/tax-form';
 
 export default function TaxDetailPage() {
@@ -148,29 +156,41 @@ export default function TaxDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {canPay && (
-            tax.is_paid_current_period ? (
-              <Button size="sm" variant="outline" onClick={() => setIsPayDialogOpen(true)}>
-                <RotateCcw className="h-4 w-4 mr-2" />
-                {t('payAgain')}
-              </Button>
-            ) : (
-              <Button size="sm" onClick={() => setIsPayDialogOpen(true)}>
-                <CreditCard className="h-4 w-4 mr-2" />
-                {t('payNow')}
-              </Button>
-            )
-          )}
-          <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            {t('editTax')}
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            {t('deleteTax')}
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              {t('actions')}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {canPay && (
+              <DropdownMenuItem onClick={() => setIsPayDialogOpen(true)}>
+                {tax.is_paid_current_period ? (
+                  <>
+                    <RotateCcw className="h-4 w-4" />
+                    {t('payAgain')}
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4" />
+                    {t('payNow')}
+                  </>
+                )}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+              <Edit className="h-4 w-4" />
+              {t('editTax')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {t('deleteTax')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Status Badges */}

@@ -171,6 +171,7 @@
     "autoDepositDividendsHelp": "Déposer automatiquement les dividendes sur le compte"
   },
   "detail": {
+    "actions": "Actions",
     "backToPortfolio": "Retour au portefeuille",
     "notFound": "Actif non trouvé",
     "notFoundDescription": "L'actif que vous recherchez n'existe pas ou a été supprimé.",

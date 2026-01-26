@@ -323,6 +323,7 @@
   "detail": {
     "notFound": "Spesa non trovata",
     "backToExpenses": "Torna alle Spese",
+    "actions": "Azioni",
     "amount": "Importo",
     "perPayment": "Per pagamento",
     "monthlyEquivalent": "Equivalente Mensile",

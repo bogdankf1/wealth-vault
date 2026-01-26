@@ -272,6 +272,7 @@
   "detail": {
     "notFound": "Рахунок не знайдено",
     "backToAccounts": "Назад до рахунків",
+    "actions": "Дії",
     "deposit": "Внести",
     "withdraw": "Зняти",
     "transfer": "Переказати",

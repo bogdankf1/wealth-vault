@@ -22,9 +22,17 @@ import {
   TrendingDown,
   Percent,
   Target,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
@@ -231,30 +239,48 @@ export default function InstallmentDetailPage({ params }: PageProps) {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsEditFormOpen(true)}>
-            <Edit className="mr-2 h-4 w-4" />
-            {tActions('edit')}
-          </Button>
-          {canComplete && (
-            <Button variant="default" size="sm" onClick={() => setCompleteDialogOpen(true)}>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              {t('markComplete')}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              {t('actions')}
+              <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-          )}
-          {canDefault && (
-            <Button variant="destructive" size="sm" onClick={() => setDefaultDialogOpen(true)}>
-              <XOctagon className="mr-2 h-4 w-4" />
-              {t('markDefaulted')}
-            </Button>
-          )}
-          {canReactivate && (
-            <Button variant="default" size="sm" onClick={handleReactivate} disabled={isReactivating}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('reactivate')}
-            </Button>
-          )}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {installment.auto_pay && installment.status === 'active' && (
+              <DropdownMenuItem onClick={handleRecordPayment} disabled={isRecordingPayment}>
+                <Receipt className="h-4 w-4" />
+                {t('recordPayment')}
+              </DropdownMenuItem>
+            )}
+            {canComplete && (
+              <DropdownMenuItem onClick={() => setCompleteDialogOpen(true)}>
+                <CheckCircle className="h-4 w-4" />
+                {t('markComplete')}
+              </DropdownMenuItem>
+            )}
+            {canReactivate && (
+              <DropdownMenuItem onClick={handleReactivate} disabled={isReactivating}>
+                <RefreshCw className="h-4 w-4" />
+                {t('reactivate')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
+              <Edit className="h-4 w-4" />
+              {tActions('edit')}
+            </DropdownMenuItem>
+            {canDefault && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={() => setDefaultDialogOpen(true)}>
+                  <XOctagon className="h-4 w-4" />
+                  {t('markDefaulted')}
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Description */}

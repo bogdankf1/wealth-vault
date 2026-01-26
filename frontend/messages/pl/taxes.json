@@ -246,6 +246,7 @@
     "annually": "Rocznie"
   },
   "detail": {
+    "actions": "Akcje",
     "title": "Szczegóły Podatku",
     "backToTaxes": "Wróć do Podatków",
     "payNow": "Zapłać Teraz",

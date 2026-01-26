@@ -233,6 +233,7 @@
     "defaulted": "Inadimplente"
   },
   "detail": {
+    "actions": "Ações",
     "notFound": "Parcela não encontrada",
     "backToInstallments": "Voltar às parcelas",
     "paymentProgress": "Progresso dos pagamentos",

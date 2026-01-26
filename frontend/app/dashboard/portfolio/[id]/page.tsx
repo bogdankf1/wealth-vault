@@ -67,7 +67,15 @@ import {
   Clock,
   Calendar,
   Wallet,
+  ChevronDown,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function PortfolioDetailPage() {
   const params = useParams();
@@ -321,22 +329,49 @@ export default function PortfolioDetailPage() {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {asset.ticker && asset.use_dynamic_pricing && (
-            <Button variant="outline" size="sm" onClick={handleRefreshPrice} disabled={isRefreshing}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {t('refreshPrice')}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              {t('actions')}
+              <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            {tActions('edit')}
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            {tActions('delete')}
-          </Button>
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => setIsBuyDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              {t('buy')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsSellDialogOpen(true)} disabled={Number(asset.quantity) <= 0}>
+              <Minus className="h-4 w-4" />
+              {t('sell')}
+            </DropdownMenuItem>
+            {asset.is_dividend_paying && (
+              <DropdownMenuItem onClick={() => setIsDividendDialogOpen(true)}>
+                <DollarSign className="h-4 w-4" />
+                {t('recordDividend')}
+              </DropdownMenuItem>
+            )}
+            {asset.ticker && asset.use_dynamic_pricing && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleRefreshPrice} disabled={isRefreshing}>
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  {t('refreshPrice')}
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+              <Edit className="h-4 w-4" />
+              {tActions('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {tActions('delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Overview Cards */}
@@ -410,24 +445,6 @@ export default function PortfolioDetailPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Actions */}
-      <div className="flex gap-4">
-        <Button onClick={() => setIsBuyDialogOpen(true)} className="flex-1">
-          <Plus className="h-4 w-4 mr-2" />
-          {t('buy')}
-        </Button>
-        <Button onClick={() => setIsSellDialogOpen(true)} variant="outline" className="flex-1" disabled={Number(asset.quantity) <= 0}>
-          <Minus className="h-4 w-4 mr-2" />
-          {t('sell')}
-        </Button>
-        {asset.is_dividend_paying && (
-          <Button onClick={() => setIsDividendDialogOpen(true)} variant="secondary" className="flex-1">
-            <DollarSign className="h-4 w-4 mr-2" />
-            {t('recordDividend')}
-          </Button>
-        )}
-      </div>
 
       {/* Asset Details */}
       <Card>

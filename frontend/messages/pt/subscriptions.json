@@ -184,6 +184,7 @@
     "paused": "Pausada"
   },
   "detail": {
+    "actions": "Ações",
     "notFound": "Assinatura não encontrada",
     "backToSubscriptions": "Voltar para assinaturas",
     "subscriptionDetails": "Detalhes da assinatura",

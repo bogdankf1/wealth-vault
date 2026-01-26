@@ -144,6 +144,7 @@
     "update": "Atualizar Meta"
   },
   "detail": {
+    "actions": "Ações",
     "edit": "Editar",
     "delete": "Excluir",
     "active": "Ativa",

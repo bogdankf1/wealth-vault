@@ -209,6 +209,7 @@
     "taxes": "Impôts"
   },
   "detail": {
+    "actions": "Actions",
     "notFound": "Budget introuvable",
     "backToBudgets": "Retour aux Budgets",
     "spendingProgress": "Progression des Dépenses",

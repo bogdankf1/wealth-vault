@@ -173,6 +173,7 @@
   "detail": {
     "backToPortfolio": "Назад до портфеля",
     "notFound": "Актив не знайдено",
+    "actions": "Дії",
     "notFoundDescription": "Актив, який ви шукаєте, не існує або був видалений.",
     "shares": "акцій",
     "refreshPrice": "Оновити ціну",

@@ -248,6 +248,7 @@
   "detail": {
     "title": "Tax Details",
     "backToTaxes": "Back to Taxes",
+    "actions": "Actions",
     "payNow": "Pay Now",
     "payAgain": "Pay Again",
     "editTax": "Edit Tax",

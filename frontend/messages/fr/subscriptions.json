@@ -184,6 +184,7 @@
     "paused": "En pause"
   },
   "detail": {
+    "actions": "Actions",
     "notFound": "Abonnement non trouvé",
     "backToSubscriptions": "Retour aux abonnements",
     "subscriptionDetails": "Détails de l'abonnement",

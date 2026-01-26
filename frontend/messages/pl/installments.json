@@ -233,6 +233,7 @@
     "defaulted": "Niespłacona"
   },
   "detail": {
+    "actions": "Akcje",
     "notFound": "Nie znaleziono raty",
     "backToInstallments": "Wróć do rat",
     "paymentProgress": "Postęp płatności",

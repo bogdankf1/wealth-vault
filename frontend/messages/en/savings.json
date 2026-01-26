@@ -270,6 +270,7 @@
   "detail": {
     "notFound": "Account not found",
     "backToAccounts": "Back to Accounts",
+    "actions": "Actions",
     "deposit": "Deposit",
     "withdraw": "Withdraw",
     "transfer": "Transfer",

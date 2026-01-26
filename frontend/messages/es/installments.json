@@ -233,6 +233,7 @@
     "defaulted": "En mora"
   },
   "detail": {
+    "actions": "Acciones",
     "notFound": "Cuota no encontrada",
     "backToInstallments": "Volver a cuotas",
     "paymentProgress": "Progreso de pagos",

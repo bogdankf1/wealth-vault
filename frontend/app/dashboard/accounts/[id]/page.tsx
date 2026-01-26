@@ -18,9 +18,17 @@ import {
   Calendar,
   Building,
   Wallet,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -149,24 +157,33 @@ export default function AccountDetailPage({ params }: PageProps) {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsEditFormOpen(true)}>
-            <Edit className="mr-2 h-4 w-4" />
-            {tActions('edit')}
-          </Button>
-          <Button variant="default" size="sm" onClick={() => setTransactionFormType('deposit')}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('deposit')}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setTransactionFormType('withdrawal')}>
-            <Minus className="mr-2 h-4 w-4" />
-            {t('withdraw')}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setIsTransferDialogOpen(true)}>
-            <ArrowLeftRight className="mr-2 h-4 w-4" />
-            {t('transfer')}
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              {t('actions')}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => setTransactionFormType('deposit')}>
+              <Plus className="h-4 w-4" />
+              {t('deposit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTransactionFormType('withdrawal')}>
+              <Minus className="h-4 w-4" />
+              {t('withdraw')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsTransferDialogOpen(true)}>
+              <ArrowLeftRight className="h-4 w-4" />
+              {t('transfer')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
+              <Edit className="h-4 w-4" />
+              {tActions('edit')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Stats Cards */}

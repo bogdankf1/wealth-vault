@@ -235,6 +235,7 @@
   "detail": {
     "notFound": "Розстрочку не знайдено",
     "backToInstallments": "Назад до розстрочок",
+    "actions": "Дії",
     "paymentProgress": "Прогрес платежів",
     "of": "з",
     "payments": "платежів",

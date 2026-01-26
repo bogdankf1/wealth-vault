@@ -246,6 +246,7 @@
     "annually": "Annuel"
   },
   "detail": {
+    "actions": "Actions",
     "title": "Détails de l'impôt",
     "backToTaxes": "Retour aux impôts",
     "payNow": "Payer maintenant",

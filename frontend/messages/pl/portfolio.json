@@ -171,6 +171,7 @@
     "autoDepositDividendsHelp": "Automatycznie wpłacaj dywidendy na konto"
   },
   "detail": {
+    "actions": "Akcje",
     "backToPortfolio": "Powrót do portfela",
     "notFound": "Nie znaleziono aktywa",
     "notFoundDescription": "Aktywo, którego szukasz, nie istnieje lub zostało usunięte.",

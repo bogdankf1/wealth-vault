@@ -173,6 +173,7 @@
   "detail": {
     "backToPortfolio": "Back to Portfolio",
     "notFound": "Asset Not Found",
+    "actions": "Actions",
     "notFoundDescription": "The asset you're looking for doesn't exist or has been deleted.",
     "shares": "shares",
     "refreshPrice": "Refresh Price",

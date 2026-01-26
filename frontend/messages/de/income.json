@@ -235,6 +235,7 @@
   },
   "detail": {
     "notFound": "Einkommensquelle nicht gefunden",
+    "actions": "Aktionen",
     "backToIncome": "Zurück zu Einkommen",
     "amount": "Betrag",
     "perPayment": "Pro Zahlung",

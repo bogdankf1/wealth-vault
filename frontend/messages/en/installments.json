@@ -235,6 +235,7 @@
   "detail": {
     "notFound": "Installment not found",
     "backToInstallments": "Back to Installments",
+    "actions": "Actions",
     "paymentProgress": "Payment Progress",
     "of": "of",
     "payments": "payments",

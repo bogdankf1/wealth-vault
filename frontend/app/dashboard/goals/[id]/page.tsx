@@ -67,7 +67,15 @@ import {
   Percent,
   DollarSign,
   CheckCircle2,
+  ChevronDown,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { GoalForm } from '@/components/goals/goal-form';
 
 export default function GoalDetailPage() {
@@ -230,16 +238,25 @@ export default function GoalDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            {t('edit')}
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            {t('delete')}
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              {t('actions')}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+              <Edit className="h-4 w-4" />
+              {t('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {t('delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Status Badges */}
