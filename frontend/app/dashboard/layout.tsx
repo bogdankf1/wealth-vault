@@ -30,11 +30,14 @@ import {
   Database,
   HelpCircle,
   Bell,
-  ChevronDown
+  ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useSidebarSwipe } from '@/hooks/use-sidebar-swipe';
+import { useSidebarCollapse } from '@/hooks/use-sidebar-collapse';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
 import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
@@ -59,6 +62,7 @@ export default function DashboardLayout({
     sidebarWidth: 256,
     desktopQuery: '(min-width: 1280px)',
   });
+  const { isCollapsed, toggleCollapsed } = useSidebarCollapse();
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     incomeExpenses: true,
     accountsInvestments: true,
@@ -192,39 +196,63 @@ export default function DashboardLayout({
       <div
         ref={sidebarRef}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 md:w-72 transform bg-white dark:bg-gray-800 xl:translate-x-0 xl:static xl:w-64 shadow-2xl xl:shadow-none',
-          !isDragging && 'transition-transform duration-300 ease-in-out',
+          'fixed inset-y-0 left-0 z-50 w-64 md:w-72 transform bg-white dark:bg-gray-800 xl:translate-x-0 xl:static shadow-2xl xl:shadow-none',
+          isCollapsed ? 'xl:w-16' : 'xl:w-64',
+          !isDragging ? 'transition-[transform,width] duration-300 ease-in-out' : 'transition-[width] duration-300 ease-in-out',
           !isDragging && (sidebarOpen ? 'translate-x-0' : '-translate-x-full')
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6 border-b dark:border-gray-700">
-            <Link href="/dashboard" className="flex items-center space-x-3">
+          <div className={cn(
+            'flex h-14 md:h-16 items-center justify-between px-4 md:px-6 border-b dark:border-gray-700 overflow-hidden',
+            isCollapsed && 'xl:justify-center xl:px-0'
+          )}>
+            <Link href="/dashboard" className={cn(
+              'flex items-center space-x-3 whitespace-nowrap',
+              isCollapsed && 'xl:hidden'
+            )}>
               <WealthVaultLogo size={32} className="flex-shrink-0" />
               <span className="text-xl font-bold text-gray-900 dark:text-white">
                 {t('logo.title')}
               </span>
             </Link>
             <button
+              onClick={toggleCollapsed}
+              className="hidden xl:flex p-1.5 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isCollapsed ? (
+                <PanelLeftOpen className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5" />
+              )}
+            </button>
+            <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden"
+              className="xl:hidden"
             >
               <X className="h-6 w-6 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-2 md:px-3 py-3 md:py-4 overflow-y-auto">
+          <nav className={cn(
+            'flex-1 space-y-1 px-2 md:px-3 py-3 md:py-4 overflow-y-auto',
+            isCollapsed && 'xl:px-1 xl:space-y-0.5 xl:overflow-visible'
+          )}>
             {accessibleNavigationGroups.map((group, groupIndex) => {
               const isExpanded = group.key ? expandedGroups[group.key] : true;
 
               return (
-                <div key={groupIndex} className={groupIndex > 0 ? 'mt-3' : ''}>
+                <div key={groupIndex} className={cn(groupIndex > 0 && 'mt-3', isCollapsed && 'xl:mt-0 xl:space-y-0.5')}>
                   {group.label && group.key && (
                     <button
                       onClick={() => toggleGroup(group.key!)}
-                      className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                      className={cn(
+                        'w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors',
+                        isCollapsed && 'xl:hidden'
+                      )}
                     >
                       <span>{group.label}</span>
                       <ChevronDown
@@ -235,25 +263,32 @@ export default function DashboardLayout({
                       />
                     </button>
                   )}
-                  {isExpanded && group.items.map((item) => {
+                  {(isExpanded || isCollapsed) && group.items.map((item) => {
                     const isActive = isNavItemActive(item.href);
                     const Icon = item.icon;
 
                     return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        onClick={() => setSidebarOpen(false)}
-                        className={cn(
-                          'flex items-center px-3 py-2.5 md:py-2 text-sm md:text-sm font-medium rounded-lg transition-colors touch-manipulation',
-                          isActive
-                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                            : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600'
+                      <div key={item.name} className="group/nav relative">
+                        <Link
+                          href={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={cn(
+                            'flex items-center px-3 py-2.5 md:py-2 text-sm md:text-sm font-medium rounded-lg transition-colors touch-manipulation',
+                            isActive
+                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                              : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600',
+                            isCollapsed && 'xl:justify-center xl:px-0 xl:py-2 xl:mx-auto xl:w-10 xl:h-10'
+                          )}
+                        >
+                          <Icon className={cn('mr-3 h-5 w-5 flex-shrink-0', isCollapsed && 'xl:mr-0')} />
+                          <span className={cn(isCollapsed && 'xl:hidden')}>{item.name}</span>
+                        </Link>
+                        {isCollapsed && (
+                          <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover/nav:opacity-100 transition-opacity hidden xl:block z-[60]">
+                            {item.name}
+                          </span>
                         )}
-                      >
-                        <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                        {item.name}
-                      </Link>
+                      </div>
                     );
                   })}
                 </div>
@@ -261,7 +296,7 @@ export default function DashboardLayout({
             })}
 
             {/* Divider */}
-            <div className="py-2">
+            <div className={cn('py-2', isCollapsed && 'xl:hidden')}>
               <div className="border-t dark:border-gray-700" />
             </div>
 
@@ -271,46 +306,70 @@ export default function DashboardLayout({
               const Icon = item.icon;
 
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    'flex items-center px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
-                    isActive
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600'
+                <div key={item.name} className="group/nav relative">
+                  <Link
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={cn(
+                      'flex items-center px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                        : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600',
+                      isCollapsed && 'xl:justify-center xl:px-0 xl:py-2 xl:mx-auto xl:w-10 xl:h-10'
+                    )}
+                  >
+                    <Icon className={cn('mr-3 h-5 w-5 flex-shrink-0', isCollapsed && 'xl:mr-0')} />
+                    <span className={cn(isCollapsed && 'xl:hidden')}>{item.name}</span>
+                  </Link>
+                  {isCollapsed && (
+                    <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover/nav:opacity-100 transition-opacity hidden xl:block z-[60]">
+                      {item.name}
+                    </span>
                   )}
-                >
-                  <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  {item.name}
-                </Link>
+                </div>
               );
             })}
 
             {/* Admin Link (only for admins) */}
             {currentUser?.role === 'ADMIN' && (
-              <Link
-                href="/admin"
-                onClick={() => setSidebarOpen(false)}
-                className={cn(
-                  'flex items-center px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
-                  pathname.startsWith('/admin')
-                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                    : 'text-indigo-700 hover:bg-indigo-50 active:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
+              <div className="group/nav relative">
+                <Link
+                  href="/admin"
+                  onClick={() => setSidebarOpen(false)}
+                  className={cn(
+                    'flex items-center px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
+                    pathname.startsWith('/admin')
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                      : 'text-indigo-700 hover:bg-indigo-50 active:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/20',
+                    isCollapsed && 'xl:justify-center xl:px-0 xl:py-2 xl:mx-auto xl:w-10 xl:h-10'
+                  )}
+                >
+                  <Shield className={cn('mr-3 h-5 w-5 flex-shrink-0', isCollapsed && 'xl:mr-0')} />
+                  <span className={cn(isCollapsed && 'xl:hidden')}>{t('admin.panel')}</span>
+                </Link>
+                {isCollapsed && (
+                  <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover/nav:opacity-100 transition-opacity hidden xl:block z-[60]">
+                    {t('admin.panel')}
+                  </span>
                 )}
-              >
-                <Shield className="mr-3 h-5 w-5 flex-shrink-0" />
-                {t('admin.panel')}
-              </Link>
+              </div>
             )}
           </nav>
 
           {/* User section */}
-          <div className="border-t dark:border-gray-700 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+          <div className={cn(
+            'border-t dark:border-gray-700 p-4',
+            isCollapsed && 'xl:p-2'
+          )}>
+            <div className={cn(
+              'flex items-center justify-between',
+              isCollapsed && 'xl:flex-col xl:items-center xl:gap-2'
+            )}>
+              <div className={cn(
+                'flex items-center space-x-3',
+                isCollapsed && 'xl:space-x-0'
+              )}>
+                <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
                   {session?.user?.image ? (
                     <Image
                       src={session.user.image}
@@ -325,7 +384,7 @@ export default function DashboardLayout({
                     </span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className={cn('flex-1 min-w-0', isCollapsed && 'xl:hidden')}>
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {session?.user?.name || 'User'}
                   </p>
