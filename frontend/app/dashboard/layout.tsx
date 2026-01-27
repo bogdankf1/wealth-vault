@@ -37,6 +37,7 @@ import {
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useSidebarSwipe } from '@/hooks/use-sidebar-swipe';
+import { useBackSwipe } from '@/hooks/use-back-swipe';
 import { useSidebarCollapse } from '@/hooks/use-sidebar-collapse';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
@@ -62,6 +63,7 @@ export default function DashboardLayout({
     sidebarWidth: 256,
     desktopQuery: '(min-width: 1280px)',
   });
+  useBackSwipe({ enabled: !sidebarOpen });
   const { isCollapsed, toggleCollapsed } = useSidebarCollapse();
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     incomeExpenses: true,
