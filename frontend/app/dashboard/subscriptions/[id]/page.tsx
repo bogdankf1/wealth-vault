@@ -20,6 +20,8 @@ import {
   Bell,
   Receipt,
   ChevronDown,
+  Archive,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +45,8 @@ import {
   useResumeSubscriptionMutation,
   useCancelSubscriptionMutation,
   useRecordSubscriptionPaymentMutation,
+  useUpdateSubscriptionMutation,
+  useDeleteSubscriptionMutation,
 } from '@/lib/api/subscriptionsApi';
 import { useGetAccountQuery } from '@/lib/api/savingsApi';
 import { format } from 'date-fns';
@@ -62,11 +66,13 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
   const tFrequencies = useTranslations('subscriptions.frequencies');
   const tCategories = useTranslations('subscriptions.categories');
   const tActions = useTranslations('subscriptions.actions');
+  const tOverview = useTranslations('subscriptions.overview');
 
   // State
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Queries
   const { data: subscription, isLoading, error, refetch } = useGetSubscriptionQuery(id);
@@ -79,6 +85,8 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
   const [resumeSubscription, { isLoading: isResuming }] = useResumeSubscriptionMutation();
   const [cancelSubscription, { isLoading: isCancelling }] = useCancelSubscriptionMutation();
   const [recordPayment, { isLoading: isRecordingPayment }] = useRecordSubscriptionPaymentMutation();
+  const [updateSubscription] = useUpdateSubscriptionMutation();
+  const [deleteSubscription, { isLoading: isDeletingSubscription }] = useDeleteSubscriptionMutation();
 
   const FREQUENCY_LABELS: Record<string, string> = {
     monthly: tFrequencies('monthly'),
@@ -162,6 +170,27 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
       } else {
         toast.error(t('paymentError'));
       }
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await updateSubscription({ id, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/subscriptions/overview');
+    } catch (error) {
+      toast.error(tOverview('archiveError'));
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteSubscription(id).unwrap();
+      toast.success(tOverview('deleteSuccess'));
+      setDeleteDialogOpen(false);
+      router.push('/dashboard/subscriptions/overview');
+    } catch (error) {
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -265,6 +294,15 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
             <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
               <Edit className="h-4 w-4" />
               {tActions('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {tActions('delete')}
             </DropdownMenuItem>
             {canCancel && (
               <>
@@ -479,6 +517,19 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
         isDeleting={isCancelling}
         cancelLabel={tActions('cancel')}
         deleteLabel={t('cancelSubscription')}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
+        itemName={subscription.name}
+        isDeleting={isDeletingSubscription}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

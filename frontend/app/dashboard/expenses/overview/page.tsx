@@ -4,9 +4,9 @@
  */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, TrendingDown, Calendar, Edit, Trash2, Archive, LayoutGrid, List, Grid3x3, Rows3, CalendarDays, Layers, Eye, Upload, Plus, Play } from 'lucide-react';
+import { DollarSign, TrendingDown, Calendar, Trash2, Archive, LayoutGrid, List, CalendarDays, Layers, Upload, Plus, Play, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -29,19 +29,28 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { ExpenseForm } from '@/components/expenses/expense-form';
 import { BatchExpenseForm } from '@/components/expenses/batch-expense-form';
-import { MonthFilter, filterByMonth } from '@/components/ui/month-filter';
-import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { filterByMonth } from '@/components/ui/month-filter';
+import { StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
-import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
-import { ColumnSelector } from '@/components/ui/column-selector';
+import { filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
@@ -87,7 +96,7 @@ export default function ExpensesPage() {
   const hasBatchOperations = userFeatures?.features[FEATURE_REQUIREMENTS.batch_operations]?.enabled ?? false;
 
   // Use default view preferences from user settings
-  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { viewMode, setViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
 
   // Column configuration for list view
@@ -189,11 +198,6 @@ export default function ExpensesPage() {
       toast.error(tOverview('processPaymentsError'));
     }
   }, [processExpenseDuePayments, refetchExpenses, tOverview]);
-
-  const handleEditExpense = (id: string) => {
-    setEditingExpenseId(id);
-    setIsFormOpen(true);
-  };
 
   const handleDeleteExpense = (id: string) => {
     setDeletingExpenseId(id);
@@ -365,16 +369,6 @@ export default function ExpensesPage() {
             </Button>
           </>
         )}
-        <Button
-          onClick={handleProcessDuePayments}
-          variant="outline"
-          size="default"
-          className="w-full sm:w-auto"
-          disabled={isProcessingPayments}
-        >
-          <Play className="mr-2 h-4 w-4" />
-          <span className="truncate">{isProcessingPayments ? tOverview('processingPayments') : tOverview('processDuePayments')}</span>
-        </Button>
         <SplitButton
           primaryLabel={tOverview('importExpenses')}
           onPrimaryClick={handleImportExpenses}
@@ -394,6 +388,12 @@ export default function ExpensesPage() {
                   },
                 ]
               : []),
+            {
+              label: isProcessingPayments ? tOverview('processingPayments') : tOverview('processDuePayments'),
+              onClick: handleProcessDuePayments,
+              icon: <Play className="h-4 w-4" />,
+              disabled: isProcessingPayments,
+            },
           ]}
           className="w-full sm:w-auto"
         />
@@ -435,63 +435,33 @@ export default function ExpensesPage() {
       ]
     : [];
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== null) count++;
+    if (selectedMonth !== null) count++;
+    if (sortField !== 'name' || sortDirection !== 'asc') count++;
+    return count;
+  }, [selectedCategory, selectedMonth, sortField, sortDirection]);
+
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Statistics Section with Toggle */}
+      {/* Statistics Section - Always compact */}
       {showStatsCards && (isLoadingStats || statsError || stats) ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-end">
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
-              <Button
-                variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('cards')}
-                className="h-[32px] w-[32px] p-0"
-                title="Cards View"
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatsViewMode('compact')}
-                className="h-[32px] w-[32px] p-0"
-                title="Compact View"
-              >
-                <Rows3 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
           {isLoadingStats ? (
-            statsViewMode === 'cards' ? (
-              <div className="grid gap-4 md:grid-cols-3">
+            <div className="border rounded-lg p-3 bg-card">
+              <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
-                  <Card key={i}>
-                    <CardHeader className="space-y-2">
-                      <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                      <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-                    </CardHeader>
-                  </Card>
+                  <div key={i} className="flex items-center justify-between py-1.5 border-b last:border-b-0">
+                    <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                    <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                  </div>
                 ))}
               </div>
-            ) : (
-              <div className="border rounded-lg p-3 bg-card">
-                <div className="space-y-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center justify-between py-1.5 border-b last:border-b-0">
-                      <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-                      <div className="h-4 w-20 animate-pulse rounded bg-muted" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
+            </div>
           ) : statsError ? (
             <ApiErrorState error={statsError} />
-          ) : stats && statsViewMode === 'cards' ? (
-            <StatsCards stats={statsCards} />
-          ) : stats && statsViewMode === 'compact' ? (
+          ) : stats ? (
             <div className="border rounded-lg overflow-hidden bg-card">
               <div className="divide-y">
                 {statsCards.map((stat, index) => {
@@ -515,76 +485,202 @@ export default function ExpensesPage() {
         </div>
       ) : null}
 
-      {/* Search, Filters, and View Toggle */}
+      {/* Search and Filters */}
       {(expensesData?.items && expensesData.items.length > 0) && (
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-          <div className="flex-1">
-            <SearchFilter
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              categories={uniqueCategories}
-              searchPlaceholder={tOverview('searchPlaceholder')}
-              categoryPlaceholder={tOverview('allCategories')}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder={tOverview('searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 pl-9"
             />
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <MonthFilter
-              selectedMonth={selectedMonth}
-              onMonthChange={setSelectedMonth}
-              label={tCommon('common.filterBy')}
-              clearLabel={tCommon('common.clear')}
-            />
-            <SortFilter
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSortFieldChange={setSortField}
-              onSortDirectionChange={setSortDirection}
-              sortByLabel={tCommon('common.sortBy')}
-            />
-            {viewMode === 'list' && (
-              <ColumnSelector
-                columns={columnConfig}
-                visibleColumns={visibleColumns}
-                onToggleColumn={toggleColumn}
-                onShowAllColumns={showAllColumns}
-                label={tCommon('common.columns')}
-                showAllLabel={tCommon('common.showAll')}
-              />
-            )}
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
-              <Button
-                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('card')}
-                className="h-[32px] w-[32px] p-0"
-                title="Card View"
-              >
-                <LayoutGrid className="h-4 w-4" />
+
+          {/* Filters Popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="relative">
+                <Filter className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                    {activeFilterCount}
+                  </Badge>
+                )}
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-[32px] w-[32px] p-0"
-                title="List View"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              {selectedMonth && (
-                <Button
-                  variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('calendar')}
-                  className="h-[32px] w-[32px] p-0"
-                  title="Calendar View"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0" align="end">
+              {/* Filter section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
+
+                {/* Category */}
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">{tOverview('table.category')}</label>
+                  <Select
+                    value={selectedCategory || 'all'}
+                    onValueChange={(value) => setSelectedCategory(value === 'all' ? null : value)}
+                  >
+                    <SelectTrigger className="h-8 w-full text-sm">
+                      <SelectValue placeholder={tOverview('allCategories')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{tOverview('allCategories')}</SelectItem>
+                      {uniqueCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {translateCategory(category)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Month */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">{tCommon('common.month')}</label>
+                    {selectedMonth && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedMonth(null)}
+                        className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        {tCommon('common.clear')}
+                      </Button>
+                    )}
+                  </div>
+                  <input
+                    type="month"
+                    value={selectedMonth || ''}
+                    onChange={(e) => setSelectedMonth(e.target.value || null)}
+                    onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
+                    min="2020-01"
+                    max="2030-12"
+                    className="h-8 w-full rounded-md border border-input bg-background px-3 text-sm cursor-pointer ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Sort section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
+                <div className="flex items-center gap-2">
+                  <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
+                    <SelectTrigger className="h-8 flex-1 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">{tCommon('common.name')}</SelectItem>
+                      <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
+                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                    className="h-8 gap-1.5 flex-shrink-0"
+                  >
+                    {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+                    <span className="text-sm">
+                      {sortField === 'name'
+                        ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
+                        : sortField === 'amount'
+                          ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
+                          : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
+                      }
+                    </span>
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* View section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
+                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
+                  <Button
+                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('card')}
+                    className="h-[32px] w-[32px] p-0"
+                    title="Card View"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="h-[32px] w-[32px] p-0"
+                    title="List View"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  {selectedMonth && (
+                    <Button
+                      variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('calendar')}
+                      className="h-[32px] w-[32px] p-0"
+                      title="Calendar View"
+                    >
+                      <CalendarDays className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Columns section (list view only) */}
+              {viewMode === 'list' && (
+                <>
+                  <Separator />
+                  <div className="p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
+                      {Object.values(visibleColumns).filter(Boolean).length < columnConfig.length && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={showAllColumns}
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          {tCommon('common.showAll')}
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      {columnConfig.map((column) => (
+                        <label
+                          key={column.id}
+                          className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm ${
+                            column.locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-muted'
+                          }`}
+                        >
+                          <Checkbox
+                            checked={visibleColumns[column.id] ?? true}
+                            onCheckedChange={() => toggleColumn(column.id)}
+                            disabled={column.locked}
+                          />
+                          <span className="flex-1">{column.label}</span>
+                          {column.locked && <Lock className="h-3 w-3 text-muted-foreground" />}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
-            </div>
-          </div>
+            </PopoverContent>
+          </Popover>
         </div>
       )}
 
@@ -619,7 +715,7 @@ export default function ExpensesPage() {
             }))}
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
-            onItemClick={handleEditExpense}
+            onItemClick={(id) => router.push(`/dashboard/expenses/${id}`)}
             selectedItemIds={selectedExpenseIds}
             onToggleSelect={handleToggleSelect}
           />
@@ -650,16 +746,22 @@ export default function ExpensesPage() {
             )}
             <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredExpenses.map((expense) => (
-              <Card key={expense.id} className="relative">
+              <Card
+                key={expense.id}
+                className="relative cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => router.push(`/dashboard/expenses/${expense.id}`)}
+              >
                 <CardHeader className="pb-3 md:pb-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
-                      <Checkbox
-                        checked={selectedExpenseIds.has(expense.id)}
-                        onCheckedChange={() => handleToggleSelect(expense.id)}
-                        aria-label={`Select ${expense.name}`}
-                        className="mt-1"
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedExpenseIds.has(expense.id)}
+                          onCheckedChange={() => handleToggleSelect(expense.id)}
+                          aria-label={`Select ${expense.name}`}
+                          className="mt-1"
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-base md:text-lg truncate">{expense.name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
@@ -740,42 +842,6 @@ export default function ExpensesPage() {
                         <Badge variant="outline" className="text-xs flex-shrink-0">{translateCategory(expense.category)}</Badge>
                       )}
                     </div>
-
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push(`/dashboard/expenses/${expense.id}`)}
-                      >
-                        <Eye className="mr-1 h-3 w-3" />
-                        {tCommon('common.view')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditExpense(expense.id)}
-                      >
-                        <Edit className="mr-1 h-3 w-3" />
-                        {tActions('edit')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleArchiveExpense(expense.id)}
-                      >
-                        <Archive className="mr-1 h-3 w-3" />
-                        {tActions('archive')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteExpense(expense.id)}
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="mr-1 h-3 w-3" />
-                        {tActions('delete')}
-                      </Button>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -822,13 +888,16 @@ export default function ExpensesPage() {
                     {isColumnVisible('status') && (
                       <TableHead className="hidden sm:table-cell">{tOverview('table.status')}</TableHead>
                     )}
-                    <TableHead className="text-right w-[180px]">{tOverview('table.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredExpenses.map((expense) => (
-                    <TableRow key={expense.id}>
-                      <TableCell>
+                    <TableRow
+                      key={expense.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/dashboard/expenses/${expense.id}`)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedExpenseIds.has(expense.id)}
                           onCheckedChange={() => handleToggleSelect(expense.id)}
@@ -930,43 +999,6 @@ export default function ExpensesPage() {
                           </Badge>
                         </TableCell>
                       )}
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/expenses/${expense.id}`)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditExpense(expense.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleArchiveExpense(expense.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Archive className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteExpense(expense.id)}
-                            disabled={isDeleting}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

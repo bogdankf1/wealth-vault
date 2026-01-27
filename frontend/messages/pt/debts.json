@@ -71,6 +71,7 @@
     "batchDeleteSuccess": "Excluídas com sucesso {count} dívida(s)",
     "batchDeleteError": "Falha ao excluir {count} dívida(s)",
     "deleteConfirmTitle": "Excluir Dívida",
+    "deleteConfirmDescription": "Tem certeza de que deseja excluir esta dívida? Esta ação não pode ser desfeita.",
     "batchDeleteTitle": "Excluir {count} dívida(s)?",
     "batchDeleteDescription": "Esta ação não pode ser desfeita. Isto excluirá permanentemente {count} dívida(s) do sistema.",
     "debt": "dívida",

@@ -92,6 +92,7 @@
     "columns": "Spalten",
     "showAll": "Alle anzeigen",
     "status": "Status",
-    "frequency": "Häufigkeit"
+    "frequency": "Häufigkeit",
+    "filters": "Filter"
   }
 }

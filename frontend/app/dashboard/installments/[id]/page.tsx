@@ -23,6 +23,8 @@ import {
   Percent,
   Target,
   ChevronDown,
+  Archive,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +45,8 @@ import { InstallmentPaymentList } from '@/components/installments/installment-pa
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import {
   useGetInstallmentQuery,
+  useUpdateInstallmentMutation,
+  useDeleteInstallmentMutation,
   useCompleteInstallmentMutation,
   useDefaultInstallmentMutation,
   useReactivateInstallmentMutation,
@@ -66,11 +70,14 @@ export default function InstallmentDetailPage({ params }: PageProps) {
   const tFrequencies = useTranslations('installments.frequencies');
   const tCategories = useTranslations('installments.categories');
   const tActions = useTranslations('installments.actions');
+  const tOverview = useTranslations('installments.overview');
+  const tCommon = useTranslations('common');
 
   // State
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [defaultDialogOpen, setDefaultDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Queries
   const { data: installment, isLoading, error, refetch } = useGetInstallmentQuery(id);
@@ -83,6 +90,8 @@ export default function InstallmentDetailPage({ params }: PageProps) {
   const [defaultInstallment, { isLoading: isDefaulting }] = useDefaultInstallmentMutation();
   const [reactivateInstallment, { isLoading: isReactivating }] = useReactivateInstallmentMutation();
   const [recordPayment, { isLoading: isRecordingPayment }] = useRecordInstallmentPaymentMutation();
+  const [updateInstallment] = useUpdateInstallmentMutation();
+  const [deleteInstallment, { isLoading: isDeleting }] = useDeleteInstallmentMutation();
 
   const FREQUENCY_LABELS: Record<string, string> = {
     weekly: tFrequencies('weekly'),
@@ -164,6 +173,27 @@ export default function InstallmentDetailPage({ params }: PageProps) {
       } else {
         toast.error(t('paymentRecordedError'));
       }
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await updateInstallment({ id, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/installments/overview');
+    } catch (error) {
+      toast.error(tOverview('archiveError'));
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteInstallment(id).unwrap();
+      toast.success(tOverview('deleteSuccess'));
+      setDeleteDialogOpen(false);
+      router.push('/dashboard/installments/overview');
+    } catch (error) {
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -271,15 +301,21 @@ export default function InstallmentDetailPage({ params }: PageProps) {
               <Edit className="h-4 w-4" />
               {tActions('edit')}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             {canDefault && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={() => setDefaultDialogOpen(true)}>
-                  <XOctagon className="h-4 w-4" />
-                  {t('markDefaulted')}
-                </DropdownMenuItem>
-              </>
+              <DropdownMenuItem variant="destructive" onClick={() => setDefaultDialogOpen(true)}>
+                <XOctagon className="h-4 w-4" />
+                {t('markDefaulted')}
+              </DropdownMenuItem>
             )}
+            <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {tActions('delete')}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -541,6 +577,19 @@ export default function InstallmentDetailPage({ params }: PageProps) {
         isDeleting={isDefaulting}
         cancelLabel={tActions('cancel')}
         deleteLabel={t('markDefaulted')}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title={tCommon('deleteDialog.title')}
+        description={tCommon('deleteDialog.description', { item: installment?.name || '' })}
+        isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
+        deletingLabel={tCommon('actions.deleting')}
       />
     </div>
   );

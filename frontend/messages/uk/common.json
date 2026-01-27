@@ -92,6 +92,7 @@
     "columns": "Колонки",
     "showAll": "Показати всі",
     "status": "Статус",
-    "frequency": "Частота"
+    "frequency": "Частота",
+    "filters": "Фільтри"
   }
 }

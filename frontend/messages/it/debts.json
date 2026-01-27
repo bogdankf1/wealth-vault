@@ -72,6 +72,7 @@
     "batchDeleteSuccess": "Eliminati con successo {count} crediti",
     "batchDeleteError": "Impossibile eliminare {count} crediti",
     "deleteConfirmTitle": "Elimina Credito",
+    "deleteConfirmDescription": "Sei sicuro di voler eliminare questo credito? Questa azione non può essere annullata.",
     "batchDeleteTitle": "Eliminare {count} crediti?",
     "batchDeleteDescription": "Questa azione non può essere annullata. Questo eliminerà permanentemente {count} crediti dal sistema.",
     "debt": "credito",

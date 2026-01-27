@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Grid3x3, Rows3, Eye, Upload, Plus } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Upload, Plus, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   useListPortfolioAssetsQuery,
@@ -16,6 +16,10 @@ import {
   useBatchDeleteAssetsMutation,
 } from '@/lib/api/portfolioApi';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { SplitButton } from '@/components/ui/split-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,15 +36,14 @@ import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { PortfolioForm } from '@/components/portfolio/portfolio-form';
 
-import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { type StatCard } from '@/components/ui/stats-cards';
 import { PortfolioActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
-import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
-import { ColumnSelector } from '@/components/ui/column-selector';
+import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
@@ -91,7 +94,7 @@ export default function PortfolioPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Use default view preferences from user settings
-  const { viewMode, setViewMode, statsViewMode, setStatsViewMode } = useViewPreferences();
+  const { viewMode, setViewMode } = useViewPreferences();
   const { showStatsCards } = useUIVisibility();
 
   // Column visibility configuration
@@ -374,6 +377,13 @@ export default function PortfolioPage() {
       ]
     : [];
 
+  const activeFilterCount = React.useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== null) count++;
+    if (sortField !== 'name' || sortDirection !== 'asc') count++;
+    return count;
+  }, [selectedCategory, sortField, sortDirection]);
+
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Statistics Cards */}
@@ -392,106 +402,153 @@ export default function PortfolioPage() {
         ) : statsError ? (
           <ApiErrorState error={statsError} />
         ) : stats ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-end">
-              <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
-                <Button
-                  variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setStatsViewMode('cards')}
-                  className="h-[32px] w-[32px] p-0"
-                >
-                  <Grid3x3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setStatsViewMode('compact')}
-                  className="h-[32px] w-[32px] p-0"
-                >
-                  <Rows3 className="h-4 w-4" />
-                </Button>
-              </div>
+          <div className="border rounded-lg overflow-hidden bg-card">
+            <div className="divide-y">
+              {statsCards.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-sm font-medium truncate">{stat.title}</span>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className="text-lg font-bold">{stat.value}</span>
+                      <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            {statsViewMode === 'cards' ? (
-              <StatsCards stats={statsCards} />
-            ) : (
-              <div className="border rounded-lg overflow-hidden bg-card">
-                <div className="divide-y">
-                  {statsCards.map((stat, index) => {
-                    const Icon = stat.icon;
-                    return (
-                      <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                          <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-sm font-medium truncate">{stat.title}</span>
-                        </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                          <span className="text-lg font-bold">{stat.value}</span>
-                          <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         ) : null
       )}
 
-      {/* Search, Filters, and View Toggle */}
+      {/* Search and Filters */}
       {(portfolioData?.items && portfolioData.items.length > 0) && (
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-          <div className="flex-1">
-            <SearchFilter
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              categories={uniqueAssetTypes}
-              searchPlaceholder={tOverview('searchPlaceholder')}
-              categoryPlaceholder={tOverview('allAssetTypes')}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={tOverview('searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
             />
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <SortFilter
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSortFieldChange={setSortField}
-              onSortDirectionChange={setSortDirection}
-              sortByLabel={tCommon('common.sortBy')}
-            />
-            {viewMode === 'list' && (
-              <ColumnSelector
-                columns={columnConfig}
-                visibleColumns={visibleColumns}
-                onToggleColumn={toggleColumn}
-                onShowAllColumns={showAllColumns}
-                label={tCommon('common.columns')}
-                showAllLabel={tCommon('common.showAll')}
-              />
-            )}
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
-              <Button
-                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('card')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <LayoutGrid className="h-4 w-4" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="relative">
+                <Filter className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                    {activeFilterCount}
+                  </Badge>
+                )}
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0" align="end">
+              {/* FILTER section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
+                <Select
+                  value={selectedCategory ?? '__all__'}
+                  onValueChange={(val) => setSelectedCategory(val === '__all__' ? null : val)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tOverview('allAssetTypes')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">{tOverview('allAssetTypes')}</SelectItem>
+                    {uniqueAssetTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{translateAssetType(type)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              {/* SORT section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={sortField}
+                    onValueChange={(val) => setSortField(val as SortField)}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">{tOverview('asset')}</SelectItem>
+                      <SelectItem value="amount">{tOverview('currentValue')}</SelectItem>
+                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                  >
+                    {sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <Separator />
+              {/* VIEW section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
+                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
+                  <Button
+                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('card')}
+                    className="h-[32px] w-[32px] p-0"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="h-[32px] w-[32px] p-0"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              {/* COLUMNS section - only when list view */}
+              {viewMode === 'list' && (
+                <>
+                  <Separator />
+                  <div className="p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={showAllColumns}
+                      >
+                        {tCommon('common.showAll')}
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {columnConfig.map((col) => (
+                        <label key={col.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={isColumnVisible(col.id)}
+                            onCheckedChange={() => toggleColumn(col.id)}
+                            disabled={col.locked}
+                          />
+                          <span className={col.locked ? 'text-muted-foreground' : ''}>{col.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
       )}
 
@@ -544,13 +601,14 @@ export default function PortfolioPage() {
               const isPositive = displayTotalReturn >= 0;
 
               return (
-                <Card key={asset.id} className="relative">
+                <Card key={asset.id} className="relative cursor-pointer hover:border-primary/50 transition-colors" onClick={() => handleViewAsset(asset.id)}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <Checkbox
                           checked={selectedAssetIds.has(asset.id)}
                           onCheckedChange={() => handleToggleSelect(asset.id)}
+                          onClick={(e) => e.stopPropagation()}
                           aria-label={`Select ${asset.asset_name}`}
                           className="mt-1"
                         />
@@ -698,42 +756,6 @@ export default function PortfolioPage() {
                           <Badge variant="outline">{translateAssetType(asset.asset_type)}</Badge>
                         )}
                       </div>
-
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewAsset(asset.id)}
-                        >
-                          <Eye className="mr-1 h-3 w-3" />
-                          {tActions('view')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditAsset(asset.id)}
-                        >
-                          <Edit className="mr-1 h-3 w-3" />
-                          {tActions('edit')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleArchiveAsset(asset.id)}
-                        >
-                          <Archive className="mr-1 h-3 w-3" />
-                          {tActions('archive')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteAsset(asset.id)}
-                          disabled={isDeleting}
-                        >
-                          <Trash2 className="mr-1 h-3 w-3" />
-                          {tActions('delete')}
-                        </Button>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -778,7 +800,6 @@ export default function PortfolioPage() {
                     {isColumnVisible('status') && (
                       <TableHead className="hidden sm:table-cell">{tCommon('common.status')}</TableHead>
                     )}
-                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -791,11 +812,12 @@ export default function PortfolioPage() {
                     const isPositive = displayTotalReturn >= 0;
 
                     return (
-                      <TableRow key={asset.id}>
+                      <TableRow key={asset.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewAsset(asset.id)}>
                         <TableCell>
                           <Checkbox
                             checked={selectedAssetIds.has(asset.id)}
                             onCheckedChange={() => handleToggleSelect(asset.id)}
+                            onClick={(e) => e.stopPropagation()}
                             aria-label={`Select ${asset.asset_name}`}
                           />
                         </TableCell>
@@ -889,43 +911,6 @@ export default function PortfolioPage() {
                             </Badge>
                           </TableCell>
                         )}
-                        <TableCell className="text-right">
-                          <div className="flex gap-1 justify-end">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewAsset(asset.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditAsset(asset.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleArchiveAsset(asset.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Archive className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteAsset(asset.id)}
-                              disabled={isDeleting}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
                       </TableRow>
                     );
                   })}

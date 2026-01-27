@@ -72,6 +72,7 @@
     "batchDeleteSuccess": "{count} dette(s) supprimée(s) avec succès",
     "batchDeleteError": "Échec de la suppression de {count} dette(s)",
     "deleteConfirmTitle": "Supprimer la dette",
+    "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer cette dette ? Cette action est irréversible.",
     "batchDeleteTitle": "Supprimer {count} dette(s) ?",
     "batchDeleteDescription": "Cette action est irréversible. Cela supprimera définitivement {count} dette(s) du système.",
     "debt": "dette",

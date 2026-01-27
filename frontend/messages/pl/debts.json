@@ -71,6 +71,7 @@
     "batchDeleteSuccess": "Pomyślnie usunięto {count} dług(ów)",
     "batchDeleteError": "Nie udało się usunąć {count} dług(ów)",
     "deleteConfirmTitle": "Usuń dług",
+    "deleteConfirmDescription": "Czy na pewno chcesz usunąć ten dług? Tej operacji nie można cofnąć.",
     "batchDeleteTitle": "Usunąć {count} dług(ów)?",
     "batchDeleteDescription": "Tej operacji nie można cofnąć. To trwale usunie {count} dług(ów) z systemu.",
     "debt": "dług",

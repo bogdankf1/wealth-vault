@@ -92,6 +92,7 @@
     "columns": "Colonne",
     "showAll": "Mostra tutte",
     "status": "Stato",
-    "frequency": "Frequenza"
+    "frequency": "Frequenza",
+    "filters": "Filtri"
   }
 }

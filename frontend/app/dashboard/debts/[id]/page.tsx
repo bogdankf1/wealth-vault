@@ -22,6 +22,8 @@ import {
   AlertTriangle,
   Gift,
   ChevronDown,
+  Archive,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +59,8 @@ import {
   useRecordDebtPaymentMutation,
   useMarkDebtPaidMutation,
   useForgiveDebtMutation,
+  useUpdateDebtMutation,
+  useDeleteDebtMutation,
 } from '@/lib/api/debtsApi';
 import { useGetAccountQuery } from '@/lib/api/savingsApi';
 import { format } from 'date-fns';
@@ -74,11 +78,13 @@ export default function DebtDetailPage({ params }: PageProps) {
   const t = useTranslations('debts.detail');
   const tStatus = useTranslations('debts.status');
   const tActions = useTranslations('debts.actions');
+  const tOverview = useTranslations('debts.overview');
 
   // State
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [markPaidDialogOpen, setMarkPaidDialogOpen] = useState(false);
   const [forgiveDialogOpen, setForgiveDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recordPaymentDialogOpen, setRecordPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
@@ -94,6 +100,8 @@ export default function DebtDetailPage({ params }: PageProps) {
   const [recordPayment, { isLoading: isRecordingPayment }] = useRecordDebtPaymentMutation();
   const [markPaid, { isLoading: isMarkingPaid }] = useMarkDebtPaidMutation();
   const [forgiveDebt, { isLoading: isForgiving }] = useForgiveDebtMutation();
+  const [updateDebt] = useUpdateDebtMutation();
+  const [deleteDebt, { isLoading: isDeletingDebt }] = useDeleteDebtMutation();
 
   const getStatusBadgeVariant = (isPaid: boolean, isOverdue: boolean) => {
     if (isPaid) return 'secondary';
@@ -148,6 +156,27 @@ export default function DebtDetailPage({ params }: PageProps) {
       setForgiveDialogOpen(false);
     } catch (error) {
       toast.error(t('forgiveError'));
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await updateDebt({ id, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/debts/overview');
+    } catch (error) {
+      toast.error(tOverview('archiveError'));
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteDebt(id).unwrap();
+      toast.success(tOverview('deleteSuccess'));
+      setDeleteDialogOpen(false);
+      router.push('/dashboard/debts/overview');
+    } catch (error) {
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -250,6 +279,15 @@ export default function DebtDetailPage({ params }: PageProps) {
             <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
               <Edit className="h-4 w-4" />
               {tActions('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {tActions('delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -592,6 +630,19 @@ export default function DebtDetailPage({ params }: PageProps) {
         isDeleting={isForgiving}
         cancelLabel={tActions('cancel')}
         deleteLabel={t('forgive')}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
+        itemName={debt.debtor_name}
+        isDeleting={isDeletingDebt}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );

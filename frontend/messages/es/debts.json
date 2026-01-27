@@ -72,6 +72,7 @@
     "batchDeleteSuccess": "Se eliminaron exitosamente {count} deuda(s)",
     "batchDeleteError": "Error al eliminar {count} deuda(s)",
     "deleteConfirmTitle": "Eliminar Deuda",
+    "deleteConfirmDescription": "¿Está seguro de que desea eliminar esta deuda? Esta acción no se puede deshacer.",
     "batchDeleteTitle": "¿Eliminar {count} deuda(s)?",
     "batchDeleteDescription": "Esta acción no se puede deshacer. Esto eliminará permanentemente {count} deuda(s) del sistema.",
     "debt": "deuda",

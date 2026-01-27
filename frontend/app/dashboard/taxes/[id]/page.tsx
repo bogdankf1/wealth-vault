@@ -7,6 +7,7 @@ import {
   useGetTaxQuery,
   usePayTaxMutation,
   useDeleteTaxMutation,
+  useUpdateTaxMutation,
   useGetPaymentsForTaxQuery,
 } from '@/lib/api/taxesApi';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,6 +54,7 @@ import {
   Clock,
   RotateCcw,
   ChevronDown,
+  Archive,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -72,6 +74,8 @@ export default function TaxDetailPage() {
   const tTypes = useTranslations('taxes.types');
   const tFrequencies = useTranslations('taxes.frequencies');
   const tPayment = useTranslations('taxes.paymentStatus');
+  const tOverview = useTranslations('taxes.overview');
+  const tActions = useTranslations('taxes.actions');
 
   // State
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -86,6 +90,7 @@ export default function TaxDetailPage() {
   // Mutations
   const [payTax, { isLoading: isPaying }] = usePayTaxMutation();
   const [deleteTax, { isLoading: isDeleting }] = useDeleteTaxMutation();
+  const [updateTax] = useUpdateTaxMutation();
 
   const handlePayTax = async () => {
     try {
@@ -109,6 +114,16 @@ export default function TaxDetailPage() {
       router.push('/dashboard/taxes/overview');
     } catch (error) {
       toast.error(t('deleteError'));
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await updateTax({ id: taxId, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/taxes/overview');
+    } catch (error) {
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -183,6 +198,10 @@ export default function TaxDetailPage() {
             <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
               <Edit className="h-4 w-4" />
               {t('editTax')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
@@ -269,7 +288,7 @@ export default function TaxDetailPage() {
                 </p>
               </>
             ) : (
-              <div className="text-muted-foreground">No account selected</div>
+              <div className="text-base sm:text-lg font-bold text-muted-foreground">No account selected</div>
             )}
           </CardContent>
         </Card>
@@ -288,7 +307,7 @@ export default function TaxDetailPage() {
                 </p>
               </>
             ) : (
-              <div className="text-muted-foreground">{t('allIncomeSources')}</div>
+              <div className="text-base sm:text-lg font-bold text-muted-foreground">{t('allIncomeSources')}</div>
             )}
           </CardContent>
         </Card>
@@ -304,7 +323,7 @@ export default function TaxDetailPage() {
                 {new Date(tax.next_payment_date).toLocaleDateString()}
               </div>
             ) : (
-              <div className="text-muted-foreground">Not scheduled</div>
+              <div className="text-base sm:text-lg font-bold text-muted-foreground">Not scheduled</div>
             )}
             <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
               {t('autoPay')}: {tax.auto_pay ? t('autoPayEnabled') : t('autoPayDisabled')}

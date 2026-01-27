@@ -72,6 +72,7 @@
     "batchDeleteSuccess": "Успішно видалено {count} борг(ів)",
     "batchDeleteError": "Не вдалося видалити {count} борг(ів)",
     "deleteConfirmTitle": "Видалити борг",
+    "deleteConfirmDescription": "Ви впевнені, що хочете видалити цей борг? Цю дію неможливо скасувати.",
     "batchDeleteTitle": "Видалити {count} борг(ів)?",
     "batchDeleteDescription": "Цю дію неможливо скасувати. Це назавжди видалить {count} борг(ів) із системи.",
     "debt": "борг",

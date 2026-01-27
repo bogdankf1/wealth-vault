@@ -11,6 +11,7 @@ import {
   useUpdateAccountLinkMutation,
   useGetProgressHistoryQuery,
   useDeleteGoalMutation,
+  useUpdateGoalMutation,
   GoalAccountLink,
   GoalAccountLinkCreate,
 } from '@/lib/api/goalsApi';
@@ -51,6 +52,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import {
+  Archive,
   ArrowLeft,
   Target,
   Wallet,
@@ -86,6 +88,8 @@ export default function GoalDetailPage() {
   const t = useTranslations('goals.detail');
   const tForm = useTranslations('goals.form');
   const tCategories = useTranslations('goals.categories');
+  const tActions = useTranslations('goals.actions');
+  const tOverview = useTranslations('goals.overview');
 
   // State
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -106,6 +110,7 @@ export default function GoalDetailPage() {
   const [linkAccount, { isLoading: isLinking }] = useLinkAccountToGoalMutation();
   const [unlinkAccount] = useUnlinkAccountFromGoalMutation();
   const [deleteGoal, { isLoading: isDeleting }] = useDeleteGoalMutation();
+  const [updateGoal] = useUpdateGoalMutation();
 
   // Auto-refresh progress on page load for auto-tracking goals
   const hasRefreshedRef = useRef(false);
@@ -170,6 +175,16 @@ export default function GoalDetailPage() {
       router.push('/dashboard/goals/overview');
     } catch (error) {
       toast.error(t('deleteError'));
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await updateGoal({ id: goalId, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/goals/overview');
+    } catch (error) {
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -255,6 +270,10 @@ export default function GoalDetailPage() {
             <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
               <Edit className="h-4 w-4" />
               {t('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>

@@ -72,6 +72,7 @@
     "batchDeleteSuccess": "{count} Schuld(en) erfolgreich gelöscht",
     "batchDeleteError": "{count} Schuld(en) konnten nicht gelöscht werden",
     "deleteConfirmTitle": "Schuld löschen",
+    "deleteConfirmDescription": "Sind Sie sicher, dass Sie diese Schuld löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "batchDeleteTitle": "{count} Schuld(en) löschen?",
     "batchDeleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Dies wird {count} Schuld(en) dauerhaft aus dem System löschen.",
     "debt": "Schuld",

@@ -11,6 +11,7 @@ import {
   useRecordDividendMutation,
   useRefreshPriceMutation,
   useDeletePortfolioAssetMutation,
+  useUpdatePortfolioAssetMutation,
   PortfolioTransaction,
 } from '@/lib/api/portfolioApi';
 import { useGetAccountQuery } from '@/lib/api/savingsApi';
@@ -58,6 +59,7 @@ import {
   ArrowLeft,
   Edit,
   Trash2,
+  Archive,
   TrendingUp,
   TrendingDown,
   RefreshCw,
@@ -85,6 +87,7 @@ export default function PortfolioDetailPage() {
   const t = useTranslations('portfolio.detail');
   const tTransactions = useTranslations('portfolio.transactions');
   const tActions = useTranslations('portfolio.actions');
+  const tOverview = useTranslations('portfolio.overview');
 
   // State
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -132,6 +135,7 @@ export default function PortfolioDetailPage() {
   const [recordDividend, { isLoading: isRecordingDividend }] = useRecordDividendMutation();
   const [refreshPrice, { isLoading: isRefreshing }] = useRefreshPriceMutation();
   const [deleteAsset, { isLoading: isDeleting }] = useDeletePortfolioAssetMutation();
+  const [updateAsset] = useUpdatePortfolioAssetMutation();
 
   // Handlers
   const handleBack = () => router.push('/dashboard/portfolio/overview');
@@ -152,6 +156,16 @@ export default function PortfolioDetailPage() {
       router.push('/dashboard/portfolio/overview');
     } catch {
       toast.error(t('deleteError'));
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await updateAsset({ id: assetId, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/portfolio/overview');
+    } catch {
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -364,6 +378,10 @@ export default function PortfolioDetailPage() {
             <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
               <Edit className="h-4 w-4" />
               {tActions('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>

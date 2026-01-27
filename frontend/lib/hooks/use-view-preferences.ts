@@ -9,7 +9,7 @@ export function useViewPreferences() {
   const { data: preferences } = useGetMyPreferencesQuery();
 
   const [viewMode, setViewMode] = useState<'card' | 'list' | 'calendar'>('card');
-  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('cards');
+  const [statsViewMode, setStatsViewMode] = useState<'cards' | 'compact'>('compact');
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize view modes from preferences only once

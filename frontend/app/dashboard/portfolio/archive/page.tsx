@@ -5,8 +5,9 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   useListPortfolioAssetsQuery,
@@ -17,6 +18,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import {
   Table,
   TableBody,
@@ -31,13 +36,15 @@ import { ApiErrorState } from '@/components/ui/error-state';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
-import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { PortfolioActionsContext } from '../context';
 
 export default function PortfolioArchivePage() {
+  const router = useRouter();
+
   // Translation hooks
   const tArchive = useTranslations('portfolio.archive');
   const tOverview = useTranslations('portfolio.overview');
@@ -258,6 +265,13 @@ export default function PortfolioArchivePage() {
     return () => setActions(null);
   }, [selectedAssetIds.size, setActions, handleBatchUnarchive, tArchive, tOverview]);
 
+  const activeFilterCount = React.useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== null) count++;
+    if (sortField !== 'name' || sortDirection !== 'asc') count++;
+    return count;
+  }, [selectedCategory, sortField, sortDirection]);
+
   const isLoading = isLoadingAssets;
   const hasError = assetsError;
 
@@ -274,46 +288,98 @@ export default function PortfolioArchivePage() {
     <div className="space-y-4 md:space-y-6">
       {/* Search and Filters */}
       {(assets.length > 0 || searchQuery || selectedCategory) && (
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-          <div className="flex-1">
-            <SearchFilter
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              categories={uniqueAssetTypes}
-              searchPlaceholder={tArchive('searchPlaceholder')}
-              categoryPlaceholder={tOverview('allAssetTypes')}
-              categoryLabels={ASSET_TYPE_LABELS}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={tArchive('searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
             />
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <SortFilter
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSortFieldChange={setSortField}
-              onSortDirectionChange={setSortDirection}
-              sortByLabel={tCommon('common.sortBy')}
-            />
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
-              <Button
-                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('card')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <LayoutGrid className="h-4 w-4" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="relative">
+                <Filter className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                    {activeFilterCount}
+                  </Badge>
+                )}
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0" align="end">
+              {/* FILTER section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
+                <Select
+                  value={selectedCategory ?? '__all__'}
+                  onValueChange={(val) => setSelectedCategory(val === '__all__' ? null : val)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tOverview('allAssetTypes')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">{tOverview('allAssetTypes')}</SelectItem>
+                    {uniqueAssetTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{ASSET_TYPE_LABELS[type] || type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              {/* SORT section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={sortField}
+                    onValueChange={(val) => setSortField(val as SortField)}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">{tOverview('asset')}</SelectItem>
+                      <SelectItem value="amount">{tOverview('currentValue')}</SelectItem>
+                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                  >
+                    {sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <Separator />
+              {/* VIEW section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
+                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
+                  <Button
+                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('card')}
+                    className="h-[32px] w-[32px] p-0"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="h-[32px] w-[32px] p-0"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       )}
 
@@ -358,13 +424,14 @@ export default function PortfolioArchivePage() {
               const isPositive = displayTotalReturn >= 0;
 
               return (
-                <Card key={asset.id} className="relative opacity-75">
+                <Card key={asset.id} className="relative opacity-75 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => router.push(`/dashboard/portfolio/${asset.id}`)}>
                   <CardHeader className="pb-3 md:pb-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <Checkbox
                           checked={selectedAssetIds.has(asset.id)}
                           onCheckedChange={() => handleToggleSelect(asset.id)}
+                          onClick={(e) => e.stopPropagation()}
                           aria-label={`Select ${asset.asset_name}`}
                           className="mt-1"
                         />
@@ -470,26 +537,6 @@ export default function PortfolioArchivePage() {
                           <Badge variant="outline" className="text-xs flex-shrink-0">{asset.asset_type}</Badge>
                         )}
                       </div>
-
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleUnarchive(asset.id)}
-                        >
-                          <ArchiveRestore className="mr-1 h-3 w-3" />
-                          {tArchive('unarchive')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(asset.id)}
-                          disabled={isDeleting}
-                        >
-                          <Trash2 className="mr-1 h-3 w-3" />
-                          {tActions('delete')}
-                        </Button>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -518,7 +565,6 @@ export default function PortfolioArchivePage() {
                     <TableHead className="hidden xl:table-cell text-right">{tOverview('quantity')}</TableHead>
                     <TableHead className="hidden xl:table-cell text-right">{tOverview('currentPrice')}</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalValue')}</TableHead>
-                    <TableHead className="text-right w-[180px]">{tOverview('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -531,11 +577,12 @@ export default function PortfolioArchivePage() {
                     const isPositive = displayTotalReturn >= 0;
 
                     return (
-                      <TableRow key={asset.id} className="opacity-75">
+                      <TableRow key={asset.id} className="opacity-75 cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/dashboard/portfolio/${asset.id}`)}>
                         <TableCell>
                           <Checkbox
                             checked={selectedAssetIds.has(asset.id)}
                             onCheckedChange={() => handleToggleSelect(asset.id)}
+                            onClick={(e) => e.stopPropagation()}
                             aria-label={`Select ${asset.asset_name}`}
                           />
                         </TableCell>
@@ -609,27 +656,6 @@ export default function PortfolioArchivePage() {
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-1 justify-end">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleUnarchive(asset.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <ArchiveRestore className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(asset.id)}
-                              disabled={isDeleting}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </TableCell>
                       </TableRow>
                     );

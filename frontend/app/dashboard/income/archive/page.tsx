@@ -5,7 +5,8 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Archive, ArchiveRestore, Trash2, LayoutGrid, List } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, Filter, Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -31,15 +32,19 @@ import { ApiErrorState } from '@/components/ui/error-state';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { SearchFilter, filterBySearchAndCategory } from '@/components/ui/search-filter';
-import { SortFilter, sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
+import { filterBySearchAndCategory } from '@/components/ui/search-filter';
+import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import { IncomeActionsContext } from '../context';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 
 export default function IncomeArchivePage() {
+  const router = useRouter();
   const tArchive = useTranslations('income.archive');
-  const tActions = useTranslations('income.actions');
   const tFrequency = useTranslations('income.frequency');
   const tCommon = useTranslations('common');
   const tOverview = useTranslations('income.overview');
@@ -101,6 +106,28 @@ export default function IncomeArchivePage() {
 
     return sorted || [];
   }, [sources, searchQuery, selectedCategory, sortField, sortDirection]);
+
+  // Active filter count for badge
+  const activeFilterCount = React.useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== null) count++;
+    if (sortField !== 'name' || sortDirection !== 'asc') count++;
+    return count;
+  }, [selectedCategory, sortField, sortDirection]);
+
+  // Sort direction label
+  const sortDirectionLabel = React.useMemo(() => {
+    if (sortField === 'name') {
+      return sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA');
+    }
+    if (sortField === 'amount') {
+      return sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow');
+    }
+    if (sortField === 'date') {
+      return sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst');
+    }
+    return '';
+  }, [sortField, sortDirection, tCommon]);
 
   const handleUnarchive = async (id: string) => {
     try {
@@ -256,45 +283,100 @@ export default function IncomeArchivePage() {
     <div className="space-y-4 md:space-y-6">
       {/* Search and Filters */}
       {(sources.length > 0 || searchQuery || selectedCategory) && (
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-          <div className="flex-1">
-            <SearchFilter
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              categories={uniqueCategories}
-              searchPlaceholder={tArchive('searchPlaceholder')}
-              categoryPlaceholder={tOverview('allCategories')}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={tArchive('searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
             />
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <SortFilter
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSortFieldChange={setSortField}
-              onSortDirectionChange={setSortDirection}
-              sortByLabel={tCommon('common.sortBy')}
-            />
-            <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit self-end" style={{ height: '36px' }}>
-              <Button
-                variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('card')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <LayoutGrid className="h-4 w-4" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="relative">
+                <Filter className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                    {activeFilterCount}
+                  </Badge>
+                )}
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-[32px] w-[32px] p-0"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0" align="end">
+              {/* FILTER section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
+                <Select
+                  value={selectedCategory ?? '__all__'}
+                  onValueChange={(val) => setSelectedCategory(val === '__all__' ? null : val)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tOverview('category')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">{tOverview('allCategories')}</SelectItem>
+                    {uniqueCategories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              {/* SORT section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={sortField}
+                    onValueChange={(val) => setSortField(val as SortField)}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">{tArchive('name')}</SelectItem>
+                      <SelectItem value="amount">{tArchive('amount')}</SelectItem>
+                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                    title={sortDirectionLabel}
+                  >
+                    {sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">{sortDirectionLabel}</p>
+              </div>
+              <Separator />
+              {/* VIEW section */}
+              <div className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
+                <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
+                  <Button
+                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('card')}
+                    className="h-[32px] w-[32px] p-0"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="h-[32px] w-[32px] p-0"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       )}
 
@@ -330,16 +412,18 @@ export default function IncomeArchivePage() {
             )}
             <div className="grid gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSources.map((source) => (
-              <Card key={source.id} className="relative opacity-75">
+              <Card key={source.id} className="relative opacity-75 cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push(`/dashboard/income/${source.id}`)}>
                 <CardHeader className="pb-3 md:pb-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
-                      <Checkbox
-                        checked={selectedSourceIds.has(source.id)}
-                        onCheckedChange={() => handleToggleSelect(source.id)}
-                        aria-label={`Select ${source.name}`}
-                        className="mt-1"
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedSourceIds.has(source.id)}
+                          onCheckedChange={() => handleToggleSelect(source.id)}
+                          aria-label={`Select ${source.name}`}
+                          className="mt-1"
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-base md:text-lg truncate">{source.name}</CardTitle>
                         <CardDescription className="mt-1 min-h-[20px] text-xs md:text-sm line-clamp-2">
@@ -407,26 +491,6 @@ export default function IncomeArchivePage() {
                         <Badge variant="outline" className="text-xs flex-shrink-0">{source.category}</Badge>
                       )}
                     </div>
-
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUnarchive(source.id)}
-                      >
-                        <ArchiveRestore className="mr-1 h-3 w-3" />
-                        {tArchive('unarchive')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(source.id)}
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="mr-1 h-3 w-3" />
-                        {tActions('delete')}
-                      </Button>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -453,13 +517,12 @@ export default function IncomeArchivePage() {
                     <TableHead className="hidden sm:table-cell">{tArchive('frequency')}</TableHead>
                     <TableHead className="hidden xl:table-cell text-right">{tOverview('monthlyEquivalent')}</TableHead>
                     <TableHead className="hidden 2xl:table-cell text-right">{tOverview('originalAmount')}</TableHead>
-                    <TableHead className="text-right w-[180px]">{tArchive('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredSources.map((source) => (
-                    <TableRow key={source.id} className="opacity-75">
-                      <TableCell>
+                    <TableRow key={source.id} className="opacity-75 cursor-pointer" onClick={() => router.push(`/dashboard/income/${source.id}`)}>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedSourceIds.has(source.id)}
                           onCheckedChange={() => handleToggleSelect(source.id)}
@@ -522,27 +585,6 @@ export default function IncomeArchivePage() {
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleUnarchive(source.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ArchiveRestore className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(source.id)}
-                            disabled={isDeleting}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -559,8 +601,8 @@ export default function IncomeArchivePage() {
         onConfirm={confirmDelete}
         title={tArchive('deleteConfirmTitle')}
         description={tArchive('deleteConfirmDescription')}
-        cancelLabel={tActions('cancel')}
-        deleteLabel={tActions('delete')}
+        cancelLabel={tCommon('actions.cancel')}
+        deleteLabel={tCommon('actions.delete')}
         deletingLabel={tCommon('actions.deleting')}
         isDeleting={isDeleting}
       />

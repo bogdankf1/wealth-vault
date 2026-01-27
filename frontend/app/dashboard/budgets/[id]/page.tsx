@@ -18,6 +18,7 @@ import {
   CheckCircle,
   Target,
   ChevronDown,
+  Archive,
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import {
   useGetBudgetQuery,
   useDeleteBudgetMutation,
+  useUpdateBudgetMutation,
 } from '@/lib/api/budgetsApi';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -57,6 +59,7 @@ export default function BudgetDetailPage({ params }: PageProps) {
   const tPeriod = useTranslations('budgets.period');
   const tCategories = useTranslations('budgets.categories');
   const tActions = useTranslations('budgets.actions');
+  const tOverview = useTranslations('budgets.overview');
 
   // State
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -67,6 +70,7 @@ export default function BudgetDetailPage({ params }: PageProps) {
 
   // Mutations
   const [deleteBudget, { isLoading: isDeleting }] = useDeleteBudgetMutation();
+  const [updateBudget] = useUpdateBudgetMutation();
 
   // Extract budget from response (API returns BudgetWithProgress)
   const budget = budgetData?.budget;
@@ -120,6 +124,15 @@ export default function BudgetDetailPage({ params }: PageProps) {
       router.push('/dashboard/budgets/overview');
     } catch (error) {
       toast.error(t('deleteError'));
+    }
+  };
+  const handleArchive = async () => {
+    try {
+      await updateBudget({ id, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/budgets/overview');
+    } catch (error) {
+      toast.error(tOverview('archiveError'));
     }
   };
 
@@ -206,6 +219,10 @@ export default function BudgetDetailPage({ params }: PageProps) {
             <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
               <Edit className="h-4 w-4" />
               {tActions('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>

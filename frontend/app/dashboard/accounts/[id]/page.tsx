@@ -19,6 +19,8 @@ import {
   Building,
   Wallet,
   ChevronDown,
+  Archive,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,10 +39,13 @@ import { SavingsAccountForm } from '@/components/savings/savings-account-form';
 import { TransactionForm, type TransactionFormType } from '@/components/savings/transaction-form';
 import { TransactionList } from '@/components/savings/transaction-list';
 import { TransferDialog } from '@/components/savings/transfer-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import {
   useGetAccountQuery,
   useCalculateInterestQuery,
   usePostInterestMutation,
+  useUpdateAccountMutation,
+  useDeleteAccountMutation,
 } from '@/lib/api/savingsApi';
 import { formatCurrency } from '@/lib/utils/currency';
 import { format } from 'date-fns';
@@ -60,11 +65,13 @@ export default function AccountDetailPage({ params }: PageProps) {
   const tInterest = useTranslations('savings.interest');
   const tActions = useTranslations('savings.actions');
   const tStatus = useTranslations('savings.status');
+  const tOverview = useTranslations('savings.overview');
 
   // State
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [transactionFormType, setTransactionFormType] = useState<TransactionFormType | null>(null);
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Queries
   const { data: account, isLoading, error, refetch } = useGetAccountQuery(id);
@@ -74,6 +81,8 @@ export default function AccountDetailPage({ params }: PageProps) {
 
   // Mutations
   const [postInterest, { isLoading: isPostingInterest }] = usePostInterestMutation();
+  const [updateAccount] = useUpdateAccountMutation();
+  const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
 
   const ACCOUNT_TYPE_LABELS: Record<string, string> = {
     personal: tAccountTypes('personal'),
@@ -94,6 +103,27 @@ export default function AccountDetailPage({ params }: PageProps) {
       }
     } catch (error) {
       toast.error(tInterest('postError'));
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await updateAccount({ id, data: { is_active: false } }).unwrap();
+      toast.success(tOverview('archiveSuccess'));
+      router.push('/dashboard/accounts/overview');
+    } catch (error) {
+      toast.error(tOverview('archiveError'));
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteAccount(id).unwrap();
+      toast.success(tOverview('deleteSuccess'));
+      setDeleteDialogOpen(false);
+      router.push('/dashboard/accounts/overview');
+    } catch (error) {
+      toast.error(tOverview('deleteError'));
     }
   };
 
@@ -183,6 +213,15 @@ export default function AccountDetailPage({ params }: PageProps) {
             <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
               <Edit className="h-4 w-4" />
               {tActions('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              {tActions('archive')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+              {tActions('delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -323,6 +362,19 @@ export default function AccountDetailPage({ params }: PageProps) {
         isOpen={isTransferDialogOpen}
         onClose={() => setIsTransferDialogOpen(false)}
         preselectedFromAccountId={id}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title={tOverview('deleteConfirmTitle')}
+        description={tOverview('deleteConfirmDescription')}
+        itemName={account.name}
+        isDeleting={isDeleting}
+        cancelLabel={tActions('cancel')}
+        deleteLabel={tActions('delete')}
       />
     </div>
   );
