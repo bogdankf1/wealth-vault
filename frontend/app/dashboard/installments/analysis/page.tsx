@@ -71,7 +71,7 @@ export default function InstallmentsAnalysisPage() {
   const isEmpty = !stats || stats.total_installments === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Month Filter */}
       <div className="flex justify-end">
         <MonthFilter
@@ -94,19 +94,19 @@ export default function InstallmentsAnalysisPage() {
       {!isEmpty && (
         <>
           {/* Installments Overview - Top Cards */}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Installments */}
         <Card className="border-blue-200 bg-blue-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-blue-600" />
               {tAnalysis('totalInstallments')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-5xl font-bold text-blue-600">{stats.total_installments}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">{stats.total_installments}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('installmentPlansInAccount')}
               </p>
             </div>
@@ -116,7 +116,7 @@ export default function InstallmentsAnalysisPage() {
         {/* Active Installments */}
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               {tAnalysis('activeInstallments')}
             </CardTitle>
@@ -124,14 +124,14 @@ export default function InstallmentsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-green-600">{stats.active_installments}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.active_installments}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {stats.total_installments > 0
                     ? ((stats.active_installments / stats.total_installments) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('currentlyActivePlans')}
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function InstallmentsAnalysisPage() {
       {/* Debt Overview */}
       <Card className="border-purple-200 bg-purple-50/50">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
             {tAnalysis('totalDebtOverview')}
           </CardTitle>
@@ -151,9 +151,9 @@ export default function InstallmentsAnalysisPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             <div className="flex items-baseline gap-3">
-              <p className="text-4xl font-bold text-purple-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
                   amount={stats.total_debt}
                   currency={stats.currency}
@@ -167,7 +167,7 @@ export default function InstallmentsAnalysisPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{tAnalysis('paid')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
@@ -184,7 +184,7 @@ export default function InstallmentsAnalysisPage() {
                   style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{tAnalysis('remaining')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
@@ -201,18 +201,18 @@ export default function InstallmentsAnalysisPage() {
       </Card>
 
       {/* Payment Information */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Monthly Payment */}
         <Card className="border-indigo-200 bg-indigo-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-indigo-600" />
               {tAnalysis('monthlyPayment')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-4xl font-bold text-indigo-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-indigo-600">
                 <CurrencyDisplay
                   amount={stats.monthly_payment}
                   currency={stats.currency}
@@ -220,7 +220,7 @@ export default function InstallmentsAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('totalMonthlyPayments')}
               </p>
             </div>
@@ -231,17 +231,17 @@ export default function InstallmentsAnalysisPage() {
         {stats.average_interest_rate !== undefined && stats.average_interest_rate > 0 && (
           <Card className="border-orange-200 bg-orange-50/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Percent className="h-4 w-4 text-orange-600" />
                 {tAnalysis('averageInterestRate')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="text-4xl font-bold text-orange-600">
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-orange-600">
                   {stats.average_interest_rate.toFixed(2)}%
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs lg:text-sm text-muted-foreground">
                   {tAnalysis('acrossAllActive')}
                 </p>
               </div>
@@ -253,21 +253,21 @@ export default function InstallmentsAnalysisPage() {
         {stats.debt_free_date && (
           <Card className="border-green-200 bg-green-50/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-green-600" />
                 {tAnalysis('projectedDebtFreeDate')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">
                   {new Date(stats.debt_free_date).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                   })}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs lg:text-sm text-muted-foreground">
                   {tAnalysis('expectedCompletion')}
                 </p>
               </div>
@@ -280,13 +280,13 @@ export default function InstallmentsAnalysisPage() {
       {installmentsByCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{tAnalysis('debtByCategory')}</CardTitle>
+            <CardTitle className="text-sm lg:text-base font-medium">{tAnalysis('debtByCategory')}</CardTitle>
             <CardDescription>
               {tAnalysis('debtByCategoryDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {installmentsByCategory.map(([category, amount]) => {
                 const percentage = stats.total_debt > 0
                   ? (amount / stats.total_debt) * 100
@@ -294,7 +294,7 @@ export default function InstallmentsAnalysisPage() {
 
                 return (
                   <div key={category} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-xs lg:text-sm">
                       <div className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">{category}</span>
@@ -329,13 +329,13 @@ export default function InstallmentsAnalysisPage() {
       {installmentsByFrequency.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{tAnalysis('installmentsByFrequency')}</CardTitle>
+            <CardTitle className="text-sm lg:text-base font-medium">{tAnalysis('installmentsByFrequency')}</CardTitle>
             <CardDescription>
               {tAnalysis('installmentsByFrequencyDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {installmentsByFrequency.map(([frequency, count]) => {
                 const percentage = stats.total_installments > 0
                   ? (count / stats.total_installments) * 100
@@ -346,7 +346,7 @@ export default function InstallmentsAnalysisPage() {
 
                 return (
                   <div key={frequency} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-xs lg:text-sm">
                       <div className="flex items-center gap-2">
                         <CalendarDays className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">{frequencyLabel}</span>

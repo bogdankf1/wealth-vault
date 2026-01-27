@@ -49,9 +49,9 @@ export function GoalsOverviewWidget() {
 
   if (error) {
     return (
-      <Card className="p-4 md:p-6">
+      <Card className="p-3 md:p-6">
         <div className="flex items-center gap-2 text-destructive">
-          <AlertCircle className="h-5 w-5" />
+          <AlertCircle className="h-4 w-4 md:h-5 md:w-5" />
           <span className="text-sm">{t('error')}</span>
         </div>
       </Card>
@@ -278,8 +278,8 @@ export function GoalsOverviewWidget() {
 
       {/* Empty State */}
       {stats.total_goals === 0 && (
-        <div className="text-center py-8">
-          <Target className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
+        <div className="text-center py-4 md:py-8">
+          <Target className="h-8 w-8 md:h-12 md:w-12 mx-auto text-muted-foreground mb-2 md:mb-3 opacity-50" />
           <p className="text-sm text-muted-foreground mb-3">{t('emptyState.title')}</p>
           <Link href="/dashboard/goals">
             <Button size="sm">{t('emptyState.button')}</Button>

@@ -430,10 +430,10 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs lg:text-sm">
             {isEditing
               ? tForm('editDescription')
               : tForm('addDescription')}
@@ -445,21 +445,21 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{tForm('goalName')} *</Label>
+              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('goalName')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('goalNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{tForm('description')}</Label>
+              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -467,14 +467,14 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs lg:text-sm text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">{tForm('category')}</Label>
+              <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
@@ -518,9 +518,9 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
             {/* Only show Current Amount and Monthly Contribution when auto-track is disabled */}
             {!watch('auto_track_progress') && (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="current_amount">{tForm('currentAmountSaved')}</Label>
+                  <Label htmlFor="current_amount" className="text-xs lg:text-sm">{tForm('currentAmountSaved')}</Label>
                   <Input
                     id="current_amount"
                     type="text"
@@ -537,12 +537,12 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                     }}
                   />
                   {errors.current_amount && (
-                    <p className="text-sm text-destructive">{errors.current_amount.message}</p>
+                    <p className="text-xs lg:text-sm text-destructive">{errors.current_amount.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="monthly_contribution">{tForm('monthlyContribution')}</Label>
+                  <Label htmlFor="monthly_contribution" className="text-xs lg:text-sm">{tForm('monthlyContribution')}</Label>
                   <Input
                     id="monthly_contribution"
                     type="text"
@@ -559,7 +559,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                     }}
                   />
                   {errors.monthly_contribution && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-xs lg:text-sm text-destructive">
                       {errors.monthly_contribution.message}
                     </p>
                   )}
@@ -567,9 +567,9 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
               </div>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="start_date">{tForm('startDate')} *</Label>
+                <Label htmlFor="start_date" className="text-xs lg:text-sm">{tForm('startDate')} *</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -577,14 +577,14 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   className="cursor-pointer"
                                   />
                 {errors.start_date && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-xs lg:text-sm text-destructive">
                     {errors.start_date.message}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="target_date">{tForm('targetDate')}</Label>
+                <Label htmlFor="target_date" className="text-xs lg:text-sm">{tForm('targetDate')}</Label>
                 <Input
                   id="target_date"
                   type="date"
@@ -598,7 +598,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">{tForm('activeGoal')}</Label>
+              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('activeGoal')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -609,7 +609,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto_track_progress">{tForm('autoTrackProgress')}</Label>
+                  <Label htmlFor="auto_track_progress" className="text-xs lg:text-sm">{tForm('autoTrackProgress')}</Label>
                   <p className="text-xs text-muted-foreground">
                     {tForm('autoTrackProgressDescription')}
                   </p>
@@ -759,10 +759,10 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
                 {isLoading
                   ? tForm('saving')
                   : isEditing

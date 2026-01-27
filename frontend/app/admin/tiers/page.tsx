@@ -168,7 +168,7 @@ export default function TiersPage() {
 
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 lg:p-6 space-y-3 lg:space-y-6">
       {/* Header */}
       <ModuleHeader
         title="Tier Management"
@@ -179,7 +179,7 @@ export default function TiersPage() {
       {isLoading ? (
         <LoadingCards count={3} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 lg:gap-4">
           {tiers?.map((tier) => (
             <Card key={tier.id} className={!tier.is_active ? 'opacity-60' : ''}>
               <CardHeader>
@@ -210,17 +210,17 @@ export default function TiersPage() {
                   {tier.description || 'No description'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 lg:space-y-4 p-3 lg:p-6">
                 <div className="space-y-2">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Monthly</span>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">Monthly</span>
+                    <span className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
                       {formatPrice(tier.price_monthly)}
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Annual</span>
-                    <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">Annual</span>
+                    <span className="text-sm lg:text-xl font-semibold text-gray-900 dark:text-white">
                       {formatPrice(tier.price_annual)}
                     </span>
                   </div>
@@ -239,17 +239,17 @@ export default function TiersPage() {
                       tier.is_active ? 'bg-green-500' : 'bg-red-500'
                     }`}
                   ></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                     {tier.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
 
-                <div className="flex space-x-2 pt-4">
-                  <Button variant="outline" size="sm" onClick={() => handleEditTier(tier)} className="flex-1">
+                <div className="flex space-x-2 pt-3 lg:pt-4">
+                  <Button variant="outline" size="sm" onClick={() => handleEditTier(tier)} className="flex-1 text-xs lg:text-sm">
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleManageFeatures(tier)} className="flex-1">
+                  <Button variant="outline" size="sm" onClick={() => handleManageFeatures(tier)} className="flex-1 text-xs lg:text-sm">
                     Manage Features
                   </Button>
                 </div>
@@ -281,11 +281,11 @@ export default function TiersPage() {
               <table className="w-full">
                 <thead className="border-b dark:border-gray-700">
                   <tr>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <th className="text-left py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                       Feature
                     </th>
                     {tiers.map((tier) => (
-                      <th key={tier.id} className="text-center py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <th key={tier.id} className="text-center py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                         {tier.display_name}
                       </th>
                     ))}
@@ -294,8 +294,8 @@ export default function TiersPage() {
                 <tbody>
                   {allFeatures.map((feature, index) => (
                     <tr key={feature.id} className={`border-b dark:border-gray-700 ${index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-800/50' : ''}`}>
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-gray-900 dark:text-white">{feature.name}</div>
+                      <td className="py-2 lg:py-3 px-2 lg:px-4">
+                        <div className="text-xs lg:text-sm font-medium text-gray-900 dark:text-white">{feature.name}</div>
                         {feature.description && (
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{feature.description}</div>
                         )}
@@ -304,7 +304,7 @@ export default function TiersPage() {
                         const tierFeatures = tierFeaturesMap[tier.id] || [];
                         const isEnabled = tierFeatures.some((tf) => tf.feature_id === feature.id && tf.enabled);
                         return (
-                          <td key={tier.id} className="py-3 px-4 text-center">
+                          <td key={tier.id} className="py-2 lg:py-3 px-2 lg:px-4 text-center">
                             {isEnabled ? (
                               <Check className="h-5 w-5 text-green-600 mx-auto" />
                             ) : (

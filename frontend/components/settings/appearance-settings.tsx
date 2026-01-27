@@ -204,14 +204,14 @@ export function AppearanceSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         {[1, 2, 3].map((i) => (
           <Card key={i}>
-            <CardHeader>
+            <CardHeader className="p-3 lg:p-6">
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 lg:p-6 pt-0">
               <div className="h-32 w-full animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
@@ -221,21 +221,21 @@ export function AppearanceSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Theme Selection */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Palette className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('theme.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('theme.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 lg:p-6 pt-0">
           <RadioGroup value={theme} onValueChange={handleThemeChange}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 lg:gap-4">
               {THEME_OPTIONS.map((option) => {
                 const Icon = option.icon;
                 return (
@@ -245,7 +245,7 @@ export function AppearanceSettings() {
                     className="relative cursor-pointer"
                   >
                     <div className={`
-                      flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                      flex flex-col items-center gap-2 lg:gap-3 p-3 lg:p-4 rounded-lg border-2 transition-all
                       ${theme === option.value
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -256,9 +256,9 @@ export function AppearanceSettings() {
                         id={`theme-${option.value}`}
                         className="sr-only"
                       />
-                      <Icon className={`h-8 w-8 ${theme === option.value ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Icon className={`h-6 w-6 lg:h-8 lg:w-8 ${theme === option.value ? 'text-primary' : 'text-muted-foreground'}`} />
                       <div className="text-center">
-                        <p className="font-medium">{option.label}</p>
+                        <p className="text-xs lg:text-sm font-medium">{option.label}</p>
                         <p className="text-xs text-muted-foreground">{option.description}</p>
                       </div>
                       {theme === option.value && (
@@ -275,16 +275,16 @@ export function AppearanceSettings() {
 
       {/* Language Selection */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Languages className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Languages className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('language.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('language.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 lg:p-6 pt-0">
           <Select value={locale} onValueChange={(value) => handleLanguageChange(value as Locale)}>
             <SelectTrigger className="w-full md:w-[300px]">
               <SelectValue placeholder={t('language.selectPlaceholder')} />
@@ -302,25 +302,25 @@ export function AppearanceSettings() {
 
       {/* Accent Color */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Palette className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('accentColor.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               {t('accentColor.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('accentColor.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('accentColor.warningMessage')}
             </p>
           </div>
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-3 opacity-50">
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-2 lg:gap-3 opacity-50">
             {ACCENT_COLORS.map((color) => (
               <button
                 key={color.value}
@@ -343,22 +343,22 @@ export function AppearanceSettings() {
 
       {/* Font Size */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Type className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Type className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('fontSize.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               {t('fontSize.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('fontSize.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-3 lg:p-6 pt-0">
+          <div className="space-y-3 lg:space-y-4">
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-              <p className="text-sm text-amber-700 dark:text-amber-300">
+              <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
                 {t('fontSize.warningMessage')}
               </p>
             </div>
@@ -383,21 +383,21 @@ export function AppearanceSettings() {
 
       {/* Currency Preferences */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <DollarSign className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('currency.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('currency.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="currency">
+            <Label htmlFor="currency" className="text-xs lg:text-sm">
               {t('currency.label')}
             </Label>
-            <p className="text-sm text-muted-foreground mb-2">
+            <p className="text-xs lg:text-sm text-muted-foreground mb-2">
               {t('currency.info')}
             </p>
             <CurrencySelect
@@ -413,22 +413,22 @@ export function AppearanceSettings() {
       {/* UI Elements Visibility - Collapsible Section */}
       <Card>
         <CardHeader
-          className="cursor-pointer select-none"
+          className="p-3 lg:p-6 cursor-pointer select-none"
           onClick={() => setUiElementsExpanded(!uiElementsExpanded)}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
+              <Eye className="h-4 w-4 lg:h-5 lg:w-5" />
               <div>
-                <CardTitle>{t('uiElements.title')}</CardTitle>
-                <CardDescription className="mt-1">
+                <CardTitle className="text-sm lg:text-base">{t('uiElements.title')}</CardTitle>
+                <CardDescription className="mt-1 text-xs lg:text-sm">
                   {t('uiElements.description')}
                 </CardDescription>
               </div>
             </div>
             <ChevronDown
               className={cn(
-                "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                "h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground transition-transform duration-200",
                 uiElementsExpanded && "rotate-180"
               )}
             />
@@ -438,16 +438,16 @@ export function AppearanceSettings() {
           "overflow-hidden transition-all duration-200",
           uiElementsExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         )}>
-          <CardContent className="space-y-4 pt-0">
+          <CardContent className="space-y-3 lg:space-y-4 pt-0 px-3 lg:px-6 pb-3 lg:pb-6">
             {uiVisibilityLoaded && (
               <>
                 {/* Show Stats Cards Toggle */}
-                <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="flex items-center justify-between rounded-lg border p-3 lg:p-4">
                   <div className="space-y-0.5">
-                    <Label htmlFor="showStatsCards" className="text-base font-medium">
+                    <Label htmlFor="showStatsCards" className="text-xs lg:text-sm font-medium">
                       {t('uiElements.showStatsCards.label')}
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       {t('uiElements.showStatsCards.description')}
                     </p>
                   </div>
@@ -459,12 +459,12 @@ export function AppearanceSettings() {
                 </div>
 
                 {/* Show Page Description Toggle */}
-                <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="flex items-center justify-between rounded-lg border p-3 lg:p-4">
                   <div className="space-y-0.5">
-                    <Label htmlFor="showPageDescription" className="text-base font-medium">
+                    <Label htmlFor="showPageDescription" className="text-xs lg:text-sm font-medium">
                       {t('uiElements.showPageDescription.label')}
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       {t('uiElements.showPageDescription.description')}
                     </p>
                   </div>
@@ -495,32 +495,32 @@ export function AppearanceSettings() {
 
       {/* Default View Preferences */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LayoutGrid className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <LayoutGrid className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('defaultViews.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('defaultViews.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
           {/* Content View Preference */}
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             <div>
-              <Label className="text-base font-semibold">{t('defaultViews.contentView.title')}</Label>
-              <p className="text-sm text-muted-foreground mt-1">
+              <Label className="text-xs lg:text-sm font-semibold">{t('defaultViews.contentView.title')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                 {t('defaultViews.contentView.description')}
               </p>
             </div>
             <RadioGroup value={defaultContentView} onValueChange={handleDefaultContentViewChange}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 lg:gap-4">
                 <label
                   htmlFor="content-card"
                   className="relative cursor-pointer"
                 >
                   <div className={`
-                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    flex flex-col items-center gap-2 lg:gap-3 p-3 lg:p-4 rounded-lg border-2 transition-all
                     ${defaultContentView === 'card'
                       ? 'border-primary bg-primary/5'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -531,9 +531,9 @@ export function AppearanceSettings() {
                       id="content-card"
                       className="sr-only"
                     />
-                    <LayoutGrid className={`h-8 w-8 ${defaultContentView === 'card' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <LayoutGrid className={`h-6 w-6 lg:h-8 lg:w-8 ${defaultContentView === 'card' ? 'text-primary' : 'text-muted-foreground'}`} />
                     <div className="text-center">
-                      <p className="font-medium">{t('defaultViews.contentView.options.card.label')}</p>
+                      <p className="text-xs lg:text-sm font-medium">{t('defaultViews.contentView.options.card.label')}</p>
                       <p className="text-xs text-muted-foreground">{t('defaultViews.contentView.options.card.description')}</p>
                     </div>
                     {defaultContentView === 'card' && (
@@ -546,7 +546,7 @@ export function AppearanceSettings() {
                   className="relative cursor-pointer"
                 >
                   <div className={`
-                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    flex flex-col items-center gap-2 lg:gap-3 p-3 lg:p-4 rounded-lg border-2 transition-all
                     ${defaultContentView === 'list'
                       ? 'border-primary bg-primary/5'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -557,9 +557,9 @@ export function AppearanceSettings() {
                       id="content-list"
                       className="sr-only"
                     />
-                    <List className={`h-8 w-8 ${defaultContentView === 'list' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <List className={`h-6 w-6 lg:h-8 lg:w-8 ${defaultContentView === 'list' ? 'text-primary' : 'text-muted-foreground'}`} />
                     <div className="text-center">
-                      <p className="font-medium">{t('defaultViews.contentView.options.list.label')}</p>
+                      <p className="text-xs lg:text-sm font-medium">{t('defaultViews.contentView.options.list.label')}</p>
                       <p className="text-xs text-muted-foreground">{t('defaultViews.contentView.options.list.description')}</p>
                     </div>
                     {defaultContentView === 'list' && (
@@ -572,21 +572,21 @@ export function AppearanceSettings() {
           </div>
 
           {/* Statistics View Preference */}
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             <div>
-              <Label className="text-base font-semibold">{t('defaultViews.statsView.title')}</Label>
-              <p className="text-sm text-muted-foreground mt-1">
+              <Label className="text-xs lg:text-sm font-semibold">{t('defaultViews.statsView.title')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                 {t('defaultViews.statsView.description')}
               </p>
             </div>
             <RadioGroup value={defaultStatsView} onValueChange={handleDefaultStatsViewChange}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 lg:gap-4">
                 <label
                   htmlFor="stats-cards"
                   className="relative cursor-pointer"
                 >
                   <div className={`
-                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    flex flex-col items-center gap-2 lg:gap-3 p-3 lg:p-4 rounded-lg border-2 transition-all
                     ${defaultStatsView === 'cards'
                       ? 'border-primary bg-primary/5'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -597,9 +597,9 @@ export function AppearanceSettings() {
                       id="stats-cards"
                       className="sr-only"
                     />
-                    <Grid3x3 className={`h-8 w-8 ${defaultStatsView === 'cards' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <Grid3x3 className={`h-6 w-6 lg:h-8 lg:w-8 ${defaultStatsView === 'cards' ? 'text-primary' : 'text-muted-foreground'}`} />
                     <div className="text-center">
-                      <p className="font-medium">{t('defaultViews.statsView.options.cards.label')}</p>
+                      <p className="text-xs lg:text-sm font-medium">{t('defaultViews.statsView.options.cards.label')}</p>
                       <p className="text-xs text-muted-foreground">{t('defaultViews.statsView.options.cards.description')}</p>
                     </div>
                     {defaultStatsView === 'cards' && (
@@ -612,7 +612,7 @@ export function AppearanceSettings() {
                   className="relative cursor-pointer"
                 >
                   <div className={`
-                    flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    flex flex-col items-center gap-2 lg:gap-3 p-3 lg:p-4 rounded-lg border-2 transition-all
                     ${defaultStatsView === 'compact'
                       ? 'border-primary bg-primary/5'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -623,9 +623,9 @@ export function AppearanceSettings() {
                       id="stats-compact"
                       className="sr-only"
                     />
-                    <Rows3 className={`h-8 w-8 ${defaultStatsView === 'compact' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <Rows3 className={`h-6 w-6 lg:h-8 lg:w-8 ${defaultStatsView === 'compact' ? 'text-primary' : 'text-muted-foreground'}`} />
                     <div className="text-center">
-                      <p className="font-medium">{t('defaultViews.statsView.options.compact.label')}</p>
+                      <p className="text-xs lg:text-sm font-medium">{t('defaultViews.statsView.options.compact.label')}</p>
                       <p className="text-xs text-muted-foreground">{t('defaultViews.statsView.options.compact.description')}</p>
                     </div>
                     {defaultStatsView === 'compact' && (

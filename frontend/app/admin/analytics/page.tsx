@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
 
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 lg:p-6 space-y-3 lg:space-y-6">
       {/* Header */}
       <ModuleHeader
         title="Analytics"
@@ -62,7 +62,7 @@ export default function AnalyticsPage() {
       {/* Key Metrics */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Key Metrics</h2>
+          <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-white">Key Metrics</h2>
           <UiTooltip>
             <TooltipTrigger>
               <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
@@ -75,61 +75,61 @@ export default function AnalyticsPage() {
         {statsLoading ? (
           <LoadingCards count={4} />
         ) : platformStats ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 lg:p-6">
+                <CardTitle className="text-[10px] lg:text-xs font-medium text-gray-600 dark:text-gray-400">
                   Total Users
                 </CardTitle>
                 <Users className="h-5 w-5 text-blue-600" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+                <div className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
                   {formatNumber(platformStats.total_users)}
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {formatNumber(platformStats.new_users_today)} new today
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 lg:p-6">
+                <CardTitle className="text-[10px] lg:text-xs font-medium text-gray-600 dark:text-gray-400">
                   Active Users
                 </CardTitle>
                 <UserCheck className="h-5 w-5 text-green-600" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+                <div className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
                   {formatNumber(platformStats.active_users)}
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {formatPercent(platformStats.active_users / platformStats.total_users)} of total
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 lg:p-6">
+                <CardTitle className="text-[10px] lg:text-xs font-medium text-gray-600 dark:text-gray-400">
                   Monthly Revenue
                 </CardTitle>
                 <DollarSign className="h-5 w-5 text-green-600" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+                <div className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(platformStats.mrr)}
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {formatCurrency(platformStats.arr)} annual
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 lg:p-6">
+                <CardTitle className="text-[10px] lg:text-xs font-medium text-gray-600 dark:text-gray-400">
                   Churn Rate
                 </CardTitle>
                 {platformStats.churn_rate < 0.05 ? (
@@ -138,11 +138,11 @@ export default function AnalyticsPage() {
                   <TrendingUp className="h-5 w-5 text-red-600" />
                 )}
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+                <div className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
                   {formatPercent(platformStats.churn_rate)}
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {platformStats.churn_rate < 0.05 ? 'Healthy' : 'Needs attention'}
                 </p>
               </CardContent>
@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
       {/* User Acquisition Charts */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">User Acquisition</h2>
+          <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-white">User Acquisition</h2>
           <UiTooltip>
             <TooltipTrigger>
               <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
@@ -164,7 +164,7 @@ export default function AnalyticsPage() {
             </TooltipContent>
           </UiTooltip>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
           {/* Last 30 Days */}
           <Card>
             <CardHeader>
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
       {/* Engagement Metrics */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">User Engagement</h2>
+          <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-white">User Engagement</h2>
           <UiTooltip>
             <TooltipTrigger>
               <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
@@ -269,7 +269,7 @@ export default function AnalyticsPage() {
             </TooltipContent>
           </UiTooltip>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
           <Card>
             <CardHeader>
               <CardTitle>Active Users</CardTitle>
@@ -281,48 +281,48 @@ export default function AnalyticsPage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
               ) : engagement ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="text-3xl font-bold text-blue-600">{formatNumber(engagement.dau)}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Daily Active</div>
+                <div className="space-y-3 lg:space-y-6">
+                  <div className="grid grid-cols-3 gap-2 lg:gap-4">
+                    <div className="text-center p-2 lg:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">{formatNumber(engagement.dau)}</div>
+                      <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">Daily Active</div>
                     </div>
-                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <div className="text-3xl font-bold text-green-600">{formatNumber(engagement.wau)}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Weekly Active</div>
+                    <div className="text-center p-2 lg:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{formatNumber(engagement.wau)}</div>
+                      <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">Weekly Active</div>
                     </div>
-                    <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                      <div className="text-3xl font-bold text-purple-600">{formatNumber(engagement.mau)}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Monthly Active</div>
+                    <div className="text-center p-2 lg:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <div className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">{formatNumber(engagement.mau)}</div>
+                      <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">Monthly Active</div>
                     </div>
                   </div>
 
-                  <div className="space-y-4 pt-4 border-t dark:border-gray-700">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Activity className="h-5 w-5 text-blue-600" />
-                        <span className="text-sm font-medium">DAU/MAU Ratio</span>
+                  <div className="space-y-3 lg:space-y-4 pt-4 border-t dark:border-gray-700">
+                    <div className="flex items-center justify-between p-2 lg:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center space-x-2 lg:space-x-3">
+                        <Activity className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
+                        <span className="text-xs lg:text-sm font-medium">DAU/MAU Ratio</span>
                       </div>
-                      <span className="text-lg font-semibold">
+                      <span className="text-sm lg:text-lg font-semibold">
                         {engagement.mau > 0 ? formatPercent(engagement.dau / engagement.mau) : 'N/A'}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Target className="h-5 w-5 text-green-600" />
-                        <span className="text-sm font-medium">30-Day Retention</span>
+                    <div className="flex items-center justify-between p-2 lg:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center space-x-2 lg:space-x-3">
+                        <Target className="h-4 w-4 lg:h-5 lg:w-5 text-green-600" />
+                        <span className="text-xs lg:text-sm font-medium">30-Day Retention</span>
                       </div>
-                      <span className="text-lg font-semibold">
+                      <span className="text-sm lg:text-lg font-semibold">
                         {formatPercent(engagement.retention_rate_30d)}
                       </span>
                     </div>
                     {engagement.avg_session_duration && (
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <TrendingUp className="h-5 w-5 text-purple-600" />
-                          <span className="text-sm font-medium">Avg Session Duration</span>
+                      <div className="flex items-center justify-between p-2 lg:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div className="flex items-center space-x-2 lg:space-x-3">
+                          <TrendingUp className="h-4 w-4 lg:h-5 lg:w-5 text-purple-600" />
+                          <span className="text-xs lg:text-sm font-medium">Avg Session Duration</span>
                         </div>
-                        <span className="text-lg font-semibold">
+                        <span className="text-sm lg:text-lg font-semibold">
                           {Math.round(engagement.avg_session_duration / 60)} min
                         </span>
                       </div>
@@ -348,38 +348,38 @@ export default function AnalyticsPage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
               ) : platformStats ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-6 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <div className="text-3xl font-bold text-green-600">
+                <div className="space-y-3 lg:space-y-6">
+                  <div className="grid grid-cols-2 gap-2 lg:gap-4">
+                    <div className="text-center p-3 lg:p-6 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">
                         {formatCurrency(platformStats.mrr)}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">Monthly Recurring</div>
+                      <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-2">Monthly Recurring</div>
                     </div>
-                    <div className="text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="text-3xl font-bold text-blue-600">
+                    <div className="text-center p-3 lg:p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">
                         {formatCurrency(platformStats.arr)}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">Annual Recurring</div>
+                      <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-2">Annual Recurring</div>
                     </div>
                   </div>
 
-                  <div className="space-y-4 pt-4 border-t dark:border-gray-700">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-sm font-medium">Active Subscriptions</span>
-                      <span className="text-lg font-semibold">
+                  <div className="space-y-3 lg:space-y-4 pt-4 border-t dark:border-gray-700">
+                    <div className="flex items-center justify-between p-2 lg:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <span className="text-xs lg:text-sm font-medium">Active Subscriptions</span>
+                      <span className="text-sm lg:text-lg font-semibold">
                         {formatNumber(platformStats.active_subscriptions)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-sm font-medium">Total Subscriptions</span>
-                      <span className="text-lg font-semibold">
+                    <div className="flex items-center justify-between p-2 lg:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <span className="text-xs lg:text-sm font-medium">Total Subscriptions</span>
+                      <span className="text-sm lg:text-lg font-semibold">
                         {formatNumber(platformStats.total_subscriptions)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-sm font-medium">Conversion Rate</span>
-                      <span className="text-lg font-semibold">
+                    <div className="flex items-center justify-between p-2 lg:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <span className="text-xs lg:text-sm font-medium">Conversion Rate</span>
+                      <span className="text-sm lg:text-lg font-semibold">
                         {platformStats.total_users > 0
                           ? formatPercent(platformStats.active_subscriptions / platformStats.total_users)
                           : 'N/A'}

@@ -317,10 +317,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs lg:text-sm">
             {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
@@ -330,23 +330,23 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
             {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">{tForm('name')} *</Label>
+              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('name')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('namePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">{tForm('description')}</Label>
+              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -354,7 +354,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs lg:text-sm text-destructive">
                   {errors.description.message}
                 </p>
               )}
@@ -362,7 +362,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             {/* Category */}
             <div className="space-y-2">
-              <Label htmlFor="category">{tForm('category')}</Label>
+              <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
@@ -408,7 +408,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             {/* Frequency */}
             <div className="space-y-2">
-              <Label htmlFor="frequency">{tForm('frequency')} *</Label>
+              <Label htmlFor="frequency" className="text-xs lg:text-sm">{tForm('frequency')} *</Label>
               <Select
                 value={watch('frequency')}
                 onValueChange={(value) =>
@@ -431,7 +431,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             {/* Date Fields - Conditional based on frequency */}
             {watch('frequency') === 'one_time' ? (
               <div className="space-y-2">
-                <Label htmlFor="date">{tForm('date')}</Label>
+                <Label htmlFor="date" className="text-xs lg:text-sm">{tForm('date')}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -440,9 +440,9 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                                   />
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">{tForm('startDate')}</Label>
+                  <Label htmlFor="start_date" className="text-xs lg:text-sm">{tForm('startDate')}</Label>
                   <Input
                     id="start_date"
                     type="date"
@@ -451,7 +451,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                                       />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">{tForm('endDate')}</Label>
+                  <Label htmlFor="end_date" className="text-xs lg:text-sm">{tForm('endDate')}</Label>
                   <Input
                     id="end_date"
                     type="date"
@@ -464,7 +464,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
             {/* Active Status */}
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">{tForm('isActive')}</Label>
+              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('isActive')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -473,8 +473,8 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             </div>
 
             {/* Account Integration Section */}
-            <div className="border-t pt-4 mt-4 space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">
+            <div className="border-t pt-3 lg:pt-4 mt-3 lg:mt-4 space-y-3 lg:space-y-4">
+              <h4 className="text-xs lg:text-sm font-medium text-muted-foreground">
                 {tForm('accountIntegration')}
               </h4>
 
@@ -493,7 +493,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               {watch('target_account_id') && watch('target_account_id') !== 'none' && (
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="auto_deposit">{tForm('autoDeposit')}</Label>
+                    <Label htmlFor="auto_deposit" className="text-xs lg:text-sm">{tForm('autoDeposit')}</Label>
                     <p className="text-xs text-muted-foreground">
                       {tForm('autoDepositHelp')}
                     </p>
@@ -510,7 +510,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               {isEditing && watch('auto_deposit') && watch('target_account_id') && watch('target_account_id') !== 'none' && (
                 <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3">
                   <div className="space-y-0.5">
-                    <Label htmlFor="sync_historical" className="text-amber-800 dark:text-amber-200">
+                    <Label htmlFor="sync_historical" className="text-xs lg:text-sm text-amber-800 dark:text-amber-200">
                       {tForm('syncHistorical')}
                     </Label>
                     <p className="text-xs text-amber-600 dark:text-amber-400">
@@ -527,10 +527,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
                 {isLoading ? tForm('saving') : tActions('save')}
               </Button>
             </DialogFooter>

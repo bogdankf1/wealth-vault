@@ -122,13 +122,13 @@ export function DashboardLayoutsSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="p-3 lg:p-6">
             <div className="h-6 w-32 animate-pulse rounded bg-muted" />
             <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 lg:p-6 pt-0">
             <div className="h-32 w-full animate-pulse rounded bg-muted" />
           </CardContent>
         </Card>
@@ -139,14 +139,14 @@ export function DashboardLayoutsSettings() {
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="p-3 lg:p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1.5">
-              <CardTitle className="flex items-center gap-2">
-                <LayoutGrid className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+                <LayoutGrid className="h-4 w-4 lg:h-5 lg:w-5" />
                 {t('title')}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs lg:text-sm">
                 {t('description')}
                 {!isWealthTier && (
                   <span className="block mt-1 text-amber-600 dark:text-amber-400 flex items-center gap-1">
@@ -179,17 +179,17 @@ export function DashboardLayoutsSettings() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
           {layoutsData?.items && layoutsData.items.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {layoutsData.items.map((layout) => (
                 <div
                   key={layout.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-3 lg:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{layout.name}</h4>
+                      <h4 className="text-xs lg:text-sm font-medium">{layout.name}</h4>
                       {layout.is_active && (
                         <Badge variant="default" className="text-xs">
                           {t('active')}
@@ -201,7 +201,7 @@ export function DashboardLayoutsSettings() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                       {layout.configuration.widgets.filter((w) => w.visible).length} {t('of')}{' '}
                       {layout.configuration.widgets.length} {t('widgetsVisible')}
                     </p>
@@ -235,9 +235,9 @@ export function DashboardLayoutsSettings() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <LayoutGrid className="mx-auto h-12 w-12 mb-4" />
-              <p className="mb-4">{t('noLayoutsFound')}</p>
+            <div className="text-center py-6 lg:py-8 text-muted-foreground">
+              <LayoutGrid className="mx-auto h-10 w-10 lg:h-12 lg:w-12 mb-3 lg:mb-4" />
+              <p className="text-xs lg:text-sm mb-3 lg:mb-4">{t('noLayoutsFound')}</p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={handleInitializePresets} variant="outline">
                   {t('initializePresets')}
@@ -254,7 +254,7 @@ export function DashboardLayoutsSettings() {
                 )}
               </div>
               {!isWealthTier && (
-                <p className="mt-4 text-sm text-muted-foreground">
+                <p className="mt-3 lg:mt-4 text-xs lg:text-sm text-muted-foreground">
                   {t('customLayoutsInfo')}{' '}
                   <Link href="/dashboard/pricing" className="text-primary hover:underline">
                     {t('viewPricing')}
@@ -417,9 +417,9 @@ function LayoutEditorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-3 lg:space-y-4 py-3 lg:py-4">
           <div className="space-y-2">
-            <Label htmlFor="layout-name">{t('editor.layoutName')}</Label>
+            <Label htmlFor="layout-name" className="text-xs lg:text-sm">{t('editor.layoutName')}</Label>
             <Input
               id="layout-name"
               placeholder={t('editor.layoutNamePlaceholder')}
@@ -429,7 +429,7 @@ function LayoutEditorDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>{t('editor.widgetsLabel')}</Label>
+            <Label className="text-xs lg:text-sm">{t('editor.widgetsLabel')}</Label>
             <div className="border rounded-lg divide-y">
               {AVAILABLE_WIDGETS.map((widget) => {
                 const widgetConfig = widgets.find((w) => w.id === widget.id);

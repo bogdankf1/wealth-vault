@@ -57,11 +57,11 @@ export default function IncomeAnalysisPage() {
   const transactionChangeCount = stats.transactions_current_month - stats.transactions_last_month;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Monthly Income Trend - Top Card */}
       <Card className={`${isPositiveChange ? 'border-green-200 bg-green-50/50' : 'border-red-200 bg-red-50/50'}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <CalendarDays className="h-5 w-5" />
             {tAnalysis('monthlyIncomeTrend')}
           </CardTitle>
@@ -70,16 +70,16 @@ export default function IncomeAnalysisPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-2 md:gap-3 lg:gap-6 md:grid-cols-2">
             {/* Current Month */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <p className="text-sm font-medium text-muted-foreground">{tAnalysis('currentMonth')}</p>
+                <p className="text-xs lg:text-sm font-medium text-muted-foreground">{tAnalysis('currentMonth')}</p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-baseline gap-2">
-                  <p className="text-3xl font-bold">
+                  <p className="text-base sm:text-lg lg:text-2xl font-bold">
                     <CurrencyDisplay
                       amount={stats.transactions_current_month_amount}
                       currency={stats.currency}
@@ -93,7 +93,7 @@ export default function IncomeAnalysisPage() {
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs lg:text-sm text-muted-foreground">
                   <Activity className="h-4 w-4" />
                   <span>{stats.transactions_current_month} {tAnalysis('transactions')}</span>
                   {hasLastMonthData && transactionChangeCount !== 0 && (
@@ -119,10 +119,10 @@ export default function IncomeAnalysisPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-gray-400" />
-                <p className="text-sm font-medium text-muted-foreground">{tAnalysis('lastMonth')}</p>
+                <p className="text-xs lg:text-sm font-medium text-muted-foreground">{tAnalysis('lastMonth')}</p>
               </div>
               <div className="space-y-2">
-                <p className="text-3xl font-bold text-muted-foreground">
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-muted-foreground">
                   <CurrencyDisplay
                     amount={stats.transactions_last_month_amount}
                     currency={stats.currency}
@@ -130,7 +130,7 @@ export default function IncomeAnalysisPage() {
                     showCode={false}
                   />
                 </p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs lg:text-sm text-muted-foreground">
                   <Activity className="h-4 w-4" />
                   <span>{stats.transactions_last_month} {tAnalysis('transactions')}</span>
                 </div>
@@ -141,7 +141,7 @@ export default function IncomeAnalysisPage() {
           {/* Change Indicator */}
           {hasLastMonthData && transactionChangeAmount !== 0 && (
             <div className="mt-4 pt-4 border-t">
-              <div className={`flex items-center gap-2 text-sm ${isPositiveChange ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`flex items-center gap-2 text-xs lg:text-sm ${isPositiveChange ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositiveChange ? (
                   <TrendingUp className="h-4 w-4" />
                 ) : (
@@ -164,18 +164,18 @@ export default function IncomeAnalysisPage() {
       </Card>
 
       {/* Recurring Income Overview */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Monthly Income */}
         <Card className="border-blue-200 bg-blue-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-blue-600" />
               {tAnalysis('expectedMonthlyIncome')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-4xl font-bold text-blue-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">
                 <CurrencyDisplay
                   amount={stats.total_monthly_income}
                   currency={stats.currency}
@@ -183,7 +183,7 @@ export default function IncomeAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('fromRecurringSources')}
               </p>
             </div>
@@ -193,14 +193,14 @@ export default function IncomeAnalysisPage() {
         {/* Annual Income */}
         <Card className="border-purple-200 bg-purple-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
               {tAnalysis('expectedAnnualIncome')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-4xl font-bold text-purple-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
                   amount={stats.total_annual_income}
                   currency={stats.currency}
@@ -208,7 +208,7 @@ export default function IncomeAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('projectedForYear')}
               </p>
             </div>
@@ -219,13 +219,13 @@ export default function IncomeAnalysisPage() {
       {/* Transaction Activity - Full Width */}
       <Card>
         <CardHeader>
-          <CardTitle>{tAnalysis('transactionActivity')}</CardTitle>
+          <CardTitle className="text-sm lg:text-base font-medium">{tAnalysis('transactionActivity')}</CardTitle>
           <CardDescription>
             {tAnalysis('transactionActivityDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
+          <div className="space-y-3 lg:space-y-6">
             {/* Total Transactions */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -235,7 +235,7 @@ export default function IncomeAnalysisPage() {
                 </div>
                 <div className="text-right">
                   <div className="flex items-baseline gap-3">
-                    <span className="text-2xl font-bold">
+                    <span className="text-base sm:text-lg lg:text-2xl font-bold">
                       <CurrencyDisplay
                         amount={stats.total_transactions_amount}
                         currency={stats.currency}
@@ -308,11 +308,11 @@ export default function IncomeAnalysisPage() {
       </Card>
 
       {/* Income Sources Summary */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Sources */}
         <Card className="border-indigo-200 bg-indigo-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4 text-indigo-600" />
               {tAnalysis('totalIncome')}
             </CardTitle>
@@ -320,9 +320,9 @@ export default function IncomeAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-indigo-600">{stats.total_sources}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-indigo-600">{stats.total_sources}</p>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('sourcesConfigured')}
               </p>
             </div>
@@ -332,7 +332,7 @@ export default function IncomeAnalysisPage() {
         {/* Active Sources */}
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               {tAnalysis('activeIncome')}
             </CardTitle>
@@ -340,14 +340,14 @@ export default function IncomeAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-green-600">{stats.active_sources}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.active_sources}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {stats.total_sources > 0
                     ? ((stats.active_sources / stats.total_sources) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('sourcesActive', { count: stats.active_sources, total: stats.total_sources })}
               </p>
             </div>

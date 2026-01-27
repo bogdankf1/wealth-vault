@@ -78,7 +78,7 @@ export default function AdminLayout({
       <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading admin panel...</p>
+          <p className="mt-4 text-xs lg:text-sm text-gray-600 dark:text-gray-400">Loading admin panel...</p>
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export default function AdminLayout({
               <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
                 <Shield className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
+              <span className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
                 Admin Panel
               </span>
             </Link>
@@ -267,7 +267,7 @@ export default function AdminLayout({
             </button>
             <div className="flex items-center space-x-2">
               <Shield className="h-5 w-5 text-indigo-600" />
-              <span className="text-sm font-medium text-indigo-600">Admin</span>
+              <span className="text-xs lg:text-sm font-medium text-indigo-600">Admin</span>
             </div>
           </div>
         </header>

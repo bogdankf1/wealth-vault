@@ -63,18 +63,18 @@ export function NetWorthTrendChart({
 
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <Skeleton className="h-[400px] w-full" />
+      <Card className="p-3 md:p-6">
+        <Skeleton className="h-[250px] md:h-[400px] w-full" />
       </Card>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <Card className="p-6">
-        <div className="flex flex-col items-center justify-center h-[400px] text-gray-500">
-          <Wallet className="h-12 w-12 mb-4 opacity-50" />
-          <p>{t('emptyState')}</p>
+      <Card className="p-3 md:p-6">
+        <div className="flex flex-col items-center justify-center h-[250px] md:h-[400px] text-gray-500">
+          <Wallet className="h-8 w-8 md:h-12 md:w-12 mb-2 md:mb-4 opacity-50" />
+          <p className="text-xs md:text-sm">{t('emptyState')}</p>
         </div>
       </Card>
     );
@@ -137,10 +137,10 @@ export function NetWorthTrendChart({
 
   return (
     <TooltipProvider>
-      <Card className="p-6">
-        <div className="mb-6">
+      <Card className="p-3 md:p-6">
+        <div className="mb-3 md:mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold">{t('title')}</h3>
+            <h3 className="text-sm md:text-lg font-semibold">{t('title')}</h3>
             <ChartTooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-gray-400 cursor-help" />
@@ -150,23 +150,23 @@ export function NetWorthTrendChart({
               </TooltipContent>
             </ChartTooltip>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
             {t('description')}
           </p>
         </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10">
-          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-6">
+        <div className="text-center p-2 md:p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+          <p className="text-[10px] md:text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
             {t('stats.current')}
           </p>
-          <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
+          <p className="text-sm md:text-lg font-bold text-blue-700 dark:text-blue-300">
             {formatCurrency(currentNetWorth)}
           </p>
         </div>
 
-        <div className={`text-center p-3 rounded-lg ${
+        <div className={`text-center p-2 md:p-3 rounded-lg ${
           isPositive
             ? 'bg-green-50 dark:bg-green-900/10'
             : 'bg-red-50 dark:bg-red-900/10'
@@ -181,9 +181,9 @@ export function NetWorthTrendChart({
             ) : (
               <TrendingDown className="h-3 w-3" />
             )}
-            <p className="text-xs font-medium">{t('stats.periodChange')}</p>
+            <p className="text-[10px] md:text-xs font-medium">{t('stats.periodChange')}</p>
           </div>
-          <p className={`text-lg font-bold ${
+          <p className={`text-sm md:text-lg font-bold ${
             isPositive
               ? 'text-green-700 dark:text-green-300'
               : 'text-red-700 dark:text-red-300'
@@ -195,27 +195,27 @@ export function NetWorthTrendChart({
           </p>
         </div>
 
-        <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
+        <div className="text-center p-2 md:p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
             {t('stats.peak')}
           </p>
-          <p className="text-lg font-bold">
+          <p className="text-sm md:text-lg font-bold">
             {formatCurrency(highestNetWorth)}
           </p>
         </div>
 
-        <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
+        <div className="text-center p-2 md:p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
             {t('stats.starting')}
           </p>
-          <p className="text-lg font-bold">
+          <p className="text-sm md:text-lg font-bold">
             {formatCurrency(startingNetWorth)}
           </p>
         </div>
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={250} className="md:!h-[350px]">
         {chartType === 'area' ? (
           <AreaChart data={data}>
             <defs>
@@ -351,11 +351,11 @@ export function NetWorthTrendChart({
       </ResponsiveContainer>
 
       {/* Growth Insights */}
-      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+      <div className="mt-3 pt-3 md:mt-6 md:pt-6 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-3">
           {t('insights.title')}
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
           <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
             <div className={`p-2 rounded-lg ${
               isPositive

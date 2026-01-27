@@ -100,7 +100,7 @@ export default function AdminDashboard() {
   })) || [];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 lg:p-6 space-y-3 lg:space-y-6">
       {/* Header */}
       <ModuleHeader
         title="Admin Dashboard"
@@ -113,14 +113,14 @@ export default function AdminDashboard() {
       ) : statsError ? (
         <ApiErrorState error={statsError} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-4">
           {kpiCards.map((card, index) => {
             const Icon = card.icon;
             return (
               <Card key={index}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-3 lg:p-6">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <CardTitle className="text-[10px] lg:text-xs font-medium text-gray-600 dark:text-gray-400">
                       {card.title}
                     </CardTitle>
                     <Tooltip>
@@ -134,9 +134,9 @@ export default function AdminDashboard() {
                   </div>
                   <Icon className={`h-5 w-5 ${card.iconClassName}`} />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{card.value}</div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{card.description}</p>
+                <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+                  <div className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">{card.value}</div>
+                  <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">{card.description}</p>
                 </CardContent>
               </Card>
             );
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
         {/* User Acquisition Chart */}
         <Card>
           <CardHeader>
@@ -240,37 +240,37 @@ export default function AdminDashboard() {
                 Failed to load engagement data
               </div>
             ) : engagement ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-3 lg:space-y-6">
+                <div className="grid grid-cols-3 gap-2 lg:gap-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">{formatNumber(engagement.dau)}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">DAU</div>
+                    <div className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">{formatNumber(engagement.dau)}</div>
+                    <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">DAU</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-green-600">{formatNumber(engagement.wau)}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">WAU</div>
+                    <div className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{formatNumber(engagement.wau)}</div>
+                    <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">WAU</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-purple-600">{formatNumber(engagement.mau)}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">MAU</div>
+                    <div className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">{formatNumber(engagement.mau)}</div>
+                    <div className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 mt-1">MAU</div>
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t dark:border-gray-700">
+                <div className="space-y-3 lg:space-y-4 pt-4 border-t dark:border-gray-700">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">DAU/MAU Ratio</span>
-                    <span className="text-sm font-medium">
+                    <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">DAU/MAU Ratio</span>
+                    <span className="text-xs lg:text-sm font-medium">
                       {engagement.mau > 0 ? formatPercent(engagement.dau / engagement.mau) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">30-Day Retention</span>
-                    <span className="text-sm font-medium">{formatPercent(engagement.retention_rate_30d)}</span>
+                    <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">30-Day Retention</span>
+                    <span className="text-xs lg:text-sm font-medium">{formatPercent(engagement.retention_rate_30d)}</span>
                   </div>
                   {engagement.avg_session_duration && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Avg Session Duration</span>
-                      <span className="text-sm font-medium">
+                      <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">Avg Session Duration</span>
+                      <span className="text-xs lg:text-sm font-medium">
                         {Math.round(engagement.avg_session_duration / 60)} min
                       </span>
                     </div>

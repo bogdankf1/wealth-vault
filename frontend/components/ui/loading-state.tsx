@@ -16,10 +16,10 @@ export function LoadingState({ variant = 'card', count = 3, className = '' }: Lo
     switch (variant) {
       case 'card':
         return (
-          <div className="space-y-4">
+          <div className="space-y-2 lg:space-y-4">
             {Array.from({ length: count }).map((_, i) => (
-              <div key={i} className="rounded-lg border p-6">
-                <div className="space-y-3">
+              <div key={i} className="rounded-lg border p-3 lg:p-6">
+                <div className="space-y-2 lg:space-y-3">
                   <Skeleton className="h-5 w-1/3" />
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-2/3" />
@@ -35,9 +35,9 @@ export function LoadingState({ variant = 'card', count = 3, className = '' }: Lo
 
       case 'list':
         return (
-          <div className="space-y-2">
+          <div className="space-y-1.5 lg:space-y-2">
             {Array.from({ length: count }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-lg border p-4">
+              <div key={i} className="flex items-center gap-2 lg:gap-3 rounded-lg border p-2 lg:p-4">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-1/4" />
@@ -61,9 +61,9 @@ export function LoadingState({ variant = 'card', count = 3, className = '' }: Lo
 
       case 'form':
         return (
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             {Array.from({ length: count }).map((_, i) => (
-              <div key={i} className="space-y-2">
+              <div key={i} className="space-y-1.5 lg:space-y-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-10 w-full" />
               </div>

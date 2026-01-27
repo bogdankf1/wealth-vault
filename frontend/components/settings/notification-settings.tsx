@@ -84,15 +84,15 @@ export function NotificationSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         {[1, 2].map((i) => (
           <Card key={i}>
-            <CardHeader>
+            <CardHeader className="p-3 lg:p-6">
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-3 lg:p-6 pt-0">
+              <div className="space-y-3 lg:space-y-4">
                 {[1, 2, 3].map((j) => (
                   <div key={j} className="h-16 w-full animate-pulse rounded bg-muted" />
                 ))}
@@ -105,31 +105,31 @@ export function NotificationSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Email Notifications */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Mail className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('email.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               {t('email.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('email.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('email.warningMessage')}
             </p>
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-marketing">{t('email.marketing.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="email-marketing" className="text-xs lg:text-sm">{t('email.marketing.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('email.marketing.description')}
               </p>
             </div>
@@ -142,8 +142,8 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-product-updates">{t('email.productUpdates.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="email-product-updates" className="text-xs lg:text-sm">{t('email.productUpdates.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('email.productUpdates.description')}
               </p>
             </div>
@@ -156,8 +156,8 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-security">{t('email.securityAlerts.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="email-security" className="text-xs lg:text-sm">{t('email.securityAlerts.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('email.securityAlerts.description')}
               </p>
             </div>
@@ -170,8 +170,8 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-billing">{t('email.billing.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="email-billing" className="text-xs lg:text-sm">{t('email.billing.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('email.billing.description')}
               </p>
             </div>
@@ -184,8 +184,8 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-weekly-summary">{t('email.weeklySummary.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="email-weekly-summary" className="text-xs lg:text-sm">{t('email.weeklySummary.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('email.weeklySummary.description')}
               </p>
             </div>
@@ -200,28 +200,28 @@ export function NotificationSettings() {
 
       {/* Push Notifications */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Smartphone className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('push.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               {t('push.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('push.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('push.warningMessage')}
             </p>
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-budget-alerts">{t('push.budgetAlerts.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="push-budget-alerts" className="text-xs lg:text-sm">{t('push.budgetAlerts.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('push.budgetAlerts.description')}
               </p>
             </div>
@@ -234,8 +234,8 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-goal-milestones">{t('push.goalMilestones.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="push-goal-milestones" className="text-xs lg:text-sm">{t('push.goalMilestones.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('push.goalMilestones.description')}
               </p>
             </div>
@@ -248,8 +248,8 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-subscription-reminders">{t('push.subscriptionReminders.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="push-subscription-reminders" className="text-xs lg:text-sm">{t('push.subscriptionReminders.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('push.subscriptionReminders.description')}
               </p>
             </div>
@@ -262,8 +262,8 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-income-notifications">{t('push.incomeNotifications.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="push-income-notifications" className="text-xs lg:text-sm">{t('push.incomeNotifications.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('push.incomeNotifications.description')}
               </p>
             </div>

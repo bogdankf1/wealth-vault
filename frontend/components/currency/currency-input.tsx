@@ -47,14 +47,14 @@ export function CurrencyInput({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-1.5 lg:space-y-2", className)}>
       {label && (
-        <Label>
+        <Label className="text-xs lg:text-sm">
           {label}
           {required && <span className="text-destructive ml-1">*</span>}
         </Label>
       )}
-      <div className="flex gap-2">
+      <div className="flex gap-1.5 lg:gap-2">
         <div className="relative flex-1">
           {currencyData?.symbol && (
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium pointer-events-none">
@@ -86,7 +86,7 @@ export function CurrencyInput({
         )}
       </div>
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="text-xs lg:text-sm text-destructive">{error}</p>
       )}
     </div>
   );

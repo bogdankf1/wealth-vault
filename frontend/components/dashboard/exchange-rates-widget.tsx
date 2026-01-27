@@ -144,12 +144,12 @@ export function ExchangeRatesWidget() {
   // Show loading skeleton while currencies are being fetched
   if (isLoadingCurrencies) {
     return (
-      <Card className="p-6">
-        <div className="mb-6">
+      <Card className="p-3 md:p-6">
+        <div className="mb-3 md:mb-6">
           <Skeleton className="h-6 w-48 mb-2" />
           <Skeleton className="h-4 w-full" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
           {[1, 2, 3].map((i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="h-12 w-full" />
@@ -165,28 +165,28 @@ export function ExchangeRatesWidget() {
   // Show empty state if no currencies available
   if (!currencyColumns || currencyColumns.length === 0) {
     return (
-      <Card className="p-6">
-        <div className="mb-6">
+      <Card className="p-3 md:p-6">
+        <div className="mb-3 md:mb-6">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-lg font-semibold">{t('title')}</h3>
+            <h3 className="text-sm md:text-lg font-semibold">{t('title')}</h3>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
             {t('description')}
           </p>
         </div>
-        <div className="text-center py-8 text-muted-foreground">
-          <p className="text-sm">No active currencies available</p>
+        <div className="text-center py-4 md:py-8 text-muted-foreground">
+          <p className="text-xs md:text-sm">No active currencies available</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6">
-      <div className="mb-6">
+    <Card className="p-3 md:p-6">
+      <div className="mb-3 md:mb-6">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold">{t('title')}</h3>
+            <h3 className="text-sm md:text-lg font-semibold">{t('title')}</h3>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -210,7 +210,7 @@ export function ExchangeRatesWidget() {
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
           {t('description')}
           {lastRefreshed && (
             <span className="ml-2 text-xs text-muted-foreground">
@@ -221,7 +221,7 @@ export function ExchangeRatesWidget() {
       </div>
 
       {/* Exchange Rate Columns - dynamically generated based on active currencies */}
-      <div className={`grid grid-cols-1 gap-6 ${
+      <div className={`grid grid-cols-1 gap-3 md:gap-6 ${
         currencyColumns.length >= 3 ? 'md:grid-cols-3' : currencyColumns.length === 2 ? 'md:grid-cols-2' : ''
       }`}>
         {currencyColumns.map((column) => (
@@ -251,7 +251,7 @@ export function ExchangeRatesWidget() {
       </div>
 
       {/* Footer */}
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-3 pt-2 md:mt-6 md:pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1">
             <div className="h-2 w-2 rounded-full bg-green-500" />

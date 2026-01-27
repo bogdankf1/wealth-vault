@@ -129,14 +129,14 @@ export function SubscriptionSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         {[1, 2].map((i) => (
           <Card key={i}>
-            <CardHeader>
+            <CardHeader className="p-3 lg:p-6">
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 lg:p-6 pt-0">
               <div className="h-32 w-full animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
@@ -156,17 +156,17 @@ export function SubscriptionSettings() {
   const currentTierName = currentUser?.tier?.display_name || subscriptionStatus?.tier_display_name || 'Starter';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Expiration Countdown Banner */}
       {isExpiring && (
         <Card className={countdown?.isUrgent ? 'border-red-500/50 bg-red-500/5' : 'border-amber-500/50 bg-amber-500/5'}>
-          <CardContent>
-            <div className="flex items-start gap-3">
-              <div className={`p-2 rounded-full ${countdown?.isUrgent ? 'bg-red-500/20' : 'bg-amber-500/20'}`}>
-                <Clock className={`h-5 w-5 ${countdown?.isUrgent ? 'text-red-500' : 'text-amber-500'}`} />
+          <CardContent className="p-3 lg:p-6">
+            <div className="flex items-start gap-2 lg:gap-3">
+              <div className={`p-1.5 lg:p-2 rounded-full ${countdown?.isUrgent ? 'bg-red-500/20' : 'bg-amber-500/20'}`}>
+                <Clock className={`h-4 w-4 lg:h-5 lg:w-5 ${countdown?.isUrgent ? 'text-red-500' : 'text-amber-500'}`} />
               </div>
               <div className="flex-1">
-                <h3 className={`text-base font-semibold ${countdown?.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                <h3 className={`text-sm lg:text-base font-semibold ${countdown?.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                   {t('expiration.title')}
                   {subscription?.current_period_end && (
                     <span className="font-normal text-sm ml-2">
@@ -174,27 +174,27 @@ export function SubscriptionSettings() {
                     </span>
                   )}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs lg:text-sm text-muted-foreground">
                   {t('expiration.description')}
                 </p>
 
                 {/* Countdown Timer */}
                 {countdown && (
-                  <div className="flex items-center gap-6 mt-4">
+                  <div className="flex items-center gap-4 lg:gap-6 mt-3 lg:mt-4">
                     <div className="text-center">
-                      <div className={`text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <div className={`text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {countdown.days}
                       </div>
                       <div className="text-xs text-muted-foreground uppercase">{t('expiration.days')}</div>
                     </div>
                     <div className="text-center">
-                      <div className={`text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <div className={`text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {countdown.hours}
                       </div>
                       <div className="text-xs text-muted-foreground uppercase">{t('expiration.hours')}</div>
                     </div>
                     <div className="text-center">
-                      <div className={`text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <div className={`text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {countdown.minutes}
                       </div>
                       <div className="text-xs text-muted-foreground uppercase">{t('expiration.minutes')}</div>
@@ -231,14 +231,14 @@ export function SubscriptionSettings() {
 
       {/* Current Subscription */}
       <Card>
-        <CardHeader className="pb-2">
+        <CardHeader className="p-3 lg:p-6 pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+                <CreditCard className="h-4 w-4 lg:h-5 lg:w-5" />
                 {t('title')}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs lg:text-sm">
                 {t('description')}
               </CardDescription>
             </div>
@@ -249,33 +249,33 @@ export function SubscriptionSettings() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3">
           {/* Show tier info for everyone */}
           <div className="p-3 bg-muted/50 rounded-lg">
-            <p className="text-sm font-medium mb-1">{t('currentPlan')}</p>
-            <p className="text-xl font-bold">{currentTierName}</p>
+            <p className="text-xs lg:text-sm font-medium mb-1">{t('currentPlan')}</p>
+            <p className="text-lg lg:text-xl font-bold">{currentTierName}</p>
           </div>
 
           {/* Show billing details if available */}
           {subscription && subscription.current_period_start && subscription.current_period_end && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                <div className="flex items-start gap-2 lg:gap-3">
+                  <Calendar className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">{t('currentPeriod')}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs lg:text-sm font-medium">{t('currentPeriod')}</p>
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       {format(new Date(subscription.current_period_start), 'MMM d, yyyy')} -{' '}
                       {format(new Date(subscription.current_period_end), 'MMM d, yyyy')}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <CreditCard className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex items-start gap-2 lg:gap-3">
+                  <CreditCard className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">{t('nextBillingDate')}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs lg:text-sm font-medium">{t('nextBillingDate')}</p>
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       {format(new Date(subscription.current_period_end), 'MMM d, yyyy')}
                     </p>
                   </div>
@@ -283,11 +283,11 @@ export function SubscriptionSettings() {
               </div>
 
               {subscription.cancel_at_period_end && !countdown && (
-                <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                <div className="flex items-start gap-2 lg:gap-3 p-3 lg:p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-yellow-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">{t('subscriptionEnding')}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs lg:text-sm font-medium">{t('subscriptionEnding')}</p>
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       {t('subscriptionEndingDescription')}{' '}
                       {format(new Date(subscription.current_period_end), 'MMM d, yyyy')}
                     </p>
@@ -319,30 +319,30 @@ export function SubscriptionSettings() {
       {/* Payment History */}
       {paymentHistory && paymentHistory.payments.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+          <CardHeader className="p-3 lg:p-6">
+            <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+              <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
               {t('paymentHistory.title')}
             </CardTitle>
-            <CardDescription>{t('paymentHistory.description')}</CardDescription>
+            <CardDescription className="text-xs lg:text-sm">{t('paymentHistory.description')}</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-3 lg:p-6 pt-0">
+            <div className="space-y-3 lg:space-y-4">
               {paymentHistory.payments.map((payment) => (
                 <div key={payment.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     {payment.status === 'succeeded' ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <CheckCircle2 className="h-4 w-4 lg:h-5 lg:w-5 text-green-500" />
                     ) : payment.status === 'failed' ? (
-                      <XCircle className="h-5 w-5 text-red-500" />
+                      <XCircle className="h-4 w-4 lg:h-5 lg:w-5 text-red-500" />
                     ) : (
-                      <AlertCircle className="h-5 w-5 text-yellow-500" />
+                      <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-yellow-500" />
                     )}
                     <div>
-                      <p className="text-sm font-medium">
+                      <p className="text-xs lg:text-sm font-medium">
                         {payment.description || t('paymentHistory.subscriptionPayment')}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs lg:text-sm text-muted-foreground">
                         {payment.paid_at
                           ? format(new Date(payment.paid_at), 'MMM d, yyyy')
                           : payment.failed_at
@@ -352,7 +352,7 @@ export function SubscriptionSettings() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">
+                    <p className="text-xs lg:text-sm font-medium">
                       ${(payment.amount / 100).toFixed(2)} {payment.currency.toUpperCase()}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize">{t(`paymentHistory.statuses.${payment.status}` as 'paymentHistory.statuses.succeeded')}</p>
@@ -394,8 +394,8 @@ export function SubscriptionSettings() {
               <div className="space-y-4">
                 <p>{t('downgradeWarning.description')}</p>
 
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm font-medium mb-3">{t('downgradeWarning.featuresLost')}</p>
+                <div className="bg-muted/50 rounded-lg p-3 lg:p-4">
+                  <p className="text-xs lg:text-sm font-medium mb-2 lg:mb-3">{t('downgradeWarning.featuresLost')}</p>
                   <ul className="space-y-2">
                     {FEATURES_LOST_ON_DOWNGRADE.map((feature) => (
                       <li key={feature} className="flex items-center gap-2 text-sm">
@@ -406,11 +406,11 @@ export function SubscriptionSettings() {
                   </ul>
                 </div>
 
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                  <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 lg:p-4">
+                  <p className="text-xs lg:text-sm font-medium text-green-600 dark:text-green-400 mb-2">
                     {t('downgradeWarning.keepAccess')}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs lg:text-sm text-muted-foreground">
                     {t('downgradeWarning.renewDescription')}
                   </p>
                 </div>

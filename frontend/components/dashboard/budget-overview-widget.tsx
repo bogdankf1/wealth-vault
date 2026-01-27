@@ -114,9 +114,9 @@ export function BudgetOverviewWidget() {
           </div>
           <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 md:space-y-4">
         {/* Info Note */}
-        <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30">
+        <div className="flex items-start gap-2 p-2 md:p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30">
           <div className="text-xs text-blue-900 dark:text-blue-100">
             {t('infoNote.showing', {
               count: stats.active_budgets,
@@ -126,10 +126,10 @@ export function BudgetOverviewWidget() {
         </div>
 
         {/* Overall Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 md:gap-4">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{t('stats.budgeted')}</p>
-            <p className="text-lg font-semibold">
+            <p className="text-[10px] md:text-xs text-muted-foreground">{t('stats.budgeted')}</p>
+            <p className="text-sm md:text-lg font-semibold">
               <CurrencyDisplay
                 amount={stats.total_budgeted}
                 currency={stats.currency}
@@ -139,8 +139,8 @@ export function BudgetOverviewWidget() {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{t('stats.spent')}</p>
-            <p className="text-lg font-semibold">
+            <p className="text-[10px] md:text-xs text-muted-foreground">{t('stats.spent')}</p>
+            <p className="text-sm md:text-lg font-semibold">
               <CurrencyDisplay
                 amount={stats.total_spent}
                 currency={stats.currency}
@@ -150,8 +150,8 @@ export function BudgetOverviewWidget() {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{t('stats.remaining')}</p>
-            <p className={`text-lg font-semibold ${stats.total_remaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+            <p className="text-[10px] md:text-xs text-muted-foreground">{t('stats.remaining')}</p>
+            <p className={`text-sm md:text-lg font-semibold ${stats.total_remaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
               <CurrencyDisplay
                 amount={stats.total_remaining}
                 currency={stats.currency}

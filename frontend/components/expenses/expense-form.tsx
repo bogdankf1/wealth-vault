@@ -369,10 +369,10 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs lg:text-sm">
             {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
@@ -382,21 +382,21 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{tForm('name')} *</Label>
+              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('name')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('namePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{tForm('description')}</Label>
+              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -404,14 +404,14 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs lg:text-sm text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">{tForm('category')}</Label>
+              <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
@@ -454,7 +454,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             />
 
             <div className="space-y-2">
-              <Label htmlFor="frequency">{tForm('frequency')} *</Label>
+              <Label htmlFor="frequency" className="text-xs lg:text-sm">{tForm('frequency')} *</Label>
               <Select
                 value={watch('frequency')}
                 onValueChange={(value) =>
@@ -476,7 +476,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
             {watch('frequency') === 'one_time' ? (
               <div className="space-y-2">
-                <Label htmlFor="date">{tForm('date')}</Label>
+                <Label htmlFor="date" className="text-xs lg:text-sm">{tForm('date')}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -485,9 +485,9 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                                   />
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">{tForm('startDate')}</Label>
+                  <Label htmlFor="start_date" className="text-xs lg:text-sm">{tForm('startDate')}</Label>
                   <Input
                     id="start_date"
                     type="date"
@@ -496,7 +496,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                                       />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">{tForm('endDate')} (Optional)</Label>
+                  <Label htmlFor="end_date" className="text-xs lg:text-sm">{tForm('endDate')} (Optional)</Label>
                   <Input
                     id="end_date"
                     type="date"
@@ -508,7 +508,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             )}
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">{tForm('isActive')}</Label>
+              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('isActive')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -517,8 +517,8 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             </div>
 
             {/* Payment Integration Section */}
-            <div className="space-y-4 pt-4 border-t">
-              <h4 className="text-sm font-medium">{tForm('accountIntegration')}</h4>
+            <div className="space-y-3 lg:space-y-4 pt-3 lg:pt-4 border-t">
+              <h4 className="text-xs lg:text-sm font-medium">{tForm('accountIntegration')}</h4>
 
               {/* Payment Account */}
               <AccountSelect
@@ -558,7 +558,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="auto_pay">{tForm('autoPay')}</Label>
+                      <Label htmlFor="auto_pay" className="text-xs lg:text-sm">{tForm('autoPay')}</Label>
                       <p className="text-xs text-muted-foreground">
                         {tForm('autoPayHelp')}
                       </p>
@@ -601,7 +601,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
               {/* Payment Method */}
               <div className="space-y-2">
-                <Label htmlFor="payment_method">{tForm('paymentMethod')}</Label>
+                <Label htmlFor="payment_method" className="text-xs lg:text-sm">{tForm('paymentMethod')}</Label>
                 <Select
                   value={watch('payment_method') || 'none'}
                   onValueChange={(value) => setValue('payment_method', value === 'none' ? null : value as PaymentMethod)}
@@ -622,10 +622,10 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
                 {isLoading
                   ? tForm('saving')
                   : isEditing

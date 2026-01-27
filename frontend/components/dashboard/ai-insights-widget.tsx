@@ -124,15 +124,15 @@ export function AIInsightsWidget() {
         </CardHeader>
       <CardContent>
         {!hasInsights ? (
-          <div className="text-center py-8">
-            <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-2">{t('emptyState.title')}</p>
-            <p className="text-sm text-muted-foreground">
+          <div className="text-center py-4 md:py-8">
+            <Sparkles className="mx-auto h-8 w-8 md:h-12 md:w-12 text-muted-foreground mb-2 md:mb-4" />
+            <p className="text-xs md:text-sm text-muted-foreground mb-2">{t('emptyState.title')}</p>
+            <p className="text-xs md:text-sm text-muted-foreground">
               {t('emptyState.description')}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* Spending Insights */}
             {insights.spending.length > 0 && (
               <div className="space-y-2">

@@ -120,11 +120,11 @@ export default function AdminSupportPage() {
   if (selectedTopicId && topicDetail) {
     // Detail view
     return (
-      <div className="container mx-auto py-6 px-4 max-w-6xl">
+      <div className="container mx-auto py-3 lg:py-6 px-3 lg:px-4 max-w-6xl">
         <Button
           variant="ghost"
           onClick={() => setSelectedTopicId(null)}
-          className="mb-4"
+          className="mb-3 lg:mb-4 text-xs lg:text-sm"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to All Topics
@@ -134,7 +134,7 @@ export default function AdminSupportPage() {
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <CardTitle className="text-2xl">{topicDetail.title}</CardTitle>
+                <CardTitle className="text-lg lg:text-2xl">{topicDetail.title}</CardTitle>
                 <CardDescription className="mt-2 space-y-1">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
@@ -177,7 +177,7 @@ export default function AdminSupportPage() {
           </CardHeader>
           <CardContent>
             {/* Messages */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
               {topicDetail.messages.map((message) => (
                 <div
                   key={message.id}
@@ -198,16 +198,16 @@ export default function AdminSupportPage() {
                         {formatDistanceToNow(new Date(message.created_at))} ago
                       </span>
                     </div>
-                    <p className="text-sm whitespace-pre-wrap">{message.message}</p>
+                    <p className="text-xs lg:text-sm whitespace-pre-wrap">{message.message}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Reply form */}
-            <form onSubmit={handleAddReply} className="space-y-4">
+            <form onSubmit={handleAddReply} className="space-y-3 lg:space-y-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Admin Reply</label>
+                <label className="text-xs lg:text-sm font-medium mb-2 block">Admin Reply</label>
                 <Textarea
                   placeholder="Type your reply to the user..."
                   value={replyMessage}
@@ -216,7 +216,7 @@ export default function AdminSupportPage() {
                   required
                 />
               </div>
-              <Button type="submit" disabled={replying || !replyMessage.trim()}>
+              <Button type="submit" disabled={replying || !replyMessage.trim()} className="text-xs lg:text-sm">
                 <Send className="h-4 w-4 mr-2" />
                 {replying ? 'Sending...' : 'Send Reply'}
               </Button>
@@ -229,17 +229,17 @@ export default function AdminSupportPage() {
 
   // List view
   return (
-    <div className="container mx-auto py-6 px-4 max-w-6xl">
-      <div className="mb-8 flex items-start justify-between gap-4">
+    <div className="container mx-auto py-3 lg:py-6 px-3 lg:px-4 max-w-6xl">
+      <div className="mb-4 lg:mb-8 flex items-start justify-between gap-2 lg:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Support Center</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-lg lg:text-2xl font-bold tracking-tight mb-1 lg:mb-2">Support Center</h1>
+          <p className="text-xs lg:text-sm text-muted-foreground">
             Manage user support requests and provide assistance.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[140px] lg:w-[180px] text-xs lg:text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -249,7 +249,7 @@ export default function AdminSupportPage() {
               <SelectItem value={SupportTopicStatus.RESOLVED}>Resolved</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={() => refetchTopics()}>
+          <Button variant="outline" onClick={() => refetchTopics()} className="text-xs lg:text-sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -258,33 +258,33 @@ export default function AdminSupportPage() {
 
       {/* Stats */}
       {topics && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 lg:gap-4 mb-3 lg:mb-6">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Open</CardTitle>
+            <CardHeader className="pb-2 lg:pb-3 p-3 lg:p-6">
+              <CardTitle className="text-[10px] lg:text-xs font-medium text-muted-foreground">Open</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 {topics.filter((t) => t.status === SupportTopicStatus.OPEN).length}
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+            <CardHeader className="pb-2 lg:pb-3 p-3 lg:p-6">
+              <CardTitle className="text-[10px] lg:text-xs font-medium text-muted-foreground">In Progress</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 {topics.filter((t) => t.status === SupportTopicStatus.IN_PROGRESS).length}
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Resolved</CardTitle>
+            <CardHeader className="pb-2 lg:pb-3 p-3 lg:p-6">
+              <CardTitle className="text-[10px] lg:text-xs font-medium text-muted-foreground">Resolved</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 lg:p-6 pt-0 lg:pt-0">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 {topics.filter((t) => t.status === SupportTopicStatus.RESOLVED).length}
               </div>
             </CardContent>
@@ -305,7 +305,7 @@ export default function AdminSupportPage() {
           ))}
         </div>
       ) : filteredTopics && filteredTopics.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-3 lg:space-y-4">
           {filteredTopics.map((topic) => (
             <Card
               key={topic.id}
@@ -313,9 +313,9 @@ export default function AdminSupportPage() {
               onClick={() => setSelectedTopicId(topic.id)}
             >
               <CardHeader>
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-2 lg:gap-4">
                   <div className="flex-1">
-                    <CardTitle className="text-lg">{topic.title}</CardTitle>
+                    <CardTitle className="text-sm lg:text-lg">{topic.title}</CardTitle>
                     <CardDescription className="mt-2 space-y-1">
                       <div className="flex items-center gap-2">
                         <User className="h-3 w-3" />
@@ -349,7 +349,7 @@ export default function AdminSupportPage() {
                 ? 'No support topics yet'
                 : `No ${statusFilter} topics`}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               Support topics from users will appear here.
             </p>
           </CardContent>

@@ -28,15 +28,15 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{tPage('title')}</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-lg lg:text-2xl font-bold tracking-tight">{tPage('title')}</h1>
+        <p className="text-xs lg:text-sm text-muted-foreground">
           {tPage('description')}
         </p>
       </div>
 
       {/* Tab Navigation */}
       <div className="border-b">
-        <nav className="flex gap-2 overflow-x-auto pb-px -mb-px scrollbar-hide">
+        <nav className="flex gap-1 lg:gap-2 overflow-x-auto pb-px -mb-px scrollbar-hide">
           {SETTINGS_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = pathname === tab.href;
@@ -46,13 +46,13 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 key={tab.value}
                 href={tab.href}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                  "flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 lg:py-2.5 text-xs lg:text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   isActive
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"
                 )}
               >
-                <Icon className="h-4 w-4 flex-shrink-0" />
+                <Icon className="h-3.5 w-3.5 lg:h-4 lg:w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">{tab.label}</span>
               </Link>
             );

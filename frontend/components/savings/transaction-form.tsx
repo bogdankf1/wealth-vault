@@ -222,10 +222,10 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base lg:text-lg">
             {isDeposit ? tForm('depositTitle') : tForm('withdrawalTitle')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs lg:text-sm">
             {isDeposit ? tForm('depositDescription') : tForm('withdrawalDescription')}
             {account && (
               <span className="block mt-1 font-medium">
@@ -235,7 +235,7 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
           {/* Amount with Currency Selection */}
           <CurrencyInput
             label={tForm('amount')}
@@ -276,7 +276,7 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
           {/* Exchange Rate (for cross-currency transactions) */}
           {isCrossCurrency && (
             <div className="space-y-2">
-              <Label>{tForm('exchangeRate')}</Label>
+              <Label className="text-xs lg:text-sm">{tForm('exchangeRate')}</Label>
               <Input
                 type="number"
                 step="0.000001"
@@ -311,7 +311,7 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">{tForm('description')}</Label>
+            <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
             <Textarea
               id="description"
               placeholder={tForm('descriptionPlaceholder')}
@@ -319,13 +319,13 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
               {...register('description')}
             />
             {errors.description && (
-              <p className="text-sm text-destructive">{errors.description.message}</p>
+              <p className="text-xs lg:text-sm text-destructive">{errors.description.message}</p>
             )}
           </div>
 
           {/* Category */}
           <div className="space-y-2">
-            <Label htmlFor="category">{tForm('category')}</Label>
+            <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
             <Select
               value={selectedCategory || ''}
               onValueChange={(value) => setValue('category', value)}
@@ -345,7 +345,7 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
 
           {/* Reference Number */}
           <div className="space-y-2">
-            <Label htmlFor="reference_number">{tForm('referenceNumber')}</Label>
+            <Label htmlFor="reference_number" className="text-xs lg:text-sm">{tForm('referenceNumber')}</Label>
             <Input
               id="reference_number"
               placeholder={tForm('referenceNumberPlaceholder')}
@@ -355,7 +355,7 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
 
           {/* Transaction Date */}
           <div className="space-y-2">
-            <Label htmlFor="transaction_date">{tForm('transactionDate')}</Label>
+            <Label htmlFor="transaction_date" className="text-xs lg:text-sm">{tForm('transactionDate')}</Label>
             <Input
               id="transaction_date"
               type="date"
@@ -365,13 +365,14 @@ export function TransactionForm({ accountId, type, isOpen, onClose }: Transactio
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
               {tActions('cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
               variant={isDeposit ? 'default' : 'destructive'}
+              className="text-xs lg:text-sm"
             >
               {isLoading
                 ? tForm('processing')

@@ -161,7 +161,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 lg:p-6 space-y-3 lg:space-y-6">
       {/* Header */}
       <ModuleHeader
         title="User Management"
@@ -184,7 +184,7 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 lg:gap-4">
             <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -253,22 +253,22 @@ export default function UsersPage() {
                 <table className="w-full">
                   <thead className="border-b dark:border-gray-700">
                     <tr>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <th className="text-left py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                         User
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <th className="text-left py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                         Role
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <th className="text-left py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                         Tier
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <th className="text-left py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                         Status
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <th className="text-left py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                         Joined
                       </th>
-                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <th className="text-right py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
                         Actions
                       </th>
                     </tr>
@@ -276,17 +276,17 @@ export default function UsersPage() {
                   <tbody>
                     {usersData.users.map((user) => (
                       <tr key={user.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td className="py-3 px-4">
+                        <td className="py-2 lg:py-3 px-2 lg:px-4">
                           <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="text-xs lg:text-sm font-medium text-gray-900 dark:text-white">
                               {user.name || 'No name'}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                               {user.email}
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 lg:py-3 px-2 lg:px-4">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
                               user.role
@@ -296,7 +296,7 @@ export default function UsersPage() {
                             {user.role}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 lg:py-3 px-2 lg:px-4">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTierBadgeColor(
                               user.tier_name
@@ -306,7 +306,7 @@ export default function UsersPage() {
                             {user.tier_display_name || user.tier_name || 'No tier'}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 lg:py-3 px-2 lg:px-4">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               user.is_active
@@ -317,10 +317,10 @@ export default function UsersPage() {
                             {user.is_active ? 'Active' : 'Suspended'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                        <td className="py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                           {format(new Date(user.created_at), 'MMM dd, yyyy')}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 lg:py-3 px-2 lg:px-4">
                           <div className="flex items-center justify-end space-x-2">
                             <Button
                               variant="ghost"
@@ -358,8 +358,8 @@ export default function UsersPage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center justify-between mt-3 lg:mt-6">
+                <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                   Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, usersData.total)} of{' '}
                   {usersData.total} users
                 </div>
@@ -372,7 +372,7 @@ export default function UsersPage() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                     Page {page} of {Math.ceil(usersData.total / 20)}
                   </span>
                   <Button

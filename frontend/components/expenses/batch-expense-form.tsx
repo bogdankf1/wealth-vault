@@ -225,13 +225,13 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-[96vw] sm:max-w-[96vw] w-full max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4">
-          <DialogTitle>{tBatch('title')}</DialogTitle>
-          <DialogDescription>{tBatch('description')}</DialogDescription>
+        <DialogHeader className="px-4 lg:px-6 pt-4 lg:pt-6 pb-3 lg:pb-4">
+          <DialogTitle className="text-base lg:text-lg">{tBatch('title')}</DialogTitle>
+          <DialogDescription className="text-xs lg:text-sm">{tBatch('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 px-6 overflow-y-auto">
-          <div className="space-y-4 pb-4">
+        <div className="flex-1 px-4 lg:px-6 overflow-y-auto">
+          <div className="space-y-3 lg:space-y-4 pb-4">
             {/* Mobile: Card layout */}
             <div className="md:hidden space-y-4">
               {rows.map((row, index) => (
@@ -256,7 +256,7 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>{tForm('name')} *</Label>
+                    <Label className="text-xs lg:text-sm">{tForm('name')} *</Label>
                     <Input
                       value={row.name}
                       onChange={(e) => updateRow(row.id, 'name', e.target.value)}
@@ -268,7 +268,7 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>{tForm('description')}</Label>
+                    <Label className="text-xs lg:text-sm">{tForm('description')}</Label>
                     <Input
                       value={row.description}
                       onChange={(e) => updateRow(row.id, 'description', e.target.value)}
@@ -277,7 +277,7 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>{tForm('category')}</Label>
+                    <Label className="text-xs lg:text-sm">{tForm('category')}</Label>
                     <Select
                       value={row.category}
                       onValueChange={(value) => updateRow(row.id, 'category', value)}
@@ -306,7 +306,7 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
                   />
 
                   <div className="space-y-2">
-                    <Label>{tForm('frequency')}</Label>
+                    <Label className="text-xs lg:text-sm">{tForm('frequency')}</Label>
                     <Select
                       value={row.frequency}
                       onValueChange={(value) =>
@@ -328,7 +328,7 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
 
                   {row.frequency === 'one_time' ? (
                     <div className="space-y-2">
-                      <Label>{tForm('date')}</Label>
+                      <Label className="text-xs lg:text-sm">{tForm('date')}</Label>
                       <Input
                         type="date"
                         value={row.date}
@@ -338,7 +338,7 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-2">
-                        <Label>{tForm('startDate')}</Label>
+                        <Label className="text-xs lg:text-sm">{tForm('startDate')}</Label>
                         <Input
                           type="date"
                           value={row.start_date}
@@ -346,7 +346,7 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>{tForm('endDate')}</Label>
+                        <Label className="text-xs lg:text-sm">{tForm('endDate')}</Label>
                         <Input
                           type="date"
                           value={row.end_date}
@@ -496,11 +496,11 @@ export function BatchExpenseForm({ isOpen, onClose }: BatchExpenseFormProps) {
           </div>
         </div>
 
-        <DialogFooter className="px-6 pb-6 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={handleClose}>
+        <DialogFooter className="px-4 lg:px-6 pb-4 lg:pb-6 pt-3 lg:pt-4 border-t">
+          <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
             {tActions('cancel')}
           </Button>
-          <Button type="button" onClick={handleSubmit} disabled={isLoading}>
+          <Button type="button" onClick={handleSubmit} disabled={isLoading} className="text-xs lg:text-sm">
             {isLoading ? tBatch('saving') : tActions('save')}
           </Button>
         </DialogFooter>

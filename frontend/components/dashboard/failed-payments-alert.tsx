@@ -84,8 +84,8 @@ export function FailedPaymentsAlert({ maxItems = 5, compact = false }: FailedPay
 
   if (compact) {
     return (
-      <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-lg">
-        <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+      <div className="flex items-center gap-2 p-2 md:p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-lg">
+        <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
         <span className="text-sm text-red-900 dark:text-red-100">
           {t('compactMessage', { count: data.total })}
         </span>
@@ -102,10 +102,10 @@ export function FailedPaymentsAlert({ maxItems = 5, compact = false }: FailedPay
   return (
     <Card className="p-4 md:p-6 border-red-200 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="p-1.5 md:p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+            <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
           </div>
           <div>
             <h2 className="text-base md:text-lg font-semibold text-red-900 dark:text-red-100">
@@ -127,11 +127,11 @@ export function FailedPaymentsAlert({ maxItems = 5, compact = false }: FailedPay
       </div>
 
       {/* Failed Payments List */}
-      <div className="space-y-3">
+      <div className="space-y-2 md:space-y-3">
         {displayItems.map((item) => (
           <div
             key={`${item.payment_type}-${item.id}`}
-            className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg border border-red-100 dark:border-red-900/20"
+            className="flex items-center justify-between p-2 md:p-3 bg-white dark:bg-gray-900 rounded-lg border border-red-100 dark:border-red-900/20"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">

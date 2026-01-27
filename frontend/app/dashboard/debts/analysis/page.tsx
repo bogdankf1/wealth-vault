@@ -52,21 +52,21 @@ export default function DebtsAnalysisPage() {
   const remainingAmount = stats.total_amount_owed - stats.total_amount_paid;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Debts Overview - Top Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-3">
         {/* Total Debts */}
         <Card className="border-blue-200 bg-blue-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <HandCoins className="h-4 w-4 text-blue-600" />
               {tAnalysis('totalDebts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-5xl font-bold text-blue-600">{stats.total_debts}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">{stats.total_debts}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('debtsBeingTracked')}
               </p>
             </div>
@@ -76,7 +76,7 @@ export default function DebtsAnalysisPage() {
         {/* Active Debts */}
         <Card className="border-orange-200 bg-orange-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-600" />
               {tAnalysis('activeDebts')}
             </CardTitle>
@@ -84,14 +84,14 @@ export default function DebtsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-orange-600">{stats.active_debts}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-orange-600">{stats.active_debts}</p>
                 <Badge variant="outline" className="text-orange-600 border-orange-300">
                   {stats.total_debts > 0
                     ? ((stats.active_debts / stats.total_debts) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('outstandingDebts')}
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function DebtsAnalysisPage() {
         {/* Paid Debts */}
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               {tAnalysis('paidDebts')}
             </CardTitle>
@@ -109,14 +109,14 @@ export default function DebtsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-green-600">{stats.paid_debts}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.paid_debts}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {stats.total_debts > 0
                     ? ((stats.paid_debts / stats.total_debts) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('fullyCollectedDebts')}
               </p>
             </div>
@@ -127,7 +127,7 @@ export default function DebtsAnalysisPage() {
       {/* Total Amount Overview */}
       <Card className="border-purple-200 bg-purple-50/50">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
             {tAnalysis('totalDebtOverview')}
           </CardTitle>
@@ -136,9 +136,9 @@ export default function DebtsAnalysisPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             <div className="flex items-baseline gap-3">
-              <p className="text-4xl font-bold text-purple-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
                   amount={stats.total_amount_owed}
                   currency={stats.currency}
@@ -152,7 +152,7 @@ export default function DebtsAnalysisPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{tAnalysis('collected')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
@@ -169,7 +169,7 @@ export default function DebtsAnalysisPage() {
                   style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{tAnalysis('outstanding')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
@@ -186,18 +186,18 @@ export default function DebtsAnalysisPage() {
       </Card>
 
       {/* Amount Breakdown */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Owed */}
         <Card className="border-indigo-200 bg-indigo-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-indigo-600" />
               {tAnalysis('totalAmountOwed')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-4xl font-bold text-indigo-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-indigo-600">
                 <CurrencyDisplay
                   amount={stats.total_amount_owed}
                   currency={stats.currency}
@@ -205,7 +205,7 @@ export default function DebtsAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('totalAmountToBeCollected')}
               </p>
             </div>
@@ -215,14 +215,14 @@ export default function DebtsAnalysisPage() {
         {/* Total Paid */}
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               {tAnalysis('totalCollected')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-4xl font-bold text-green-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">
                 <CurrencyDisplay
                   amount={stats.total_amount_paid}
                   currency={stats.currency}
@@ -230,7 +230,7 @@ export default function DebtsAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('amountSuccessfullyCollected')}
               </p>
             </div>
@@ -242,7 +242,7 @@ export default function DebtsAnalysisPage() {
       {stats.overdue_debts > 0 && (
         <Card className="border-red-200 bg-red-50/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-600" />
               {tAnalysis('overdueDebts')}
             </CardTitle>
@@ -253,12 +253,12 @@ export default function DebtsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-4xl font-bold text-red-600">{stats.overdue_debts}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-red-600">{stats.overdue_debts}</p>
                 <Badge variant="destructive">
                   {tAnalysis('requireAttention')}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('debtsPastDueDate', { count: stats.overdue_debts })}
               </p>
             </div>
@@ -269,16 +269,16 @@ export default function DebtsAnalysisPage() {
       {/* Collection Progress Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>{tAnalysis('collectionProgress')}</CardTitle>
+          <CardTitle className="text-sm lg:text-base font-medium">{tAnalysis('collectionProgress')}</CardTitle>
           <CardDescription>
             {tAnalysis('collectionProgressDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             {/* Active Debts Bar */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{tAnalysis('activeDebts')}</span>
@@ -308,7 +308,7 @@ export default function DebtsAnalysisPage() {
 
             {/* Paid Debts Bar */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{tAnalysis('paidDebts')}</span>
@@ -339,7 +339,7 @@ export default function DebtsAnalysisPage() {
             {/* Overdue Debts Bar */}
             {stats.overdue_debts > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs lg:text-sm">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">{tAnalysis('overdueDebts')}</span>

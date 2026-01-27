@@ -294,10 +294,10 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs lg:text-sm">
             {isEditing
               ? tForm('editDescription')
               : tForm('addDescription')}
@@ -309,21 +309,21 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{tForm('taxName')} *</Label>
+              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('taxName')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('taxNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{tForm('description')}</Label>
+              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -331,15 +331,15 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs lg:text-sm text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="tax_type">{tForm('taxType')} *</Label>
+                <Label htmlFor="tax_type" className="text-xs lg:text-sm">{tForm('taxType')} *</Label>
                 <Select
                   value={watch('tax_type')}
                   onValueChange={(value: 'fixed' | 'percentage') => {
@@ -364,7 +364,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="frequency">{tForm('frequency')} *</Label>
+                <Label htmlFor="frequency" className="text-xs lg:text-sm">{tForm('frequency')} *</Label>
                 <Select
                   value={watch('frequency')}
                   onValueChange={(value: 'monthly' | 'quarterly' | 'annually') => {
@@ -407,7 +407,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="percentage">{tForm('percentageLabel')} *</Label>
+                  <Label htmlFor="percentage" className="text-xs lg:text-sm">{tForm('percentageLabel')} *</Label>
                   <div className="relative">
                     <Input
                       id="percentage"
@@ -423,14 +423,14 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                     </span>
                   </div>
                   {errors.percentage && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-xs lg:text-sm text-destructive">
                       {errors.percentage.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="income_source_id">{tForm('incomeSourceLabel')}</Label>
+                  <Label htmlFor="income_source_id" className="text-xs lg:text-sm">{tForm('incomeSourceLabel')}</Label>
                   <Select
                     value={watch('income_source_id') || 'all'}
                     onValueChange={(value) => {
@@ -457,7 +457,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="notes">{tForm('notes')}</Label>
+              <Label htmlFor="notes" className="text-xs lg:text-sm">{tForm('notes')}</Label>
               <Textarea
                 id="notes"
                 placeholder={tForm('notesPlaceholder')}
@@ -465,15 +465,15 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                 {...register('notes')}
               />
               {errors.notes && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs lg:text-sm text-destructive">
                   {errors.notes.message}
                 </p>
               )}
             </div>
 
             {/* Payment Settings Section */}
-            <div className="border-t pt-4 space-y-4">
-              <h4 className="font-medium text-sm">{tForm('paymentSettings')}</h4>
+            <div className="border-t pt-3 lg:pt-4 space-y-3 lg:space-y-4">
+              <h4 className="font-medium text-xs lg:text-sm">{tForm('paymentSettings')}</h4>
 
               <AccountSelect
                 value={watch('payment_account_id')}
@@ -494,7 +494,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto_pay">{tForm('autoPayLabel')}</Label>
+                  <Label htmlFor="auto_pay" className="text-xs lg:text-sm">{tForm('autoPayLabel')}</Label>
                   <p className="text-xs text-muted-foreground">
                     {tForm('autoPayHelp')}
                   </p>
@@ -510,7 +510,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="is_active">{tForm('isActiveLabel')}</Label>
+                <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('isActiveLabel')}</Label>
                 <p className="text-xs text-muted-foreground">
                   {tForm('isActiveHelp')}
                 </p>
@@ -523,10 +523,10 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
                 {isLoading
                   ? tForm('saving')
                   : isEditing

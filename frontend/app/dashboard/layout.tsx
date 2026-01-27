@@ -213,7 +213,7 @@ export default function DashboardLayout({
               isCollapsed && 'xl:hidden'
             )}>
               <WealthVaultLogo size={32} className="flex-shrink-0" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
+              <span className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
                 {t('logo.title')}
               </span>
             </Link>

@@ -239,11 +239,11 @@ export function TransferDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
-          <DialogDescription>{t('description')}</DialogDescription>
+          <DialogTitle className="text-base lg:text-lg">{t('title')}</DialogTitle>
+          <DialogDescription className="text-xs lg:text-sm">{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
           {/* From/To Accounts - Inline Layout */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -290,10 +290,10 @@ export function TransferDialog({
             </div>
             {/* Errors */}
             {errors.from_account_id && (
-              <p className="text-sm text-destructive">{errors.from_account_id.message}</p>
+              <p className="text-xs lg:text-sm text-destructive">{errors.from_account_id.message}</p>
             )}
             {errors.to_account_id && (
-              <p className="text-sm text-destructive">{errors.to_account_id.message}</p>
+              <p className="text-xs lg:text-sm text-destructive">{errors.to_account_id.message}</p>
             )}
           </div>
 
@@ -320,7 +320,7 @@ export function TransferDialog({
 
           {/* Insufficient funds warning */}
           {fromAccount && sourceAmount > fromAccount.current_balance && (
-            <p className="text-sm text-destructive">{t('insufficientFunds')}</p>
+            <p className="text-xs lg:text-sm text-destructive">{t('insufficientFunds')}</p>
           )}
 
           {/* Input currency conversion info (when input currency differs from source account) */}
@@ -342,7 +342,7 @@ export function TransferDialog({
           {/* Input Exchange Rate (for input currency -> source account currency) */}
           {isInputCrossCurrency && (
             <div className="space-y-2">
-              <Label>{t('inputExchangeRate')}</Label>
+              <Label className="text-xs lg:text-sm">{t('inputExchangeRate')}</Label>
               <Input
                 type="number"
                 step="0.000001"
@@ -394,7 +394,7 @@ export function TransferDialog({
           {/* Exchange Rate (for source -> destination account currencies) */}
           {isAccountCrossCurrency && (
             <div className="space-y-2">
-              <Label>{t('exchangeRate')}</Label>
+              <Label className="text-xs lg:text-sm">{t('exchangeRate')}</Label>
               <Input
                 type="number"
                 step="0.000001"
@@ -429,7 +429,7 @@ export function TransferDialog({
 
           {/* Description */}
           <div className="space-y-2">
-            <Label>{t('descriptionLabel')}</Label>
+            <Label className="text-xs lg:text-sm">{t('descriptionLabel')}</Label>
             <Textarea
               placeholder={t('descriptionPlaceholder')}
               rows={2}
@@ -439,7 +439,7 @@ export function TransferDialog({
 
           {/* Transfer Date */}
           <div className="space-y-2">
-            <Label>{t('transferDate')}</Label>
+            <Label className="text-xs lg:text-sm">{t('transferDate')}</Label>
             <Input
               type="date"
               defaultValue={new Date().toISOString().split('T')[0]}
@@ -449,12 +449,13 @@ export function TransferDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
               {tActions('cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isLoading || (fromAccount ? sourceAmount > fromAccount.current_balance : false)}
+              className="text-xs lg:text-sm"
             >
               {isLoading ? t('processing') : t('submit')}
             </Button>

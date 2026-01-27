@@ -82,14 +82,14 @@ export function PrivacySettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         {[1, 2, 3].map((i) => (
           <Card key={i}>
-            <CardHeader>
+            <CardHeader className="p-3 lg:p-6">
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 lg:p-6 pt-0">
               <div className="h-32 w-full animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
@@ -99,23 +99,23 @@ export function PrivacySettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Analytics & Tracking */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Shield className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('analytics.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('analytics.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="analytics-usage">{t('analytics.usageAnalytics.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="analytics-usage" className="text-xs lg:text-sm">{t('analytics.usageAnalytics.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('analytics.usageAnalytics.description')}
               </p>
             </div>
@@ -128,8 +128,8 @@ export function PrivacySettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="analytics-errors">{t('analytics.errorReporting.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="analytics-errors" className="text-xs lg:text-sm">{t('analytics.errorReporting.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('analytics.errorReporting.description')}
               </p>
             </div>
@@ -142,8 +142,8 @@ export function PrivacySettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="analytics-performance">{t('analytics.performanceMonitoring.label')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="analytics-performance" className="text-xs lg:text-sm">{t('analytics.performanceMonitoring.label')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('analytics.performanceMonitoring.description')}
               </p>
             </div>
@@ -158,37 +158,37 @@ export function PrivacySettings() {
 
       {/* Data Visibility */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Eye className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('dataVisibility.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('dataVisibility.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 lg:p-6 pt-0">
           <RadioGroup value={dataVisibility} onValueChange={(value) => handleDataVisibilityChange(value as 'private' | 'anonymous')}>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3 rounded-lg border p-4">
+            <div className="space-y-3 lg:space-y-4">
+              <div className="flex items-start space-x-3 rounded-lg border p-3 lg:p-4">
                 <RadioGroupItem value="private" id="visibility-private" />
                 <div className="flex-1">
-                  <Label htmlFor="visibility-private" className="font-medium">
+                  <Label htmlFor="visibility-private" className="text-xs lg:text-sm font-medium">
                     {t('dataVisibility.private.label')}
                   </Label>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                     {t('dataVisibility.private.description')}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 rounded-lg border p-4">
+              <div className="flex items-start space-x-3 rounded-lg border p-3 lg:p-4">
                 <RadioGroupItem value="anonymous" id="visibility-anonymous" />
                 <div className="flex-1">
-                  <Label htmlFor="visibility-anonymous" className="font-medium">
+                  <Label htmlFor="visibility-anonymous" className="text-xs lg:text-sm font-medium">
                     {t('dataVisibility.anonymous.label')}
                   </Label>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                     {t('dataVisibility.anonymous.description')}
                   </p>
                 </div>
@@ -200,25 +200,25 @@ export function PrivacySettings() {
 
       {/* Data Export */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Download className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('dataExport.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               {t('dataExport.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('dataExport.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('dataExport.warningMessage')}
             </p>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs lg:text-sm text-muted-foreground">
             {t('dataExport.info')}
           </p>
           <Button onClick={handleExportData} variant="outline" disabled className="cursor-not-allowed opacity-50">

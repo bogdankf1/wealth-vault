@@ -191,7 +191,7 @@ export default function CurrenciesPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto space-y-6 p-6">
+      <div className="container mx-auto space-y-3 lg:space-y-6 p-3 lg:p-6">
         <ModuleHeader
           title="Currency Management"
           description="Manage supported currencies and exchange rates"
@@ -202,7 +202,7 @@ export default function CurrenciesPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-3 lg:space-y-6 p-3 lg:p-6">
       <ModuleHeader
         title="Currency Management"
         description="Manage supported currencies and exchange rates"
@@ -211,13 +211,13 @@ export default function CurrenciesPage() {
       {/* Actions Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-sm lg:text-base font-medium">Quick Actions</CardTitle>
+          <CardDescription className="text-xs lg:text-sm">
             Manage currencies and refresh exchange rates
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-3">
-          <Button onClick={handleAddCurrency}>
+        <CardContent className="flex gap-2 lg:gap-3">
+          <Button onClick={handleAddCurrency} className="text-xs lg:text-sm">
             <Plus className="mr-2 h-4 w-4" />
             Add Currency
           </Button>
@@ -225,6 +225,7 @@ export default function CurrenciesPage() {
             variant="outline"
             onClick={handleRefreshRates}
             disabled={isRefreshing}
+            className="text-xs lg:text-sm"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh Exchange Rates
@@ -235,8 +236,8 @@ export default function CurrenciesPage() {
       {/* Currencies Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Currencies</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-sm lg:text-base font-medium">Currencies</CardTitle>
+          <CardDescription className="text-xs lg:text-sm">
             {currencies?.length || 0} currencies configured
           </CardDescription>
         </CardHeader>
@@ -258,7 +259,7 @@ export default function CurrenciesPage() {
                   <TableCell className="font-medium">{currency.code}</TableCell>
                   <TableCell>{currency.name}</TableCell>
                   <TableCell>
-                    <span className="font-semibold text-lg">{currency.symbol}</span>
+                    <span className="font-semibold text-sm lg:text-lg">{currency.symbol}</span>
                   </TableCell>
                   <TableCell>{currency.decimal_places}</TableCell>
                   <TableCell>

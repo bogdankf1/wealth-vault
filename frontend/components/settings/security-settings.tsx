@@ -112,22 +112,22 @@ export function SecuritySettings() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Authentication Method */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Shield className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('authMethod.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('authMethod.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
-            <div className="flex items-start gap-3">
-              <svg className="h-6 w-6 mt-0.5" viewBox="0 0 24 24">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 lg:p-4 dark:border-blue-800 dark:bg-blue-950">
+            <div className="flex items-start gap-2 lg:gap-3">
+              <svg className="h-5 w-5 lg:h-6 lg:w-6 mt-0.5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -146,13 +146,13 @@ export function SecuritySettings() {
                 />
               </svg>
               <div className="flex-1">
-                <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                <h4 className="text-xs lg:text-sm font-medium text-blue-900 dark:text-blue-100">
                   {t('authMethod.signedInWith')}
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                <p className="text-xs lg:text-sm text-blue-700 dark:text-blue-300 mt-1">
                   {session?.user?.email || 'Loading...'}
                 </p>
-                <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+                <p className="text-xs lg:text-sm text-blue-600 dark:text-blue-400 mt-2">
                   {t('authMethod.securityInfo')}
                 </p>
                 <Button
@@ -171,28 +171,28 @@ export function SecuritySettings() {
 
       {/* Two-Factor Authentication */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Smartphone className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('twoFactor.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               {t('twoFactor.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('twoFactor.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('twoFactor.warningMessage')}
             </p>
           </div>
           <div className="flex items-center justify-between opacity-50">
             <div className="space-y-0.5">
-              <Label htmlFor="2fa-toggle">{t('twoFactor.enable')}</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label htmlFor="2fa-toggle" className="text-xs lg:text-sm">{t('twoFactor.enable')}</Label>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('twoFactor.enableDescription')}
               </p>
             </div>
@@ -205,14 +205,14 @@ export function SecuritySettings() {
           </div>
 
           {is2FAEnabled && (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
-              <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3 lg:p-4 dark:border-green-800 dark:bg-green-950">
+              <div className="flex items-start gap-2 lg:gap-3">
+                <Shield className="h-4 w-4 lg:h-5 lg:w-5 text-green-600 dark:text-green-400 mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-green-900 dark:text-green-100">
+                  <h4 className="text-xs lg:text-sm font-medium text-green-900 dark:text-green-100">
                     {t('twoFactor.enabled.title')}
                   </h4>
-                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  <p className="text-xs lg:text-sm text-green-700 dark:text-green-300 mt-1">
                     {t('twoFactor.enabled.description')}
                   </p>
                 </div>
@@ -224,39 +224,39 @@ export function SecuritySettings() {
 
       {/* Active Sessions */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Clock className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('sessions.title')}
             <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               {t('sessions.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('sessions.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('sessions.warningMessage')}
             </p>
           </div>
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="flex items-start justify-between rounded-lg border p-4"
+              className="flex items-start justify-between rounded-lg border p-3 lg:p-4"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">{session.device}</p>
+                  <p className="text-xs lg:text-sm font-medium">{session.device}</p>
                   {session.current && (
                     <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
                       {t('sessions.current')}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs lg:text-sm text-muted-foreground">
                   {session.location} • {session.ip}
                 </p>
                 <p className="text-xs text-muted-foreground">

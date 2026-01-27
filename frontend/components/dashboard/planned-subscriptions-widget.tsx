@@ -149,8 +149,8 @@ export function PlannedSubscriptionsWidget({ selectedMonth }: PlannedSubscriptio
       </CardHeader>
       <CardContent>
         {!upcomingSubscriptions || upcomingSubscriptions.length === 0 ? (
-          <div className="text-center py-8">
-            <CreditCard className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+          <div className="text-center py-4 md:py-8">
+            <CreditCard className="mx-auto h-8 w-8 md:h-12 md:w-12 text-muted-foreground mb-2 md:mb-4 opacity-50" />
             <p className="text-sm text-muted-foreground">
               {t('emptyState')}
             </p>
@@ -160,7 +160,7 @@ export function PlannedSubscriptionsWidget({ selectedMonth }: PlannedSubscriptio
             {upcomingSubscriptions.map((subscription) => (
               <div
                 key={subscription.id}
-                className="rounded-lg border bg-card p-4 hover:bg-accent/5 transition-colors"
+                className="rounded-lg border bg-card p-2.5 md:p-4 hover:bg-accent/5 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">

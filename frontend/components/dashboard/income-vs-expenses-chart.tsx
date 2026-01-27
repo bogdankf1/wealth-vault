@@ -73,7 +73,7 @@ export function IncomeVsExpensesChart({
     return (
       <Card className="p-4 md:p-6">
         <div className="flex flex-col items-center justify-center h-[300px] md:h-[400px] text-gray-500">
-          <TrendingUp className="h-12 w-12 mb-4 opacity-50" />
+          <TrendingUp className="h-8 w-8 md:h-12 md:w-12 mb-2 md:mb-4 opacity-50" />
           <p className="text-sm md:text-base">No data available for the selected period</p>
         </div>
       </Card>

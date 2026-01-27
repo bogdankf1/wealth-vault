@@ -84,7 +84,7 @@ export default function ExpensesAnalysisPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Month Filter */}
       <div className="flex justify-end">
         <MonthFilter
@@ -96,18 +96,18 @@ export default function ExpensesAnalysisPage() {
       </div>
 
       {/* Expense Frequency Breakdown - 4 Column Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Daily Expense */}
         <Card className="border-teal-200 bg-teal-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-teal-600" />
               {t('dailyExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-3xl font-bold text-teal-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-teal-600">
                 <CurrencyDisplay
                   amount={stats.total_daily_expense}
                   currency={stats.currency}
@@ -115,7 +115,7 @@ export default function ExpensesAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('perDay')}
               </p>
             </div>
@@ -125,14 +125,14 @@ export default function ExpensesAnalysisPage() {
         {/* Weekly Expense */}
         <Card className="border-blue-200 bg-blue-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Calendar className="h-4 w-4 text-blue-600" />
               {t('weeklyExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">
                 <CurrencyDisplay
                   amount={stats.total_weekly_expense}
                   currency={stats.currency}
@@ -140,7 +140,7 @@ export default function ExpensesAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('perWeek')}
               </p>
             </div>
@@ -150,14 +150,14 @@ export default function ExpensesAnalysisPage() {
         {/* Monthly Expense */}
         <Card className="border-purple-200 bg-purple-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
               {t('monthlyExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
                   amount={stats.total_monthly_expense}
                   currency={stats.currency}
@@ -165,7 +165,7 @@ export default function ExpensesAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('perMonth')}
               </p>
             </div>
@@ -175,14 +175,14 @@ export default function ExpensesAnalysisPage() {
         {/* Annual Expense */}
         <Card className="border-indigo-200 bg-indigo-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-indigo-600" />
               {t('annualExpense')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-3xl font-bold text-indigo-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-indigo-600">
                 <CurrencyDisplay
                   amount={stats.total_annual_expense}
                   currency={stats.currency}
@@ -190,7 +190,7 @@ export default function ExpensesAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('perYear')}
               </p>
             </div>
@@ -202,10 +202,10 @@ export default function ExpensesAnalysisPage() {
       {categoryEntries.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('categoryBreakdown')}</CardTitle>
+            <CardTitle className="text-sm lg:text-base font-medium">{t('categoryBreakdown')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {categoryEntries.map(([category, value], index) => {
                 const numValue = Number(value);
                 const percentage = totalCategoryExpenses > 0
@@ -218,11 +218,11 @@ export default function ExpensesAnalysisPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full ${colorClass}`} />
-                        <span className="font-medium capitalize">{category || 'Uncategorized'}</span>
+                        <span className="text-xs lg:text-sm font-medium capitalize">{category || 'Uncategorized'}</span>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-3">
-                          <span className="font-semibold">
+                          <span className="text-xs lg:text-sm font-semibold">
                             <CurrencyDisplay
                               amount={numValue}
                               currency={stats.currency}
@@ -248,10 +248,10 @@ export default function ExpensesAnalysisPage() {
             </div>
 
             {/* Summary */}
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex items-center justify-between text-sm">
+            <div className="mt-4 lg:mt-6 pt-4 border-t">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{t('totalExpenses')}</span>
-                <span className="font-bold text-lg">
+                <span className="font-bold text-base lg:text-lg">
                   <CurrencyDisplay
                     amount={totalCategoryExpenses}
                     currency={stats.currency}
@@ -266,11 +266,11 @@ export default function ExpensesAnalysisPage() {
       )}
 
       {/* Expense Sources Overview - 2 Column Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Expenses */}
         <Card className="border-gray-200 bg-gray-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4 text-gray-600" />
               {t('totalExpenses')}
             </CardTitle>
@@ -278,9 +278,9 @@ export default function ExpensesAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-gray-600">{stats.total_expenses}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-gray-600">{stats.total_expenses}</p>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('sourcesConfigured')}
               </p>
             </div>
@@ -290,7 +290,7 @@ export default function ExpensesAnalysisPage() {
         {/* Active Expenses */}
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Activity className="h-4 w-4 text-green-600" />
               {t('activeExpenses')}
             </CardTitle>
@@ -298,14 +298,14 @@ export default function ExpensesAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-green-600">{stats.active_expenses}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.active_expenses}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {stats.total_expenses > 0
                     ? ((stats.active_expenses / stats.total_expenses) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {t('sourcesActive', { count: stats.active_expenses, total: stats.total_expenses })}
               </p>
             </div>

@@ -72,11 +72,11 @@ export default function PortfolioAnalysisPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Performance Overview Card */}
       <Card className={`${isPositiveReturn ? 'border-green-200 bg-green-50/50' : 'border-red-200 bg-red-50/50'}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             {isPositiveReturn ? (
               <TrendingUp className="h-5 w-5 text-green-600" />
             ) : (
@@ -86,11 +86,11 @@ export default function PortfolioAnalysisPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             <div className="flex items-baseline justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">{tAnalysis('totalReturn')}</p>
-                <p className={`text-4xl font-bold ${isPositiveReturn ? 'text-green-600' : 'text-red-600'}`}>
+                <p className="text-xs lg:text-sm text-muted-foreground mb-1">{tAnalysis('totalReturn')}</p>
+                <p className={`text-base sm:text-lg lg:text-2xl font-bold ${isPositiveReturn ? 'text-green-600' : 'text-red-600'}`}>
                   <CurrencyDisplay
                     amount={stats.total_return}
                     currency={stats.currency}
@@ -102,17 +102,17 @@ export default function PortfolioAnalysisPage() {
               <div className="text-right">
                 <Badge
                   variant={isPositiveReturn ? 'default' : 'destructive'}
-                  className="text-lg px-3 py-1"
+                  className="text-base lg:text-lg px-3 py-1"
                 >
                   {formatPercentage(stats.total_return_percentage)}
                 </Badge>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div className="grid grid-cols-2 gap-2 lg:gap-4 pt-2 border-t">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">{tAnalysis('totalInvested')}</p>
-                <p className="text-xl font-semibold">
+                <p className="text-xs lg:text-sm text-muted-foreground mb-1">{tAnalysis('totalInvested')}</p>
+                <p className="text-base lg:text-xl font-semibold">
                   <CurrencyDisplay
                     amount={stats.total_invested}
                     currency={stats.currency}
@@ -122,8 +122,8 @@ export default function PortfolioAnalysisPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">{tAnalysis('currentValue')}</p>
-                <p className="text-xl font-semibold">
+                <p className="text-xs lg:text-sm text-muted-foreground mb-1">{tAnalysis('currentValue')}</p>
+                <p className="text-base lg:text-xl font-semibold">
                   <CurrencyDisplay
                     amount={stats.current_value}
                     currency={stats.currency}
@@ -139,11 +139,11 @@ export default function PortfolioAnalysisPage() {
 
       {/* Best/Worst Performers Grid */}
       {(stats.best_performer || stats.worst_performer) && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
           {stats.best_performer && (
             <Card className="border-green-200 bg-green-50/30">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Award className="h-4 w-4 text-green-600" />
                   {tAnalysis('bestPerformer')}
                 </CardTitle>
@@ -151,9 +151,9 @@ export default function PortfolioAnalysisPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="font-semibold text-lg">{stats.best_performer.asset_name}</p>
+                    <p className="font-semibold text-base lg:text-lg">{stats.best_performer.asset_name}</p>
                     {stats.best_performer.symbol && (
-                      <p className="text-sm text-muted-foreground font-mono">
+                      <p className="text-xs lg:text-sm text-muted-foreground font-mono">
                         {stats.best_performer.symbol}
                       </p>
                     )}
@@ -161,7 +161,7 @@ export default function PortfolioAnalysisPage() {
                   <div className="text-right">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-5 w-5 text-green-600" />
-                      <p className="text-2xl font-bold text-green-600">
+                      <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">
                         {formatPercentage(stats.best_performer.return_percentage)}
                       </p>
                     </div>
@@ -174,7 +174,7 @@ export default function PortfolioAnalysisPage() {
           {stats.worst_performer && (
             <Card className="border-red-200 bg-red-50/30">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-red-600" />
                   {tAnalysis('worstPerformer')}
                 </CardTitle>
@@ -182,9 +182,9 @@ export default function PortfolioAnalysisPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="font-semibold text-lg">{stats.worst_performer.asset_name}</p>
+                    <p className="font-semibold text-base lg:text-lg">{stats.worst_performer.asset_name}</p>
                     {stats.worst_performer.symbol && (
-                      <p className="text-sm text-muted-foreground font-mono">
+                      <p className="text-xs lg:text-sm text-muted-foreground font-mono">
                         {stats.worst_performer.symbol}
                       </p>
                     )}
@@ -192,7 +192,7 @@ export default function PortfolioAnalysisPage() {
                   <div className="text-right">
                     <div className="flex items-center gap-2">
                       <TrendingDown className="h-5 w-5 text-red-600" />
-                      <p className="text-2xl font-bold text-red-600">
+                      <p className="text-base sm:text-lg lg:text-2xl font-bold text-red-600">
                         {formatPercentage(stats.worst_performer.return_percentage)}
                       </p>
                     </div>
@@ -205,10 +205,10 @@ export default function PortfolioAnalysisPage() {
       )}
 
       {/* Winners vs Losers Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         <Card className="border-green-200 bg-green-50/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               {tAnalysis('profitableAssets')}
             </CardTitle>
@@ -216,12 +216,12 @@ export default function PortfolioAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline justify-between">
-                <p className="text-5xl font-bold text-green-600">{stats.winners}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.winners}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {winnersPercentage}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {stats.winners} {tAnalysis('assetsShowingPositiveReturns')}
               </p>
             </div>
@@ -230,7 +230,7 @@ export default function PortfolioAnalysisPage() {
 
         <Card className="border-red-200 bg-red-50/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-red-600" />
               {tAnalysis('losingAssets')}
             </CardTitle>
@@ -238,12 +238,12 @@ export default function PortfolioAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline justify-between">
-                <p className="text-5xl font-bold text-red-600">{stats.losers}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-red-600">{stats.losers}</p>
                 <Badge variant="outline" className="text-red-600 border-red-300">
                   {losersPercentage}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {stats.losers} {tAnalysis('assetsShowingNegativeReturns')}
               </p>
             </div>
@@ -255,10 +255,10 @@ export default function PortfolioAnalysisPage() {
       {assetTypeEntries.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{tAnalysis('assetAllocationByType')}</CardTitle>
+            <CardTitle className="text-sm lg:text-base font-medium">{tAnalysis('assetAllocationByType')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {assetTypeEntries.map(([type, value], index) => {
                 const numValue = Number(value);
                 const percentage = stats.current_value > 0
@@ -271,11 +271,11 @@ export default function PortfolioAnalysisPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full ${colorClass}`} />
-                        <span className="font-medium capitalize">{type || tAnalysis('unknown')}</span>
+                        <span className="text-xs lg:text-sm font-medium capitalize">{type || tAnalysis('unknown')}</span>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-3">
-                          <span className="font-semibold">
+                          <span className="text-xs lg:text-sm font-semibold">
                             <CurrencyDisplay
                               amount={numValue}
                               currency={stats.currency}
@@ -301,10 +301,10 @@ export default function PortfolioAnalysisPage() {
             </div>
 
             {/* Summary */}
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex items-center justify-between text-sm">
+            <div className="mt-4 lg:mt-6 pt-4 border-t">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{tAnalysis('totalPortfolioValue')}</span>
-                <span className="font-bold text-lg">
+                <span className="font-bold text-base lg:text-lg">
                   <CurrencyDisplay
                     amount={stats.current_value}
                     currency={stats.currency}

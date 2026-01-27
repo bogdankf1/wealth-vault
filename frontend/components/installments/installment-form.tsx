@@ -343,10 +343,10 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs lg:text-sm">
             {isEditing ? tForm('editDescription') : tForm('addDescription')}
           </DialogDescription>
         </DialogHeader>
@@ -356,21 +356,21 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{tForm('name')} *</Label>
+              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('name')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('namePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{tForm('description')}</Label>
+              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -378,14 +378,14 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs lg:text-sm text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">{tForm('category')}</Label>
+              <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
@@ -427,9 +427,9 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               error={errors.total_amount?.message}
             />
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="amount_per_payment">{tForm('paymentAmount')} *</Label>
+                <Label htmlFor="amount_per_payment" className="text-xs lg:text-sm">{tForm('paymentAmount')} *</Label>
                 <div className="relative">
                   <Input
                     id="amount_per_payment"
@@ -457,12 +457,12 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                   />
                 </div>
                 {errors.amount_per_payment && (
-                  <p className="text-sm text-destructive">{errors.amount_per_payment.message}</p>
+                  <p className="text-xs lg:text-sm text-destructive">{errors.amount_per_payment.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="interest_rate">{tForm('interestRate')}</Label>
+                <Label htmlFor="interest_rate" className="text-xs lg:text-sm">{tForm('interestRate')}</Label>
                 <Input
                   id="interest_rate"
                   type="number"
@@ -471,16 +471,16 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                   {...register('interest_rate', { valueAsNumber: true })}
                 />
                 {errors.interest_rate && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-xs lg:text-sm text-destructive">
                     {errors.interest_rate.message}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="frequency">{tForm('paymentFrequency')} *</Label>
+                <Label htmlFor="frequency" className="text-xs lg:text-sm">{tForm('paymentFrequency')} *</Label>
                 <Select
                   value={watch('frequency')}
                   onValueChange={(value) =>
@@ -501,7 +501,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="number_of_payments">{tForm('totalPayments')}</Label>
+                <Label htmlFor="number_of_payments" className="text-xs lg:text-sm">{tForm('totalPayments')}</Label>
                 <Input
                   id="number_of_payments"
                   type="number"
@@ -514,7 +514,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                   {tForm('totalPaymentsDescription')}
                 </p>
                 {errors.number_of_payments && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-xs lg:text-sm text-destructive">
                     {errors.number_of_payments.message}
                   </p>
                 )}
@@ -523,7 +523,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
             {isEditing && existingInstallment && (
               <div className="space-y-2">
-                <Label htmlFor="payments_made">{tForm('paymentsMade')}</Label>
+                <Label htmlFor="payments_made" className="text-xs lg:text-sm">{tForm('paymentsMade')}</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="payments_made"
@@ -540,7 +540,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="start_date">{tForm('startDate')} *</Label>
+              <Label htmlFor="start_date" className="text-xs lg:text-sm">{tForm('startDate')} *</Label>
               <Input
                 id="start_date"
                 type="date"
@@ -551,14 +551,14 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                 {tForm('startDateHelp')}
               </p>
               {errors.start_date && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs lg:text-sm text-destructive">
                   {errors.start_date.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="end_date">{tForm('payoffDate')}</Label>
+              <Label htmlFor="end_date" className="text-xs lg:text-sm">{tForm('payoffDate')}</Label>
               <Input
                 id="end_date"
                 type="date"
@@ -571,7 +571,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">{tForm('activeInstallment')}</Label>
+              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('activeInstallment')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -580,8 +580,8 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             </div>
 
             {/* Payment Integration Section */}
-            <div className="space-y-4 border-t pt-4 mt-4">
-              <h3 className="text-base font-semibold text-foreground">{tForm('accountIntegration')}</h3>
+            <div className="space-y-3 lg:space-y-4 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+              <h3 className="text-sm lg:text-base font-semibold text-foreground">{tForm('accountIntegration')}</h3>
 
               {/* Payment Account */}
               <AccountSelect
@@ -609,7 +609,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="auto_pay">{tForm('autoPay')}</Label>
+                      <Label htmlFor="auto_pay" className="text-xs lg:text-sm">{tForm('autoPay')}</Label>
                       <p className="text-xs text-muted-foreground">
                         {tForm('autoPayHelp')}
                       </p>
@@ -638,7 +638,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
                         className="mt-1"
                       />
                       <div className="space-y-0.5">
-                        <Label htmlFor="sync_historical" className="text-sm font-normal cursor-pointer">
+                        <Label htmlFor="sync_historical" className="text-xs lg:text-sm font-normal cursor-pointer">
                           {tForm('syncHistorical')}
                         </Label>
                         <p className="text-xs text-muted-foreground">
@@ -650,7 +650,7 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
 
                   {/* Reminder Days Before */}
                   <div className="space-y-2">
-                    <Label htmlFor="reminder_days_before">{tForm('reminderDaysBefore')}</Label>
+                    <Label htmlFor="reminder_days_before" className="text-xs lg:text-sm">{tForm('reminderDaysBefore')}</Label>
                     <Input
                       id="reminder_days_before"
                       type="number"
@@ -667,10 +667,10 @@ export function InstallmentForm({ installmentId, isOpen, onClose }: InstallmentF
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
                 {isLoading
                   ? tForm('saving')
                   : isEditing

@@ -83,7 +83,7 @@ export function IncomeBreakdownChart({
     return (
       <Card className="p-4 md:p-6">
         <div className="flex flex-col items-center justify-center h-[300px] md:h-[400px] text-gray-500">
-          <PieChartIcon className="h-12 w-12 mb-4 opacity-50" />
+          <PieChartIcon className="h-8 w-8 md:h-12 md:w-12 mb-2 md:mb-4 opacity-50" />
           <p className="text-sm md:text-base">{t('emptyState')}</p>
         </div>
       </Card>
@@ -182,10 +182,10 @@ export function IncomeBreakdownChart({
           </p>
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
         {/* Chart */}
         <div>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={220} className="md:!h-[300px]">
             <PieChart>
               <Pie
                 data={data}
@@ -249,11 +249,11 @@ export function IncomeBreakdownChart({
       </div>
 
       {/* Summary insights */}
-      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+      <div className="mt-3 pt-3 md:mt-6 md:pt-6 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-3">
           {t('summary')}
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
           {data.map((item) => (
             <div
               key={item.category}

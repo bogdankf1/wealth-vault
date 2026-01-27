@@ -44,24 +44,24 @@ function LoginForm() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl dark:bg-gray-800">
+      <div className="w-full max-w-md p-4 lg:p-8 space-y-4 lg:space-y-6 bg-white rounded-lg shadow-xl dark:bg-gray-800">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <WealthVaultLogo size={48} />
+          <div className="flex justify-center mb-3 lg:mb-4">
+            <WealthVaultLogo size={48} className="h-8 w-8 lg:h-12 lg:w-12" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <h1 className="text-lg lg:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             {t('title')}
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-1 lg:mt-2 text-xs lg:text-sm text-gray-600 dark:text-gray-400">
             {t('tagline')}
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 lg:space-y-4">
           {/* Error Message */}
           {errorMessage && (
             <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400 text-center">
+              <p className="text-xs lg:text-sm text-red-600 dark:text-red-400 text-center">
                 {errorMessage}
               </p>
             </div>
@@ -69,9 +69,9 @@ function LoginForm() {
 
           <button
             onClick={handleGoogleSignIn}
-            className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+            className="flex items-center justify-center w-full px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
           >
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

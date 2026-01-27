@@ -127,13 +127,13 @@ export function AccountSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="p-3 lg:p-6">
             <div className="h-6 w-32 animate-pulse rounded bg-muted" />
             <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 lg:p-6 pt-0">
             <div className="h-32 w-full animate-pulse rounded bg-muted" />
           </CardContent>
         </Card>
@@ -142,42 +142,42 @@ export function AccountSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <User className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('title')}
           </CardTitle>
-          <CardDescription>{t('description')}</CardDescription>
+          <CardDescription className="text-xs lg:text-sm">{t('description')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-start gap-3">
-            <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
+          <div className="flex items-start gap-2 lg:gap-3">
+            <User className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium">{t('name')}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm font-medium">{t('name')}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {session?.user?.name || currentUser?.name || t('notSet')}
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3">
-            <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div className="flex items-start gap-2 lg:gap-3">
+            <Mail className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium">{t('email')}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm font-medium">{t('email')}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {session?.user?.email || currentUser?.email || t('notSet')}
               </p>
             </div>
           </div>
 
           {currentUser?.created_at && (
-            <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex items-start gap-2 lg:gap-3">
+              <Calendar className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium">{t('memberSince')}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs lg:text-sm font-medium">{t('memberSince')}</p>
+                <p className="text-xs lg:text-sm text-muted-foreground">
                   {format(new Date(currentUser.created_at), 'MMMM d, yyyy')}
                 </p>
               </div>
@@ -188,16 +188,16 @@ export function AccountSettings() {
 
       {/* Country Selection */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Globe className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('country.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('country.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 lg:p-6 pt-0">
           <Select value={country} onValueChange={handleCountryChange}>
             <SelectTrigger className="w-full md:w-[300px]">
               <SelectValue placeholder={t('country.selectPlaceholder')} />
@@ -215,16 +215,16 @@ export function AccountSettings() {
 
       {/* Occupation Selection */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Briefcase className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('occupation.title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {t('occupation.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 lg:p-6 pt-0">
           <Select value={occupation} onValueChange={handleOccupationChange}>
             <SelectTrigger className="w-full md:w-[300px]">
               <SelectValue placeholder={t('occupation.selectPlaceholder')} />

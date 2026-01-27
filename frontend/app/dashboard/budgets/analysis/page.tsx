@@ -34,7 +34,7 @@ export default function BudgetsAnalysisPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         <div className="flex justify-end">
           <div className="h-9 w-40 animate-pulse rounded bg-muted" />
         </div>
@@ -45,7 +45,7 @@ export default function BudgetsAnalysisPage() {
 
   if (!overview) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3 lg:space-y-6">
         <div className="flex justify-end">
           <MonthFilter
             selectedMonth={selectedMonth}
@@ -62,7 +62,7 @@ export default function BudgetsAnalysisPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Month Filter */}
       <div className="flex justify-end">
         <MonthFilter
@@ -77,7 +77,7 @@ export default function BudgetsAnalysisPage() {
       {overview.alerts.length > 0 && (
         <Card className="border-amber-200 dark:border-amber-800">
           <CardHeader>
-            <CardTitle className="flex items-center text-amber-600 dark:text-amber-400">
+            <CardTitle className="flex items-center text-sm lg:text-base font-medium text-amber-600 dark:text-amber-400">
               <AlertCircle className="mr-2 h-5 w-5" />
               {tAnalysis('budgetAlerts')}
             </CardTitle>
@@ -87,7 +87,7 @@ export default function BudgetsAnalysisPage() {
               {overview.alerts.map((alert, index) => (
                 <div
                   key={index}
-                  className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-sm"
+                  className="p-2 lg:p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-xs lg:text-sm"
                 >
                   {alert}
                 </div>
@@ -105,23 +105,23 @@ export default function BudgetsAnalysisPage() {
       {/* Budget by Category */}
       <Card>
         <CardHeader>
-          <CardTitle>{tAnalysis('budgetByCategory')}</CardTitle>
+          <CardTitle className="text-sm lg:text-base font-medium">{tAnalysis('budgetByCategory')}</CardTitle>
           <CardDescription>{tAnalysis('spendingByCategory')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             {overview.by_category.map((category) => (
               <div key={category.category} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{category.category}</span>
+                    <span className="text-xs lg:text-sm font-medium">{category.category}</span>
                     {category.is_overspent && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+                      <span className="text-[10px] lg:text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
                         {tAnalysis('overspent')}
                       </span>
                     )}
                   </div>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs lg:text-sm text-muted-foreground">
                     <CurrencyDisplay
                       amount={category.spent}
                       currency={overview.stats.currency}
@@ -147,7 +147,7 @@ export default function BudgetsAnalysisPage() {
                     style={{ width: `${Math.min(Number(category.percentage_used), 100)}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs lg:text-sm">
                   <span className="text-muted-foreground">
                     {Number(category.percentage_used).toFixed(1)}% {tAnalysis('used')}
                   </span>

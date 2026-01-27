@@ -23,20 +23,20 @@ export function ErrorState({
   variant = 'destructive',
 }: ErrorStateProps) {
   return (
-    <div className={`py-8 ${className}`}>
+    <div className={`py-4 lg:py-8 ${className}`}>
       <Alert variant={variant}>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>{title}</AlertTitle>
-        <AlertDescription className="mt-2">
+        <AlertCircle className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+        <AlertTitle className="text-xs lg:text-sm">{title}</AlertTitle>
+        <AlertDescription className="mt-1 lg:mt-2 text-xs lg:text-sm">
           <p>{message}</p>
           {onRetry && (
             <Button
               onClick={onRetry}
               variant="outline"
               size="sm"
-              className="mt-4"
+              className="mt-2 lg:mt-4 text-xs lg:text-sm"
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <RefreshCw className="mr-1.5 lg:mr-2 h-3 w-3 lg:h-4 lg:w-4" />
               Try Again
             </Button>
           )}

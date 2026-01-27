@@ -116,10 +116,10 @@ export function TimeRangeFilter({
   };
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-4 flex-wrap">
+    <Card className="p-2 md:p-4">
+      <div className="flex items-center gap-2 md:gap-4 flex-wrap">
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+          <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 md:mb-2 block">
             Time Period
           </label>
           <Select value={selectedPeriod} onValueChange={handlePeriodChange}>
@@ -141,7 +141,7 @@ export function TimeRangeFilter({
         {selectedPeriod === 'custom' && (
           <>
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 md:mb-2 block">
                 Start Date
               </label>
               <Popover>
@@ -163,7 +163,7 @@ export function TimeRangeFilter({
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 md:mb-2 block">
                 End Date
               </label>
               <Popover>
@@ -197,7 +197,7 @@ export function TimeRangeFilter({
         )}
 
         <div className="ml-auto self-end">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
             {getDateRange(selectedPeriod).label}
           </p>
         </div>

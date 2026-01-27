@@ -50,21 +50,21 @@ export default function GoalsAnalysisPage() {
   const inProgressGoals = stats.active_goals - stats.completed_goals;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Goal Overview - Top Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-3">
         {/* Total Goals */}
         <Card className="border-blue-200 bg-blue-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-blue-600" />
               {tAnalysis('totalGoals')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-5xl font-bold text-blue-600">{stats.total_goals}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">{stats.total_goals}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('goalsInPortfolio')}
               </p>
             </div>
@@ -74,15 +74,15 @@ export default function GoalsAnalysisPage() {
         {/* Active Goals */}
         <Card className="border-orange-200 bg-orange-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-600" />
               {tAnalysis('inProgress')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-5xl font-bold text-orange-600">{inProgressGoals}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-orange-600">{inProgressGoals}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('goalsBeingPursued')}
               </p>
             </div>
@@ -92,7 +92,7 @@ export default function GoalsAnalysisPage() {
         {/* Completed Goals */}
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               {tAnalysis('completed')}
             </CardTitle>
@@ -100,14 +100,14 @@ export default function GoalsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-green-600">{stats.completed_goals}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.completed_goals}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {stats.total_goals > 0
                     ? ((stats.completed_goals / stats.total_goals) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('goalsSuccessfullyAchieved')}
               </p>
             </div>
@@ -116,18 +116,18 @@ export default function GoalsAnalysisPage() {
       </div>
 
       {/* Financial Overview */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Target Amount */}
         <Card className="border-purple-200 bg-purple-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
               {tAnalysis('totalTarget')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-4xl font-bold text-purple-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">
                 <CurrencyDisplay
                   amount={stats.total_target_amount}
                   currency={stats.currency}
@@ -135,7 +135,7 @@ export default function GoalsAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('combinedTarget')}
               </p>
             </div>
@@ -145,14 +145,14 @@ export default function GoalsAnalysisPage() {
         {/* Total Saved */}
         <Card className="border-indigo-200 bg-indigo-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-indigo-600" />
               {tAnalysis('totalSaved')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-4xl font-bold text-indigo-600">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold text-indigo-600">
                 <CurrencyDisplay
                   amount={stats.total_saved}
                   currency={stats.currency}
@@ -160,7 +160,7 @@ export default function GoalsAnalysisPage() {
                   showCode={false}
                 />
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('amountSavedTowards')}
               </p>
             </div>
@@ -171,7 +171,7 @@ export default function GoalsAnalysisPage() {
       {/* Progress Overview */}
       <Card className={`${progressPercentage >= 50 ? 'border-green-200 bg-green-50/50' : 'border-yellow-200 bg-yellow-50/50'}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Target className="h-5 w-5" />
             {tAnalysis('overallProgress')}
           </CardTitle>
@@ -180,9 +180,9 @@ export default function GoalsAnalysisPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             <div className="flex items-baseline gap-3">
-              <p className="text-4xl font-bold">
+              <p className="text-base sm:text-lg lg:text-2xl font-bold">
                 {progressPercentage.toFixed(1)}%
               </p>
               <Badge variant={progressPercentage >= 50 ? 'default' : 'secondary'}>
@@ -190,7 +190,7 @@ export default function GoalsAnalysisPage() {
               </Badge>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{tAnalysis('saved')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
@@ -207,7 +207,7 @@ export default function GoalsAnalysisPage() {
                   style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs lg:text-sm">
                 <span className="font-medium">{tAnalysis('remaining')}</span>
                 <span className="text-muted-foreground">
                   <CurrencyDisplay
@@ -224,11 +224,11 @@ export default function GoalsAnalysisPage() {
       </Card>
 
       {/* Goal Performance Indicators */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* On Track Goals */}
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               {tAnalysis('goalsOnTrack')}
             </CardTitle>
@@ -236,14 +236,14 @@ export default function GoalsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-green-600">{stats.goals_on_track}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.goals_on_track}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {stats.active_goals > 0
                     ? ((stats.goals_on_track / stats.active_goals) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('goalsProgressingWell')}
               </p>
             </div>
@@ -253,7 +253,7 @@ export default function GoalsAnalysisPage() {
         {/* Behind Schedule */}
         <Card className="border-red-200 bg-red-50/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-red-600" />
               {tAnalysis('behindSchedule')}
             </CardTitle>
@@ -261,14 +261,14 @@ export default function GoalsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-red-600">{stats.goals_behind}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-red-600">{stats.goals_behind}</p>
                 <Badge variant="outline" className="text-red-600 border-red-300">
                   {stats.active_goals > 0
                     ? ((stats.goals_behind / stats.active_goals) * 100).toFixed(0)
                     : 0}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 {tAnalysis('goalsNeedingAttention')}
               </p>
             </div>
@@ -280,13 +280,13 @@ export default function GoalsAnalysisPage() {
       {goalsByCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{tAnalysis('goalsByCategory')}</CardTitle>
+            <CardTitle className="text-sm lg:text-base font-medium">{tAnalysis('goalsByCategory')}</CardTitle>
             <CardDescription>
               {tAnalysis('targetAcrossCategories')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {goalsByCategory.map(([category, amount]) => {
                 const percentage = stats.total_target_amount > 0
                   ? (amount / stats.total_target_amount) * 100
@@ -294,7 +294,7 @@ export default function GoalsAnalysisPage() {
 
                 return (
                   <div key={category} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-xs lg:text-sm">
                       <div className="flex items-center gap-2">
                         <Target className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">{category}</span>
