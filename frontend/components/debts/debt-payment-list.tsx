@@ -73,13 +73,13 @@ export function DebtPaymentList({ debtId, currency }: DebtPaymentListProps) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-48" />
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <Skeleton className="h-5 lg:h-6 w-32" />
+          <Skeleton className="h-3 lg:h-4 w-48" />
         </CardHeader>
-        <CardContent>
-          <Skeleton className="h-64 w-full" />
+        <CardContent className="px-3 lg:px-6">
+          <Skeleton className="h-48 lg:h-64 w-full" />
         </CardContent>
       </Card>
     );
@@ -88,24 +88,24 @@ export function DebtPaymentList({ debtId, currency }: DebtPaymentListProps) {
   const payments = data?.items || [];
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+      <CardHeader className="px-3 lg:px-6">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+              <Receipt className="h-4 w-4 lg:h-5 lg:w-5" />
               {t('title')}
             </CardTitle>
             <CardDescription>{t('description')}</CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 lg:px-6">
         {payments.length === 0 ? (
-          <div className="text-center py-8">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">{t('noPayments')}</h3>
-            <p className="text-muted-foreground">{t('noPaymentsDescription')}</p>
+          <div className="text-center py-4 lg:py-8">
+            <FileText className="mx-auto h-8 w-8 lg:h-12 lg:w-12 text-muted-foreground/50" />
+            <h3 className="mt-2 lg:mt-4 text-base lg:text-lg font-semibold">{t('noPayments')}</h3>
+            <p className="text-xs lg:text-sm text-muted-foreground">{t('noPaymentsDescription')}</p>
           </div>
         ) : (
           <div className="rounded-md border">

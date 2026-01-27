@@ -275,21 +275,21 @@ export default function PortfolioDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-64" />
+        <Skeleton className="h-48 lg:h-64" />
       </div>
     );
   }
@@ -309,31 +309,31 @@ export default function PortfolioDetailPage() {
   const progressPercent = Math.min(100, Math.max(0, ((asset.current_value || 0) / (asset.total_invested || 1)) * 100));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={handleBack}>
-            <ArrowLeft className="h-5 w-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-lg lg:text-2xl font-bold flex items-center gap-2">
               {asset.asset_name}
-              {asset.symbol && <Badge variant="outline">{asset.symbol}</Badge>}
+              {asset.symbol && <Badge variant="outline" className="text-[10px] lg:text-xs">{asset.symbol}</Badge>}
               {asset.ticker && asset.use_dynamic_pricing && (
-                <Badge variant="secondary">{asset.ticker}</Badge>
+                <Badge variant="secondary" className="text-[10px] lg:text-xs">{asset.ticker}</Badge>
               )}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {asset.asset_type} • {asset.quantity} {t('shares')}
             </p>
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -375,69 +375,69 @@ export default function PortfolioDetailPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('totalInvested')}</CardTitle>
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">{t('totalInvested')}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay amount={asset.total_invested || 0} currency={asset.currency} showSymbol />
             </div>
-            <p className="text-xs text-muted-foreground">@ <CurrencyDisplay amount={asset.purchase_price} currency={asset.currency} showSymbol /> {t('perShare')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">@ <CurrencyDisplay amount={asset.purchase_price} currency={asset.currency} showSymbol /> {t('perShare')}</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('currentValue')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">{t('currentValue')}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay amount={asset.current_value || 0} currency={asset.currency} showSymbol />
             </div>
-            <p className="text-xs text-muted-foreground">@ <CurrencyDisplay amount={asset.current_price} currency={asset.currency} showSymbol /> {t('perShare')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">@ <CurrencyDisplay amount={asset.current_price} currency={asset.currency} showSymbol /> {t('perShare')}</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('totalReturn')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">{t('totalReturn')}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold flex items-center gap-2 ${isPositiveReturn ? 'text-green-600' : 'text-red-600'}`}>
-              {isPositiveReturn ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
+          <CardContent className="px-3 lg:px-6">
+            <div className={`text-base sm:text-lg lg:text-2xl font-bold flex items-center gap-2 ${isPositiveReturn ? 'text-green-600' : 'text-red-600'}`}>
+              {isPositiveReturn ? <TrendingUp className="h-4 w-4 lg:h-5 lg:w-5" /> : <TrendingDown className="h-4 w-4 lg:h-5 lg:w-5" />}
               <CurrencyDisplay amount={asset.total_return || 0} currency={asset.currency} showSymbol />
             </div>
-            <p className={`text-xs ${isPositiveReturn ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-[10px] lg:text-xs ${isPositiveReturn ? 'text-green-600' : 'text-red-600'}`}>
               {isPositiveReturn ? '+' : ''}{returnPercent.toFixed(2)}%
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('totalDividends')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">{t('totalDividends')}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay amount={asset.total_dividends_received || 0} currency={asset.currency} showSymbol />
             </div>
             {asset.is_dividend_paying && asset.dividend_yield && (
-              <p className="text-xs text-muted-foreground">{(Number(asset.dividend_yield) * 100).toFixed(2)}% {t('yield')}</p>
+              <p className="text-[10px] lg:text-xs text-muted-foreground">{(Number(asset.dividend_yield) * 100).toFixed(2)}% {t('yield')}</p>
             )}
           </CardContent>
         </Card>
       </div>
 
       {/* Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('investmentProgress')}</CardTitle>
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="text-sm lg:text-base">{t('investmentProgress')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-4">
           <Progress value={progressPercent} className="h-3" />
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs lg:text-sm">
             <span className="text-muted-foreground">{t('costBasis')}: <CurrencyDisplay amount={asset.cost_basis || asset.total_invested || 0} currency={asset.currency} showSymbol /></span>
             <span className={isPositiveReturn ? 'text-green-600' : 'text-red-600'}>
               {progressPercent.toFixed(1)}% {t('ofInvestment')}
@@ -447,12 +447,12 @@ export default function PortfolioDetailPage() {
       </Card>
 
       {/* Asset Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('assetDetails')}</CardTitle>
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="text-sm lg:text-base">{t('assetDetails')}</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
+        <CardContent className="px-3 lg:px-6 grid gap-2 lg:gap-4 md:grid-cols-2">
+          <div className="space-y-1.5 lg:space-y-2 text-xs lg:text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t('purchaseDate')}</span>
               <span>{format(new Date(asset.purchase_date), 'PP')}</span>
@@ -476,7 +476,7 @@ export default function PortfolioDetailPage() {
               </div>
             )}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 lg:space-y-2 text-xs lg:text-sm">
             {asset.is_dividend_paying && (
               <>
                 <div className="flex justify-between">
@@ -502,17 +502,17 @@ export default function PortfolioDetailPage() {
       </Card>
 
       {/* Linked Account Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('linkedAccount')}</CardTitle>
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="text-sm lg:text-base">{t('linkedAccount')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3">
           {linkedAccount ? (
             <>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-xs lg:text-sm">
                 <Wallet className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{linkedAccount.name}</span>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-[10px] lg:text-xs">
                   <CurrencyDisplay
                     amount={linkedAccount.current_balance}
                     currency={linkedAccount.currency}
@@ -520,32 +520,32 @@ export default function PortfolioDetailPage() {
                   />
                 </Badge>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-xs lg:text-sm">
                 <span className="text-muted-foreground">{t('autoTransact')}</span>
-                <Badge variant={asset.auto_transact ? 'default' : 'secondary'}>
+                <Badge variant={asset.auto_transact ? 'default' : 'secondary'} className="text-[10px] lg:text-xs">
                   {asset.auto_transact ? t('autoTransactEnabled') : t('autoTransactDisabled')}
                 </Badge>
               </div>
             </>
           ) : (
-            <p className="text-muted-foreground">{t('noLinkedAccount')}</p>
+            <p className="text-xs lg:text-sm text-muted-foreground">{t('noLinkedAccount')}</p>
           )}
         </CardContent>
       </Card>
 
       {/* Dividend Account Card */}
       {asset.is_dividend_paying && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('dividendAccount')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-sm lg:text-base">{t('dividendAccount')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3">
             {dividendAccount ? (
               <>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-xs lg:text-sm">
                   <Wallet className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{dividendAccount.name}</span>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-[10px] lg:text-xs">
                     <CurrencyDisplay
                       amount={dividendAccount.current_balance}
                       currency={dividendAccount.currency}
@@ -553,29 +553,29 @@ export default function PortfolioDetailPage() {
                     />
                   </Badge>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs lg:text-sm">
                   <span className="text-muted-foreground">{t('autoDepositDividends')}</span>
-                  <Badge variant={asset.auto_deposit_dividends ? 'default' : 'secondary'}>
+                  <Badge variant={asset.auto_deposit_dividends ? 'default' : 'secondary'} className="text-[10px] lg:text-xs">
                     {asset.auto_deposit_dividends ? t('enabled') : t('disabled')}
                   </Badge>
                 </div>
               </>
             ) : (
-              <p className="text-muted-foreground">{t('noDividendAccount')}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">{t('noDividendAccount')}</p>
             )}
           </CardContent>
         </Card>
       )}
 
       {/* Transaction History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{tTransactions('title')}</CardTitle>
-          <CardDescription>{tTransactions('description')}</CardDescription>
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="text-sm lg:text-base">{tTransactions('title')}</CardTitle>
+          <CardDescription className="text-xs lg:text-sm">{tTransactions('description')}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 lg:px-6">
           {transactions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">{tTransactions('noTransactions')}</p>
+            <p className="text-center text-muted-foreground py-4 lg:py-8">{tTransactions('noTransactions')}</p>
           ) : (
             <Table>
               <TableHeader>

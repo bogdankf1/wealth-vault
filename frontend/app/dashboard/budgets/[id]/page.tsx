@@ -125,21 +125,21 @@ export default function BudgetDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-64" />
+        <Skeleton className="h-48 lg:h-64" />
       </div>
     );
   }
@@ -166,28 +166,29 @@ export default function BudgetDetailPage({ params }: PageProps) {
   const remaining = progress?.remaining || (effectiveAmount - spent);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 lg:h-10 lg:w-10"
             onClick={() => router.push('/dashboard/budgets/overview')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{budget.name}</h1>
-              <Badge variant={budget.is_active ? 'default' : 'secondary'}>
+            <div className="flex items-center gap-1.5 lg:gap-2">
+              <h1 className="text-lg lg:text-2xl font-bold">{budget.name}</h1>
+              <Badge className="text-[10px] lg:text-xs" variant={budget.is_active ? 'default' : 'secondary'}>
                 {budget.is_active ? tStatus('active') : tStatus('inactive')}
               </Badge>
-              <Badge variant={statusInfo.variant}>
+              <Badge className="text-[10px] lg:text-xs" variant={statusInfo.variant}>
                 {statusInfo.label}
               </Badge>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {budget.category && translateCategory(budget.category)}
               {budget.category && ' • '}
               {PERIOD_LABELS[budget.period]}
@@ -196,9 +197,9 @@ export default function BudgetDetailPage({ params }: PageProps) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -217,16 +218,16 @@ export default function BudgetDetailPage({ params }: PageProps) {
 
       {/* Description */}
       {budget.description && (
-        <p className="text-muted-foreground">{budget.description}</p>
+        <p className="text-xs lg:text-sm text-muted-foreground">{budget.description}</p>
       )}
 
       {/* Progress Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">{t('spendingProgress')}</CardTitle>
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="text-xs lg:text-sm font-medium">{t('spendingProgress')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex justify-between text-sm">
+        <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-4">
+          <div className="flex justify-between text-xs lg:text-sm">
             <span>
               <CurrencyDisplay
                 amount={spent}
@@ -243,7 +244,7 @@ export default function BudgetDetailPage({ params }: PageProps) {
             <span className={statusInfo.color}>{Math.round(progress?.percentage_used || 0)}%</span>
           </div>
           <Progress value={percentUsed} className="h-3" />
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-[10px] lg:text-xs text-muted-foreground">
             <span>{t('spent')}</span>
             <span className={remaining >= 0 ? 'text-green-600' : 'text-red-600'}>
               {remaining >= 0 ? t('remaining') : t('over')}:{' '}
@@ -258,22 +259,22 @@ export default function BudgetDetailPage({ params }: PageProps) {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
         {/* Budget Amount */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('budgetAmount')}</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('budgetAmount')}</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={budget.display_amount ?? budget.amount}
                 currency={budget.display_currency ?? budget.currency}
                 showSymbol
               />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] lg:text-xs text-muted-foreground">
               {t('perPeriod')} • {PERIOD_LABELS[budget.period]}
             </p>
           </CardContent>
@@ -281,20 +282,20 @@ export default function BudgetDetailPage({ params }: PageProps) {
 
         {/* Effective Amount (with rollover) */}
         {budget.rollover_amount > 0 && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('effectiveAmount')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+              <CardTitle className="text-xs lg:text-sm font-medium">{t('effectiveAmount')}</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 <CurrencyDisplay
                   amount={effectiveAmount}
                   currency={budget.display_currency ?? budget.currency}
                   showSymbol
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] lg:text-xs text-muted-foreground">
                 {t('includesRollover')}{' '}
                 <CurrencyDisplay
                   amount={budget.rollover_amount}
@@ -307,53 +308,53 @@ export default function BudgetDetailPage({ params }: PageProps) {
         )}
 
         {/* Spent */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('spent')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('spent')}</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${spent > effectiveAmount ? 'text-red-600' : ''}`}>
+          <CardContent className="px-3 lg:px-6">
+            <div className={`text-base sm:text-lg lg:text-2xl font-bold ${spent > effectiveAmount ? 'text-red-600' : ''}`}>
               <CurrencyDisplay
                 amount={spent}
                 currency={budget.display_currency ?? budget.currency}
                 showSymbol
               />
             </div>
-            <p className="text-xs text-muted-foreground">{t('currentPeriod')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('currentPeriod')}</p>
           </CardContent>
         </Card>
 
         {/* Alert Threshold */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('alertThreshold')}</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('alertThreshold')}</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{budget.alert_threshold || 80}%</div>
-            <p className="text-xs text-muted-foreground">{t('alertWhenReached')}</p>
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">{budget.alert_threshold || 80}%</div>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('alertWhenReached')}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Budget Details */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Dates Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t('budgetDetails')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('budgetDetails')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3">
+            <div className="flex justify-between text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('period')}</span>
               <span>{PERIOD_LABELS[budget.period]}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('startDate')}</span>
               <span>{format(new Date(budget.start_date), 'MMM d, yyyy')}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('endDate')}</span>
               <span>
                 {budget.end_date
@@ -361,7 +362,7 @@ export default function BudgetDetailPage({ params }: PageProps) {
                   : t('noEndDate')}
               </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('created')}</span>
               <span>{format(new Date(budget.created_at), 'MMM d, yyyy')}</span>
             </div>
@@ -369,19 +370,19 @@ export default function BudgetDetailPage({ params }: PageProps) {
         </Card>
 
         {/* Settings Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t('budgetSettings')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('budgetSettings')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between items-center">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3">
+            <div className="flex justify-between items-center text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('rolloverUnused')}</span>
               <Badge variant={budget.rollover_unused ? 'default' : 'secondary'}>
                 {budget.rollover_unused ? t('enabled') : t('disabled')}
               </Badge>
             </div>
             {budget.rollover_unused && budget.rollover_amount > 0 && (
-              <div className="flex justify-between">
+              <div className="flex justify-between text-xs lg:text-sm">
                 <span className="text-muted-foreground">{t('rolloverAmount')}</span>
                 <span className="text-green-600">
                   +<CurrencyDisplay
@@ -392,11 +393,11 @@ export default function BudgetDetailPage({ params }: PageProps) {
                 </span>
               </div>
             )}
-            <div className="flex justify-between">
+            <div className="flex justify-between text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('alertThreshold')}</span>
               <span>{budget.alert_threshold || 80}%</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('status')}</span>
               <div className="flex items-center gap-1">
                 {progress?.is_overspent ? (

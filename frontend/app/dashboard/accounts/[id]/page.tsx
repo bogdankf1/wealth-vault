@@ -99,20 +99,21 @@ export default function AccountDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-96" />
+        <Skeleton className="h-64 lg:h-96" />
       </div>
     );
   }
@@ -133,25 +134,26 @@ export default function AccountDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 lg:h-10 lg:w-10"
             onClick={() => router.push('/dashboard/accounts/overview')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{account.name}</h1>
-              <Badge variant={account.is_active ? 'default' : 'secondary'}>
+            <div className="flex items-center gap-1.5 lg:gap-2">
+              <h1 className="text-lg lg:text-2xl font-bold">{account.name}</h1>
+              <Badge variant={account.is_active ? 'default' : 'secondary'} className="text-[10px] lg:text-xs">
                 {account.is_active ? tStatus('active') : tStatus('inactive')}
               </Badge>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {ACCOUNT_TYPE_LABELS[account.account_type] || account.account_type}
               {account.institution && ` • ${account.institution}`}
             </p>
@@ -159,9 +161,9 @@ export default function AccountDetailPage({ params }: PageProps) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -187,15 +189,15 @@ export default function AccountDetailPage({ params }: PageProps) {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
         {/* Current Balance */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('currentBalance')}</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('currentBalance')}</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={account.display_current_balance ?? account.current_balance}
                 currency={account.display_currency ?? account.currency}
@@ -203,7 +205,7 @@ export default function AccountDetailPage({ params }: PageProps) {
               />
             </div>
             {account.display_currency && account.display_currency !== account.currency && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] lg:text-xs text-muted-foreground">
                 {formatCurrency(account.current_balance, account.currency)}
               </p>
             )}
@@ -212,16 +214,16 @@ export default function AccountDetailPage({ params }: PageProps) {
 
         {/* Interest Rate */}
         {account.interest_rate !== undefined && account.interest_rate > 0 && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{tInterest('rate')}</CardTitle>
-              <Percent className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+              <CardTitle className="text-xs lg:text-sm font-medium">{tInterest('rate')}</CardTitle>
+              <Percent className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 {account.interest_rate_percent?.toFixed(2)}%
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] lg:text-xs text-muted-foreground">
                 {tInterest(`method${account.interest_accrual_method === 'compound' ? 'Compound' : 'Simple'}`)} • {tInterest(`frequency${account.interest_frequency.charAt(0).toUpperCase() + account.interest_frequency.slice(1)}`)}
               </p>
             </CardContent>
@@ -230,17 +232,17 @@ export default function AccountDetailPage({ params }: PageProps) {
 
         {/* Accrued Interest */}
         {account.interest_rate !== undefined && account.interest_rate > 0 && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{tInterest('accrued')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+              <CardTitle className="text-xs lg:text-sm font-medium">{tInterest('accrued')}</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold text-green-600 dark:text-green-400">
                 +{formatCurrency(account.accrued_interest || 0, account.currency)}
               </div>
               {interestCalc?.days_elapsed !== undefined && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] lg:text-xs text-muted-foreground">
                   {tInterest('daysElapsed', { days: interestCalc.days_elapsed })}
                 </p>
               )}
@@ -248,7 +250,7 @@ export default function AccountDetailPage({ params }: PageProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="mt-2 w-full"
+                  className="mt-1.5 lg:mt-2 w-full text-xs lg:text-sm"
                   onClick={handlePostInterest}
                   disabled={isPostingInterest}
                 >
@@ -260,24 +262,24 @@ export default function AccountDetailPage({ params }: PageProps) {
         )}
 
         {/* Account Info */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('accountInfo')}</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('accountInfo')}</CardTitle>
+            <Building className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent className="space-y-1">
+          <CardContent className="px-3 lg:px-6 space-y-0.5 lg:space-y-1">
             {account.account_number_last4 && (
-              <p className="text-sm">
+              <p className="text-xs lg:text-sm">
                 <span className="text-muted-foreground">{t('accountNumber')}: </span>
                 ••••{account.account_number_last4}
               </p>
             )}
-            <p className="text-sm">
+            <p className="text-xs lg:text-sm">
               <span className="text-muted-foreground">{t('created')}: </span>
               {format(new Date(account.created_at), 'MMM d, yyyy')}
             </p>
             {account.last_interest_accrual && (
-              <p className="text-sm">
+              <p className="text-xs lg:text-sm">
                 <span className="text-muted-foreground">{tInterest('lastAccrual')}: </span>
                 {format(new Date(account.last_interest_accrual), 'MMM d, yyyy')}
               </p>
@@ -288,12 +290,12 @@ export default function AccountDetailPage({ params }: PageProps) {
 
       {/* Notes */}
       {account.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t('notes')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('notes')}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{account.notes}</p>
+          <CardContent className="px-3 lg:px-6">
+            <p className="text-xs lg:text-sm text-muted-foreground">{account.notes}</p>
           </CardContent>
         </Card>
       )}

@@ -197,21 +197,21 @@ export default function GoalDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-64" />
+        <Skeleton className="h-48 lg:h-64" />
       </div>
     );
   }
@@ -224,28 +224,34 @@ export default function GoalDetailPage() {
   const isCompleted = goal.is_completed;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/goals/overview')}>
-            <ArrowLeft className="h-5 w-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10" onClick={() => router.push('/dashboard/goals/overview')}>
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{goal.name}</h1>
+            <h1 className="text-lg lg:text-2xl font-bold">{goal.name}</h1>
             {goal.description && (
-              <p className="text-muted-foreground">{goal.description}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">{goal.description}</p>
             )}
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
+            {goal.auto_track_progress && (
+              <DropdownMenuItem onClick={handleRefreshProgress} disabled={isRefreshing}>
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {t('refreshProgress')}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
               <Edit className="h-4 w-4" />
               {t('edit')}
@@ -284,14 +290,14 @@ export default function GoalDetailPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('targetAmount')}</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('targetAmount')}</CardTitle>
+            <Target className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={goal.display_target_amount || goal.target_amount}
                 currency={goal.display_currency || goal.currency}
@@ -300,51 +306,51 @@ export default function GoalDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('currentAmount')}</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('currentAmount')}</CardTitle>
+            <Wallet className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={goal.display_current_amount || goal.current_amount}
                 currency={goal.display_currency || goal.currency}
               />
             </div>
             {goal.auto_track_progress && goal.linked_accounts_total !== undefined && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
                 {t('fromLinkedAccounts')}
               </p>
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('progress')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('progress')}</CardTitle>
+            <TrendingUp className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{progressValue.toFixed(1)}%</div>
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">{progressValue.toFixed(1)}%</div>
             <Progress value={progressValue} className="mt-2" />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('remaining')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('remaining')}</CardTitle>
+            <Calendar className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={Math.max(0, (goal.display_target_amount || goal.target_amount) - (goal.display_current_amount || goal.current_amount))}
                 currency={goal.display_currency || goal.currency}
               />
             </div>
             {goal.target_date && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
                 {t('targetDate')}: {new Date(goal.target_date).toLocaleDateString()}
               </p>
             )}
@@ -353,52 +359,29 @@ export default function GoalDetailPage() {
       </div>
 
       {/* Linked Accounts Section */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <PiggyBank className="h-5 w-5" />
-              {t('linkedAccounts')}
-            </CardTitle>
-            <CardDescription>{t('linkedAccountsDescription')}</CardDescription>
-          </div>
-          <div className="flex gap-2">
-            {goal.auto_track_progress && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefreshProgress}
-                disabled={isRefreshing}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                {t('refreshProgress')}
-              </Button>
-            )}
-            <Button
-              size="sm"
-              onClick={() => setIsLinkAccountDialogOpen(true)}
-              disabled={availableAccounts.length === 0}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t('linkAccount')}
-            </Button>
-          </div>
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <PiggyBank className="h-4 w-4 lg:h-5 lg:w-5" />
+            {t('linkedAccounts')}
+          </CardTitle>
+          <CardDescription className="text-xs lg:text-sm">{t('linkedAccountsDescription')}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 lg:px-6">
           {goal.linked_accounts && goal.linked_accounts.length > 0 ? (
             <div className="space-y-3">
               {goal.linked_accounts.map((link) => (
                 <div
                   key={link.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between p-2 lg:p-3 border rounded-lg"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     <div className="p-2 bg-primary/10 rounded-full">
                       <Wallet className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">{link.account?.name || t('unknownAccount')}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <p className="text-xs lg:text-sm font-medium">{link.account?.name || t('unknownAccount')}</p>
+                      <div className="flex items-center gap-2 text-[10px] lg:text-xs text-muted-foreground">
                         {link.allocation_type === 'full' && (
                           <span>{t('fullAllocation')}</span>
                         )}
@@ -422,13 +405,13 @@ export default function GoalDetailPage() {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="font-medium">
+                      <p className="text-xs lg:text-sm font-medium">
                         <CurrencyDisplay
                           amount={link.allocated_amount || 0}
                           currency={link.account?.currency || 'USD'}
                         />
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] lg:text-xs text-muted-foreground">
                         {t('allocatedAmount')}
                       </p>
                     </div>
@@ -444,9 +427,9 @@ export default function GoalDetailPage() {
               ))}
 
               {goal.linked_accounts_total !== undefined && (
-                <div className="flex justify-between items-center pt-3 border-t">
+                <div className="flex justify-between items-center pt-2 lg:pt-3 border-t text-xs lg:text-sm">
                   <span className="font-medium">{t('totalFromAccounts')}</span>
-                  <span className="text-lg font-bold">
+                  <span className="text-base lg:text-lg font-bold">
                     <CurrencyDisplay
                       amount={goal.linked_accounts_total}
                       currency={goal.currency}
@@ -456,56 +439,66 @@ export default function GoalDetailPage() {
               )}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Link2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('noLinkedAccounts')}</p>
-              <p className="text-sm mt-1">{t('noLinkedAccountsHint')}</p>
+            <div className="text-center py-4 lg:py-8 text-muted-foreground">
+              <Link2 className="h-8 w-8 lg:h-12 lg:w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-xs lg:text-sm">{t('noLinkedAccounts')}</p>
+              <p className="text-[10px] lg:text-xs mt-1">{t('noLinkedAccountsHint')}</p>
             </div>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-3"
+            onClick={() => setIsLinkAccountDialogOpen(true)}
+            disabled={availableAccounts.length === 0}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t('linkAccount')}
+          </Button>
         </CardContent>
       </Card>
 
       {/* Progress History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <History className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('progressHistory')}
           </CardTitle>
-          <CardDescription>{t('progressHistoryDescription')}</CardDescription>
+          <CardDescription className="text-xs lg:text-sm">{t('progressHistoryDescription')}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 lg:px-6">
           {progressHistory && progressHistory.items.length > 0 ? (
             <div className="space-y-3">
               {progressHistory.items.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between p-2 lg:p-3 border rounded-lg"
                 >
                   <div>
-                    <p className="font-medium">
+                    <p className="text-xs lg:text-sm font-medium">
                       <CurrencyDisplay amount={entry.current_amount} currency={goal.currency} />
                       <span className="text-muted-foreground mx-2">/</span>
                       <CurrencyDisplay amount={entry.target_amount} currency={goal.currency} />
                     </p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-[10px] lg:text-xs text-muted-foreground">
                       <span>{new Date(entry.recorded_date).toLocaleDateString()}</span>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-[10px] lg:text-xs">
                         {t(`triggerTypes.${entry.trigger_type}`)}
                       </Badge>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold">{Number(entry.progress_percentage).toFixed(1)}%</p>
+                    <p className="text-base lg:text-lg font-bold">{Number(entry.progress_percentage).toFixed(1)}%</p>
                     <Progress value={Number(entry.progress_percentage)} className="w-20 h-2" />
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('noProgressHistory')}</p>
+            <div className="text-center py-4 lg:py-8 text-muted-foreground">
+              <History className="h-8 w-8 lg:h-12 lg:w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-xs lg:text-sm">{t('noProgressHistory')}</p>
             </div>
           )}
         </CardContent>

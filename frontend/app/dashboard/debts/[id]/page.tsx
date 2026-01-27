@@ -153,21 +153,21 @@ export default function DebtDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-96" />
+        <Skeleton className="h-64 lg:h-96" />
       </div>
     );
   }
@@ -196,34 +196,35 @@ export default function DebtDetailPage({ params }: PageProps) {
   const progressPercent = Number(debt.progress_percentage) || 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 lg:h-10 lg:w-10"
             onClick={() => router.push('/dashboard/debts/overview')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{debt.debtor_name}</h1>
-              <Badge variant={getStatusBadgeVariant(isPaid, isOverdue)}>
+            <div className="flex items-center gap-1.5 lg:gap-2">
+              <h1 className="text-lg lg:text-2xl font-bold">{debt.debtor_name}</h1>
+              <Badge variant={getStatusBadgeVariant(isPaid, isOverdue)} className="text-[10px] lg:text-xs">
                 {getStatusLabel(isPaid, isOverdue)}
               </Badge>
             </div>
             {debt.description && (
-              <p className="text-muted-foreground">{debt.description}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">{debt.description}</p>
             )}
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -255,16 +256,16 @@ export default function DebtDetailPage({ params }: PageProps) {
       </div>
 
       {/* Progress Section */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6 pb-1 lg:pb-2">
+          <CardTitle className="text-xs lg:text-sm font-medium flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             {t('collectionProgress')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm">
+        <CardContent className="px-3 lg:px-6">
+          <div className="space-y-2 lg:space-y-3">
+            <div className="flex justify-between text-xs lg:text-sm">
               <span>
                 <CurrencyDisplay
                   amount={debt.display_amount_paid ?? debt.amount_paid}
@@ -281,7 +282,7 @@ export default function DebtDetailPage({ params }: PageProps) {
               <span className="font-medium">{progressPercent.toFixed(0)}%</span>
             </div>
             <Progress value={progressPercent} className="h-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-[10px] lg:text-xs text-muted-foreground">
               <span>
                 {t('remaining')}: <CurrencyDisplay
                   amount={debt.amount_remaining ?? 0}
@@ -298,73 +299,73 @@ export default function DebtDetailPage({ params }: PageProps) {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
         {/* Total Amount */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('totalAmount')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('totalAmount')}</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={debt.display_amount ?? debt.amount}
                 currency={debt.display_currency ?? debt.currency}
                 showSymbol
               />
             </div>
-            <p className="text-xs text-muted-foreground">{t('originalDebtAmount')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('originalDebtAmount')}</p>
           </CardContent>
         </Card>
 
         {/* Amount Collected */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('amountCollected')}</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('amountCollected')}</CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">
               <CurrencyDisplay
                 amount={debt.display_amount_paid ?? debt.amount_paid}
                 currency={debt.display_currency ?? debt.currency}
                 showSymbol
               />
             </div>
-            <p className="text-xs text-muted-foreground">{t('receivedSoFar')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('receivedSoFar')}</p>
           </CardContent>
         </Card>
 
         {/* Amount Remaining */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('amountRemaining')}</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('amountRemaining')}</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={debt.amount_remaining ?? 0}
                 currency={debt.display_currency ?? debt.currency}
                 showSymbol
               />
             </div>
-            <p className="text-xs text-muted-foreground">{t('stillOwed')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('stillOwed')}</p>
           </CardContent>
         </Card>
 
         {/* Interest Rate (if applicable) */}
         {debt.interest_rate != null && debt.interest_rate > 0 && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('interestRate')}</CardTitle>
-              <Percent className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+              <CardTitle className="text-xs lg:text-sm font-medium">{t('interestRate')}</CardTitle>
+              <Percent className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{debt.interest_rate}%</div>
-              <p className="text-xs text-muted-foreground">{t('annualRate')}</p>
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">{debt.interest_rate}%</div>
+              <p className="text-[10px] lg:text-xs text-muted-foreground">{t('annualRate')}</p>
               {debt.accrued_interest > 0 && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
                   {t('accruedInterest')}: <CurrencyDisplay
                     amount={debt.accrued_interest}
                     currency={debt.currency}
@@ -378,17 +379,17 @@ export default function DebtDetailPage({ params }: PageProps) {
 
         {/* Due Date */}
         {debt.due_date && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('dueDate')}</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+              <CardTitle className="text-xs lg:text-sm font-medium">{t('dueDate')}</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 {format(new Date(debt.due_date), 'MMM d, yyyy')}
               </div>
               {isOverdue && (
-                <p className="text-xs text-destructive font-medium">{t('overdue')}</p>
+                <p className="text-[10px] lg:text-xs text-destructive font-medium">{t('overdue')}</p>
               )}
             </CardContent>
           </Card>
@@ -396,17 +397,17 @@ export default function DebtDetailPage({ params }: PageProps) {
 
         {/* Next Payment */}
         {debt.next_payment_date && !isPaid && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('nextPayment')}</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+              <CardTitle className="text-xs lg:text-sm font-medium">{t('nextPayment')}</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 {format(new Date(debt.next_payment_date), 'MMM d, yyyy')}
               </div>
               {debt.expected_payment_amount && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] lg:text-xs text-muted-foreground">
                   {t('expected')}: <CurrencyDisplay
                     amount={debt.expected_payment_amount}
                     currency={debt.currency}
@@ -420,16 +421,16 @@ export default function DebtDetailPage({ params }: PageProps) {
       </div>
 
       {/* Debt Details & Account Integration */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Debt Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium flex items-center gap-2">
               <User className="h-4 w-4" />
               {t('debtDetails')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3 text-xs lg:text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t('debtor')}</span>
               <span className="font-medium">{debt.debtor_name}</span>
@@ -452,28 +453,28 @@ export default function DebtDetailPage({ params }: PageProps) {
             )}
             {debt.notes && (
               <div className="pt-2 border-t">
-                <span className="text-muted-foreground text-sm">{t('notes')}</span>
-                <p className="mt-1 text-sm">{debt.notes}</p>
+                <span className="text-muted-foreground">{t('notes')}</span>
+                <p className="mt-1">{debt.notes}</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Account Integration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium flex items-center gap-2">
               <Wallet className="h-4 w-4" />
               {t('linkedAccount')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3 text-xs lg:text-sm">
             {linkedAccount ? (
               <>
                 <div className="flex items-center gap-2">
                   <Wallet className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{linkedAccount.name}</span>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-[10px] lg:text-xs">
                     <CurrencyDisplay
                       amount={linkedAccount.current_balance}
                       currency={linkedAccount.currency}
@@ -481,14 +482,14 @@ export default function DebtDetailPage({ params }: PageProps) {
                     />
                   </Badge>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('autoDeposit')}</span>
                   <Badge variant={debt.auto_deposit ? 'default' : 'secondary'}>
                     {debt.auto_deposit ? t('enabled') : t('disabled')}
                   </Badge>
                 </div>
                 {debt.reminder_days_before > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Bell className="h-4 w-4" />
                     {t('reminderDays', { days: debt.reminder_days_before })}
                   </div>

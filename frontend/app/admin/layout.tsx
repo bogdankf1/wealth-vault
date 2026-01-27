@@ -114,11 +114,11 @@ export default function AdminLayout({
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className={cn(
-            'flex h-16 items-center justify-between px-6 border-b dark:border-gray-700',
+            'flex h-16 items-center justify-between px-6 border-b dark:border-gray-700 overflow-hidden',
             isCollapsed && 'lg:justify-center lg:px-0'
           )}>
             <Link href="/admin" className={cn(
-              'flex items-center space-x-2',
+              'flex items-center space-x-2 whitespace-nowrap',
               isCollapsed && 'lg:hidden'
             )}>
               <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
@@ -163,7 +163,7 @@ export default function AdminLayout({
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={cn(
-                      'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                      'flex items-center overflow-hidden px-3 py-2 text-sm font-medium rounded-lg transition-colors',
                       isActive
                         ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700',
@@ -171,7 +171,7 @@ export default function AdminLayout({
                     )}
                   >
                     <Icon className={cn('mr-3 h-5 w-5', isCollapsed && 'lg:mr-0')} />
-                    <span className={cn(isCollapsed && 'lg:hidden')}>{item.name}</span>
+                    <span className={cn('truncate', isCollapsed && 'lg:hidden')}>{item.name}</span>
                   </Link>
                   {isCollapsed && (
                     <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover/nav:opacity-100 transition-opacity hidden lg:block z-[60]">
@@ -192,12 +192,12 @@ export default function AdminLayout({
               <Link
                 href="/dashboard"
                 className={cn(
-                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors',
+                  'flex items-center overflow-hidden px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors',
                   isCollapsed && 'lg:justify-center lg:px-0 lg:py-2 lg:mx-auto lg:w-10 lg:h-10'
                 )}
               >
                 <LayoutDashboard className={cn('mr-3 h-5 w-5', isCollapsed && 'lg:mr-0')} />
-                <span className={cn(isCollapsed && 'lg:hidden')}>Back to User Dashboard</span>
+                <span className={cn('truncate', isCollapsed && 'lg:hidden')}>Back to User Dashboard</span>
               </Link>
               {isCollapsed && (
                 <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover/nav:opacity-100 transition-opacity hidden lg:block z-[60]">

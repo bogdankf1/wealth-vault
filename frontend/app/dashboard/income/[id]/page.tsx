@@ -113,21 +113,21 @@ export default function IncomeDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-64" />
+        <Skeleton className="h-48 lg:h-64" />
       </div>
     );
   }
@@ -148,25 +148,26 @@ export default function IncomeDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 lg:h-10 lg:w-10"
             onClick={() => router.push('/dashboard/income/overview')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{income.name}</h1>
-              <Badge variant={income.is_active ? 'default' : 'secondary'}>
+            <div className="flex items-center gap-1.5 lg:gap-2">
+              <h1 className="text-lg lg:text-2xl font-bold">{income.name}</h1>
+              <Badge variant={income.is_active ? 'default' : 'secondary'} className="text-[10px] lg:text-xs">
                 {income.is_active ? tStatus('active') : tStatus('inactive')}
               </Badge>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {income.category && translateCategory(income.category)}
               {income.category && ' • '}
               {FREQUENCY_LABELS[income.frequency]}
@@ -175,9 +176,9 @@ export default function IncomeDetailPage({ params }: PageProps) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -196,26 +197,26 @@ export default function IncomeDetailPage({ params }: PageProps) {
 
       {/* Description */}
       {income.description && (
-        <p className="text-muted-foreground">{income.description}</p>
+        <p className="text-xs lg:text-sm text-muted-foreground">{income.description}</p>
       )}
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
         {/* Amount */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('amount')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('amount')}</CardTitle>
+            <DollarSign className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={income.display_amount ?? income.amount}
                 currency={income.display_currency ?? income.currency}
                 showSymbol
               />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] lg:text-xs text-muted-foreground">
               {t('perPayment')} • {FREQUENCY_LABELS[income.frequency]}
             </p>
           </CardContent>
@@ -223,65 +224,65 @@ export default function IncomeDetailPage({ params }: PageProps) {
 
         {/* Monthly Equivalent */}
         {income.display_monthly_equivalent && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('monthlyEquivalent')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+              <CardTitle className="text-xs lg:text-sm font-medium">{t('monthlyEquivalent')}</CardTitle>
+              <TrendingUp className="hidden sm:block h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 <CurrencyDisplay
                   amount={income.display_monthly_equivalent}
                   currency={income.display_currency ?? income.currency}
                   showSymbol
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{t('estimatedMonthly')}</p>
+              <p className="text-[10px] lg:text-xs text-muted-foreground">{t('estimatedMonthly')}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Frequency */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('frequency')}</CardTitle>
-            <Repeat className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('frequency')}</CardTitle>
+            <Repeat className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               {FREQUENCY_LABELS[income.frequency]}
             </div>
-            <p className="text-xs text-muted-foreground">{t('paymentSchedule')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('paymentSchedule')}</p>
           </CardContent>
         </Card>
 
         {/* Start Date */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('startDate')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('startDate')}</CardTitle>
+            <Calendar className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               {income.start_date
                 ? format(new Date(income.start_date), 'MMM d, yyyy')
                 : income.date
                 ? format(new Date(income.date), 'MMM d, yyyy')
                 : '-'}
             </div>
-            <p className="text-xs text-muted-foreground">{t('whenStarted')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('whenStarted')}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Income Details */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Dates Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t('incomeDetails')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('incomeDetails')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3 text-xs lg:text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t('startDate')}</span>
               <span>
@@ -308,17 +309,17 @@ export default function IncomeDetailPage({ params }: PageProps) {
         </Card>
 
         {/* Account Integration Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t('linkedAccount')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('linkedAccount')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3 text-xs lg:text-sm">
             {linkedAccount ? (
               <>
                 <div className="flex items-center gap-2">
                   <Wallet className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{linkedAccount.name}</span>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-[10px] lg:text-xs">
                     <CurrencyDisplay
                       amount={linkedAccount.current_balance}
                       currency={linkedAccount.currency}
@@ -326,7 +327,7 @@ export default function IncomeDetailPage({ params }: PageProps) {
                     />
                   </Badge>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('autoDeposit')}</span>
                   <Badge variant={income.auto_deposit ? 'default' : 'secondary'}>
                     {income.auto_deposit ? t('autoDepositEnabled') : t('autoDepositDisabled')}

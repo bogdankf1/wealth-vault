@@ -140,29 +140,29 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
     return (
       <div
         key={transaction.id}
-        className="flex items-center justify-between py-3 border-b last:border-b-0"
+        className="flex items-center justify-between py-2 lg:py-3 border-b last:border-b-0"
       >
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 p-2 rounded-full bg-muted">
+        <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+          <div className="flex-shrink-0 p-1.5 lg:p-2 rounded-full bg-muted">
             {TRANSACTION_TYPE_ICONS[transaction.transaction_type]}
           </div>
-          <div>
-            <div className="font-medium">
+          <div className="min-w-0">
+            <div className="text-xs lg:text-sm font-medium truncate">
               {transaction.description || formatTransactionType(transaction.transaction_type)}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-[10px] lg:text-xs text-muted-foreground">
               {format(new Date(transaction.transaction_date), 'MMM d, yyyy h:mm a')}
             </div>
           </div>
         </div>
-        <div className="text-right">
-          <div className={`font-semibold ${colorClass}`}>
+        <div className="text-right flex-shrink-0 ml-2">
+          <div className={`text-xs lg:text-sm font-semibold ${colorClass}`}>
             {prefix}{formatCurrency(transaction.amount, transaction.currency)}
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-[10px] lg:text-xs text-muted-foreground">
             {t('balance')}: {formatCurrency(transaction.balance_after, transaction.currency)}
           </div>
-          <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'} className="mt-1">
+          <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'} className="mt-0.5 lg:mt-1 text-[10px] lg:text-xs">
             {t(`status.${transaction.status}`)}
           </Badge>
         </div>
@@ -171,19 +171,19 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
   };
 
   const renderSkeleton = () => (
-    <div className="space-y-4">
+    <div className="space-y-2 lg:space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center justify-between py-3">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-10 w-10 rounded-full" />
+        <div key={i} className="flex items-center justify-between py-2 lg:py-3">
+          <div className="flex items-center gap-2 lg:gap-3">
+            <Skeleton className="h-8 w-8 lg:h-10 lg:w-10 rounded-full" />
             <div>
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-3 w-32 mt-1" />
+              <Skeleton className="h-3 lg:h-4 w-24" />
+              <Skeleton className="h-2.5 lg:h-3 w-32 mt-1" />
             </div>
           </div>
           <div className="text-right">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-3 w-16 mt-1" />
+            <Skeleton className="h-3 lg:h-4 w-20" />
+            <Skeleton className="h-2.5 lg:h-3 w-16 mt-1" />
           </div>
         </div>
       ))}
@@ -191,18 +191,18 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
   );
 
   return (
-    <Card>
-      <CardHeader className="space-y-4">
-        <CardTitle>{t('title')}</CardTitle>
-        <div className="flex flex-col sm:flex-row gap-3">
+    <Card className="py-3 gap-2 lg:py-6 lg:gap-6">
+      <CardHeader className="space-y-3 lg:space-y-4 px-3 lg:px-6">
+        <CardTitle className="text-sm lg:text-base">{t('title')}</CardTitle>
+        <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 lg:left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 lg:h-4 lg:w-4 text-muted-foreground" />
             <Input
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-8 lg:pl-9 h-8 lg:h-10 text-xs lg:text-sm"
             />
           </div>
 
@@ -214,7 +214,7 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
               setPage(1);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px] h-8 lg:h-10 text-xs lg:text-sm">
               <SelectValue placeholder={t('sourceFilter')} />
             </SelectTrigger>
             <SelectContent>
@@ -237,7 +237,7 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
               setPage(1);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px] h-8 lg:h-10 text-xs lg:text-sm">
               <SelectValue placeholder={t('filterByType')} />
             </SelectTrigger>
             <SelectContent>
@@ -264,11 +264,11 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
           />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 lg:px-6">
         {isLoading ? (
           renderSkeleton()
         ) : transactions.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-4 lg:py-8 text-xs lg:text-sm text-muted-foreground">
             {debouncedSearch || sourceFilter !== 'all' || typeFilter !== 'all' || selectedMonth
               ? t('noMatchingTransactions')
               : t('noTransactions')}
@@ -281,32 +281,34 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between mt-3 pt-3 lg:mt-4 lg:pt-4 border-t">
+                <div className="text-[10px] lg:text-sm text-muted-foreground hidden sm:block">
                   {t('showing', {
                     from: (page - 1) * pageSize + 1,
                     to: Math.min(page * pageSize, data?.total || 0),
                     total: data?.total || 0,
                   })}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 lg:gap-2 sm:ml-auto">
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-7 lg:h-9 text-xs lg:text-sm px-2 lg:px-3"
                     onClick={() => setPage(page - 1)}
                     disabled={page === 1 || isFetching}
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                     {t('previous')}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-7 lg:h-9 text-xs lg:text-sm px-2 lg:px-3"
                     onClick={() => setPage(page + 1)}
                     disabled={page >= totalPages || isFetching}
                   >
                     {t('next')}
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                   </Button>
                 </div>
               </div>

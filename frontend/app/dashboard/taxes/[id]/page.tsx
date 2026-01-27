@@ -114,21 +114,21 @@ export default function TaxDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-64" />
+        <Skeleton className="h-48 lg:h-64" />
       </div>
     );
   }
@@ -142,25 +142,25 @@ export default function TaxDetailPage() {
   const canPay = tax.payment_account_id && tax.payment_account;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/taxes/overview')}>
-            <ArrowLeft className="h-5 w-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10" onClick={() => router.push('/dashboard/taxes/overview')}>
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{tax.name}</h1>
+            <h1 className="text-lg lg:text-2xl font-bold">{tax.name}</h1>
             {tax.description && (
-              <p className="text-muted-foreground">{tax.description}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">{tax.description}</p>
             )}
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -236,35 +236,35 @@ export default function TaxDetailPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('calculatedAmount')}</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('calculatedAmount')}</CardTitle>
+            <Receipt className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={calculatedAmount}
                 currency={displayCurrency}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
               {tFrequencies(tax.frequency)}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('paymentAccount')}</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('paymentAccount')}</CardTitle>
+            <Wallet className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 lg:px-6">
             {tax.payment_account ? (
               <>
-                <div className="text-lg font-bold">{tax.payment_account.name}</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="text-base sm:text-lg font-bold">{tax.payment_account.name}</div>
+                <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
                   Balance: <CurrencyDisplay amount={tax.payment_account.current_balance} currency={tax.payment_account.currency} />
                 </p>
               </>
@@ -274,16 +274,16 @@ export default function TaxDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('incomeSource')}</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('incomeSource')}</CardTitle>
+            <Building2 className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 lg:px-6">
             {tax.income_source ? (
               <>
-                <div className="text-lg font-bold">{tax.income_source.name}</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="text-base sm:text-lg font-bold">{tax.income_source.name}</div>
+                <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
                   <CurrencyDisplay amount={tax.income_source.amount} currency={tax.income_source.currency} /> / {tax.income_source.frequency}
                 </p>
               </>
@@ -293,20 +293,20 @@ export default function TaxDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t('nextPaymentDate')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between px-3 lg:px-6 pb-1 lg:pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('nextPaymentDate')}</CardTitle>
+            <Calendar className="hidden sm:block h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 lg:px-6">
             {tax.next_payment_date ? (
-              <div className="text-lg font-bold">
+              <div className="text-base sm:text-lg font-bold">
                 {new Date(tax.next_payment_date).toLocaleDateString()}
               </div>
             ) : (
               <div className="text-muted-foreground">Not scheduled</div>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">
               {t('autoPay')}: {tax.auto_pay ? t('autoPayEnabled') : t('autoPayDisabled')}
             </p>
           </CardContent>
@@ -314,41 +314,41 @@ export default function TaxDetailPage() {
       </div>
 
       {/* Tax Info Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5" />
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <Receipt className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('taxInfo')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
+        <CardContent className="px-3 lg:px-6">
+          <div className="grid gap-2 lg:gap-4 md:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Tax Type</p>
-              <p className="font-medium">{tTypes(tax.tax_type)}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">Tax Type</p>
+              <p className="text-xs lg:text-sm font-medium">{tTypes(tax.tax_type)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Frequency</p>
-              <p className="font-medium">{tFrequencies(tax.frequency)}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">Frequency</p>
+              <p className="text-xs lg:text-sm font-medium">{tFrequencies(tax.frequency)}</p>
             </div>
             {tax.tax_type === 'fixed' && (
               <div>
-                <p className="text-sm text-muted-foreground">Fixed Amount</p>
-                <p className="font-medium">
+                <p className="text-xs lg:text-sm text-muted-foreground">Fixed Amount</p>
+                <p className="text-xs lg:text-sm font-medium">
                   <CurrencyDisplay amount={tax.fixed_amount || 0} currency={tax.currency} />
                 </p>
               </div>
             )}
             {tax.tax_type === 'percentage' && (
               <div>
-                <p className="text-sm text-muted-foreground">Percentage</p>
-                <p className="font-medium">{tax.percentage}%</p>
+                <p className="text-xs lg:text-sm text-muted-foreground">Percentage</p>
+                <p className="text-xs lg:text-sm font-medium">{tax.percentage}%</p>
               </div>
             )}
             {tax.notes && (
               <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground">Notes</p>
-                <p className="font-medium">{tax.notes}</p>
+                <p className="text-xs lg:text-sm text-muted-foreground">Notes</p>
+                <p className="text-xs lg:text-sm font-medium">{tax.notes}</p>
               </div>
             )}
           </div>
@@ -356,31 +356,31 @@ export default function TaxDetailPage() {
       </Card>
 
       {/* Payment History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
+      <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+        <CardHeader className="px-3 lg:px-6">
+          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+            <History className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('paymentHistory')}
           </CardTitle>
-          <CardDescription>Recent tax payments</CardDescription>
+          <CardDescription className="text-xs lg:text-sm">Recent tax payments</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 lg:px-6">
           {paymentsData && paymentsData.items.length > 0 ? (
             <div className="space-y-3">
               {paymentsData.items.map((payment) => (
                 <div
                   key={payment.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between p-2 lg:p-3 border rounded-lg"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     <div className="p-2 bg-primary/10 rounded-full">
                       <CreditCard className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">
+                      <p className="text-xs lg:text-sm font-medium">
                         <CurrencyDisplay amount={payment.amount} currency={payment.currency} />
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-[10px] lg:text-xs text-muted-foreground">
                         {new Date(payment.payment_date).toLocaleDateString()}
                       </p>
                     </div>
@@ -392,17 +392,17 @@ export default function TaxDetailPage() {
                       {payment.status}
                     </Badge>
                     {payment.notes && (
-                      <p className="text-xs text-muted-foreground mt-1">{payment.notes}</p>
+                      <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">{payment.notes}</p>
                     )}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('noPayments')}</p>
-              <p className="text-sm mt-1">{t('noPaymentsDescription')}</p>
+            <div className="text-center py-4 lg:py-8 text-muted-foreground">
+              <History className="h-8 w-8 lg:h-12 lg:w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-xs lg:text-sm">{t('noPayments')}</p>
+              <p className="text-[10px] lg:text-xs mt-1">{t('noPaymentsDescription')}</p>
             </div>
           )}
         </CardContent>

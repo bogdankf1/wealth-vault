@@ -167,21 +167,21 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="space-y-3 lg:space-y-6">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <Skeleton className="h-8 w-8 lg:h-10 lg:w-10" />
+          <div className="space-y-1.5 lg:space-y-2">
+            <Skeleton className="h-5 lg:h-6 w-48" />
+            <Skeleton className="h-3 lg:h-4 w-32" />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
+          <Skeleton className="h-20 lg:h-32" />
         </div>
-        <Skeleton className="h-96" />
+        <Skeleton className="h-64 lg:h-96" />
       </div>
     );
   }
@@ -209,25 +209,26 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
   const canCancel = subscription.status === 'active' || isPaused;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 lg:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 lg:h-10 lg:w-10"
             onClick={() => router.push('/dashboard/subscriptions/overview')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{subscription.name}</h1>
-              <Badge variant={getStatusBadgeVariant(subscription.status)}>
+            <div className="flex items-center gap-1.5 lg:gap-2">
+              <h1 className="text-lg lg:text-2xl font-bold">{subscription.name}</h1>
+              <Badge variant={getStatusBadgeVariant(subscription.status)} className="text-[10px] lg:text-xs">
                 {tStatus(subscription.status)}
               </Badge>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {subscription.category && translateCategory(subscription.category)}
               {subscription.category && ' • '}
               {FREQUENCY_LABELS[subscription.frequency]}
@@ -236,9 +237,9 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button size="sm" className="lg:h-10 lg:px-4 lg:text-sm">
               {t('actions')}
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1.5 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -280,26 +281,26 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
 
       {/* Description */}
       {subscription.description && (
-        <p className="text-muted-foreground">{subscription.description}</p>
+        <p className="text-xs lg:text-sm text-muted-foreground">{subscription.description}</p>
       )}
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 lg:grid-cols-4">
         {/* Amount */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('amount')}</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('amount')}</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               <CurrencyDisplay
                 amount={subscription.display_amount ?? subscription.amount}
                 currency={subscription.display_currency ?? subscription.currency}
                 showSymbol
               />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] lg:text-xs text-muted-foreground">
               {t('billingAmount')} • {FREQUENCY_LABELS[subscription.frequency]}
             </p>
           </CardContent>
@@ -307,65 +308,65 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
 
         {/* Monthly Equivalent */}
         {subscription.display_monthly_equivalent && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('monthlyEquivalent')}</CardTitle>
-              <Receipt className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+              <CardTitle className="text-xs lg:text-sm font-medium">{t('monthlyEquivalent')}</CardTitle>
+              <Receipt className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="px-3 lg:px-6">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 <CurrencyDisplay
                   amount={subscription.display_monthly_equivalent}
                   currency={subscription.display_currency ?? subscription.currency}
                   showSymbol
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{t('estimatedMonthly')}</p>
+              <p className="text-[10px] lg:text-xs text-muted-foreground">{t('estimatedMonthly')}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Next Payment */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('nextPayment')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('nextPayment')}</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               {subscription.next_payment_date
                 ? format(new Date(subscription.next_payment_date), 'MMM d, yyyy')
                 : '-'}
             </div>
-            <p className="text-xs text-muted-foreground">{t('scheduledDate')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('scheduledDate')}</p>
           </CardContent>
         </Card>
 
         {/* Last Payment */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('lastPayment')}</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 lg:pb-2 px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('lastPayment')}</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 lg:px-6">
+            <div className="text-base sm:text-lg lg:text-2xl font-bold">
               {subscription.last_payment_date
                 ? format(new Date(subscription.last_payment_date), 'MMM d, yyyy')
                 : '-'}
             </div>
-            <p className="text-xs text-muted-foreground">{t('mostRecentPayment')}</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">{t('mostRecentPayment')}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Subscription Details */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Dates Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t('subscriptionDetails')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('subscriptionDetails')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3 text-xs lg:text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t('startDate')}</span>
               <span>{format(new Date(subscription.start_date), 'MMM d, yyyy')}</span>
@@ -394,17 +395,17 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
         </Card>
 
         {/* Account Integration Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t('linkedAccount')}</CardTitle>
+        <Card className="py-3 gap-1.5 lg:py-6 lg:gap-6">
+          <CardHeader className="px-3 lg:px-6">
+            <CardTitle className="text-xs lg:text-sm font-medium">{t('linkedAccount')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="px-3 lg:px-6 space-y-2 lg:space-y-3 text-xs lg:text-sm">
             {linkedAccount ? (
               <>
                 <div className="flex items-center gap-2">
                   <Wallet className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{linkedAccount.name}</span>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-[10px] lg:text-xs">
                     <CurrencyDisplay
                       amount={linkedAccount.current_balance}
                       currency={linkedAccount.currency}
@@ -412,14 +413,14 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
                     />
                   </Badge>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">Auto-pay</span>
                   <Badge variant={subscription.auto_pay ? 'default' : 'secondary'}>
                     {subscription.auto_pay ? t('autoPayEnabled') : t('autoPayDisabled')}
                   </Badge>
                 </div>
                 {subscription.reminder_days_before > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Bell className="h-4 w-4" />
                     {t('reminderDays', { days: subscription.reminder_days_before })}
                   </div>
