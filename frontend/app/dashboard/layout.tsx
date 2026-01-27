@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useSidebarSwipe } from '@/hooks/use-sidebar-swipe';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
 import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
@@ -52,6 +53,12 @@ export default function DashboardLayout({
   const { data: currentUser } = useGetCurrentUserQuery();
   const { data: userFeatures } = useGetUserFeaturesQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { sidebarRef, backdropRef, isDragging } = useSidebarSwipe({
+    isOpen: sidebarOpen,
+    setIsOpen: setSidebarOpen,
+    sidebarWidth: 256,
+    desktopQuery: '(min-width: 1280px)',
+  });
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     incomeExpenses: true,
     accountsInvestments: true,
@@ -172,18 +179,22 @@ export default function DashboardLayout({
 
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         {/* Mobile/Tablet sidebar backdrop */}
-      {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 xl:hidden"
+          ref={backdropRef}
+          className={cn(
+            'fixed inset-0 z-40 bg-black xl:hidden transition-opacity duration-300',
+            sidebarOpen && !isDragging ? 'opacity-75 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          )}
           onClick={() => setSidebarOpen(false)}
         />
-      )}
 
       {/* Sidebar */}
       <div
+        ref={sidebarRef}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 md:w-72 transform bg-white dark:bg-gray-800 transition-transform duration-300 ease-in-out xl:translate-x-0 xl:static xl:w-64 shadow-2xl xl:shadow-none',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-50 w-64 md:w-72 transform bg-white dark:bg-gray-800 xl:translate-x-0 xl:static xl:w-64 shadow-2xl xl:shadow-none',
+          !isDragging && 'transition-transform duration-300 ease-in-out',
+          !isDragging && (sidebarOpen ? 'translate-x-0' : '-translate-x-full')
         )}
       >
         <div className="flex h-full flex-col">

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { useSidebarSwipe } from '@/hooks/use-sidebar-swipe';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 
 const navigation = [
@@ -42,6 +43,12 @@ export default function AdminLayout({
   const { data: session, status } = useSession();
   const { data: currentUser } = useGetCurrentUserQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { sidebarRef, backdropRef, isDragging } = useSidebarSwipe({
+    isOpen: sidebarOpen,
+    setIsOpen: setSidebarOpen,
+    sidebarWidth: 256,
+    desktopQuery: '(min-width: 1024px)',
+  });
 
   // Check if user is admin
   useEffect(() => {
@@ -81,18 +88,22 @@ export default function AdminLayout({
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <div
+        ref={backdropRef}
+        className={cn(
+          'fixed inset-0 z-40 bg-black lg:hidden transition-opacity duration-300',
+          sidebarOpen && !isDragging ? 'opacity-75 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={() => setSidebarOpen(false)}
+      />
 
       {/* Sidebar */}
       <div
+        ref={sidebarRef}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 transform bg-white dark:bg-gray-800 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-50 w-64 transform bg-white dark:bg-gray-800 lg:translate-x-0 lg:static',
+          !isDragging && 'transition-transform duration-300 ease-in-out',
+          !isDragging && (sidebarOpen ? 'translate-x-0' : '-translate-x-full')
         )}
       >
         <div className="flex h-full flex-col">
