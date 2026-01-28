@@ -56,6 +56,11 @@
         "countryDescription": "Länderpräferenz konnte nicht gespeichert werden",
         "occupationDescription": "Berufspräferenz konnte nicht gespeichert werden"
       }
+    },
+    "logout": {
+      "title": "Abmelden",
+      "description": "Von Ihrem Konto auf diesem Gerät abmelden",
+      "button": "Abmelden"
     }
   },
   "subscription": {

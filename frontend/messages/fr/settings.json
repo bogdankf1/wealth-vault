@@ -56,6 +56,11 @@
         "countryDescription": "Échec de l'enregistrement de la préférence de pays",
         "occupationDescription": "Échec de l'enregistrement de la préférence de profession"
       }
+    },
+    "logout": {
+      "title": "Déconnexion",
+      "description": "Se déconnecter de votre compte sur cet appareil",
+      "button": "Déconnexion"
     }
   },
   "subscription": {

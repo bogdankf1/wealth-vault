@@ -56,6 +56,11 @@
         "countryDescription": "No se pudo guardar la preferencia de país",
         "occupationDescription": "No se pudo guardar la preferencia de ocupación"
       }
+    },
+    "logout": {
+      "title": "Cerrar Sesión",
+      "description": "Cerrar sesión de tu cuenta en este dispositivo",
+      "button": "Cerrar Sesión"
     }
   },
   "subscription": {

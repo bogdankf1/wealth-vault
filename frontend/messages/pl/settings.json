@@ -56,6 +56,11 @@
         "countryDescription": "Nie udało się zapisać preferencji kraju",
         "occupationDescription": "Nie udało się zapisać preferencji zawodu"
       }
+    },
+    "logout": {
+      "title": "Wyloguj się",
+      "description": "Wyloguj się z konta na tym urządzeniu",
+      "button": "Wyloguj się"
     }
   },
   "subscription": {

@@ -56,6 +56,11 @@
         "countryDescription": "Falha ao salvar preferência de país",
         "occupationDescription": "Falha ao salvar preferência de profissão"
       }
+    },
+    "logout": {
+      "title": "Sair",
+      "description": "Sair da sua conta neste dispositivo",
+      "button": "Sair"
     }
   },
   "subscription": {

@@ -56,6 +56,11 @@
         "countryDescription": "Failed to save country preference",
         "occupationDescription": "Failed to save occupation preference"
       }
+    },
+    "logout": {
+      "title": "Sign Out",
+      "description": "Sign out of your account on this device",
+      "button": "Sign Out"
     }
   },
   "subscription": {

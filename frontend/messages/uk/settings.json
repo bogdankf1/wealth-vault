@@ -56,6 +56,11 @@
         "countryDescription": "Не вдалося зберегти налаштування країни",
         "occupationDescription": "Не вдалося зберегти налаштування роду занять"
       }
+    },
+    "logout": {
+      "title": "Вийти",
+      "description": "Вийти з облікового запису на цьому пристрої",
+      "button": "Вийти"
     }
   },
   "subscription": {

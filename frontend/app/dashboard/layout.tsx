@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import {
   TrendingUp,
@@ -16,7 +16,6 @@ import {
   Target,
   CreditCard,
   Receipt,
-  LogOut,
   Menu,
   X,
   Wallet,
@@ -132,10 +131,10 @@ export default function DashboardLayout({
   ];
 
   const bottomNavigation = [
-    { name: t('bottomNavigation.pricing'), href: '/dashboard/pricing', icon: Sparkles },
-    { name: t('bottomNavigation.helpCenter'), href: '/dashboard/help', icon: HelpCircle },
-    { name: t('bottomNavigation.notifications'), href: '/dashboard/notifications', icon: Bell },
-    { name: t('bottomNavigation.settings'), href: '/dashboard/settings', icon: Settings },
+    { name: t('bottomNavigation.pricing'), href: '/dashboard/pricing', icon: Sparkles, desktopOnly: false },
+    { name: t('bottomNavigation.helpCenter'), href: '/dashboard/help', icon: HelpCircle, desktopOnly: true },
+    { name: t('bottomNavigation.notifications'), href: '/dashboard/notifications', icon: Bell, desktopOnly: true },
+    { name: t('bottomNavigation.settings'), href: '/dashboard/settings', icon: Settings, desktopOnly: true },
   ];
 
   /**
@@ -169,10 +168,6 @@ export default function DashboardLayout({
   const accessibleBottomNavigation = bottomNavigation.filter((item) =>
     hasFeatureAccess(item.href)
   );
-
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: '/login' });
-  };
 
   /**
    * Check if a navigation item is active
@@ -365,7 +360,7 @@ export default function DashboardLayout({
               const Icon = item.icon;
 
               return (
-                <div key={item.name} className="group/nav relative">
+                <div key={item.name} className={cn('group/nav relative', item.desktopOnly && 'hidden xl:block')}>
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
@@ -389,9 +384,9 @@ export default function DashboardLayout({
               );
             })}
 
-            {/* Admin Link (only for admins) */}
+            {/* Admin Link (only for admins, desktop only) */}
             {currentUser?.role === 'ADMIN' && (
-              <div className="group/nav relative">
+              <div className="group/nav relative hidden xl:block">
                 <Link
                   href="/admin"
                   onClick={() => setSidebarOpen(false)}
@@ -415,59 +410,50 @@ export default function DashboardLayout({
             )}
           </nav>
 
-          {/* User section */}
+          {/* User section (desktop only) */}
           <div className={cn(
-            'border-t dark:border-gray-700 p-4',
+            'hidden xl:block border-t dark:border-gray-700 p-4',
             isCollapsed && 'xl:p-2'
           )}>
-            <div className={cn(
-              'flex items-center justify-between',
-              isCollapsed && 'xl:flex-col xl:items-center xl:gap-2'
-            )}>
-              <div className={cn(
-                'flex items-center space-x-3',
-                isCollapsed && 'xl:space-x-0'
-              )}>
-                <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
-                  {session?.user?.image ? (
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name || 'User'}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 rounded-full"
-                    />
-                  ) : (
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      {session?.user?.name?.[0] || 'U'}
-                    </span>
-                  )}
-                </div>
-                <div className={cn('flex-1 min-w-0', isCollapsed && 'xl:hidden')}>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {session?.user?.name || 'User'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                    {currentUser?.tier?.name || session?.user?.tier || 'starter'} {t('user.tier')}
-                  </p>
-                </div>
+            <Link
+              href="/dashboard/settings/account"
+              className={cn(
+                'flex items-center space-x-3 hover:opacity-80 transition-opacity',
+                isCollapsed && 'xl:justify-center xl:space-x-0'
+              )}
+            >
+              <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full"
+                  />
+                ) : (
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {session?.user?.name?.[0] || 'U'}
+                  </span>
+                )}
               </div>
-              <button
-                onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                title={t('user.logout')}
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
-            </div>
+              <div className={cn('flex-1 min-w-0', isCollapsed && 'xl:hidden')}>
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {session?.user?.name || 'User'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                  {currentUser?.tier?.name || session?.user?.tier || 'starter'} {t('user.tier')}
+                </p>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile/Tablet minimal header - just menu button */}
-        <div className="xl:hidden flex items-center h-10 px-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        {/* Mobile/Tablet header with menu and quick actions */}
+        <div className="xl:hidden flex items-center justify-between h-10 px-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-1.5 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 touch-manipulation"
@@ -475,6 +461,88 @@ export default function DashboardLayout({
           >
             <Menu className="h-5 w-5" />
           </button>
+
+          {/* Right side icons */}
+          <div className="flex items-center gap-1">
+            {hasFeatureAccess('/dashboard/help') && (
+              <Link
+                href="/dashboard/help"
+                className={cn(
+                  'p-1.5 rounded-md transition-colors touch-manipulation',
+                  pathname.startsWith('/dashboard/help')
+                    ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/50'
+                    : 'text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                )}
+                title={t('bottomNavigation.helpCenter')}
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Link>
+            )}
+            {hasFeatureAccess('/dashboard/notifications') && (
+              <Link
+                href="/dashboard/notifications"
+                className={cn(
+                  'p-1.5 rounded-md transition-colors touch-manipulation',
+                  pathname.startsWith('/dashboard/notifications')
+                    ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/50'
+                    : 'text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                )}
+                title={t('bottomNavigation.notifications')}
+              >
+                <Bell className="h-5 w-5" />
+              </Link>
+            )}
+            {hasFeatureAccess('/dashboard/settings') && (
+              <Link
+                href="/dashboard/settings"
+                className={cn(
+                  'p-1.5 rounded-md transition-colors touch-manipulation',
+                  pathname.startsWith('/dashboard/settings')
+                    ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/50'
+                    : 'text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                )}
+                title={t('bottomNavigation.settings')}
+              >
+                <Settings className="h-5 w-5" />
+              </Link>
+            )}
+            {currentUser?.role === 'ADMIN' && (
+              <Link
+                href="/admin"
+                className={cn(
+                  'p-1.5 rounded-md transition-colors touch-manipulation',
+                  pathname.startsWith('/admin')
+                    ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-900/50'
+                    : 'text-indigo-600 hover:bg-indigo-50 active:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
+                )}
+                title={t('admin.panel')}
+              >
+                <Shield className="h-5 w-5" />
+              </Link>
+            )}
+            {/* Profile avatar */}
+            <Link
+              href="/dashboard/settings/account"
+              className="ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-gray-300 dark:hover:ring-gray-600 transition-all touch-manipulation"
+              title={session?.user?.name || 'Account'}
+            >
+              <div className="h-7 w-7 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 rounded-full"
+                  />
+                ) : (
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                    {session?.user?.name?.[0] || 'U'}
+                  </span>
+                )}
+              </div>
+            </Link>
+          </div>
         </div>
 
         {/* Page content */}

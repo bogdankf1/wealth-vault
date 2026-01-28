@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { User, ExternalLink } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { User, ExternalLink, LogOut } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -207,6 +207,23 @@ export function AccountSettings() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Logout */}
+        <div className="flex items-center justify-between py-3">
+          <div>
+            <Label className="text-sm">{t('logout.title')}</Label>
+            <p className="text-xs text-muted-foreground">{t('logout.description')}</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {t('logout.button')}
+          </Button>
         </div>
       </CardContent>
     </Card>
