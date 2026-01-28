@@ -227,16 +227,17 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=2, minute=6, day_of_week=0),
         "options": {"queue": "default"},
     },
-    "generate-weekly-report": {
-        "task": "tasks.dashboard.generate_weekly_report",
-        "schedule": crontab(hour=2, minute=0, day_of_week=1),
-        "options": {"queue": "low_priority"},
-    },
-    "calculate-budget-weekly-summary": {
-        "task": "tasks.budget.calculate_weekly_summary",
-        "schedule": crontab(hour=2, minute=3, day_of_week=1),
-        "options": {"queue": "low_priority"},
-    },
+    # TODO: Re-enable when report generation and email delivery are implemented
+    # "generate-weekly-report": {
+    #     "task": "tasks.dashboard.generate_weekly_report",
+    #     "schedule": crontab(hour=2, minute=0, day_of_week=1),
+    #     "options": {"queue": "low_priority"},
+    # },
+    # "calculate-budget-weekly-summary": {
+    #     "task": "tasks.budget.calculate_weekly_summary",
+    #     "schedule": crontab(hour=2, minute=3, day_of_week=1),
+    #     "options": {"queue": "low_priority"},
+    # },
 
     # =========================================================================
     # MONTHLY TASKS — 1st of each month at 02:00 UTC (after daily tasks)

@@ -4,8 +4,12 @@ Main FastAPI application.
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 # Load environment variables from .env file
 load_dotenv()
@@ -43,6 +47,26 @@ from app.modules.notifications.api import router as notifications_router
 # Setup logging
 setup_logging(debug=settings.DEBUG)
 logger = get_logger(__name__)
+
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses."""
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        if not settings.DEBUG:
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=63072000; includeSubDomains; preload"
+            )
+        return response
 
 
 @asynccontextmanager
@@ -99,13 +123,20 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Accept-Language"],
 )
 
 
@@ -146,12 +177,38 @@ async def general_exception_handler(
 
 # Health check endpoint
 @app.get("/health")
-async def health_check() -> dict[str, str]:
-    """Health check endpoint."""
-    return {
+async def health_check() -> dict:
+    """Health check endpoint with DB and Redis connectivity verification."""
+    health: dict = {
         "status": "healthy",
-        "version": settings.APP_VERSION
+        "version": settings.APP_VERSION,
+        "checks": {},
     }
+
+    # Check database connectivity
+    try:
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import text
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        health["checks"]["database"] = "ok"
+    except Exception as e:
+        health["status"] = "degraded"
+        health["checks"]["database"] = f"error: {str(e)}"
+        logger.error(f"Health check: database unreachable: {e}")
+
+    # Check Redis connectivity
+    try:
+        from app.core.redis import get_redis
+        redis = await get_redis()
+        await redis.ping()
+        health["checks"]["redis"] = "ok"
+    except Exception as e:
+        health["status"] = "degraded"
+        health["checks"]["redis"] = f"error: {str(e)}"
+        logger.error(f"Health check: redis unreachable: {e}")
+
+    return health
 
 
 # Include routers
