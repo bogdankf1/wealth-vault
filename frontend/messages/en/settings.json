@@ -129,6 +129,14 @@
     }
   },
   "appearance": {
+    "preferences": {
+      "title": "Preferences",
+      "description": "Theme, language, and currency settings"
+    },
+    "display": {
+      "title": "Display",
+      "description": "Customize how content is displayed"
+    },
     "theme": {
       "title": "Theme",
       "description": "Choose your preferred color scheme",

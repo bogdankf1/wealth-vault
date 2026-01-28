@@ -5,7 +5,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, CreditCard, Palette, Bell, Shield, Lock, LayoutGrid } from 'lucide-react';
+import { User, CreditCard, Palette, LayoutGrid } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
@@ -19,9 +19,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     { value: 'subscription', label: tTabs('subscription'), icon: CreditCard, href: '/dashboard/settings/subscription' },
     { value: 'appearance', label: tTabs('appearance'), icon: Palette, href: '/dashboard/settings/appearance' },
     { value: 'dashboard-layouts', label: tTabs('dashboard'), icon: LayoutGrid, href: '/dashboard/settings/dashboard-layouts' },
-    { value: 'notifications', label: tTabs('notifications'), icon: Bell, href: '/dashboard/settings/notifications' },
-    { value: 'privacy', label: tTabs('privacy'), icon: Shield, href: '/dashboard/settings/privacy' },
-    { value: 'security', label: tTabs('security'), icon: Lock, href: '/dashboard/settings/security' },
+    // TODO: Hidden tabs — re-enable when backend implementations exist:
+    // { value: 'notifications', label: tTabs('notifications'), icon: Bell, href: '/dashboard/settings/notifications' },
+    // { value: 'privacy', label: tTabs('privacy'), icon: Shield, href: '/dashboard/settings/privacy' },
+    // { value: 'security', label: tTabs('security'), icon: Lock, href: '/dashboard/settings/security' },
   ];
 
   return (

@@ -154,7 +154,6 @@ export default function SubscriptionImportPage() {
       // Move to parse step
       setCurrentStep('parse');
     } catch (error) {
-      console.error('Upload error:', error);
       toast.error(t('uploadError'));
     }
   };
@@ -179,7 +178,6 @@ export default function SubscriptionImportPage() {
       // Show success message
       toast.success(t('subscriptionsFound', { count: result.total_count }));
     } catch (error) {
-      console.error('Parse error:', error);
       toast.error(t('parseError'));
     }
   };
@@ -299,7 +297,6 @@ export default function SubscriptionImportPage() {
 
         success++;
       } catch (error) {
-        console.error('Failed to import subscription:', sub.name, error);
         failed++;
       }
 

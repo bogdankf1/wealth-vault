@@ -84,15 +84,15 @@ export function NotificationSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 lg:space-y-6">
+      <div className="space-y-3">
         {[1, 2].map((i) => (
           <Card key={i}>
-            <CardHeader className="p-3 lg:p-6">
+            <CardHeader className="p-3">
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
-            <CardContent className="p-3 lg:p-6 pt-0">
-              <div className="space-y-3 lg:space-y-4">
+            <CardContent className="p-3 pt-0">
+              <div className="space-y-3">
                 {[1, 2, 3].map((j) => (
                   <div key={j} className="h-16 w-full animate-pulse rounded bg-muted" />
                 ))}
@@ -105,10 +105,10 @@ export function NotificationSettings() {
   }
 
   return (
-    <div className="space-y-3 lg:space-y-6">
+    <div className="space-y-3">
       {/* Email Notifications */}
       <Card>
-        <CardHeader className="p-3 lg:p-6">
+        <CardHeader className="p-3">
           <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
             <Mail className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('email.title')}
@@ -120,7 +120,7 @@ export function NotificationSettings() {
             {t('email.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
+        <CardContent className="p-3 pt-0 space-y-3">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('email.warningMessage')}
@@ -200,7 +200,7 @@ export function NotificationSettings() {
 
       {/* Push Notifications */}
       <Card>
-        <CardHeader className="p-3 lg:p-6">
+        <CardHeader className="p-3">
           <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
             <Smartphone className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('push.title')}
@@ -212,7 +212,7 @@ export function NotificationSettings() {
             {t('push.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
+        <CardContent className="p-3 pt-0 space-y-3">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
             <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
               {t('push.warningMessage')}

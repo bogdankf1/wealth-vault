@@ -165,7 +165,6 @@ export default function AccountsImportPage() {
       setCurrentStep('parse');
     } catch (error) {
       toast.error(t('uploadError'));
-      console.error('Upload error:', error);
     }
   };
 
@@ -203,7 +202,6 @@ export default function AccountsImportPage() {
       toast.success(t('accountsFound', { count: result.total_count }));
     } catch (error) {
       toast.error(t('parseError'));
-      console.error('Parse error:', error);
     }
   };
 
@@ -295,7 +293,6 @@ export default function AccountsImportPage() {
 
         success++;
       } catch (error) {
-        console.error('Failed to import account:', error);
         failed++;
       }
 
@@ -370,7 +367,6 @@ export default function AccountsImportPage() {
         }
         setConvertedTotal(total);
       } catch (error) {
-        console.error('Currency conversion error:', error);
         setConvertedTotal(null);
       } finally {
         setIsConverting(false);

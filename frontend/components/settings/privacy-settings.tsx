@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Shield, Eye, Download } from 'lucide-react';
+import { Shield, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useGetMyPreferencesQuery, useUpdateMyPreferencesMutation, AnalyticsOptOut } from '@/lib/api/preferencesApi';
@@ -72,24 +71,16 @@ export function PrivacySettings() {
     }
   };
 
-  const handleExportData = () => {
-    toast({
-      title: t('toasts.dataExportRequested.title'),
-      description: t('toasts.dataExportRequested.description'),
-    });
-    // TODO: Implement actual data export functionality
-  };
-
   if (isLoading) {
     return (
-      <div className="space-y-3 lg:space-y-6">
+      <div className="space-y-3">
         {[1, 2, 3].map((i) => (
           <Card key={i}>
-            <CardHeader className="p-3 lg:p-6">
+            <CardHeader className="p-3">
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
-            <CardContent className="p-3 lg:p-6 pt-0">
+            <CardContent className="p-3 pt-0">
               <div className="h-32 w-full animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
@@ -99,10 +90,10 @@ export function PrivacySettings() {
   }
 
   return (
-    <div className="space-y-3 lg:space-y-6">
+    <div className="space-y-3">
       {/* Analytics & Tracking */}
       <Card>
-        <CardHeader className="p-3 lg:p-6">
+        <CardHeader className="p-3">
           <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
             <Shield className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('analytics.title')}
@@ -111,7 +102,7 @@ export function PrivacySettings() {
             {t('analytics.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
+        <CardContent className="p-3 pt-0 space-y-3">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="analytics-usage" className="text-xs lg:text-sm">{t('analytics.usageAnalytics.label')}</Label>
@@ -158,7 +149,7 @@ export function PrivacySettings() {
 
       {/* Data Visibility */}
       <Card>
-        <CardHeader className="p-3 lg:p-6">
+        <CardHeader className="p-3">
           <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
             <Eye className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('dataVisibility.title')}
@@ -167,10 +158,10 @@ export function PrivacySettings() {
             {t('dataVisibility.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0">
+        <CardContent className="p-3 pt-0">
           <RadioGroup value={dataVisibility} onValueChange={(value) => handleDataVisibilityChange(value as 'private' | 'anonymous')}>
-            <div className="space-y-3 lg:space-y-4">
-              <div className="flex items-start space-x-3 rounded-lg border p-3 lg:p-4">
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3 rounded-lg border p-3">
                 <RadioGroupItem value="private" id="visibility-private" />
                 <div className="flex-1">
                   <Label htmlFor="visibility-private" className="text-xs lg:text-sm font-medium">
@@ -182,7 +173,7 @@ export function PrivacySettings() {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 rounded-lg border p-3 lg:p-4">
+              <div className="flex items-start space-x-3 rounded-lg border p-3">
                 <RadioGroupItem value="anonymous" id="visibility-anonymous" />
                 <div className="flex-1">
                   <Label htmlFor="visibility-anonymous" className="text-xs lg:text-sm font-medium">
@@ -198,35 +189,8 @@ export function PrivacySettings() {
         </CardContent>
       </Card>
 
-      {/* Data Export */}
-      <Card>
-        <CardHeader className="p-3 lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
-            <Download className="h-4 w-4 lg:h-5 lg:w-5" />
-            {t('dataExport.title')}
-            <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              {t('dataExport.comingSoon')}
-            </span>
-          </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
-            {t('dataExport.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
-              {t('dataExport.warningMessage')}
-            </p>
-          </div>
-          <p className="text-xs lg:text-sm text-muted-foreground">
-            {t('dataExport.info')}
-          </p>
-          <Button onClick={handleExportData} variant="outline" disabled className="cursor-not-allowed opacity-50">
-            <Download className="h-4 w-4 mr-2" />
-            {t('dataExport.button')}
-          </Button>
-        </CardContent>
-      </Card>
+      {/* TODO: Data Export section hidden — no backend implementation exists yet.
+         Re-enable when data export backend is implemented. */}
     </div>
   );
 }

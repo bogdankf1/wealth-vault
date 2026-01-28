@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { User, Mail, Calendar, Globe, Briefcase } from 'lucide-react';
+import { User, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetMyPreferencesQuery, useUpdateMyPreferencesMutation } from '@/lib/api/preferencesApi';
@@ -13,17 +15,16 @@ import { useTranslations } from 'next-intl';
 
 export function AccountSettings() {
   const t = useTranslations('settings.account');
+  const tSecurity = useTranslations('settings.security');
   const { toast } = useToast();
   const { data: session } = useSession();
   const { data: currentUser, isLoading: userLoading } = useGetCurrentUserQuery();
   const { data: preferences, isLoading: prefsLoading } = useGetMyPreferencesQuery();
   const [updatePreferences] = useUpdateMyPreferencesMutation();
 
-  // Local state
   const [country, setCountry] = useState<string>('');
   const [occupation, setOccupation] = useState<string>('');
 
-  // Countries list (ISO 3166-1 alpha-2)
   const COUNTRIES = [
     { code: 'US', name: 'United States' },
     { code: 'GB', name: 'United Kingdom' },
@@ -64,7 +65,6 @@ export function AccountSettings() {
     { code: 'TR', name: 'Turkey' },
   ].sort((a, b) => a.name.localeCompare(b.name));
 
-  // Occupation types (similar to Interactive Brokers)
   const OCCUPATIONS = [
     { value: 'employed', label: t('occupation.options.employed') },
     { value: 'self_employed', label: t('occupation.options.selfEmployed') },
@@ -79,7 +79,6 @@ export function AccountSettings() {
     { value: 'other', label: t('occupation.options.other') },
   ];
 
-  // Sync local state with preferences
   useEffect(() => {
     if (preferences) {
       setCountry(preferences.country || '');
@@ -91,17 +90,12 @@ export function AccountSettings() {
     setCountry(newCountry);
     try {
       await updatePreferences({ country: newCountry }).unwrap();
-      const countryName = COUNTRIES.find(c => c.code === newCountry)?.name || newCountry;
       toast({
         title: t('toasts.countryUpdated.title'),
-        description: `${t('toasts.countryUpdated.description')} ${countryName}`,
+        description: `${t('toasts.countryUpdated.description')} ${COUNTRIES.find(c => c.code === newCountry)?.name}`,
       });
     } catch {
-      toast({
-        title: t('toasts.error.title'),
-        description: t('toasts.error.countryDescription'),
-        variant: 'destructive',
-      });
+      toast({ title: t('toasts.error.title'), description: t('toasts.error.countryDescription'), variant: 'destructive' });
     }
   };
 
@@ -109,17 +103,12 @@ export function AccountSettings() {
     setOccupation(newOccupation);
     try {
       await updatePreferences({ occupation: newOccupation }).unwrap();
-      const occupationLabel = OCCUPATIONS.find(o => o.value === newOccupation)?.label || newOccupation;
       toast({
         title: t('toasts.occupationUpdated.title'),
-        description: `${t('toasts.occupationUpdated.description')} ${occupationLabel}`,
+        description: `${t('toasts.occupationUpdated.description')} ${OCCUPATIONS.find(o => o.value === newOccupation)?.label}`,
       });
     } catch {
-      toast({
-        title: t('toasts.error.title'),
-        description: t('toasts.error.occupationDescription'),
-        variant: 'destructive',
-      });
+      toast({ title: t('toasts.error.title'), description: t('toasts.error.occupationDescription'), variant: 'destructive' });
     }
   };
 
@@ -127,118 +116,99 @@ export function AccountSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 lg:space-y-6">
-        <Card>
-          <CardHeader className="p-3 lg:p-6">
-            <div className="h-6 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
-          </CardHeader>
-          <CardContent className="p-3 lg:p-6 pt-0">
-            <div className="h-32 w-full animate-pulse rounded bg-muted" />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+        </CardHeader>
+        <CardContent>
+          <div className="h-48 w-full animate-pulse rounded bg-muted" />
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-3 lg:space-y-6">
-      <Card>
-        <CardHeader className="p-3 lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
-            <User className="h-4 w-4 lg:h-5 lg:w-5" />
-            {t('title')}
-          </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">{t('description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
-          <div className="flex items-start gap-2 lg:gap-3">
-            <User className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
-            <div className="flex-1">
-              <p className="text-xs lg:text-sm font-medium">{t('name')}</p>
-              <p className="text-xs lg:text-sm text-muted-foreground">
-                {session?.user?.name || currentUser?.name || t('notSet')}
-              </p>
-            </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
+          <User className="h-4 w-4" />
+          {t('title')}
+        </CardTitle>
+        <CardDescription className="text-xs lg:text-sm">{t('description')}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-0 divide-y">
+        {/* Name */}
+        <div className="flex items-center justify-between py-3">
+          <Label className="text-sm">{t('name')}</Label>
+          <span className="text-sm text-muted-foreground">{session?.user?.name || currentUser?.name || t('notSet')}</span>
+        </div>
+
+        {/* Email */}
+        <div className="flex items-center justify-between py-3">
+          <Label className="text-sm">{t('email')}</Label>
+          <span className="text-sm text-muted-foreground">{session?.user?.email || currentUser?.email || t('notSet')}</span>
+        </div>
+
+        {/* Member Since */}
+        {currentUser?.created_at && (
+          <div className="flex items-center justify-between py-3">
+            <Label className="text-sm">{t('memberSince')}</Label>
+            <span className="text-sm text-muted-foreground">{format(new Date(currentUser.created_at), 'MMMM d, yyyy')}</span>
           </div>
+        )}
 
-          <div className="flex items-start gap-2 lg:gap-3">
-            <Mail className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
-            <div className="flex-1">
-              <p className="text-xs lg:text-sm font-medium">{t('email')}</p>
-              <p className="text-xs lg:text-sm text-muted-foreground">
-                {session?.user?.email || currentUser?.email || t('notSet')}
-              </p>
-            </div>
+        {/* Authentication */}
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-2">
+            <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            <Label className="text-sm">{tSecurity('authMethod.signedInWith')}</Label>
           </div>
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto p-0 text-sm"
+            onClick={() => window.open('https://myaccount.google.com/security', '_blank')}
+          >
+            {tSecurity('authMethod.manageGoogleAccount')}
+            <ExternalLink className="h-3 w-3 ml-1" />
+          </Button>
+        </div>
 
-          {currentUser?.created_at && (
-            <div className="flex items-start gap-2 lg:gap-3">
-              <Calendar className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <p className="text-xs lg:text-sm font-medium">{t('memberSince')}</p>
-                <p className="text-xs lg:text-sm text-muted-foreground">
-                  {format(new Date(currentUser.created_at), 'MMMM d, yyyy')}
-                </p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Country Selection */}
-      <Card>
-        <CardHeader className="p-3 lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
-            <Globe className="h-4 w-4 lg:h-5 lg:w-5" />
-            {t('country.title')}
-          </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
-            {t('country.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0">
+        {/* Country */}
+        <div className="flex items-center justify-between py-3">
+          <Label className="text-sm">{t('country.title')}</Label>
           <Select value={country} onValueChange={handleCountryChange}>
-            <SelectTrigger className="w-full md:w-[300px]">
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder={t('country.selectPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {COUNTRIES.map((c) => (
-                <SelectItem key={c.code} value={c.code}>
-                  {c.name}
-                </SelectItem>
+                <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Occupation Selection */}
-      <Card>
-        <CardHeader className="p-3 lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
-            <Briefcase className="h-4 w-4 lg:h-5 lg:w-5" />
-            {t('occupation.title')}
-          </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
-            {t('occupation.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0">
+        {/* Occupation */}
+        <div className="flex items-center justify-between py-3">
+          <Label className="text-sm">{t('occupation.title')}</Label>
           <Select value={occupation} onValueChange={handleOccupationChange}>
-            <SelectTrigger className="w-full md:w-[300px]">
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder={t('occupation.selectPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {OCCUPATIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

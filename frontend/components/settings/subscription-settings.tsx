@@ -129,14 +129,14 @@ export function SubscriptionSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 lg:space-y-6">
+      <div className="space-y-3">
         {[1, 2].map((i) => (
           <Card key={i}>
-            <CardHeader className="p-3 lg:p-6">
+            <CardHeader className="p-3">
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
             </CardHeader>
-            <CardContent className="p-3 lg:p-6 pt-0">
+            <CardContent className="p-3 pt-0">
               <div className="h-32 w-full animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
@@ -156,11 +156,11 @@ export function SubscriptionSettings() {
   const currentTierName = currentUser?.tier?.display_name || subscriptionStatus?.tier_display_name || 'Starter';
 
   return (
-    <div className="space-y-3 lg:space-y-6">
+    <div className="space-y-3">
       {/* Expiration Countdown Banner */}
       {isExpiring && (
         <Card className={countdown?.isUrgent ? 'border-red-500/50 bg-red-500/5' : 'border-amber-500/50 bg-amber-500/5'}>
-          <CardContent className="p-3 lg:p-6">
+          <CardContent className="p-3">
             <div className="flex items-start gap-2 lg:gap-3">
               <div className={`p-1.5 lg:p-2 rounded-full ${countdown?.isUrgent ? 'bg-red-500/20' : 'bg-amber-500/20'}`}>
                 <Clock className={`h-4 w-4 lg:h-5 lg:w-5 ${countdown?.isUrgent ? 'text-red-500' : 'text-amber-500'}`} />
@@ -231,7 +231,7 @@ export function SubscriptionSettings() {
 
       {/* Current Subscription */}
       <Card>
-        <CardHeader className="p-3 lg:p-6 pb-2">
+        <CardHeader className="p-3 pb-2">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
@@ -249,7 +249,7 @@ export function SubscriptionSettings() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3">
+        <CardContent className="p-3 pt-0 space-y-3">
           {/* Show tier info for everyone */}
           <div className="p-3 bg-muted/50 rounded-lg">
             <p className="text-xs lg:text-sm font-medium mb-1">{t('currentPlan')}</p>
@@ -283,7 +283,7 @@ export function SubscriptionSettings() {
               </div>
 
               {subscription.cancel_at_period_end && !countdown && (
-                <div className="flex items-start gap-2 lg:gap-3 p-3 lg:p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                <div className="flex items-start gap-2 lg:gap-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                   <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-yellow-500 mt-0.5" />
                   <div>
                     <p className="text-xs lg:text-sm font-medium">{t('subscriptionEnding')}</p>
@@ -319,15 +319,15 @@ export function SubscriptionSettings() {
       {/* Payment History */}
       {paymentHistory && paymentHistory.payments.length > 0 && (
         <Card>
-          <CardHeader className="p-3 lg:p-6">
+          <CardHeader className="p-3">
             <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
               <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
               {t('paymentHistory.title')}
             </CardTitle>
             <CardDescription className="text-xs lg:text-sm">{t('paymentHistory.description')}</CardDescription>
           </CardHeader>
-          <CardContent className="p-3 lg:p-6 pt-0">
-            <div className="space-y-3 lg:space-y-4">
+          <CardContent className="p-3 pt-0">
+            <div className="space-y-3">
               {paymentHistory.payments.map((payment) => (
                 <div key={payment.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-2 lg:gap-3">
@@ -394,7 +394,7 @@ export function SubscriptionSettings() {
               <div className="space-y-4">
                 <p>{t('downgradeWarning.description')}</p>
 
-                <div className="bg-muted/50 rounded-lg p-3 lg:p-4">
+                <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-xs lg:text-sm font-medium mb-2 lg:mb-3">{t('downgradeWarning.featuresLost')}</p>
                   <ul className="space-y-2">
                     {FEATURES_LOST_ON_DOWNGRADE.map((feature) => (
@@ -406,7 +406,7 @@ export function SubscriptionSettings() {
                   </ul>
                 </div>
 
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 lg:p-4">
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
                   <p className="text-xs lg:text-sm font-medium text-green-600 dark:text-green-400 mb-2">
                     {t('downgradeWarning.keepAccess')}
                   </p>

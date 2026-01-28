@@ -122,13 +122,13 @@ export function DashboardLayoutsSettings() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 lg:space-y-6">
+      <div className="space-y-3">
         <Card>
-          <CardHeader className="p-3 lg:p-6">
+          <CardHeader className="p-3">
             <div className="h-6 w-32 animate-pulse rounded bg-muted" />
             <div className="h-4 w-48 animate-pulse rounded bg-muted mt-2" />
           </CardHeader>
-          <CardContent className="p-3 lg:p-6 pt-0">
+          <CardContent className="p-3 pt-0">
             <div className="h-32 w-full animate-pulse rounded bg-muted" />
           </CardContent>
         </Card>
@@ -139,7 +139,7 @@ export function DashboardLayoutsSettings() {
   return (
     <>
       <Card>
-        <CardHeader className="p-3 lg:p-6">
+        <CardHeader className="p-3">
           <div className="flex items-center justify-between">
             <div className="space-y-1.5">
               <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
@@ -179,13 +179,13 @@ export function DashboardLayoutsSettings() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-6">
+        <CardContent className="p-3 pt-0 space-y-3">
           {layoutsData?.items && layoutsData.items.length > 0 ? (
-            <div className="space-y-3 lg:space-y-4">
+            <div className="space-y-3">
               {layoutsData.items.map((layout) => (
                 <div
                   key={layout.id}
-                  className="flex items-center justify-between p-3 lg:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -417,7 +417,7 @@ function LayoutEditorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 lg:space-y-4 py-3 lg:py-4">
+        <div className="space-y-3 py-3 lg:py-4">
           <div className="space-y-2">
             <Label htmlFor="layout-name" className="text-xs lg:text-sm">{t('editor.layoutName')}</Label>
             <Input

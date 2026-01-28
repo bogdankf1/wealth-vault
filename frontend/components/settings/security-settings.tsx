@@ -1,121 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { Shield, Smartphone, Clock, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Shield, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
-interface Session {
-  id: string;
-  device: string;
-  location: string;
-  ip: string;
-  lastActive: string;
-  current: boolean;
-}
-
 export function SecuritySettings() {
   const t = useTranslations('settings.security');
-  const { toast } = useToast();
   const { data: session } = useSession();
 
-  // 2FA state
-  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const [isEnabling2FA, setIsEnabling2FA] = useState(false);
-
-  // Mock active sessions (would come from API)
-  const [sessions, setSessions] = useState<Session[]>([
-    {
-      id: '1',
-      device: 'Chrome on macOS',
-      location: 'New York, USA',
-      ip: '192.168.1.1',
-      lastActive: '2 minutes ago',
-      current: true,
-    },
-    {
-      id: '2',
-      device: 'Safari on iPhone',
-      location: 'New York, USA',
-      ip: '192.168.1.2',
-      lastActive: '2 hours ago',
-      current: false,
-    },
-  ]);
-
-  const handle2FAToggle = async (enabled: boolean) => {
-    setIsEnabling2FA(true);
-
-    try {
-      // TODO: Implement actual 2FA enable/disable API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setIs2FAEnabled(enabled);
-      toast({
-        title: enabled ? t('toasts.twoFactorEnabled.title') : t('toasts.twoFactorDisabled.title'),
-        description: enabled
-          ? t('toasts.twoFactorEnabled.description')
-          : t('toasts.twoFactorDisabled.description'),
-      });
-    } catch (error) {
-      toast({
-        title: t('toasts.error.title'),
-        description: t('toasts.error.twoFactorDescription'),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsEnabling2FA(false);
-    }
-  };
-
-  const handleRevokeSession = async (sessionId: string) => {
-    try {
-      // TODO: Implement actual session revoke API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setSessions(sessions.filter((s) => s.id !== sessionId));
-      toast({
-        title: t('toasts.sessionRevoked.title'),
-        description: t('toasts.sessionRevoked.description'),
-      });
-    } catch (error) {
-      toast({
-        title: t('toasts.error.title'),
-        description: t('toasts.error.sessionDescription'),
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleRevokeAllSessions = async () => {
-    try {
-      // TODO: Implement actual revoke all sessions API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setSessions(sessions.filter((s) => s.current));
-      toast({
-        title: t('toasts.sessionsRevoked.title'),
-        description: t('toasts.sessionsRevoked.description'),
-      });
-    } catch (error) {
-      toast({
-        title: t('toasts.error.title'),
-        description: t('toasts.error.sessionsDescription'),
-        variant: 'destructive',
-      });
-    }
-  };
-
   return (
-    <div className="space-y-3 lg:space-y-6">
+    <div className="space-y-3">
       {/* Authentication Method */}
       <Card>
-        <CardHeader className="p-3 lg:p-6">
+        <CardHeader className="p-3">
           <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
             <Shield className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('authMethod.title')}
@@ -124,8 +23,8 @@ export function SecuritySettings() {
             {t('authMethod.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 lg:p-4 dark:border-blue-800 dark:bg-blue-950">
+        <CardContent className="p-3 pt-0 space-y-3">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
             <div className="flex items-start gap-2 lg:gap-3">
               <svg className="h-5 w-5 lg:h-6 lg:w-6 mt-0.5" viewBox="0 0 24 24">
                 <path
@@ -169,128 +68,11 @@ export function SecuritySettings() {
         </CardContent>
       </Card>
 
-      {/* Two-Factor Authentication */}
-      <Card>
-        <CardHeader className="p-3 lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
-            <Smartphone className="h-4 w-4 lg:h-5 lg:w-5" />
-            {t('twoFactor.title')}
-            <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              {t('twoFactor.comingSoon')}
-            </span>
-          </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
-            {t('twoFactor.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
-              {t('twoFactor.warningMessage')}
-            </p>
-          </div>
-          <div className="flex items-center justify-between opacity-50">
-            <div className="space-y-0.5">
-              <Label htmlFor="2fa-toggle" className="text-xs lg:text-sm">{t('twoFactor.enable')}</Label>
-              <p className="text-xs lg:text-sm text-muted-foreground">
-                {t('twoFactor.enableDescription')}
-              </p>
-            </div>
-            <Switch
-              id="2fa-toggle"
-              checked={is2FAEnabled}
-              onCheckedChange={handle2FAToggle}
-              disabled
-            />
-          </div>
+      {/* TODO: 2FA section hidden — no backend API exists yet.
+         Re-enable when 2FA backend is implemented. */}
 
-          {is2FAEnabled && (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-3 lg:p-4 dark:border-green-800 dark:bg-green-950">
-              <div className="flex items-start gap-2 lg:gap-3">
-                <Shield className="h-4 w-4 lg:h-5 lg:w-5 text-green-600 dark:text-green-400 mt-0.5" />
-                <div>
-                  <h4 className="text-xs lg:text-sm font-medium text-green-900 dark:text-green-100">
-                    {t('twoFactor.enabled.title')}
-                  </h4>
-                  <p className="text-xs lg:text-sm text-green-700 dark:text-green-300 mt-1">
-                    {t('twoFactor.enabled.description')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Active Sessions */}
-      <Card>
-        <CardHeader className="p-3 lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
-            <Clock className="h-4 w-4 lg:h-5 lg:w-5" />
-            {t('sessions.title')}
-            <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-              {t('sessions.comingSoon')}
-            </span>
-          </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
-            {t('sessions.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 lg:p-6 pt-0 space-y-3 lg:space-y-4">
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-xs lg:text-sm text-amber-700 dark:text-amber-300">
-              {t('sessions.warningMessage')}
-            </p>
-          </div>
-          {sessions.map((session) => (
-            <div
-              key={session.id}
-              className="flex items-start justify-between rounded-lg border p-3 lg:p-4"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs lg:text-sm font-medium">{session.device}</p>
-                  {session.current && (
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
-                      {t('sessions.current')}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs lg:text-sm text-muted-foreground">
-                  {session.location} • {session.ip}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t('sessions.lastActive')} {session.lastActive}
-                </p>
-              </div>
-
-              {!session.current && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled
-                  className="cursor-not-allowed opacity-50"
-                >
-                  {t('sessions.revoke')}
-                </Button>
-              )}
-            </div>
-          ))}
-
-          {sessions.length > 1 && (
-            <div className="pt-2">
-              <Button
-                variant="destructive"
-                disabled
-                className="w-full cursor-not-allowed opacity-50"
-              >
-                <AlertTriangle className="h-4 w-4 mr-2" />
-                {t('sessions.revokeAll')}
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* TODO: Active Sessions section hidden — no backend API exists yet.
+         Re-enable when session management backend is implemented. */}
     </div>
   );
 }

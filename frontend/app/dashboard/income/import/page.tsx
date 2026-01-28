@@ -149,7 +149,6 @@ export default function IncomeImportPage() {
       setCurrentStep('parse');
     } catch (error) {
       toast.error(t('uploadError'));
-      console.error('Upload error:', error);
     }
   };
 
@@ -190,7 +189,6 @@ export default function IncomeImportPage() {
       toast.success(t('transactionsFound', { count: result.total_count }));
     } catch (error) {
       toast.error(t('parseError'));
-      console.error('Parse error:', error);
     }
   };
 
@@ -283,7 +281,6 @@ export default function IncomeImportPage() {
 
         success++;
       } catch (error) {
-        console.error('Failed to import transaction:', error);
         failed++;
       }
 
@@ -358,7 +355,6 @@ export default function IncomeImportPage() {
         }
         setConvertedTotal(total);
       } catch (error) {
-        console.error('Currency conversion error:', error);
         setConvertedTotal(null);
       } finally {
         setIsConverting(false);
