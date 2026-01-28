@@ -7,7 +7,7 @@
 import React, { useState, useMemo } from 'react';
 
 import { useRouter } from 'next/navigation';
-import { CreditCard, TrendingDown, DollarSign, Edit, Trash2, Archive, LayoutGrid, List, CalendarDays, Upload, Plus, Play, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw, X } from 'lucide-react';
+import { CreditCard, Edit, Trash2, Archive, LayoutGrid, List, CalendarDays, Upload, Plus, Play, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -42,7 +42,6 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { InstallmentForm } from '@/components/installments/installment-form';
-import { StatCard } from '@/components/ui/stats-cards';
 import { InstallmentsActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
@@ -61,7 +60,6 @@ import { Progress } from '@/components/ui/progress';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { Separator } from '@/components/ui/separator';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { toast } from 'sonner';
@@ -129,8 +127,6 @@ export default function InstallmentsPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode } = useViewPreferences();
-  const { showStatsCards } = useUIVisibility();
-
   // Column configuration for list view
   const columnConfig: ColumnConfig[] = React.useMemo(() => [
     { id: 'name', label: tOverview('name'), locked: true },
@@ -173,8 +169,6 @@ export default function InstallmentsPage() {
 
   const {
     data: stats,
-    isLoading: isLoadingStats,
-    error: statsError,
   } = useGetInstallmentStatsQuery(statsParams);
 
   const [updateInstallment] = useUpdateInstallmentMutation();
@@ -361,58 +355,6 @@ export default function InstallmentsPage() {
     (installment) => installment.start_date
   ) || [];
 
-  // Prepare stats cards data
-  const statsCards: StatCard[] = stats
-    ? [
-        {
-          title: tOverview('totalInstallments'),
-          value: stats.total_installments,
-          description: selectedMonth
-            ? `${stats.active_installments} ${tOverview('activeInMonth')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : `${stats.active_installments} ${tOverview('activeInstallments')}`,
-          icon: CreditCard,
-        },
-        {
-          title: tOverview('totalDebt'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_debt}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: stats.debt_free_date
-            ? `${tOverview('debtFreeBy')} ${new Date(stats.debt_free_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-            : tOverview('noDebtFreeDate'),
-          icon: TrendingDown,
-        },
-        {
-          title: selectedMonth ? tOverview('periodPayment') : tOverview('monthlyPayment'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.monthly_payment}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: (
-            <>
-              <CurrencyDisplay
-                amount={stats.total_paid}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />{' '}
-              {tOverview('paidSoFar')}
-            </>
-          ),
-          icon: DollarSign,
-        },
-      ]
-    : [];
-
   // Get payment badge variant based on urgency
   const getPaymentBadgeVariant = (urgency: string): 'default' | 'secondary' | 'destructive' => {
     switch (urgency) {
@@ -481,61 +423,24 @@ export default function InstallmentsPage() {
   return (
     <div className="space-y-4 md:space-y-6">
 
-      {/* Statistics Cards */}
-      {showStatsCards && (
-        isLoadingStats ? (
-          <div className="grid gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardHeader className="space-y-2">
-                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                  <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        ) : statsError ? (
-          <ApiErrorState error={statsError} />
-        ) : stats ? (
-          <div className="border rounded-lg overflow-hidden bg-card">
-            <div className="divide-y">
-              {statsCards.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-medium truncate">{stat.title}</span>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-lg font-bold">{stat.value}</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null
-      )}
-
       {/* Search and Filters */}
       {(installmentsData?.items && installmentsData.items.length > 0) && (
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={tOverview('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9"
-            />
-          </div>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={tOverview('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9"
+              />
+            </div>
 
-          {/* Filters Popover */}
-          <Popover>
+            {/* Filters Popover */}
+            <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="relative">
                 <Filter className="h-4 w-4" />
@@ -714,7 +619,19 @@ export default function InstallmentsPage() {
                 </>
               )}
             </PopoverContent>
-          </Popover>
+            </Popover>
+          </div>
+
+          {/* Inline stats */}
+          {stats && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0 max-w-xs">
+              <span><span className="font-semibold text-foreground">{stats.total_installments}</span> plans</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_debt} currency={stats.currency} decimals={0} /></span> debt</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.monthly_payment} currency={stats.currency} decimals={0} /></span>/mo</span>
+            </div>
+          )}
         </div>
       )}
 

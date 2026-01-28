@@ -63,7 +63,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { toast } from 'sonner';
 
 export default function TaxesPage() {
@@ -92,8 +91,6 @@ export default function TaxesPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode } = useViewPreferences();
-  const { showStatsCards } = useUIVisibility();
-
   // Column visibility configuration
   const columnConfig: ColumnConfig[] = React.useMemo(() => [
     { id: 'name', label: tOverview('name'), locked: true },
@@ -427,51 +424,6 @@ export default function TaxesPage() {
     (tax) => tax.created_at
   ) || [];
 
-  // Stats cards
-  const statsCards = stats
-    ? [
-        {
-          title: tOverview('totalTaxes'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_tax_amount}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: `${stats.active_taxes} ${stats.active_taxes === 1 ? tOverview('activeTaxSingular') : tOverview('activeTaxesPlural')}`,
-          icon: FileText,
-        },
-        {
-          title: tOverview('fixedTaxes'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_fixed_taxes}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: tOverview('monthlyFixedAmount'),
-          icon: DollarSign,
-        },
-        {
-          title: tOverview('percentageBased'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_percentage_taxes}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: tOverview('basedOnIncome'),
-          icon: Percent,
-        },
-      ]
-    : [];
-
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedType !== '') count++;
@@ -482,51 +434,24 @@ export default function TaxesPage() {
   return (
     <div className="space-y-4 md:space-y-6">
 
-
-      {/* Statistics Cards - Always compact */}
-      {showStatsCards && (
-        isLoading ? (
-          <LoadingCards count={3} />
-        ) : stats ? (
-          <div className="border rounded-lg overflow-hidden bg-card">
-            <div className="divide-y">
-              {statsCards.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-medium truncate">{stat.title}</span>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-lg font-bold">{stat.value}</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null
-      )}
-
       {/* Search and Filters */}
       {hasTaxes && (
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={tOverview('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9"
-            />
-          </div>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={tOverview('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9"
+              />
+            </div>
 
-          {/* Filters Popover */}
-          <Popover>
+            {/* Filters Popover */}
+            <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="relative">
                 <Filter className="h-4 w-4" />
@@ -665,7 +590,19 @@ export default function TaxesPage() {
                 </>
               )}
             </PopoverContent>
-          </Popover>
+            </Popover>
+          </div>
+
+          {/* Inline stats */}
+          {stats && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0 max-w-xs">
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_tax_amount} currency={stats.currency} decimals={0} /></span> total</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground">{stats.total_fixed_taxes}</span> fixed</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground">{stats.total_percentage_taxes}</span> %-based</span>
+            </div>
+          )}
         </div>
       )}
 

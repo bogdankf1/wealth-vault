@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, TrendingDown, Calendar, Trash2, Archive, LayoutGrid, List, CalendarDays, Layers, Upload, Plus, Play, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw, X } from 'lucide-react';
+import { DollarSign, Trash2, Archive, LayoutGrid, List, CalendarDays, Layers, Upload, Plus, Play, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -45,7 +45,6 @@ import { ApiErrorState } from '@/components/ui/error-state';
 import { ExpenseForm } from '@/components/expenses/expense-form';
 import { BatchExpenseForm } from '@/components/expenses/batch-expense-form';
 import { filterByMonth } from '@/components/ui/month-filter';
-import { StatCard } from '@/components/ui/stats-cards';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -53,7 +52,6 @@ import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
 import { ExpenseActionsContext } from '../context';
@@ -97,8 +95,6 @@ export default function ExpensesPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode } = useViewPreferences();
-  const { showStatsCards } = useUIVisibility();
-
   // Column configuration for list view
   const columnConfig: ColumnConfig[] = React.useMemo(() => [
     { id: 'name', label: tOverview('table.name'), locked: true },
@@ -131,6 +127,7 @@ export default function ExpensesPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(new Set());
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+
 
   const {
     data: expensesData,
@@ -404,37 +401,6 @@ export default function ExpensesPage() {
     return () => setActions(null);
   }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleImportExpenses, handleBatchAddExpense, handleProcessDuePayments, isProcessingPayments, hasBatchOperations, tOverview]);
 
-  // Prepare stats cards data
-  const statsCards: StatCard[] = stats
-    ? [
-        {
-          title: tOverview('totalExpenses'),
-          value: stats.total_expenses,
-          description: selectedMonth
-            ? tOverview('activeIn', {
-                count: stats.active_expenses,
-                month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-              })
-            : `${stats.active_expenses} ${tOverview('active')}`,
-          icon: DollarSign,
-        },
-        {
-          title: selectedMonth ? tOverview('periodSpending') : tOverview('monthlyExpense'),
-          value: <CurrencyDisplay amount={stats.total_monthly_expense} currency={stats.currency} decimals={0} />,
-          description: selectedMonth
-            ? tOverview('totalFor', { month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) })
-            : `${stats.active_expenses} ${tOverview('active')}`,
-          icon: TrendingDown,
-        },
-        {
-          title: tOverview('annualSpending'),
-          value: <CurrencyDisplay amount={stats.total_annual_expense} currency={stats.currency} decimals={0} />,
-          description: tOverview('projectedYearlyExpenses'),
-          icon: Calendar,
-        },
-      ]
-    : [];
-
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedCategory !== null) count++;
@@ -445,60 +411,21 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Statistics Section - Always compact */}
-      {showStatsCards && (isLoadingStats || statsError || stats) ? (
-        <div className="space-y-3">
-          {isLoadingStats ? (
-            <div className="border rounded-lg p-3 bg-card">
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between py-1.5 border-b last:border-b-0">
-                    <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-                    <div className="h-4 w-20 animate-pulse rounded bg-muted" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : statsError ? (
-            <ApiErrorState error={statsError} />
-          ) : stats ? (
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <div className="divide-y">
-                {statsCards.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium truncate">{stat.title}</span>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-lg font-bold">{stat.value}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
       {/* Search and Filters */}
       {(expensesData?.items && expensesData.items.length > 0) && (
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={tOverview('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9"
-            />
-          </div>
+          {/* Search + Filter grouped together */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={tOverview('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9"
+              />
+            </div>
 
           {/* Filters Popover */}
           <Popover>
@@ -681,6 +608,18 @@ export default function ExpensesPage() {
               )}
             </PopoverContent>
           </Popover>
+          </div>
+
+          {/* Inline stats */}
+          {stats && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0 max-w-xs">
+              <span><span className="font-semibold text-foreground">{stats.total_expenses}</span> expenses</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_monthly_expense} currency={stats.currency} decimals={0} /></span>/mo</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_annual_expense} currency={stats.currency} decimals={0} /></span>/yr</span>
+            </div>
+          )}
         </div>
       )}
 

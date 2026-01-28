@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { TrendingUp, TrendingDown, DollarSign, Target, Edit, Trash2, Archive, BarChart3, LayoutGrid, List, Upload, Plus, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Edit, Trash2, Archive, LayoutGrid, List, Upload, Plus, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   useListPortfolioAssetsQuery,
@@ -35,8 +35,6 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { PortfolioForm } from '@/components/portfolio/portfolio-form';
-
-import { type StatCard } from '@/components/ui/stats-cards';
 import { PortfolioActionsContext } from '../context';
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { BatchDeleteConfirmDialog } from '@/components/ui/batch-delete-confirm-dialog';
@@ -46,7 +44,6 @@ import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { toast } from 'sonner';
 
 export default function PortfolioPage() {
@@ -95,7 +92,6 @@ export default function PortfolioPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode } = useViewPreferences();
-  const { showStatsCards } = useUIVisibility();
 
   // Column visibility configuration
   const columnConfig: ColumnConfig[] = React.useMemo(() => [
@@ -120,8 +116,6 @@ export default function PortfolioPage() {
 
   const {
     data: stats,
-    isLoading: isLoadingStats,
-    error: statsError,
   } = useGetPortfolioStatsQuery();
 
   const [updateAsset] = useUpdatePortfolioAssetMutation();
@@ -329,54 +323,6 @@ export default function PortfolioPage() {
     (asset) => asset.purchase_date
   ) || [];
 
-  // Prepare stats cards data
-  const statsCards: StatCard[] = stats
-    ? [
-        {
-          title: tOverview('totalValue'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.current_value}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: (
-            <span className="flex items-center gap-1">
-              <CurrencyDisplay
-                amount={stats.total_invested}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />
-              <span>{tOverview('totalInvested')}</span>
-            </span>
-          ),
-          icon: DollarSign,
-        },
-        {
-          title: tOverview('totalReturn'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_return}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: formatPercentage(stats.total_return_percentage),
-          icon: stats.total_return >= 0 ? TrendingUp : TrendingDown,
-        },
-        {
-          title: tOverview('totalAssets'),
-          value: stats.total_assets,
-          description: `${stats.winners} ${tOverview('winners')}, ${stats.losers} ${tOverview('losers')}`,
-          icon: BarChart3,
-        },
-      ]
-    : [];
-
   const activeFilterCount = React.useMemo(() => {
     let count = 0;
     if (selectedCategory !== null) count++;
@@ -386,68 +332,31 @@ export default function PortfolioPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Statistics Cards */}
-      {showStatsCards && (
-        isLoadingStats ? (
-          <div className="grid gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardHeader className="space-y-2">
-                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                  <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        ) : statsError ? (
-          <ApiErrorState error={statsError} />
-        ) : stats ? (
-          <div className="border rounded-lg overflow-hidden bg-card">
-            <div className="divide-y">
-              {statsCards.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-medium truncate">{stat.title}</span>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-lg font-bold">{stat.value}</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null
-      )}
-
       {/* Search and Filters */}
       {(portfolioData?.items && portfolioData.items.length > 0) && (
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={tOverview('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
-                <Filter className="h-4 w-4" />
-                {activeFilterCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-0" align="end">
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={tOverview('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="relative">
+                  <Filter className="h-4 w-4" />
+                  {activeFilterCount > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-0" align="end">
               {/* FILTER section */}
               <div className="p-3 space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
@@ -547,8 +456,19 @@ export default function PortfolioPage() {
                   </div>
                 </>
               )}
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          </div>
+          {/* Inline stats */}
+          {stats && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0 max-w-xs">
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.current_value} currency={stats.currency} decimals={0} /></span> value</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_return} currency={stats.currency} decimals={0} /></span> return</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground">{stats.total_assets}</span> assets</span>
+            </div>
+          )}
         </div>
       )}
 

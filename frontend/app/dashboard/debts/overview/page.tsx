@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserMinus, AlertCircle, Trash2, Archive, CheckCircle2, Clock, LayoutGrid, List, DollarSign, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw } from 'lucide-react';
+import { UserMinus, Trash2, Archive, CheckCircle2, Clock, LayoutGrid, List, DollarSign, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 
@@ -47,7 +47,6 @@ import {
 } from '@/lib/api/debtsApi';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { toast } from 'sonner';
 
@@ -74,7 +73,6 @@ export default function DebtsPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode } = useViewPreferences();
-  const { showStatsCards } = useUIVisibility();
 
   // Column configuration for list view
   const columnConfig: ColumnConfig[] = React.useMemo(() => [
@@ -285,45 +283,6 @@ export default function DebtsPage() {
     (debt) => debt.due_date
   ) || [];
 
-  // Stats cards
-  const statsCards = stats
-    ? [
-        {
-          title: tOverview('totalOwed'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_amount_owed}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: `${stats.active_debts} ${stats.active_debts === 1 ? tOverview('activeDebtSingular') : tOverview('activeDebtsPlural')}`,
-          icon: UserMinus,
-        },
-        {
-          title: tOverview('totalPaid'),
-          value: (
-            <CurrencyDisplay
-              amount={stats.total_amount_paid}
-              currency={stats.currency}
-              showSymbol={true}
-              showCode={false}
-            />
-          ),
-          description: `${stats.paid_debts} ${stats.paid_debts === 1 ? tOverview('paidDebtSingular') : tOverview('paidDebtsPlural')}`,
-          icon: CheckCircle2,
-        },
-        {
-          title: tOverview('overdue'),
-          value: stats.overdue_debts,
-          description: stats.overdue_debts > 0 ? tOverview('requireAttention') : tOverview('allOnTrack'),
-          icon: AlertCircle,
-          valueClassName: stats.overdue_debts > 0 ? 'text-red-600 dark:text-red-400' : undefined,
-        },
-      ]
-    : [];
-
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedStatus) count++;
@@ -334,51 +293,24 @@ export default function DebtsPage() {
   return (
     <div className="space-y-4 md:space-y-6">
 
-
-      {/* Statistics Cards - Always compact */}
-      {showStatsCards && (
-        isLoading ? (
-          <LoadingCards count={3} />
-        ) : stats ? (
-          <div className="border rounded-lg overflow-hidden bg-card">
-            <div className="divide-y">
-              {statsCards.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-medium truncate">{stat.title}</span>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-lg font-bold">{stat.value}</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null
-      )}
-
       {/* Search and Filters */}
       {hasDebts && (
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={tOverview('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9"
-            />
-          </div>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={tOverview('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9"
+              />
+            </div>
 
-          {/* Filters Popover */}
-          <Popover>
+            {/* Filters Popover */}
+            <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="relative">
                 <Filter className="h-4 w-4" />
@@ -517,7 +449,19 @@ export default function DebtsPage() {
                 </>
               )}
             </PopoverContent>
-          </Popover>
+            </Popover>
+          </div>
+
+          {/* Inline stats */}
+          {stats && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0 max-w-xs">
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_amount_owed} currency={stats.currency} decimals={0} /></span> owed</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_amount_paid} currency={stats.currency} decimals={0} /></span> paid</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground">{stats.overdue_debts}</span> overdue</span>
+            </div>
+          )}
         </div>
       )}
 

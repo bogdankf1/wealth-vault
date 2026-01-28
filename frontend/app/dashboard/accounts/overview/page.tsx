@@ -2,10 +2,9 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Wallet, TrendingUp, PiggyBank, Trash2, Archive, LayoutGrid, List, Upload, Plus, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw } from 'lucide-react';
+import { Wallet, Trash2, Archive, LayoutGrid, List, Upload, Plus, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
-import { type StatCard } from '@/components/ui/stats-cards';
 import { SavingsActionsContext } from '../context';
 import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -47,7 +46,6 @@ import {
 } from '@/lib/api/savingsApi';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
 import { toast } from 'sonner';
 
@@ -85,8 +83,6 @@ export default function SavingsPage() {
 
   // Use default view preferences from user settings
   const { viewMode, setViewMode } = useViewPreferences();
-  const { showStatsCards } = useUIVisibility();
-
   // Column configuration for list view
   const columnConfig: ColumnConfig[] = React.useMemo(() => [
     { id: 'name', label: tOverview('name'), locked: true },
@@ -286,35 +282,6 @@ export default function SavingsPage() {
     (account) => account.created_at
   ) || [];
 
-  // Stats
-  const statsCards: StatCard[] = [
-    {
-      title: tOverview('totalAccounts'),
-      value: stats?.total_accounts.toString() || '0',
-      description: `${stats?.active_accounts || 0} ${tOverview('activeAccounts').toLowerCase()}`,
-      icon: Wallet,
-    },
-    {
-      title: tOverview('totalSavings'),
-      value: stats ? (
-        <CurrencyDisplay
-          amount={stats.net_worth}
-          currency={stats.currency}
-          showSymbol={true}
-          showCode={false}
-        />
-      ) : '0',
-      description: tOverview('currentBalance'),
-      icon: TrendingUp,
-    },
-    {
-      title: tOverview('totalGrowth'),
-      value: stats ? `${Math.round((stats.active_accounts / Math.max(stats.total_accounts, 1)) * 100)}%` : '0%',
-      description: tOverview('activeAccounts'),
-      icon: PiggyBank,
-    },
-  ];
-
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedType !== '') count++;
@@ -345,186 +312,175 @@ export default function SavingsPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-
-
-      {showStatsCards && stats && (
-        <div className="border rounded-lg overflow-hidden bg-card">
-          <div className="divide-y">
-            {statsCards.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm font-medium truncate">{stat.title}</span>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className="text-lg font-bold">{stat.value}</span>
-                    <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Search and Filters */}
       {hasAccounts && (
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={tOverview('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9"
-            />
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={tOverview('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9"
+              />
+            </div>
+
+            {/* Filters Popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="relative">
+                  <Filter className="h-4 w-4" />
+                  {activeFilterCount > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-0" align="end">
+                {/* Filter section */}
+                <div className="p-3 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
+
+                  {/* Category (Account Type) */}
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{tOverview('accountType')}</label>
+                    <Select
+                      value={selectedType || 'all'}
+                      onValueChange={(value) => setSelectedType(value === 'all' ? '' : value)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-sm">
+                        <SelectValue placeholder={tOverview('allAccountTypes')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{tOverview('allAccountTypes')}</SelectItem>
+                        {accountTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {ACCOUNT_TYPE_LABELS[type] || type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Sort section */}
+                <div className="p-3 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
+                  <div className="flex items-center gap-2">
+                    <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
+                      <SelectTrigger className="h-8 flex-1 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name">{tCommon('common.name')}</SelectItem>
+                        <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
+                        <SelectItem value="date">{tCommon('common.date')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                      className="h-8 gap-1.5 flex-shrink-0"
+                    >
+                      {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+                      <span className="text-sm">
+                        {sortField === 'name'
+                          ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
+                          : sortField === 'amount'
+                            ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
+                            : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
+                        }
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* View section */}
+                <div className="p-3 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
+                  <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
+                    <Button
+                      variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('card')}
+                      className="h-[32px] w-[32px] p-0"
+                    >
+                      <LayoutGrid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="h-[32px] w-[32px] p-0"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Columns section (list view only) */}
+                {viewMode === 'list' && (
+                  <>
+                    <Separator />
+                    <div className="p-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
+                        {Object.values(visibleColumns).filter(Boolean).length < columnConfig.length && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                            onClick={showAllColumns}
+                          >
+                            <RotateCcw className="h-3 w-3 mr-1" />
+                            {tCommon('common.showAll')}
+                          </Button>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        {columnConfig.map((column) => (
+                          <label
+                            key={column.id}
+                            className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm ${
+                              column.locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-muted'
+                            }`}
+                          >
+                            <Checkbox
+                              checked={visibleColumns[column.id] ?? true}
+                              onCheckedChange={() => toggleColumn(column.id)}
+                              disabled={column.locked}
+                            />
+                            <span className="flex-1">{column.label}</span>
+                            {column.locked && <Lock className="h-3 w-3 text-muted-foreground" />}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
 
-          {/* Filters Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
-                <Filter className="h-4 w-4" />
-                {activeFilterCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-0" align="end">
-              {/* Filter section */}
-              <div className="p-3 space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
-
-                {/* Category (Account Type) */}
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{tOverview('accountType')}</label>
-                  <Select
-                    value={selectedType || 'all'}
-                    onValueChange={(value) => setSelectedType(value === 'all' ? '' : value)}
-                  >
-                    <SelectTrigger className="h-8 w-full text-sm">
-                      <SelectValue placeholder={tOverview('allAccountTypes')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{tOverview('allAccountTypes')}</SelectItem>
-                      {accountTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {ACCOUNT_TYPE_LABELS[type] || type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Sort section */}
-              <div className="p-3 space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
-                <div className="flex items-center gap-2">
-                  <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
-                    <SelectTrigger className="h-8 flex-1 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">{tCommon('common.name')}</SelectItem>
-                      <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
-                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="h-8 gap-1.5 flex-shrink-0"
-                  >
-                    {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
-                    <span className="text-sm">
-                      {sortField === 'name'
-                        ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
-                        : sortField === 'amount'
-                          ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
-                          : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
-                      }
-                    </span>
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* View section */}
-              <div className="p-3 space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
-                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
-                  <Button
-                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('card')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Columns section (list view only) */}
-              {viewMode === 'list' && (
-                <>
-                  <Separator />
-                  <div className="p-3 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
-                      {Object.values(visibleColumns).filter(Boolean).length < columnConfig.length && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={showAllColumns}
-                        >
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          {tCommon('common.showAll')}
-                        </Button>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      {columnConfig.map((column) => (
-                        <label
-                          key={column.id}
-                          className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm ${
-                            column.locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-muted'
-                          }`}
-                        >
-                          <Checkbox
-                            checked={visibleColumns[column.id] ?? true}
-                            onCheckedChange={() => toggleColumn(column.id)}
-                            disabled={column.locked}
-                          />
-                          <span className="flex-1">{column.label}</span>
-                          {column.locked && <Lock className="h-3 w-3 text-muted-foreground" />}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </PopoverContent>
-          </Popover>
+          {/* Inline stats */}
+          {stats && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0 max-w-xs">
+              <span><span className="font-semibold text-foreground">{stats.total_accounts}</span> accounts</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.net_worth} currency={stats.currency} decimals={0} /></span> net</span>
+              <span>·</span>
+              <span><span className="font-semibold text-foreground">{stats.active_accounts}</span> active</span>
+            </div>
+          )}
         </div>
       )}
 
