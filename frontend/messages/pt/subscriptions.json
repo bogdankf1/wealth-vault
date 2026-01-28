@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Excluir Assinatura Permanentemente",
     "deleteConfirmDescription": "Isto excluirá permanentemente esta assinatura. Esta ação não pode ser desfeita.",
     "deleteSelected": "Excluir Selecionados ({count})",
-    "nextRenewal": "Próxima Renovação"
+    "nextRenewal": "Próxima Renovação",
+    "selectAll": "Selecionar tudo",
+    "deselectAll": "Desmarcar tudo",
+    "name": "Nome",
+    "amount": "Valor",
+    "frequency": "Frequência",
+    "category": "Categoria",
+    "status": "Status",
+    "actions": "Ações"
   },
   "form": {
     "addTitle": "Adicionar Assinatura",

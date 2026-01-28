@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Abonnement dauerhaft löschen",
     "deleteConfirmDescription": "Dies wird dieses Abonnement dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteSelected": "Ausgewählte löschen ({count})",
-    "nextRenewal": "Nächste Verlängerung"
+    "nextRenewal": "Nächste Verlängerung",
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Auswahl aufheben",
+    "name": "Name",
+    "amount": "Betrag",
+    "frequency": "Häufigkeit",
+    "category": "Kategorie",
+    "status": "Status",
+    "actions": "Aktionen"
   },
   "form": {
     "addTitle": "Abonnement hinzufügen",

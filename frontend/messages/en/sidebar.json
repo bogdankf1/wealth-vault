@@ -16,7 +16,8 @@
     "incomeExpenses": "Income & Expenses",
     "accountsInvestments": "Accounts & Investments",
     "recurring": "Recurring",
-    "liabilities": "Liabilities"
+    "liabilities": "Liabilities",
+    "dataManagement": "Data Management"
   },
   "bottomNavigation": {
     "export": "Export",

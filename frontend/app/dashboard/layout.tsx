@@ -70,6 +70,7 @@ export default function DashboardLayout({
     accountsInvestments: true,
     recurring: true,
     liabilities: true,
+    dataManagement: false,
   });
   const t = useTranslations('sidebar');
 
@@ -125,9 +126,12 @@ export default function DashboardLayout({
     },
   ];
 
-  const bottomNavigation = [
+  const dataManagementItems = [
     { name: t('bottomNavigation.export'), href: '/dashboard/export', icon: Download },
     { name: t('bottomNavigation.backups'), href: '/dashboard/backups', icon: Database },
+  ];
+
+  const bottomNavigation = [
     { name: t('bottomNavigation.pricing'), href: '/dashboard/pricing', icon: Sparkles },
     { name: t('bottomNavigation.helpCenter'), href: '/dashboard/help', icon: HelpCircle },
     { name: t('bottomNavigation.notifications'), href: '/dashboard/notifications', icon: Bell },
@@ -157,6 +161,10 @@ export default function DashboardLayout({
     ...group,
     items: group.items.filter(item => hasFeatureAccess(item.href))
   })).filter(group => group.items.length > 0);
+
+  const accessibleDataManagementItems = dataManagementItems.filter((item) =>
+    hasFeatureAccess(item.href)
+  );
 
   const accessibleBottomNavigation = bottomNavigation.filter((item) =>
     hasFeatureAccess(item.href)
@@ -301,6 +309,55 @@ export default function DashboardLayout({
             <div className={cn('py-2', isCollapsed && 'xl:hidden')}>
               <div className="border-t dark:border-gray-700" />
             </div>
+
+            {/* Data Management Group (Export & Backups) */}
+            {accessibleDataManagementItems.length > 0 && (
+              <div className={cn('mt-1', isCollapsed && 'xl:mt-0 xl:space-y-0.5')}>
+                <button
+                  onClick={() => toggleGroup('dataManagement')}
+                  className={cn(
+                    'w-full flex items-center justify-between gap-1 overflow-hidden px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors',
+                    isCollapsed && 'xl:hidden'
+                  )}
+                >
+                  <span className="truncate">{t('groups.dataManagement')}</span>
+                  <ChevronDown
+                    className={cn(
+                      'h-3.5 w-3.5 transition-transform duration-200',
+                      expandedGroups.dataManagement ? '' : '-rotate-90'
+                    )}
+                  />
+                </button>
+                {(expandedGroups.dataManagement || isCollapsed) && accessibleDataManagementItems.map((item) => {
+                  const isActive = isNavItemActive(item.href);
+                  const Icon = item.icon;
+
+                  return (
+                    <div key={item.name} className="group/nav relative">
+                      <Link
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          'flex items-center overflow-hidden px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
+                          isActive
+                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                            : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600',
+                          isCollapsed && 'xl:justify-center xl:px-0 xl:py-2 xl:mx-auto xl:w-10 xl:h-10'
+                        )}
+                      >
+                        <Icon className={cn('mr-3 h-5 w-5 flex-shrink-0', isCollapsed && 'xl:mr-0')} />
+                        <span className={cn('truncate', isCollapsed && 'xl:hidden')}>{item.name}</span>
+                      </Link>
+                      {isCollapsed && (
+                        <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover/nav:opacity-100 transition-opacity hidden xl:block z-[60]">
+                          {item.name}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Bottom Navigation */}
             {accessibleBottomNavigation.map((item) => {

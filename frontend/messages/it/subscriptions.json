@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Elimina Abbonamento Permanentemente",
     "deleteConfirmDescription": "Questo eliminerà permanentemente questo abbonamento. Questa azione non può essere annullata.",
     "deleteSelected": "Elimina Selezionati ({count})",
-    "nextRenewal": "Prossimo Rinnovo"
+    "nextRenewal": "Prossimo Rinnovo",
+    "selectAll": "Seleziona tutto",
+    "deselectAll": "Deseleziona tutto",
+    "name": "Nome",
+    "amount": "Importo",
+    "frequency": "Frequenza",
+    "category": "Categoria",
+    "status": "Stato",
+    "actions": "Azioni"
   },
   "form": {
     "addTitle": "Aggiungi Abbonamento",

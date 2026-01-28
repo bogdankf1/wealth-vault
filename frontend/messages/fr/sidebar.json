@@ -16,7 +16,8 @@
     "incomeExpenses": "Revenus et Dépenses",
     "accountsInvestments": "Comptes et Investissements",
     "recurring": "Récurrents",
-    "liabilities": "Passifs"
+    "liabilities": "Passifs",
+    "dataManagement": "Gestion des Données"
   },
   "bottomNavigation": {
     "export": "Exporter",

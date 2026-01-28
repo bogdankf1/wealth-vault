@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Usuń subskrypcję trwale",
     "deleteConfirmDescription": "To trwale usunie tę subskrypcję. Tej operacji nie można cofnąć.",
     "deleteSelected": "Usuń zaznaczone ({count})",
-    "nextRenewal": "Następne odnowienie"
+    "nextRenewal": "Następne odnowienie",
+    "selectAll": "Zaznacz wszystko",
+    "deselectAll": "Odznacz wszystko",
+    "name": "Nazwa",
+    "amount": "Kwota",
+    "frequency": "Częstotliwość",
+    "category": "Kategoria",
+    "status": "Status",
+    "actions": "Akcje"
   },
   "form": {
     "addTitle": "Dodaj subskrypcję",

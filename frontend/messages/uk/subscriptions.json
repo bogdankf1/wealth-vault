@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Видалити підписку назавжди",
     "deleteConfirmDescription": "Це назавжди видалить цю підписку. Цю дію неможливо скасувати.",
     "deleteSelected": "Видалити вибрані ({count})",
-    "nextRenewal": "Наступне продовження"
+    "nextRenewal": "Наступне продовження",
+    "selectAll": "Вибрати все",
+    "deselectAll": "Зняти вибір",
+    "name": "Назва",
+    "amount": "Сума",
+    "frequency": "Частота",
+    "category": "Категорія",
+    "status": "Статус",
+    "actions": "Дії"
   },
   "form": {
     "addTitle": "Додати підписку",

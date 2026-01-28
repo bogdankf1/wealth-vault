@@ -16,7 +16,8 @@
     "incomeExpenses": "Доходи та Витрати",
     "accountsInvestments": "Рахунки та Інвестиції",
     "recurring": "Регулярні",
-    "liabilities": "Зобов'язання"
+    "liabilities": "Зобов'язання",
+    "dataManagement": "Керування Даними"
   },
   "bottomNavigation": {
     "export": "Експорт",

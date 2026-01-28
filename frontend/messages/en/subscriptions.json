@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Delete Subscription Permanently",
     "deleteConfirmDescription": "This will permanently delete this subscription. This action cannot be undone.",
     "deleteSelected": "Delete Selected ({count})",
-    "nextRenewal": "Next Renewal"
+    "nextRenewal": "Next Renewal",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "name": "Name",
+    "amount": "Amount",
+    "frequency": "Frequency",
+    "category": "Category",
+    "status": "Status",
+    "actions": "Actions"
   },
   "form": {
     "addTitle": "Add Subscription",

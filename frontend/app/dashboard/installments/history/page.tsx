@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TrendingDown, Calendar, BarChart3, Grid3x3, Rows3 } from 'lucide-react';
+import { TrendingDown, Calendar, BarChart3 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -31,10 +31,7 @@ import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getChartColor } from '@/lib/utils/chart-colors';
-import { Button } from '@/components/ui/button';
-import { StatsCards, StatCard } from '@/components/ui/stats-cards';
 import { HistoryTimeRangeFilter } from '@/components/ui/history-time-range-filter';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import type { HistoryTimeRange } from '@/types/module-layout';
 
 export default function InstallmentsHistoryPage() {
@@ -45,9 +42,6 @@ export default function InstallmentsHistoryPage() {
 
   // Default to last 12 months
   const [monthRange, setMonthRange] = useState<HistoryTimeRange>('12');
-
-  // Use stats view preferences
-  const { statsViewMode, setStatsViewMode } = useViewPreferences();
 
   // Calculate date range based on selected range
   const historyParams = React.useMemo(() => {
@@ -121,45 +115,34 @@ export default function InstallmentsHistoryPage() {
     return null;
   };
 
-  // Prepare stats cards data
-  const statsCards: StatCard[] = historyData
-    ? [
-        {
-          title: tHistory('totalMonths'),
-          value: historyData.total_months,
-          description: `${monthRange === 'all' ? tCommon('common.allTime') : tCommon('common.lastMonths', { count: monthRange })}`,
-          icon: Calendar,
-        },
-        {
-          title: tHistory('monthlyAverage'),
-          value: <CurrencyDisplay amount={historyData.overall_average} currency={historyData.currency} decimals={0} />,
-          description: tHistory('averagePaymentPerMonth'),
-          icon: TrendingDown,
-        },
-        {
-          title: tHistory('totalPayments'),
-          value: <CurrencyDisplay amount={historyData.history.reduce((sum, item) => sum + Number(item.total), 0)} currency={historyData.currency} decimals={0} />,
-          description: tHistory('totalForPeriod'),
-          icon: BarChart3,
-        },
-      ]
-    : [];
-
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Time Range Filter */}
-      <HistoryTimeRangeFilter
-        value={monthRange}
-        onChange={setMonthRange}
-        showLabel={`${tCommon('common.show')}:`}
-        options={[
-          { value: '3', label: tCommon('common.last3Months') },
-          { value: '6', label: tCommon('common.last6Months') },
-          { value: '12', label: tCommon('common.last12Months') },
-          { value: '24', label: tCommon('common.last24Months') },
-          { value: 'all', label: tCommon('common.allTime') },
-        ]}
-      />
+      {/* Time Range Filter with Inline Stats */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+        <HistoryTimeRangeFilter
+          value={monthRange}
+          onChange={setMonthRange}
+          showLabel={`${tCommon('common.show')}:`}
+          options={[
+            { value: '3', label: tCommon('common.last3Months') },
+            { value: '6', label: tCommon('common.last6Months') },
+            { value: '12', label: tCommon('common.last12Months') },
+            { value: '24', label: tCommon('common.last24Months') },
+            { value: 'all', label: tCommon('common.allTime') },
+          ]}
+        />
+
+        {/* Inline stats */}
+        {historyData && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0">
+            <span><span className="font-semibold text-foreground">{historyData.total_months}</span> months</span>
+            <span>·</span>
+            <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={historyData.overall_average} currency={historyData.currency} decimals={0} /></span> avg</span>
+            <span>·</span>
+            <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={historyData.history.reduce((sum, item) => sum + Number(item.total), 0)} currency={historyData.currency} decimals={0} /></span> total</span>
+          </div>
+        )}
+      </div>
 
       {isLoading ? (
         <LoadingCards count={2} />
@@ -173,56 +156,6 @@ export default function InstallmentsHistoryPage() {
         />
       ) : (
         <div className="space-y-6">
-          {/* Summary Cards with View Toggle */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-end">
-              <div className="inline-flex items-center gap-1 border rounded-md p-0.5 w-fit" style={{ height: '36px' }}>
-                <Button
-                  variant={statsViewMode === 'cards' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setStatsViewMode('cards')}
-                  className="h-[32px] w-[32px] p-0"
-                  title={tCommon('common.cardsView')}
-                >
-                  <Grid3x3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={statsViewMode === 'compact' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setStatsViewMode('compact')}
-                  className="h-[32px] w-[32px] p-0"
-                  title={tCommon('common.compactView')}
-                >
-                  <Rows3 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {statsViewMode === 'cards' ? (
-              <StatsCards stats={statsCards} />
-            ) : (
-              <div className="border rounded-lg overflow-hidden bg-card">
-                <div className="divide-y">
-                  {statsCards.map((stat, index) => {
-                    const Icon = stat.icon;
-                    return (
-                      <div key={index} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                          <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-sm font-medium truncate">{stat.title}</span>
-                        </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                          <span className="text-lg font-bold">{stat.value}</span>
-                          <span className="text-xs text-muted-foreground hidden sm:inline-block w-32 truncate text-right">{stat.description}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Chart */}
           <Card>
             <CardHeader>

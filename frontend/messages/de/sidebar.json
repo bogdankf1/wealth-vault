@@ -16,7 +16,8 @@
     "incomeExpenses": "Einkommen & Ausgaben",
     "accountsInvestments": "Konten & Investitionen",
     "recurring": "Wiederkehrend",
-    "liabilities": "Verbindlichkeiten"
+    "liabilities": "Verbindlichkeiten",
+    "dataManagement": "Datenverwaltung"
   },
   "bottomNavigation": {
     "export": "Exportieren",

@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Supprimer définitivement l'abonnement",
     "deleteConfirmDescription": "Cela supprimera définitivement cet abonnement. Cette action est irréversible.",
     "deleteSelected": "Supprimer la sélection ({count})",
-    "nextRenewal": "Prochain renouvellement"
+    "nextRenewal": "Prochain renouvellement",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "name": "Nom",
+    "amount": "Montant",
+    "frequency": "Fréquence",
+    "category": "Catégorie",
+    "status": "Statut",
+    "actions": "Actions"
   },
   "form": {
     "addTitle": "Ajouter un abonnement",

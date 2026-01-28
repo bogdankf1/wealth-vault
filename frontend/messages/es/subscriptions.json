@@ -105,7 +105,15 @@
     "deleteConfirmTitle": "Eliminar Suscripción Permanentemente",
     "deleteConfirmDescription": "Esto eliminará permanentemente esta suscripción. Esta acción no se puede deshacer.",
     "deleteSelected": "Eliminar Seleccionadas ({count})",
-    "nextRenewal": "Próxima Renovación"
+    "nextRenewal": "Próxima Renovación",
+    "selectAll": "Seleccionar todo",
+    "deselectAll": "Deseleccionar todo",
+    "name": "Nombre",
+    "amount": "Monto",
+    "frequency": "Frecuencia",
+    "category": "Categoría",
+    "status": "Estado",
+    "actions": "Acciones"
   },
   "form": {
     "addTitle": "Agregar Suscripción",
