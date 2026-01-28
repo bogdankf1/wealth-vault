@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Monitor, Palette, Type, CheckCircle2, DollarSign, LayoutGrid, List, Grid3x3, Rows3, Languages, ChevronDown, Eye, RotateCcw } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Type, CheckCircle2, DollarSign, LayoutGrid, List, Languages, ChevronDown, Eye, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -441,22 +441,7 @@ export function AppearanceSettings() {
           <CardContent className="space-y-3 lg:space-y-4 pt-0 px-3 lg:px-6 pb-3 lg:pb-6">
             {uiVisibilityLoaded && (
               <>
-                {/* Show Stats Cards Toggle */}
-                <div className="flex items-center justify-between rounded-lg border p-3 lg:p-4">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="showStatsCards" className="text-xs lg:text-sm font-medium">
-                      {t('uiElements.showStatsCards.label')}
-                    </Label>
-                    <p className="text-xs lg:text-sm text-muted-foreground">
-                      {t('uiElements.showStatsCards.description')}
-                    </p>
-                  </div>
-                  <Switch
-                    id="showStatsCards"
-                    checked={uiVisibility.showStatsCards}
-                    onCheckedChange={(checked) => updateUIVisibility({ showStatsCards: checked })}
-                  />
-                </div>
+                {/* Show Stats Cards Toggle — hidden: stats are now displayed inline in the search toolbar */}
 
                 {/* Show Page Description Toggle */}
                 <div className="flex items-center justify-between rounded-lg border p-3 lg:p-4">
@@ -571,71 +556,7 @@ export function AppearanceSettings() {
             </RadioGroup>
           </div>
 
-          {/* Statistics View Preference */}
-          <div className="space-y-3 lg:space-y-4">
-            <div>
-              <Label className="text-xs lg:text-sm font-semibold">{t('defaultViews.statsView.title')}</Label>
-              <p className="text-xs lg:text-sm text-muted-foreground mt-1">
-                {t('defaultViews.statsView.description')}
-              </p>
-            </div>
-            <RadioGroup value={defaultStatsView} onValueChange={handleDefaultStatsViewChange}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 lg:gap-4">
-                <label
-                  htmlFor="stats-cards"
-                  className="relative cursor-pointer"
-                >
-                  <div className={`
-                    flex flex-col items-center gap-2 lg:gap-3 p-3 lg:p-4 rounded-lg border-2 transition-all
-                    ${defaultStatsView === 'cards'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                    }
-                  `}>
-                    <RadioGroupItem
-                      value="cards"
-                      id="stats-cards"
-                      className="sr-only"
-                    />
-                    <Grid3x3 className={`h-6 w-6 lg:h-8 lg:w-8 ${defaultStatsView === 'cards' ? 'text-primary' : 'text-muted-foreground'}`} />
-                    <div className="text-center">
-                      <p className="text-xs lg:text-sm font-medium">{t('defaultViews.statsView.options.cards.label')}</p>
-                      <p className="text-xs text-muted-foreground">{t('defaultViews.statsView.options.cards.description')}</p>
-                    </div>
-                    {defaultStatsView === 'cards' && (
-                      <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary" />
-                    )}
-                  </div>
-                </label>
-                <label
-                  htmlFor="stats-compact"
-                  className="relative cursor-pointer"
-                >
-                  <div className={`
-                    flex flex-col items-center gap-2 lg:gap-3 p-3 lg:p-4 rounded-lg border-2 transition-all
-                    ${defaultStatsView === 'compact'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                    }
-                  `}>
-                    <RadioGroupItem
-                      value="compact"
-                      id="stats-compact"
-                      className="sr-only"
-                    />
-                    <Rows3 className={`h-6 w-6 lg:h-8 lg:w-8 ${defaultStatsView === 'compact' ? 'text-primary' : 'text-muted-foreground'}`} />
-                    <div className="text-center">
-                      <p className="text-xs lg:text-sm font-medium">{t('defaultViews.statsView.options.compact.label')}</p>
-                      <p className="text-xs text-muted-foreground">{t('defaultViews.statsView.options.compact.description')}</p>
-                    </div>
-                    {defaultStatsView === 'compact' && (
-                      <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary" />
-                    )}
-                  </div>
-                </label>
-              </div>
-            </RadioGroup>
-          </div>
+          {/* Statistics View Preference — hidden: stats are now displayed inline in the search toolbar */}
         </CardContent>
       </Card>
     </div>
