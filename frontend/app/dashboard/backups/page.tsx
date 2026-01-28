@@ -151,26 +151,26 @@ export default function BackupsPage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6 p-4 md:p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{tPage('title')}</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-lg lg:text-2xl font-bold tracking-tight">{tPage('title')}</h1>
+        <p className="text-xs lg:text-sm text-muted-foreground mt-1 md:mt-2">
           {tPage('description')}
         </p>
       </div>
 
       {/* Create Backup Section */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-sm lg:text-base font-medium flex items-center gap-2">
+            <Plus className="h-4 w-4 lg:h-5 lg:w-5" />
             {tCreate('title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {tCreate('description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 pt-0 md:pt-0">
           <div className="grid gap-6 md:grid-cols-2">
             {/* Module Selector */}
             <div className="space-y-2">
@@ -209,16 +209,16 @@ export default function BackupsPage() {
 
       {/* Backups List */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-sm lg:text-base font-medium flex items-center gap-2">
+            <Database className="h-4 w-4 lg:h-5 lg:w-5" />
             {tList('title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {tList('description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
           {backupsLoading ? (
             <div className="text-center py-8 text-muted-foreground">
               {tList('loading')}
@@ -281,13 +281,13 @@ export default function BackupsPage() {
 
       {/* Info Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-sm lg:text-base flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
             {tInfo('title')}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
+        <CardContent className="space-y-2 text-xs lg:text-sm text-muted-foreground p-4 md:p-6 pt-0 md:pt-0">
           <p>• {tInfo('point1')}</p>
           <p>• <strong>{tInfo('warning')}</strong> {tInfo('point2')}</p>
           <p>• {tInfo('point3')}</p>

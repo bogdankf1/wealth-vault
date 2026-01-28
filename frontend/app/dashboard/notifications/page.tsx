@@ -202,12 +202,12 @@ export default function NotificationsPage() {
   const totalPages = Math.ceil((notificationsData?.total || 0) / 20);
 
   return (
-    <div className="container mx-auto space-y-6 p-4 md:p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t('page.title')}</h1>
+        <h1 className="text-lg lg:text-2xl font-bold tracking-tight">{t('page.title')}</h1>
         {stats && (
-          <p className="text-muted-foreground mt-2">
+          <p className="text-xs lg:text-sm text-muted-foreground mt-1 md:mt-2">
             {t('page.subtitle', { total: stats.total, unread: stats.unread })}
           </p>
         )}
@@ -215,10 +215,10 @@ export default function NotificationsPage() {
 
       {/* Filters & Actions */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3">
+        <CardContent className="p-3 md:p-4">
+          <div className="flex flex-col gap-3">
+            {/* Filters - grid on mobile for better layout */}
+            <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2">
             <Select
               value={typeFilter}
               onValueChange={(v) => {
@@ -226,7 +226,7 @@ export default function NotificationsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full sm:w-[140px] text-xs md:text-sm h-8 md:h-9">
                 <SelectValue placeholder={t('page.filterType')} />
               </SelectTrigger>
               <SelectContent>
@@ -246,7 +246,7 @@ export default function NotificationsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full sm:w-[140px] text-xs md:text-sm h-8 md:h-9">
                 <SelectValue placeholder={t('page.filterCategory')} />
               </SelectTrigger>
               <SelectContent>
@@ -272,7 +272,7 @@ export default function NotificationsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full sm:w-[140px] text-xs md:text-sm h-8 md:h-9">
                 <SelectValue placeholder={t('page.filterStatus')} />
               </SelectTrigger>
               <SelectContent>
@@ -284,7 +284,7 @@ export default function NotificationsPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 border-t pt-3 sm:border-0 sm:pt-0">
               {selectedIds.size > 0 ? (
                 <>
                   <Button
@@ -292,6 +292,7 @@ export default function NotificationsPage() {
                     size="sm"
                     onClick={handleMarkSelectedRead}
                     disabled={isMarkingRead}
+                    className="flex-1 sm:flex-initial h-8"
                   >
                     <Check className="mr-2 h-4 w-4" />
                     {t('page.markSelectedRead', { count: selectedIds.size })}
@@ -301,6 +302,7 @@ export default function NotificationsPage() {
                     size="sm"
                     onClick={handleDeleteSelected}
                     disabled={isDeleting}
+                    className="flex-1 sm:flex-initial h-8"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     {t('page.deleteSelected', { count: selectedIds.size })}
@@ -312,6 +314,7 @@ export default function NotificationsPage() {
                   size="sm"
                   onClick={handleMarkAllRead}
                   disabled={isMarkingAllRead || (stats?.unread ?? 0) === 0}
+                  className="w-full sm:w-auto h-8"
                 >
                   <CheckCheck className="mr-2 h-4 w-4" />
                   {t('page.markAllRead')}
@@ -339,9 +342,9 @@ export default function NotificationsPage() {
         </Card>
       ) : (
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             {/* Select All */}
-            <div className="flex items-center gap-2 pb-4 border-b mb-4">
+            <div className="flex items-center gap-2 pb-3 md:pb-4 border-b mb-3 md:mb-4">
               <Checkbox
                 checked={selectedIds.size === notifications.length && notifications.length > 0}
                 onCheckedChange={handleSelectAll}
@@ -355,12 +358,12 @@ export default function NotificationsPage() {
             </div>
 
             {/* Notification Items */}
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={cn(
-                    'flex items-start gap-4 p-4 rounded-lg border transition-colors',
+                    'flex items-start gap-2 md:gap-3 p-2.5 md:p-4 rounded-lg border transition-colors',
                     !notification.is_read
                       ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800'
                       : 'bg-background border-border'
@@ -370,22 +373,22 @@ export default function NotificationsPage() {
                   <Checkbox
                     checked={selectedIds.has(notification.id)}
                     onCheckedChange={() => handleToggleSelect(notification.id)}
-                    className="mt-1"
+                    className="mt-0.5 md:mt-1"
                   />
 
-                  {/* Category emoji */}
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-lg">
+                  {/* Category emoji - hidden on mobile */}
+                  <div className="hidden md:flex flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 items-center justify-center text-lg">
                     {getCategoryEmoji(notification.category)}
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-1 md:gap-2">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                           <h3
                             className={cn(
-                              'text-sm',
+                              'text-xs md:text-sm',
                               notification.is_read
                                 ? 'font-normal text-gray-700 dark:text-gray-300'
                                 : 'font-semibold text-gray-900 dark:text-white'
@@ -394,34 +397,34 @@ export default function NotificationsPage() {
                             {notification.title}
                           </h3>
                           {notification.priority === 1 && (
-                            <Badge variant="destructive" className="text-xs">
+                            <Badge variant="destructive" className="text-[10px] md:text-xs px-1 md:px-1.5">
                               {t('page.urgent')}
                             </Badge>
                           )}
-                          <Badge variant={getTypeBadgeVariant(notification.notification_type)} className="text-xs">
+                          <Badge variant={getTypeBadgeVariant(notification.notification_type)} className="text-[10px] md:text-xs px-1 md:px-1.5">
                             {t(`types.${notification.notification_type}`)}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 md:mt-1 line-clamp-2">
                           {notification.message}
                         </p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400 dark:text-gray-500">
+                        <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-2 text-[10px] md:text-xs text-gray-400 dark:text-gray-500">
                           <span>{formatDate(notification.created_at)}</span>
-                          <span>{t(`categories.${notification.category}`)}</span>
+                          <span className="hidden sm:inline">{t(`categories.${notification.category}`)}</span>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5 md:gap-1 flex-shrink-0">
                         {!notification.is_read && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleMarkSingleRead(notification.id)}
-                            className="h-8 w-8 p-0"
+                            className="h-6 w-6 md:h-8 md:w-8 p-0"
                             title={t('page.markAsRead')}
                           >
-                            <Check className="h-4 w-4" />
+                            <Check className="h-3 w-3 md:h-4 md:w-4" />
                           </Button>
                         )}
                         {notification.action_url && (
@@ -429,11 +432,11 @@ export default function NotificationsPage() {
                             variant="ghost"
                             size="sm"
                             asChild
-                            className="h-8 w-8 p-0"
+                            className="h-6 w-6 md:h-8 md:w-8 p-0"
                             title={t('page.viewDetails')}
                           >
                             <Link href={notification.action_url}>
-                              <ExternalLink className="h-4 w-4" />
+                              <ExternalLink className="h-3 w-3 md:h-4 md:w-4" />
                             </Link>
                           </Button>
                         )}
@@ -446,7 +449,7 @@ export default function NotificationsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t">
+              <div className="flex items-center justify-center gap-2 mt-4 md:mt-6 pt-3 md:pt-4 border-t">
                 <Button
                   variant="outline"
                   size="sm"

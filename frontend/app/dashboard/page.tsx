@@ -648,7 +648,7 @@ export default function DashboardPage() {
 
       {/* Cash Flow Stats */}
       {(isWidgetVisible('income-vs-expenses') || isWidgetVisible('upcoming-bills') || isWidgetVisible('taxes') || isWidgetVisible('debts-owed') || isWidgetVisible('monthly-spending')) && (
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6">
         {isWidgetVisible('income-vs-expenses') && (
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
@@ -902,44 +902,44 @@ export default function DashboardPage() {
 
       {/* Recent Activity */}
       {isWidgetVisible('recent-transactions') && (
-      <Card className="p-4 md:p-6">
-        <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">{tRecentActivity('title')}</h2>
+      <Card className="p-3 md:p-6">
+        <h2 className="text-sm md:text-lg font-semibold mb-2 md:mb-4">{tRecentActivity('title')}</h2>
         {recent_activity.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+          <p className="text-center text-xs md:text-sm text-gray-500 dark:text-gray-400 py-6 md:py-8">
             {tRecentActivity('emptyState')}
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1.5 md:space-y-3">
             {recent_activity.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="flex items-center justify-between p-2 md:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
+                <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                  <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${
                     activity.is_positive
                       ? 'bg-green-100 dark:bg-green-900/20'
                       : 'bg-red-100 dark:bg-red-900/20'
                   }`}>
                     {activity.is_positive ? (
-                      <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-green-600 dark:text-green-400" />
                     ) : (
-                      <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      <TrendingDown className="h-3 w-3 md:h-4 md:w-4 text-red-600 dark:text-red-400" />
                     )}
                   </div>
-                  <div>
-                    <p className="font-medium">{activity.name}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs md:text-sm font-medium truncate">{activity.name}</p>
+                    <p className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400 capitalize">
                       {activity.module} • {new Date(activity.date).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <div className={`text-right ${
+                <div className={`text-right flex-shrink-0 ml-2 ${
                   activity.is_positive
                     ? 'text-green-600 dark:text-green-400'
                     : 'text-red-600 dark:text-red-400'
                 }`}>
-                  <p className="font-semibold">
+                  <p className="text-xs md:text-sm font-semibold">
                     {activity.is_positive ? '+' : '-'}
                     <CurrencyDisplay
                       amount={parseFloat(activity.amount)}
@@ -971,7 +971,7 @@ export default function DashboardPage() {
 
         {/* Charts Grid */}
         {hasVisibleCharts() && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* 1. Income vs Expenses Chart - Hidden temporarily */}
           {/* <IncomeVsExpensesChart
             data={incomeVsExpensesData?.data || []}
@@ -1113,14 +1113,14 @@ function DashboardSkeleton() {
         <Skeleton className="h-56 md:h-64" />
       </div>
 
-      {/* Cash flow stats skeleton - matches sm:grid-cols-2 xl:grid-cols-3 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
-        <Skeleton className="h-24 md:h-28" />
-        <Skeleton className="h-24 md:h-28" />
-        <Skeleton className="h-24 md:h-28" />
-        <Skeleton className="h-24 md:h-28" />
-        <Skeleton className="h-24 md:h-28" />
-        <Skeleton className="h-24 md:h-28" />
+      {/* Cash flow stats skeleton - matches grid-cols-2 xl:grid-cols-3 */}
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6">
+        <Skeleton className="h-20 md:h-28" />
+        <Skeleton className="h-20 md:h-28" />
+        <Skeleton className="h-20 md:h-28" />
+        <Skeleton className="h-20 md:h-28" />
+        <Skeleton className="h-20 md:h-28" />
+        <Skeleton className="h-20 md:h-28" />
       </div>
 
       {/* Recent activity skeleton */}

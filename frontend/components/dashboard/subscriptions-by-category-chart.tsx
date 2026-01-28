@@ -182,7 +182,7 @@ export function SubscriptionsByCategoryChart({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
         {/* Chart */}
-        <div>
+        <div className="relative">
           <ResponsiveContainer width="100%" height={220} className="md:!h-[300px]">
             <PieChart>
               <Pie
@@ -210,9 +210,11 @@ export function SubscriptionsByCategoryChart({
 
           {/* Total in center for donut chart */}
           {chartType === 'donut' && (
-            <div className="text-center -mt-48 mb-32 pointer-events-none">
-              <p className="text-xs text-gray-600 dark:text-gray-400">{t('total')}</p>
-              <p className="text-2xl font-bold">{formatCurrency(total)}</p>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="text-center">
+                <p className="text-xs text-gray-600 dark:text-gray-400">{t('total')}</p>
+                <p className="text-xl md:text-2xl font-bold text-white [-webkit-text-stroke:2px_black] [paint-order:stroke_fill]">{formatCurrency(total)}</p>
+              </div>
             </div>
           )}
         </div>

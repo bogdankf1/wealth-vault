@@ -277,7 +277,7 @@ export default function DebtsArchivePage() {
     <div className="space-y-4 md:space-y-6">
       {/* Search and Filters */}
       {(debts.length > 0 || searchQuery || selectedStatus) && (
-        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+        <div className="flex items-center gap-2">
           {/* Search Input */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

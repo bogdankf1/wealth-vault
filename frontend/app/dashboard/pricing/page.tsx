@@ -351,20 +351,20 @@ export default function PricingPage() {
   const currentTierName = user?.tier?.name || 'starter';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-6 md:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
+        <div className="text-center mb-6 md:mb-12">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
             {tPage('title')}
           </h1>
-          <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-2 md:mt-4 text-sm md:text-xl text-muted-foreground max-w-2xl mx-auto">
             {tPage('subtitle')}
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
           {tiersLoading ? (
             // Loading skeletons
             Array.from({ length: 3 }).map((_, idx) => (
@@ -411,13 +411,13 @@ export default function PricingPage() {
                       </div>
                     )}
 
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-2xl">{tier.display_name}</CardTitle>
-                      <CardDescription className="mt-2">
+                    <CardHeader className="pb-2 md:pb-4 p-4 md:p-6">
+                      <CardTitle className="text-lg md:text-2xl">{tier.display_name}</CardTitle>
+                      <CardDescription className="mt-1 md:mt-2 text-xs md:text-sm">
                         {tDescriptions(tier.name as 'starter' | 'growth' | 'wealth')}
                       </CardDescription>
-                      <div className="mt-4">
-                        <span className="text-4xl font-bold tracking-tight text-foreground">
+                      <div className="mt-2 md:mt-4">
+                        <span className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
                           <CurrencyDisplay
                             amount={tier.price_monthly}
                             currency="USD"
@@ -430,21 +430,21 @@ export default function PricingPage() {
                       </div>
                     </CardHeader>
 
-                    <CardContent className="flex-1">
-                      <ul className="space-y-3">
+                    <CardContent className="flex-1 p-4 md:p-6 pt-0 md:pt-0">
+                      <ul className="space-y-2 md:space-y-3">
                         {features.map((feature, idx) => (
-                          <li key={idx} className="flex items-start gap-3">
+                          <li key={idx} className="flex items-start gap-2 md:gap-3">
                             {feature.included ? (
-                              <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                              <Check className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0 mt-0.5" />
                             ) : (
-                              <X className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                              <X className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                             )}
                             <span
-                              className={
+                              className={`text-xs md:text-sm ${
                                 feature.included
                                   ? 'text-foreground'
                                   : 'text-muted-foreground line-through'
-                              }
+                              }`}
                             >
                               {feature.name}
                             </span>
@@ -453,7 +453,7 @@ export default function PricingPage() {
                       </ul>
                     </CardContent>
 
-                    <CardFooter>
+                    <CardFooter className="p-4 md:p-6 pt-0 md:pt-0">
                       <Button
                         className="w-full"
                         variant={isRecommended ? 'default' : 'outline'}
@@ -481,8 +481,8 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ or Additional Info */}
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground">
+        <div className="mt-8 md:mt-16 text-center">
+          <p className="text-xs md:text-sm text-muted-foreground">
             {tFooter('text')}{' '}
             <Link href="/dashboard/help" className="text-primary hover:underline">
               {tFooter('contactLink')}

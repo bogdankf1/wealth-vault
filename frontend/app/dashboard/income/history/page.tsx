@@ -33,6 +33,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { INCOME_COLOR } from '@/lib/utils/chart-colors';
 import { Button } from '@/components/ui/button';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { HistoryTimeRangeFilter } from '@/components/ui/history-time-range-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import type { HistoryTimeRange } from '@/types/module-layout';
 
@@ -146,51 +147,18 @@ export default function IncomeHistoryPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Time Range Filter */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">{tHistory('show')}</span>
-        <div className="inline-flex rounded-md border">
-          <Button
-            variant={monthRange === '3' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('3')}
-            className="rounded-r-none"
-          >
-            {tHistory('last3Months')}
-          </Button>
-          <Button
-            variant={monthRange === '6' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('6')}
-            className="rounded-none border-x"
-          >
-            {tHistory('last6Months')}
-          </Button>
-          <Button
-            variant={monthRange === '12' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('12')}
-            className="rounded-none border-x"
-          >
-            {tHistory('last12Months')}
-          </Button>
-          <Button
-            variant={monthRange === '24' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('24')}
-            className="rounded-none border-x"
-          >
-            {tHistory('last24Months')}
-          </Button>
-          <Button
-            variant={monthRange === 'all' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('all')}
-            className="rounded-l-none"
-          >
-            {tHistory('allTime')}
-          </Button>
-        </div>
-      </div>
+      <HistoryTimeRangeFilter
+        value={monthRange}
+        onChange={setMonthRange}
+        showLabel={tHistory('show')}
+        options={[
+          { value: '3', label: tHistory('last3Months') },
+          { value: '6', label: tHistory('last6Months') },
+          { value: '12', label: tHistory('last12Months') },
+          { value: '24', label: tHistory('last24Months') },
+          { value: 'all', label: tHistory('allTime') },
+        ]}
+      />
 
       {isLoading ? (
         <LoadingCards count={2} />

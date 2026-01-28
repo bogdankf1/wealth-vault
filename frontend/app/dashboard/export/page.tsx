@@ -142,25 +142,25 @@ export default function ExportPage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6 p-4 md:p-6">
+    <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{tPage('title')}</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-lg lg:text-2xl font-bold tracking-tight">{tPage('title')}</h1>
+        <p className="text-xs lg:text-sm text-muted-foreground mt-1 md:mt-2">
           {tPage('description')}
         </p>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileDown className="h-5 w-5" />
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-sm lg:text-base font-medium flex items-center gap-2">
+            <FileDown className="h-4 w-4 lg:h-5 lg:w-5" />
             {tCard('title')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs lg:text-sm">
             {tCard('description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 pt-0 md:pt-0">
           <div className="grid gap-6 md:grid-cols-2">
             {/* Entry Type Selector */}
             <div className="space-y-2">
@@ -248,12 +248,12 @@ export default function ExportPage() {
           </div>
 
           {/* Export Button */}
-          <div className="flex justify-end pt-4">
+          <div className="flex sm:justify-end pt-4">
             <Button
               onClick={handleExport}
               disabled={isLoading}
               size="lg"
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
             >
               <Download className="h-4 w-4" />
               {isLoading ? tButtons('exporting') : tButtons('export')}
@@ -264,10 +264,10 @@ export default function ExportPage() {
 
       {/* Info Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{tInfo('title')}</CardTitle>
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-sm lg:text-base">{tInfo('title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
+        <CardContent className="space-y-2 text-xs lg:text-sm text-muted-foreground p-4 md:p-6 pt-0 md:pt-0">
           <p>• {tInfo('point1')}</p>
           <p>• {tInfo('point2')}</p>
           <p>• {tInfo('point3')}</p>

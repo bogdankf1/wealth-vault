@@ -47,7 +47,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 key={tab.value}
                 href={tab.href}
                 className={cn(
-                  "flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 lg:py-2.5 text-xs lg:text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                  "flex items-center justify-center sm:justify-start flex-1 sm:flex-initial gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 lg:py-2.5 text-xs lg:text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   isActive
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"

@@ -35,6 +35,8 @@ export interface SplitButtonProps {
   disabled?: boolean;
   /** Additional className for the container */
   className?: string;
+  /** Full width mode - useful for mobile */
+  fullWidth?: boolean;
 }
 
 /**
@@ -52,16 +54,17 @@ export function SplitButton({
   size = 'default',
   disabled = false,
   className,
+  fullWidth = false,
 }: SplitButtonProps) {
   return (
-    <div className={cn('inline-flex rounded-md', className)}>
+    <div className={cn('inline-flex rounded-md', fullWidth && 'w-full', className)}>
       {/* Primary action button */}
       <Button
         variant={variant}
         size={size}
         disabled={disabled}
         onClick={onPrimaryClick}
-        className="rounded-r-none border-r-0"
+        className="rounded-r-none border-r-0 flex-1"
       >
         {primaryIcon && <span className="mr-2">{primaryIcon}</span>}
         <span className="truncate">{primaryLabel}</span>

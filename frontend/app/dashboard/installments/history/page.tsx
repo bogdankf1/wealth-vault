@@ -33,6 +33,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { getChartColor } from '@/lib/utils/chart-colors';
 import { Button } from '@/components/ui/button';
 import { StatsCards, StatCard } from '@/components/ui/stats-cards';
+import { HistoryTimeRangeFilter } from '@/components/ui/history-time-range-filter';
 import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
 import type { HistoryTimeRange } from '@/types/module-layout';
 
@@ -147,51 +148,18 @@ export default function InstallmentsHistoryPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Time Range Filter */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">{tCommon('common.show')}:</span>
-        <div className="inline-flex rounded-md border">
-          <Button
-            variant={monthRange === '3' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('3')}
-            className="rounded-r-none"
-          >
-            {tCommon('common.last3Months')}
-          </Button>
-          <Button
-            variant={monthRange === '6' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('6')}
-            className="rounded-none border-x"
-          >
-            {tCommon('common.last6Months')}
-          </Button>
-          <Button
-            variant={monthRange === '12' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('12')}
-            className="rounded-none border-x"
-          >
-            {tCommon('common.last12Months')}
-          </Button>
-          <Button
-            variant={monthRange === '24' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('24')}
-            className="rounded-none border-x"
-          >
-            {tCommon('common.last24Months')}
-          </Button>
-          <Button
-            variant={monthRange === 'all' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setMonthRange('all')}
-            className="rounded-l-none"
-          >
-            {tCommon('common.allTime')}
-          </Button>
-        </div>
-      </div>
+      <HistoryTimeRangeFilter
+        value={monthRange}
+        onChange={setMonthRange}
+        showLabel={`${tCommon('common.show')}:`}
+        options={[
+          { value: '3', label: tCommon('common.last3Months') },
+          { value: '6', label: tCommon('common.last6Months') },
+          { value: '12', label: tCommon('common.last12Months') },
+          { value: '24', label: tCommon('common.last24Months') },
+          { value: 'all', label: tCommon('common.allTime') },
+        ]}
+      />
 
       {isLoading ? (
         <LoadingCards count={2} />

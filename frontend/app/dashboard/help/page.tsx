@@ -157,22 +157,23 @@ export default function HelpCenterPage() {
   if (selectedTopicId && topicDetail) {
     // Detail view
     return (
-      <div className="container mx-auto py-6 px-4 max-w-5xl">
+      <div className="container mx-auto py-4 md:py-6 px-4 max-w-5xl">
         <Button
           variant="ghost"
           onClick={() => setSelectedTopicId(null)}
-          className="mb-4"
+          className="mb-3 md:mb-4"
+          size="sm"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {tTopicDetail('backButton')}
         </Button>
 
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <CardTitle className="text-2xl">{topicDetail.title}</CardTitle>
-                <CardDescription className="mt-2">
+          <CardHeader className="p-4 md:p-6">
+            <div className="flex items-start justify-between gap-2 md:gap-4">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-base lg:text-xl">{topicDetail.title}</CardTitle>
+                <CardDescription className="mt-1 md:mt-2 text-xs lg:text-sm">
                   {tTopicDetail('created')} {formatDistanceToNow(new Date(topicDetail.created_at), { locale: dateLocale })} {tTopicDetail('ago')}
                 </CardDescription>
               </div>
@@ -189,16 +190,16 @@ export default function HelpCenterPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
             {/* Disclaimer */}
-            <div className="mb-6 p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 md:mb-6 p-3 md:p-4 bg-muted rounded-lg">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 <strong>{tTopicDetail('noteTitle')}</strong> {tTopicDetail('noteText')}
               </p>
             </div>
 
             {/* Messages */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
               {topicDetail.messages.map((message) => (
                 <div
                   key={message.id}
@@ -235,7 +236,7 @@ export default function HelpCenterPage() {
                   rows={4}
                   required
                 />
-                <Button type="submit" disabled={replying || !replyMessage.trim()}>
+                <Button type="submit" disabled={replying || !replyMessage.trim()} className="w-full sm:w-auto">
                   <Send className="h-4 w-4 mr-2" />
                   {replying ? tTopicDetail('sending') : tTopicDetail('sendButton')}
                 </Button>
@@ -257,23 +258,23 @@ export default function HelpCenterPage() {
 
   // List view
   return (
-    <div className="container mx-auto py-6 px-4 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{tPage('title')}</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto py-4 md:py-6 px-4 max-w-5xl">
+      <div className="mb-4 md:mb-8">
+        <h1 className="text-lg lg:text-2xl font-bold tracking-tight mb-1 md:mb-2">{tPage('title')}</h1>
+        <p className="text-xs lg:text-sm text-muted-foreground">
           {tPage('description')}
         </p>
       </div>
 
       {/* Create new topic form */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>{tCreateTopic('title')}</CardTitle>
-          <CardDescription>
+      <Card className="mb-4 md:mb-8">
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-sm lg:text-base font-medium">{tCreateTopic('title')}</CardTitle>
+          <CardDescription className="text-xs lg:text-sm">
             {tCreateTopic('description')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
           <form onSubmit={handleCreateTopic} className="space-y-4">
             <div>
               <Input
@@ -293,7 +294,7 @@ export default function HelpCenterPage() {
                 required
               />
             </div>
-            <Button type="submit" disabled={creating}>
+            <Button type="submit" disabled={creating} className="w-full sm:w-auto">
               <MessageSquare className="h-4 w-4 mr-2" />
               {creating ? tCreateTopic('creating') : tCreateTopic('button')}
             </Button>
@@ -303,7 +304,7 @@ export default function HelpCenterPage() {
 
       {/* Topics list */}
       <div>
-        <h2 className="text-2xl font-semibold mb-4">{tTopicsList('title')}</h2>
+        <h2 className="text-base lg:text-xl font-semibold mb-3 md:mb-4">{tTopicsList('title')}</h2>
 
         {topicsLoading ? (
           <div className="space-y-4">
@@ -317,18 +318,18 @@ export default function HelpCenterPage() {
             ))}
           </div>
         ) : topics && topics.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {topics.map((topic) => (
               <Card
                 key={topic.id}
                 className="cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => setSelectedTopicId(topic.id)}
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{topic.title}</CardTitle>
-                      <CardDescription className="mt-1">
+                <CardHeader className="p-4 md:p-6">
+                  <div className="flex items-start justify-between gap-2 md:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-sm lg:text-base">{topic.title}</CardTitle>
+                      <CardDescription className="mt-1 text-xs lg:text-sm">
                         {tTopicsList('created')} {formatDistanceToNow(new Date(topic.created_at), { locale: dateLocale })} {tTopicsList('ago')}
                         {topic.last_message_at && (
                           <> · {tTopicsList('lastActivity')} {formatDistanceToNow(new Date(topic.last_message_at), { locale: dateLocale })} {tTopicsList('ago')}</>

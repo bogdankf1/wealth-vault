@@ -109,14 +109,14 @@ export default function InstallmentsLayout({
                   key={tab.value}
                   href={tab.href}
                   className={cn(
-                    'flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px',
+                    'flex items-center justify-center sm:justify-start flex-1 sm:flex-initial gap-2 px-3 sm:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px',
                     isActive
                       ? 'border-primary text-primary'
                       : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
                   )}
                 >
                   <Icon className="h-4 w-4 flex-shrink-0" />
-                  <span>{tab.label}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
                 </Link>
               );
             })}
