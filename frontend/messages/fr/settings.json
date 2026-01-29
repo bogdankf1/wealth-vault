@@ -76,7 +76,16 @@
     "statuses": {
       "active": "actif",
       "past_due": "en retard",
-      "cancelled": "annulé"
+      "cancelled": "annulé",
+      "trialing": "essai"
+    },
+    "trial": {
+      "title": "Essai gratuit actif",
+      "badge": "ESSAI",
+      "description": "Vous profitez actuellement d'un essai gratuit des fonctionnalités premium. Abonnez-vous pour continuer à y accéder après la fin de votre essai.",
+      "daysRemaining": "Jours restants",
+      "endsOn": "Se termine le {date}",
+      "subscribeNow": "S'abonner maintenant"
     },
     "expiration": {
       "title": "Votre abonnement se termine",

@@ -72,10 +72,14 @@ export interface SubscriptionStatusResponse {
   subscription?: Subscription;
   tier_name?: string;
   tier_display_name?: string;
-  payment_provider?: 'stripe' | 'paypal' | 'paddle';
+  payment_provider?: 'stripe' | 'paypal' | 'paddle' | 'trial';
   can_upgrade: boolean;
   can_downgrade: boolean;
   available_tiers: TierOption[];
+  // Trial information
+  is_trial?: boolean;
+  trial_ends_at?: string;
+  trial_days_remaining?: number;
 }
 
 export interface PaymentHistory {

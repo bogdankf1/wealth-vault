@@ -17,6 +17,7 @@ import { Users, UserCheck, UserPlus, DollarSign, TrendingUp, TrendingDown, Activ
 import { Line, LineChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { format } from 'date-fns';
 import { getChartColor } from '@/lib/utils/chart-colors';
+import { TrialSettings } from '@/components/admin/trial-settings';
 
 export default function AdminDashboard() {
   const { data: platformStats, isLoading: statsLoading, error: statsError } = useGetPlatformStatsQuery();
@@ -285,6 +286,9 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Trial Settings */}
+      <TrialSettings />
     </div>
   );
 }

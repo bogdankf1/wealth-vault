@@ -76,7 +76,16 @@
     "statuses": {
       "active": "attivo",
       "past_due": "scaduto",
-      "cancelled": "cancellato"
+      "cancelled": "cancellato",
+      "trialing": "prova"
+    },
+    "trial": {
+      "title": "Prova gratuita attiva",
+      "badge": "PROVA",
+      "description": "Stai attualmente usufruendo di una prova gratuita delle funzionalità premium. Abbonati per continuare ad accedervi dopo la fine della prova.",
+      "daysRemaining": "Giorni rimanenti",
+      "endsOn": "Termina il {date}",
+      "subscribeNow": "Abbonati ora"
     },
     "expiration": {
       "title": "Il tuo abbonamento sta per scadere",

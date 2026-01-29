@@ -76,7 +76,16 @@
     "statuses": {
       "active": "aktywna",
       "past_due": "zaległa",
-      "cancelled": "anulowana"
+      "cancelled": "anulowana",
+      "trialing": "okres próbny"
+    },
+    "trial": {
+      "title": "Bezpłatny okres próbny aktywny",
+      "badge": "PRÓBA",
+      "description": "Aktualnie korzystasz z bezpłatnego okresu próbnego funkcji premium. Zasubskrybuj, aby kontynuować dostęp po zakończeniu okresu próbnego.",
+      "daysRemaining": "Pozostało dni",
+      "endsOn": "Kończy się {date}",
+      "subscribeNow": "Subskrybuj teraz"
     },
     "expiration": {
       "title": "Twoja subskrypcja wygasa",

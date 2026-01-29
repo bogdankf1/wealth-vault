@@ -76,7 +76,16 @@
     "statuses": {
       "active": "ativo",
       "past_due": "vencido",
-      "cancelled": "cancelado"
+      "cancelled": "cancelado",
+      "trialing": "teste"
+    },
+    "trial": {
+      "title": "Teste grátis ativo",
+      "badge": "TESTE",
+      "description": "Você está atualmente aproveitando um teste grátis dos recursos premium. Assine para continuar o acesso após o término do teste.",
+      "daysRemaining": "Dias restantes",
+      "endsOn": "Termina em {date}",
+      "subscribeNow": "Assinar agora"
     },
     "expiration": {
       "title": "Sua assinatura está terminando",

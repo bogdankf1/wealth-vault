@@ -118,6 +118,18 @@ export interface EngagementMetrics {
   retention_rate_30d: number;
 }
 
+export interface TrialSettings {
+  enabled: boolean;
+  duration_days: number;
+  trial_tier: string;
+}
+
+export interface TrialSettingsUpdate {
+  enabled?: boolean;
+  duration_days?: number;
+  trial_tier?: string;
+}
+
 export const adminApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // User Management
@@ -264,6 +276,20 @@ export const adminApi = apiSlice.injectEndpoints({
     getEngagementMetrics: builder.query<EngagementMetrics, void>({
       query: () => '/api/v1/admin/analytics/engagement',
     }),
+
+    // Trial Settings
+    getTrialSettings: builder.query<TrialSettings, void>({
+      query: () => '/api/v1/admin/config/trial-settings',
+      providesTags: ['TrialSettings'],
+    }),
+    updateTrialSettings: builder.mutation<TrialSettings, TrialSettingsUpdate>({
+      query: (body) => ({
+        url: '/api/v1/admin/config/trial-settings',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['TrialSettings'],
+    }),
   }),
 });
 
@@ -300,4 +326,8 @@ export const {
   useGetPlatformStatsQuery,
   useGetUserAcquisitionQuery,
   useGetEngagementMetricsQuery,
+
+  // Trial Settings
+  useGetTrialSettingsQuery,
+  useUpdateTrialSettingsMutation,
 } = adminApi;

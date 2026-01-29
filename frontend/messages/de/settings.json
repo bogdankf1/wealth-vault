@@ -76,7 +76,16 @@
     "statuses": {
       "active": "aktiv",
       "past_due": "überfällig",
-      "cancelled": "gekündigt"
+      "cancelled": "gekündigt",
+      "trialing": "Testphase"
+    },
+    "trial": {
+      "title": "Kostenlose Testversion aktiv",
+      "badge": "TEST",
+      "description": "Sie nutzen derzeit eine kostenlose Testversion der Premium-Funktionen. Abonnieren Sie, um nach Ablauf der Testversion weiterhin Zugriff zu haben.",
+      "daysRemaining": "Tage übrig",
+      "endsOn": "Endet am {date}",
+      "subscribeNow": "Jetzt abonnieren"
     },
     "expiration": {
       "title": "Ihr Abonnement läuft ab",

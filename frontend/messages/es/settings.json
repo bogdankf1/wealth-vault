@@ -76,7 +76,16 @@
     "statuses": {
       "active": "activa",
       "past_due": "vencida",
-      "cancelled": "cancelada"
+      "cancelled": "cancelada",
+      "trialing": "prueba"
+    },
+    "trial": {
+      "title": "Prueba gratuita activa",
+      "badge": "PRUEBA",
+      "description": "Actualmente estás disfrutando de una prueba gratuita de las funciones premium. Suscríbete para continuar el acceso después de que termine tu prueba.",
+      "daysRemaining": "Días restantes",
+      "endsOn": "Termina el {date}",
+      "subscribeNow": "Suscribirse ahora"
     },
     "expiration": {
       "title": "Tu suscripción está por terminar",

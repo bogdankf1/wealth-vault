@@ -76,7 +76,16 @@
     "statuses": {
       "active": "active",
       "past_due": "past_due",
-      "cancelled": "cancelled"
+      "cancelled": "cancelled",
+      "trialing": "trialing"
+    },
+    "trial": {
+      "title": "Free Trial Active",
+      "badge": "TRIAL",
+      "description": "You're currently enjoying a free trial of premium features. Subscribe to continue access after your trial ends.",
+      "daysRemaining": "Days Left",
+      "endsOn": "Ends on {date}",
+      "subscribeNow": "Subscribe Now"
     },
     "expiration": {
       "title": "Your Subscription is Ending",

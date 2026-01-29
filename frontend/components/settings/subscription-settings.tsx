@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
-import { CreditCard, Calendar, CheckCircle2, XCircle, AlertCircle, Clock, AlertTriangle } from 'lucide-react';
+import { CreditCard, Calendar, CheckCircle2, XCircle, AlertCircle, Clock, AlertTriangle, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -109,6 +109,11 @@ export function SubscriptionSettings() {
   const isExpiring = Boolean(subscription?.cancel_at_period_end);
   const countdown = useExpirationCountdown(subscription?.current_period_end, isExpiring);
 
+  // Trial info
+  const isTrial = subscriptionStatus?.is_trial ?? false;
+  const trialDaysRemaining = subscriptionStatus?.trial_days_remaining ?? 0;
+  const trialEndsAt = subscriptionStatus?.trial_ends_at;
+
   const handleCancelSubscription = async () => {
     try {
       await cancelSubscription({ at_period_end: true }).unwrap();
@@ -157,6 +162,64 @@ export function SubscriptionSettings() {
 
   return (
     <div className="space-y-3">
+      {/* Trial Banner */}
+      {isTrial && (
+        <Card className="border-purple-500/50 bg-purple-500/5">
+          <CardContent className="p-3">
+            <div className="flex items-start gap-2 lg:gap-3">
+              <div className="p-1.5 lg:p-2 rounded-full bg-purple-500/20">
+                <Gift className="h-4 w-4 lg:h-5 lg:w-5 text-purple-500" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-sm lg:text-base font-semibold text-purple-600 dark:text-purple-400">
+                    {t('trial.title')}
+                  </h3>
+                  <Badge className="bg-purple-500 text-white text-xs">
+                    {t('trial.badge')}
+                  </Badge>
+                </div>
+                <p className="text-xs lg:text-sm text-muted-foreground">
+                  {t('trial.description')}
+                </p>
+
+                {/* Days Remaining */}
+                <div className="flex items-center gap-4 lg:gap-6 mt-3 lg:mt-4">
+                  <div className="text-center">
+                    <div className="text-2xl lg:text-3xl font-bold text-purple-600 dark:text-purple-400">
+                      {trialDaysRemaining}
+                    </div>
+                    <div className="text-xs text-muted-foreground uppercase">{t('trial.daysRemaining')}</div>
+                  </div>
+                  {trialEndsAt && (
+                    <div className="text-sm text-muted-foreground">
+                      {t('trial.endsOn', { date: format(new Date(trialEndsAt), 'MMM d, yyyy') })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mt-4">
+                  <Progress
+                    value={Math.max(0, Math.min(100, (trialDaysRemaining / 30) * 100))}
+                    className="h-2 [&>div]:bg-purple-500"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 mt-4">
+                  <Link href="/dashboard/pricing">
+                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                      {t('trial.subscribeNow')}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Expiration Countdown Banner */}
       {isExpiring && (
         <Card className={countdown?.isUrgent ? 'border-red-500/50 bg-red-500/5' : 'border-amber-500/50 bg-amber-500/5'}>
