@@ -30,34 +30,25 @@ export function BudgetOverviewWidget() {
 
   if (isLoading) {
     return (
-      <Card className="col-span-full lg:col-span-2">
-        <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-          <CardDescription>{t('description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-        </CardContent>
+      <Card className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold">{t('title')}</span>
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-4 w-full" />
+        </div>
       </Card>
     );
   }
 
   if (error || !overview) {
     return (
-      <Card className="col-span-full lg:col-span-2">
-        <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-          <CardDescription>{t('description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>{t('error')}</p>
-          </div>
-        </CardContent>
+      <Card className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold">{t('title')}</span>
+        </div>
+        <p className="text-xs text-muted-foreground">{t('error')}</p>
       </Card>
     );
   }
@@ -65,110 +56,74 @@ export function BudgetOverviewWidget() {
   // If no budgets, show empty state
   if (overview.stats.total_budgets === 0) {
     return (
-      <Card className="col-span-full lg:col-span-2">
-        <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-          <CardDescription>{t('description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">{t('emptyState.title')}</p>
-            <Link href="/dashboard/budgets">
-              <Button>{t('emptyState.button')}</Button>
-            </Link>
-          </div>
-        </CardContent>
+      <Card className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold">{t('title')}</span>
+          <Link href="/dashboard/budgets">
+            <Button variant="ghost" size="sm" className="text-xs h-7 px-2">
+              {tCommon('viewAll')}
+            </Button>
+          </Link>
+        </div>
+        <div className="text-center py-4">
+          <p className="text-xs text-muted-foreground mb-2">{t('emptyState.title')}</p>
+          <Link href="/dashboard/budgets">
+            <Button size="sm" className="h-7 text-xs">{t('emptyState.button')}</Button>
+          </Link>
+        </div>
       </Card>
     );
   }
 
   const { stats, by_category, alerts } = overview;
-  const topCategories = by_category.slice(0, 3);
+  const topCategories = by_category.slice(0, 2);
 
   return (
     <TooltipProvider>
-      <Card className="col-span-full lg:col-span-2">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle>{t('title')}</CardTitle>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">{t('tooltip.heading')}</p>
-                  <p className="text-sm">{t('tooltip.description')}</p>
-                  <p className="text-sm mt-2">{t('tooltip.periodNote')}</p>
-                  <p className="text-sm mt-2">• {t('tooltip.colorGreen')}</p>
-                  <p className="text-sm">• {t('tooltip.colorAmber')}</p>
-                  <p className="text-sm">• {t('tooltip.colorRed')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <Link href="/dashboard/budgets">
-              <Button variant="outline" size="sm">
-                {tCommon('viewAll')}
-              </Button>
-            </Link>
+      <Card className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold">{t('title')}</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3 w-3 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p className="font-semibold mb-1">{t('tooltip.heading')}</p>
+                <p className="text-sm">{t('tooltip.description')}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <CardDescription>{t('description')}</CardDescription>
-        </CardHeader>
-      <CardContent className="space-y-3 md:space-y-4">
-        {/* Info Note */}
-        <div className="flex items-start gap-2 p-2 md:p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30">
-          <div className="text-xs text-blue-900 dark:text-blue-100">
-            {t('infoNote.showing', {
-              count: stats.active_budgets,
-              budgets: stats.active_budgets === 1 ? t('infoNote.budget') : t('infoNote.budgets')
-            })}
-          </div>
+          <Link href="/dashboard/budgets">
+            <Button variant="ghost" size="sm" className="text-xs h-7 px-2">
+              {tCommon('viewAll')}
+            </Button>
+          </Link>
         </div>
 
-        {/* Overall Stats */}
-        <div className="grid grid-cols-3 gap-2 md:gap-4">
-          <div className="space-y-1">
-            <p className="text-[10px] md:text-xs text-muted-foreground">{t('stats.budgeted')}</p>
-            <p className="text-sm md:text-lg font-semibold">
-              <CurrencyDisplay
-                amount={stats.total_budgeted}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />
-            </p>
+        {/* Overall Stats - Compact */}
+        <div className="flex items-center justify-between gap-4 mb-3 text-sm">
+          <div>
+            <span className="text-muted-foreground">{t('stats.spent')}:</span>
+            <span className="font-semibold ml-1">
+              <CurrencyDisplay amount={stats.total_spent} currency={stats.currency} showSymbol={true} showCode={false} />
+            </span>
           </div>
-          <div className="space-y-1">
-            <p className="text-[10px] md:text-xs text-muted-foreground">{t('stats.spent')}</p>
-            <p className="text-sm md:text-lg font-semibold">
-              <CurrencyDisplay
-                amount={stats.total_spent}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] md:text-xs text-muted-foreground">{t('stats.remaining')}</p>
-            <p className={`text-sm md:text-lg font-semibold ${stats.total_remaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-              <CurrencyDisplay
-                amount={stats.total_remaining}
-                currency={stats.currency}
-                showSymbol={true}
-                showCode={false}
-              />
-            </p>
+          <div>
+            <span className="text-muted-foreground">{t('stats.remaining')}:</span>
+            <span className={`font-semibold ml-1 ${stats.total_remaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+              <CurrencyDisplay amount={stats.total_remaining} currency={stats.currency} showSymbol={true} showCode={false} />
+            </span>
           </div>
         </div>
 
         {/* Overall Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{t('overallProgress')}</span>
-            <span className="font-medium">{stats.overall_percentage_used.toFixed(1)}%</span>
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-muted-foreground">{t('overallProgress')}</span>
+            <span className="text-xs font-medium">{stats.overall_percentage_used.toFixed(0)}%</span>
           </div>
-          <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all ${
                 stats.overall_percentage_used > 100
@@ -182,100 +137,32 @@ export function BudgetOverviewWidget() {
           </div>
         </div>
 
-        {/* Alerts */}
+        {/* Alerts - Compact */}
         {alerts.length > 0 && (
-          <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                  {t('budgetAlerts')}
-                </p>
-                {alerts.slice(0, 2).map((alert, index) => (
-                  <p key={index} className="text-xs text-muted-foreground">
-                    {alert}
-                  </p>
-                ))}
-                {alerts.length > 2 && (
-                  <Link href="/dashboard/budgets">
-                    <p className="text-xs text-amber-600 dark:text-amber-400 hover:underline">
-                      {t('moreAlerts', { count: alerts.length - 2 })}
-                    </p>
-                  </Link>
-                )}
-              </div>
-            </div>
+          <div className="flex items-center gap-2 p-2 rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 mb-3">
+            <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <p className="text-xs text-amber-900 dark:text-amber-100 line-clamp-1">{alerts[0]}</p>
           </div>
         )}
 
-        {/* Top Categories */}
-        <div className="space-y-3">
-          <p className="text-sm font-medium">{t('topCategories')}</p>
+        {/* Top Categories - Compact */}
+        <div className="space-y-2">
           {topCategories.map((category) => (
-            <div key={category.category} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{formatCategory(category.category)}</span>
-                <span className="text-muted-foreground">
-                  <CurrencyDisplay
-                    amount={category.spent}
-                    currency={stats.currency}
-                    showSymbol={true}
-                    showCode={false}
-                  /> / <CurrencyDisplay
-                    amount={category.budgeted}
-                    currency={stats.currency}
-                    showSymbol={true}
-                    showCode={false}
-                  />
-                </span>
-              </div>
-              <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div key={category.category} className="flex items-center gap-2">
+              <span className="text-xs truncate flex-1">{formatCategory(category.category)}</span>
+              <div className="relative h-1 w-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all ${
-                    category.is_overspent
-                      ? 'bg-red-500'
-                      : category.percentage_used >= 80
-                      ? 'bg-amber-500'
-                      : 'bg-green-500'
+                    category.is_overspent ? 'bg-red-500' : category.percentage_used >= 80 ? 'bg-amber-500' : 'bg-green-500'
                   }`}
                   style={{ width: `${Math.min(category.percentage_used, 100)}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">
-                  {t('percentUsed', { percent: category.percentage_used.toFixed(1) })}
-                </span>
-                <span className={category.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-                  {category.remaining >= 0 ? (
-                    <span className="flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      <CurrencyDisplay
-                        amount={category.remaining}
-                        currency={stats.currency}
-                        showSymbol={true}
-                        showCode={false}
-                      />
-                      <span>{t('left')}</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      <TrendingDown className="h-3 w-3" />
-                      <CurrencyDisplay
-                        amount={Math.abs(category.remaining)}
-                        currency={stats.currency}
-                        showSymbol={true}
-                        showCode={false}
-                      />
-                      <span>{t('over')}</span>
-                    </span>
-                  )}
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground w-8 text-right">{category.percentage_used.toFixed(0)}%</span>
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </Card>
     </TooltipProvider>
   );
 }

@@ -291,14 +291,14 @@
     "title": "Layouts do Dashboard",
     "description": "Personalize seu dashboard criando e gerenciando diferentes layouts",
     "wealthTierRequired": "Layouts personalizados requerem plano Wealth",
-    "initializePresets": "Inicializar Predefinições",
+    "initializePresets": "Adicionar layouts padrão",
     "createLayout": "Criar Layout",
     "upgradeToCreate": "Atualizar para Criar",
     "active": "Ativo",
-    "preset": "Predefinido",
+    "preset": "Padrão",
     "widgetsVisible": "widgets visíveis",
     "of": "de",
-    "noLayoutsFound": "Nenhum layout encontrado. Crie seu primeiro layout ou inicialize as predefinições.",
+    "noLayoutsFound": "Nenhum layout encontrado. Crie seu primeiro layout ou adicione layouts padrão.",
     "upgradeToWealth": "Atualizar para Wealth",
     "customLayoutsInfo": "Layouts personalizados estão disponíveis para assinantes do plano Wealth.",
     "viewPricing": "Ver preços",
@@ -413,8 +413,8 @@
         "description": "O layout do dashboard foi excluído com sucesso."
       },
       "presetsInitialized": {
-        "title": "Predefinições inicializadas",
-        "description": "Os layouts padrão predefinidos foram criados."
+        "title": "Layouts adicionados",
+        "description": "Os layouts padrão foram adicionados com sucesso."
       },
       "layoutCreated": {
         "title": "Layout criado",

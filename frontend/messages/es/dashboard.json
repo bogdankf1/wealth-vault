@@ -10,17 +10,17 @@
   "quickActions": {
     "title": "Acciones Rápidas",
     "description": "Añade nuevas entradas financieras rápidamente",
+    "addAccount": {
+      "label": "Cuenta",
+      "description": "Añadir cuenta bancaria"
+    },
     "addIncome": {
-      "label": "Añadir Ingreso",
+      "label": "Ingreso",
       "description": "Registrar fuente de ingreso"
     },
     "addExpense": {
-      "label": "Añadir Gasto",
+      "label": "Gasto",
       "description": "Rastrear gasto"
-    },
-    "addBudget": {
-      "label": "Añadir Presupuesto",
-      "description": "Establecer límite de gasto"
     },
     "subscription": {
       "label": "Suscripción",
@@ -29,10 +29,6 @@
     "installment": {
       "label": "Cuota",
       "description": "Plan de pago"
-    },
-    "createGoal": {
-      "label": "Crear Meta",
-      "description": "Establecer objetivo"
     }
   },
   "insightsAlerts": {

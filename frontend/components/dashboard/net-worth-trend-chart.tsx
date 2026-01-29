@@ -350,49 +350,6 @@ export function NetWorthTrendChart({
         )}
       </ResponsiveContainer>
 
-      {/* Growth Insights */}
-      <div className="mt-3 pt-3 md:mt-6 md:pt-6 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-3">
-          {t('insights.title')}
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div className={`p-2 rounded-lg ${
-              isPositive
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : 'bg-red-100 dark:bg-red-900/20'
-            }`}>
-              {isPositive ? (
-                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                {t('insights.trend')}
-              </p>
-              <p className="text-sm font-semibold">
-                {isPositive ? t('insights.growing') : t('insights.declining')} ({changePercentage.toFixed(1)}%)
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-              <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                {t('insights.avgMonthly')}
-              </p>
-              <p className="text-sm font-semibold">
-                {formatCurrency(data.length > 1 ? change / (data.length - 1) : 0)}/mo
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
       </Card>
     </TooltipProvider>
   );

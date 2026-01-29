@@ -299,14 +299,14 @@
     "title": "Dashboard Layouts",
     "description": "Customize your dashboard by creating and managing different layouts",
     "wealthTierRequired": "Custom layouts require Wealth tier",
-    "initializePresets": "Initialize Presets",
+    "initializePresets": "Add Default Layouts",
     "createLayout": "Create Layout",
     "upgradeToCreate": "Upgrade to Create",
     "active": "Active",
-    "preset": "Preset",
+    "preset": "Default",
     "widgetsVisible": "widgets visible",
     "of": "of",
-    "noLayoutsFound": "No layouts found. Create your first layout or initialize presets.",
+    "noLayoutsFound": "No layouts found. Create your first layout or add default layouts.",
     "upgradeToWealth": "Upgrade to Wealth",
     "customLayoutsInfo": "Custom layouts are available for Wealth tier subscribers.",
     "viewPricing": "View pricing",
@@ -421,8 +421,8 @@
         "description": "Dashboard layout has been deleted successfully."
       },
       "presetsInitialized": {
-        "title": "Presets initialized",
-        "description": "Default layout presets have been created."
+        "title": "Layouts added",
+        "description": "Default layouts have been added successfully."
       },
       "layoutCreated": {
         "title": "Layout created",

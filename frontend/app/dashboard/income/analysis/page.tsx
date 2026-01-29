@@ -59,7 +59,7 @@ export default function IncomeAnalysisPage() {
   return (
     <div className="space-y-3 lg:space-y-6">
       {/* Monthly Income Trend - Top Card */}
-      <Card className={`${isPositiveChange ? 'border-green-200 bg-green-50/50' : 'border-red-200 bg-red-50/50'}`}>
+      <Card className={`${isPositiveChange ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30' : 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/30'}`}>
         <CardHeader className="pb-3">
           <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <CalendarDays className="h-5 w-5" />
@@ -166,7 +166,7 @@ export default function IncomeAnalysisPage() {
       {/* Recurring Income Overview */}
       <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Monthly Income */}
-        <Card className="border-blue-200 bg-blue-50/30">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-blue-600" />
@@ -191,7 +191,7 @@ export default function IncomeAnalysisPage() {
         </Card>
 
         {/* Annual Income */}
-        <Card className="border-purple-200 bg-purple-50/30">
+        <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
@@ -310,7 +310,7 @@ export default function IncomeAnalysisPage() {
       {/* Income Sources Summary */}
       <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Sources */}
-        <Card className="border-indigo-200 bg-indigo-50/30">
+        <Card className="border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4 text-indigo-600" />
@@ -330,7 +330,7 @@ export default function IncomeAnalysisPage() {
         </Card>
 
         {/* Active Sources */}
-        <Card className="border-green-200 bg-green-50/30">
+        <Card className="border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />

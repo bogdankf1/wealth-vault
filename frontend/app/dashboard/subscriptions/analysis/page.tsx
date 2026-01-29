@@ -93,7 +93,7 @@ export default function SubscriptionsAnalysisPage() {
           {/* Subscription Overview - Top Cards */}
           <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Subscriptions */}
-        <Card className="border-blue-200 bg-blue-50/30">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Repeat className="h-4 w-4 text-blue-600" />
@@ -111,7 +111,7 @@ export default function SubscriptionsAnalysisPage() {
         </Card>
 
         {/* Active Subscriptions */}
-        <Card className="border-green-200 bg-green-50/30">
+        <Card className="border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -137,7 +137,7 @@ export default function SubscriptionsAnalysisPage() {
       </div>
 
       {/* Cost Breakdown */}
-      <Card className="border-purple-200 bg-purple-50/50">
+      <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30">
         <CardHeader className="pb-3">
           <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
@@ -298,7 +298,7 @@ export default function SubscriptionsAnalysisPage() {
       )}
 
       {/* Annual Cost Impact */}
-      <Card className="border-orange-200 bg-orange-50/30">
+      <Card className="border-orange-200 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-950/30">
         <CardHeader className="pb-3">
           <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Calendar className="h-5 w-5 text-orange-600" />

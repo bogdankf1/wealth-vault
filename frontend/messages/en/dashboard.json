@@ -10,17 +10,17 @@
   "quickActions": {
     "title": "Quick Actions",
     "description": "Add new financial entries quickly",
+    "addAccount": {
+      "label": "Account",
+      "description": "Add bank account"
+    },
     "addIncome": {
-      "label": "Add Income",
+      "label": "Income",
       "description": "Record income source"
     },
     "addExpense": {
-      "label": "Add Expense",
+      "label": "Expense",
       "description": "Track expense"
-    },
-    "addBudget": {
-      "label": "Add Budget",
-      "description": "Set spending limit"
     },
     "subscription": {
       "label": "Subscription",
@@ -29,10 +29,6 @@
     "installment": {
       "label": "Installment",
       "description": "Payment plan"
-    },
-    "createGoal": {
-      "label": "Create Goal",
-      "description": "Set target"
     }
   },
   "insightsAlerts": {

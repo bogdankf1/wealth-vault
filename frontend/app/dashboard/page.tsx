@@ -8,12 +8,10 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   useGetDashboardOverviewQuery,
-  useGetIncomeVsExpensesChartQuery,
   useGetSubscriptionsByCategoryChartQuery,
   useGetInstallmentsByCategoryChartQuery,
   useGetExpensesByCategoryChartQuery,
   useGetBudgetsByCategoryChartQuery,
-  useGetMonthlySpendingChartQuery,
   useGetNetWorthTrendChartQuery,
   useGetIncomeBreakdownChartQuery,
 } from '@/lib/api/dashboardApi';
@@ -27,34 +25,29 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
-  TrendingUp,
-  TrendingDown,
   Wallet,
   ArrowUpRight,
   ArrowDownRight,
-  Activity,
-  Target,
   PiggyBank,
   CreditCard,
   TrendingUpIcon,
   Calendar,
-  Info,
   Plus,
   Minus,
   AlertTriangle,
   AlertCircle,
-  CheckCircle,
-  XCircle,
   ArrowRight,
   UserMinus,
   FileText,
+  Landmark,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { IncomeSourceForm } from '@/components/income/income-source-form';
 import { ExpenseForm } from '@/components/expenses/expense-form';
-import { BudgetForm } from '@/components/budgets/budget-form';
-import { GoalForm } from '@/components/goals/goal-form';
 import { SubscriptionForm } from '@/components/subscriptions/subscription-form';
 import { InstallmentForm } from '@/components/installments/installment-form';
+import { SavingsAccountForm } from '@/components/savings/savings-account-form';
 import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget';
 import { BudgetOverviewWidget } from '@/components/dashboard/budget-overview-widget';
 import { GoalsOverviewWidget } from '@/components/dashboard/goals-overview-widget';
@@ -62,12 +55,10 @@ import { PlannedSubscriptionsWidget } from '@/components/dashboard/planned-subsc
 import { PlannedExpensesWidget } from '@/components/dashboard/planned-expenses-widget';
 import { PlannedInstallmentsWidget } from '@/components/dashboard/planned-installments-widget';
 import { MonthFilter } from '@/components/ui/month-filter';
-import { IncomeVsExpensesChart } from '@/components/dashboard/income-vs-expenses-chart';
 import { SubscriptionsByCategoryChart } from '@/components/dashboard/subscriptions-by-category-chart';
 import { InstallmentsByCategoryChart } from '@/components/dashboard/installments-by-category-chart';
 import { ExpensesByCategoryChart } from '@/components/dashboard/expenses-by-category-chart';
 import { BudgetsByCategoryChart } from '@/components/dashboard/budgets-by-category-chart';
-import { MonthlySpendingChart } from '@/components/dashboard/monthly-spending-chart';
 import { NetWorthTrendChart } from '@/components/dashboard/net-worth-trend-chart';
 import { IncomeBreakdownChart } from '@/components/dashboard/income-breakdown-chart';
 import { ExchangeRatesWidget } from '@/components/dashboard/exchange-rates-widget';
@@ -75,7 +66,6 @@ import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { useGetDebtStatsQuery } from '@/lib/api/debtsApi';
-import { useGetTaxStatsQuery } from '@/lib/api/taxesApi';
 import { useGetActiveLayoutQuery } from '@/lib/api/dashboardLayoutsApi';
 import { QuickLayoutSwitcher } from '@/components/dashboard/quick-layout-switcher';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
@@ -85,11 +75,8 @@ export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tQuickActions = useTranslations('dashboard.quickActions');
   const tNetWorth = useTranslations('dashboard.netWorth');
-  const tFinancialHealth = useTranslations('dashboard.financialHealth');
   const tCashFlow = useTranslations('dashboard.cashFlow');
-  const tRecentActivity = useTranslations('dashboard.recentActivity');
   const tAnalytics = useTranslations('dashboard.analytics');
-  const tTooltips = useTranslations('dashboard.tooltips');
   const tErrors = useTranslations('dashboard.errors');
 
   const { data: currentUser } = useGetCurrentUserQuery();
@@ -133,10 +120,9 @@ export default function DashboardPage() {
   };
 
   // Dialog states for Quick Actions
+  const [isAccountFormOpen, setIsAccountFormOpen] = useState(false);
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
-  const [isBudgetFormOpen, setIsBudgetFormOpen] = useState(false);
-  const [isGoalFormOpen, setIsGoalFormOpen] = useState(false);
   const [isSubscriptionFormOpen, setIsSubscriptionFormOpen] = useState(false);
   const [isInstallmentFormOpen, setIsInstallmentFormOpen] = useState(false);
 
@@ -160,9 +146,6 @@ export default function DashboardPage() {
   const { data, isLoading, error } = useGetDashboardOverviewQuery(dateParams);
 
   // Analytics queries
-  const { data: incomeVsExpensesData, isLoading: isLoadingIncomeVsExpenses } =
-    useGetIncomeVsExpensesChartQuery(dateParams);
-
   const { data: subscriptionsByCategoryData, isLoading: isLoadingSubscriptionsByCategory } =
     useGetSubscriptionsByCategoryChartQuery(dateParams);
 
@@ -175,19 +158,15 @@ export default function DashboardPage() {
   const { data: budgetsByCategoryData, isLoading: isLoadingBudgetsByCategory } =
     useGetBudgetsByCategoryChartQuery(dateParams);
 
-  const { data: monthlySpendingData, isLoading: isLoadingMonthlySpending } =
-    useGetMonthlySpendingChartQuery(dateParams);
-
   const { data: netWorthTrendData, isLoading: isLoadingNetWorthTrend } =
     useGetNetWorthTrendChartQuery(dateParams);
 
   const { data: incomeBreakdownData, isLoading: isLoadingIncomeBreakdown } =
     useGetIncomeBreakdownChartQuery(dateParams);
 
-  // Only fetch debt and tax stats for Wealth tier users
+  // Only fetch debt stats for Wealth tier users
   const isWealthTier = currentUser?.tier?.name === 'wealth';
   const { data: debtStats } = useGetDebtStatsQuery(undefined, { skip: !isWealthTier });
-  const { data: taxStats } = useGetTaxStatsQuery(undefined, { skip: !isWealthTier });
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -209,47 +188,7 @@ export default function DashboardPage() {
     return null;
   }
 
-  const { net_worth, cash_flow, financial_health, recent_activity } = data;
-
-  // Format percentage
-  const formatPercentage = (value: string | number) => {
-    const num = typeof value === 'string' ? parseFloat(value) : value;
-    return `${num.toFixed(1)}%`;
-  };
-
-  // Get period label for display
-  const getPeriodLabel = () => {
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const date = new Date(year, month - 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  };
-
-  // Get period description for tooltips
-  const getPeriodDescription = () => {
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-
-    const start = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const end = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    return `${start} - ${end}`;
-  };
-
-  // Get health rating color
-  const getHealthColor = (rating: string) => {
-    // Normalize rating to lowercase for comparison
-    const normalizedRating = rating.toLowerCase();
-
-    if (normalizedRating === 'excellent' || normalizedRating === tFinancialHealth('ratings.excellent').toLowerCase()) {
-      return 'text-green-600 dark:text-green-400';
-    } else if (normalizedRating === 'good' || normalizedRating === tFinancialHealth('ratings.good').toLowerCase()) {
-      return 'text-blue-600 dark:text-blue-400';
-    } else if (normalizedRating === 'fair' || normalizedRating === tFinancialHealth('ratings.fair').toLowerCase()) {
-      return 'text-yellow-600 dark:text-yellow-400';
-    } else {
-      return 'text-red-600 dark:text-red-400';
-    }
-  };
+  const { net_worth, cash_flow } = data;
 
   // Get alert styling based on type
   const getAlertStyle = (type: string) => {
@@ -305,113 +244,207 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        {isWidgetVisible('quick-actions') && (
-          <Card className="p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div>
-                <h2 className="text-base md:text-lg font-semibold">{tQuickActions('title')}</h2>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                  {tQuickActions('description')}
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
-            <Button
-              onClick={() => setIsIncomeFormOpen(true)}
-              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
-              variant="outline"
-            >
-              <div className="flex items-center gap-1 md:gap-2">
-                <Plus className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
-                <span className="text-xs md:text-sm font-medium">{tQuickActions('addIncome.label')}</span>
-              </div>
-              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                {tQuickActions('addIncome.description')}
-              </span>
-            </Button>
+        {/* Quick Actions & Alerts - Side by Side */}
+        {(isWidgetVisible('quick-actions') || (isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0)) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Quick Actions - Compact */}
+            {isWidgetVisible('quick-actions') && (
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold">{tQuickActions('title')}</h2>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  <Button
+                    onClick={() => setIsAccountFormOpen(true)}
+                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
+                    variant="outline"
+                  >
+                    <Landmark className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs font-medium">{tQuickActions('addAccount.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsIncomeFormOpen(true)}
+                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
+                    variant="outline"
+                  >
+                    <Plus className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <span className="text-xs font-medium">{tQuickActions('addIncome.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsExpenseFormOpen(true)}
+                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
+                    variant="outline"
+                  >
+                    <Minus className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    <span className="text-xs font-medium">{tQuickActions('addExpense.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsSubscriptionFormOpen(true)}
+                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
+                    variant="outline"
+                  >
+                    <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs font-medium">{tQuickActions('subscription.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsInstallmentFormOpen(true)}
+                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
+                    variant="outline"
+                  >
+                    <CreditCard className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    <span className="text-xs font-medium">{tQuickActions('installment.label')}</span>
+                  </Button>
+                </div>
+              </Card>
+            )}
 
-            <Button
-              onClick={() => setIsExpenseFormOpen(true)}
-              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
-              variant="outline"
-            >
-              <div className="flex items-center gap-1 md:gap-2">
-                <Minus className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
-                <span className="text-xs md:text-sm font-medium">{tQuickActions('addExpense.label')}</span>
-              </div>
-              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                {tQuickActions('addExpense.description')}
-              </span>
-            </Button>
-
-            <Button
-              onClick={() => setIsBudgetFormOpen(true)}
-              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
-              variant="outline"
-            >
-              <div className="flex items-center gap-1 md:gap-2">
-                <Wallet className="h-4 w-4 md:h-5 md:w-5 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-xs md:text-sm font-medium">{tQuickActions('addBudget.label')}</span>
-              </div>
-              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                {tQuickActions('addBudget.description')}
-              </span>
-            </Button>
-
-            <Button
-              onClick={() => setIsSubscriptionFormOpen(true)}
-              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
-              variant="outline"
-            >
-              <div className="flex items-center gap-1 md:gap-2">
-                <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-600 dark:text-purple-400" />
-                <span className="text-xs md:text-sm font-medium">{tQuickActions('subscription.label')}</span>
-              </div>
-              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                {tQuickActions('subscription.description')}
-              </span>
-            </Button>
-
-            <Button
-              onClick={() => setIsInstallmentFormOpen(true)}
-              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
-              variant="outline"
-            >
-              <div className="flex items-center gap-1 md:gap-2">
-                <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-orange-600 dark:text-orange-400" />
-                <span className="text-xs md:text-sm font-medium">{tQuickActions('installment.label')}</span>
-              </div>
-              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                {tQuickActions('installment.description')}
-              </span>
-            </Button>
-
-            <Button
-              onClick={() => setIsGoalFormOpen(true)}
-              className="h-auto py-3 md:py-4 flex flex-col gap-1 md:gap-2"
-              variant="outline"
-            >
-              <div className="flex items-center gap-1 md:gap-2">
-                <Target className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
-                <span className="text-xs md:text-sm font-medium">{tQuickActions('createGoal.label')}</span>
-              </div>
-              <span className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-                {tQuickActions('createGoal.description')}
-              </span>
-            </Button>
+            {/* Financial Alerts - Compact */}
+            {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-sm font-semibold">{t('insightsAlerts.title')}</h2>
+                  <span className="text-xs text-muted-foreground">{data.alerts.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {data.alerts.slice(0, 3).map((alert) => {
+                    const style = getAlertStyle(alert.type);
+                    return (
+                      <div
+                        key={alert.id}
+                        className={`p-2 rounded-md border ${style.bg} flex items-center gap-2`}
+                      >
+                        <div className="flex-shrink-0 [&>svg]:h-3 [&>svg]:w-3">
+                          {style.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-medium ${style.textColor} line-clamp-1`}>
+                            {alert.title}
+                          </p>
+                        </div>
+                        {alert.actionable && alert.action_url && (
+                          <Link href={alert.action_url}>
+                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                          </Link>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
           </div>
-        </Card>
         )}
 
-        {/* AI Insights Widget - Only for Wealth tier */}
-        {isWidgetVisible('ai-insights') && currentUser?.tier?.name === 'wealth' && <AIInsightsWidget />}
+        {/* AI Insights & Budget Overview - Side by Side */}
+        {(isWidgetVisible('ai-insights') || isWidgetVisible('budget-overview')) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* AI Insights Widget - Only for Wealth tier */}
+            {isWidgetVisible('ai-insights') && currentUser?.tier?.name === 'wealth' && <AIInsightsWidget />}
 
-        {/* Budget Overview Widget */}
-        {isWidgetVisible('budget-overview') && <BudgetOverviewWidget />}
+            {/* Budget Overview Widget */}
+            {isWidgetVisible('budget-overview') && <BudgetOverviewWidget />}
+          </div>
+        )}
 
-        {/* Goals Overview Widget */}
-        {isWidgetVisible('goals-progress') && <GoalsOverviewWidget />}
+        {/* Goals Overview & Net Worth - Side by Side */}
+        {(isWidgetVisible('goals-progress') || isWidgetVisible('net-worth')) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Goals Overview Widget */}
+            {isWidgetVisible('goals-progress') && <GoalsOverviewWidget />}
+
+            {/* Net Worth Card */}
+            {isWidgetVisible('net-worth') && (
+              <Card className="p-4 md:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-gray-500" />
+                    <h2 className="text-sm md:text-base font-semibold">{tNetWorth('title')}</h2>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold">
+                    <CurrencyDisplay
+                      amount={parseFloat(net_worth.net_worth)}
+                      currency={net_worth.currency}
+                      showSymbol={true}
+                      showCode={false}
+                    />
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-3 border-t">
+                  <div>
+                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 mb-1">
+                      <ArrowUpRight className="h-3 w-3" />
+                      <span className="text-xs font-medium">{tNetWorth('assets.label')}</span>
+                    </div>
+                    <p className="text-base md:text-lg font-semibold">
+                      <CurrencyDisplay
+                        amount={parseFloat(net_worth.total_assets)}
+                        currency={net_worth.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
+                    </p>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                      <div className="flex justify-between">
+                        <span>{tNetWorth('assets.portfolio')}:</span>
+                        <CurrencyDisplay
+                          amount={parseFloat(net_worth.portfolio_value)}
+                          currency={net_worth.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>{tNetWorth('assets.accounts')}:</span>
+                        <CurrencyDisplay
+                          amount={parseFloat(net_worth.savings_balance)}
+                          currency={net_worth.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </div>
+                      {parseFloat(net_worth.debts_receivable) > 0 && (
+                        <div className="flex justify-between">
+                          <span>{tNetWorth('assets.debtsReceivable')}:</span>
+                          <CurrencyDisplay
+                            amount={parseFloat(net_worth.debts_receivable)}
+                            currency={net_worth.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1 text-red-600 dark:text-red-400 mb-1">
+                      <ArrowDownRight className="h-3 w-3" />
+                      <span className="text-xs font-medium">{tNetWorth('liabilities.label')}</span>
+                    </div>
+                    <p className="text-base md:text-lg font-semibold">
+                      <CurrencyDisplay
+                        amount={parseFloat(net_worth.total_liabilities)}
+                        currency={net_worth.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
+                    </p>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="flex justify-between">
+                        <span>{tNetWorth('liabilities.debt')}:</span>
+                        <CurrencyDisplay
+                          amount={parseFloat(net_worth.total_debt)}
+                          currency={net_worth.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
 
         {/* Planned Payments Widgets */}
         {(isWidgetVisible('planned-subscriptions') || isWidgetVisible('planned-expenses') || isWidgetVisible('planned-installments')) && (
@@ -428,534 +461,107 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Financial Alerts & Notifications */}
-        {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (
-          <Card className="p-4 md:p-6">
-            <div className="mb-3 md:mb-4">
-              <h2 className="text-base md:text-lg font-semibold">{t('insightsAlerts.title')}</h2>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                {t('insightsAlerts.description')}
-              </p>
-            </div>
-            <div className="space-y-3">
-              {data.alerts.map((alert) => {
-                const style = getAlertStyle(alert.type);
-                return (
-                  <div
-                    key={alert.id}
-                    className={`p-4 rounded-lg border ${style.bg} transition-all hover:shadow-sm`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-0.5">
-                        {style.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className={`font-semibold mb-1 ${style.textColor}`}>
-                          {alert.title}
-                        </h3>
-                        <p className={`text-sm ${style.textColor} opacity-90`}>
-                          {alert.message}
-                        </p>
-                      </div>
-                      {alert.actionable && alert.action_url && (
-                        <Link href={alert.action_url}>
-                          <Button variant="ghost" size="sm" className="flex-shrink-0">
-                            <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        )}
-
-      {/* Top Stats Grid - Net Worth & Cash Flow */}
-      {(isWidgetVisible('net-worth') || isWidgetVisible('goals-progress')) && (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-        {/* Net Worth Card */}
-        {isWidgetVisible('net-worth') && (
-        <Card className="p-4 md:p-6 col-span-1 md:col-span-2 xl:col-span-2">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base md:text-lg font-semibold">{tNetWorth('title')}</h2>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">{tTooltips('netWorth.heading')}</p>
-                  <p className="text-sm">{tTooltips('netWorth.formula')}</p>
-                  <p className="text-sm mt-2">{tTooltips('netWorth.assets')}</p>
-                  <p className="text-sm">{tTooltips('netWorth.liabilities')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <Wallet className="h-5 w-5 text-gray-500" />
-          </div>
-          <div className="space-y-3 md:space-y-4">
-            <div>
-              <p className="text-2xl md:text-3xl font-bold">
-                <CurrencyDisplay
-                  amount={parseFloat(net_worth.net_worth)}
-                  currency={net_worth.currency}
-                  showSymbol={true}
-                  showCode={false}
-
-
-                />
-              </p>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {tNetWorth('totalLabel')}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 md:gap-4 pt-3 md:pt-4 border-t">
-              <div>
-                <div className="flex items-center gap-1 md:gap-2 text-green-600 dark:text-green-400">
-                  <ArrowUpRight className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="text-xs md:text-sm font-medium">{tNetWorth('assets.label')}</span>
-                </div>
-                <p className="text-lg md:text-xl font-semibold mt-1">
-                  <CurrencyDisplay
-                    amount={parseFloat(net_worth.total_assets)}
-                    currency={net_worth.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  />
-                </p>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-1">
-                  <div>{tNetWorth('assets.portfolio')}: <CurrencyDisplay
-                    amount={parseFloat(net_worth.portfolio_value)}
-                    currency={net_worth.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  /></div>
-                  <div>{tNetWorth('assets.accounts')}: <CurrencyDisplay
-                    amount={parseFloat(net_worth.savings_balance)}
-                    currency={net_worth.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  /></div>
-                  {parseFloat(net_worth.debts_receivable) > 0 && (
-                    <div>{tNetWorth('assets.debtsReceivable')}: <CurrencyDisplay
-                      amount={parseFloat(net_worth.debts_receivable)}
-                      currency={net_worth.currency}
-                      showSymbol={true}
-                      showCode={false}
-                    /></div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-1 md:gap-2 text-red-600 dark:text-red-400">
-                  <ArrowDownRight className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="text-xs md:text-sm font-medium">{tNetWorth('liabilities.label')}</span>
-                </div>
-                <p className="text-lg md:text-xl font-semibold mt-1">
-                  <CurrencyDisplay
-                    amount={parseFloat(net_worth.total_liabilities)}
-                    currency={net_worth.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  />
-                </p>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                  <div>{tNetWorth('liabilities.debt')}: <CurrencyDisplay
-                    amount={parseFloat(net_worth.total_debt)}
-                    currency={net_worth.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  /></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-        )}
-
-        {/* Financial Health Score */}
-        {isWidgetVisible('goals-progress') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base md:text-lg font-semibold">{tFinancialHealth('title')}</h2>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">{tTooltips('financialHealth.heading')}</p>
-                  <p className="text-sm">{tTooltips('financialHealth.formula')}</p>
-                  <p className="text-sm mt-2">{tTooltips('financialHealth.emergencyFund')}</p>
-                  <p className="text-sm">{tTooltips('financialHealth.debtToIncome')}</p>
-                  <p className="text-sm">{tTooltips('financialHealth.savingsRate')}</p>
-                  <p className="text-sm">{tTooltips('financialHealth.investmentDiversity')}</p>
-                  <p className="text-sm">{tTooltips('financialHealth.goalsProgress')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <Activity className="h-5 w-5 text-gray-500" />
-          </div>
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold mb-2">
-              {financial_health.score}
-            </div>
-            <div className={`text-xs md:text-sm font-medium ${getHealthColor(financial_health.rating)}`}>
-              {financial_health.rating}
-            </div>
-            <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mt-1">
-              {tFinancialHealth('scoreLabel')}
-            </div>
-          </div>
-          <div className="mt-4 md:mt-6 space-y-2 text-xs md:text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.emergencyFund')}</span>
-              <span className="font-medium">{financial_health.emergency_fund_score}/20</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.debtToIncome')}</span>
-              <span className="font-medium">{financial_health.debt_to_income_score}/20</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.savingsRate')}</span>
-              <span className="font-medium">{financial_health.savings_rate_score}/20</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.investments')}</span>
-              <span className="font-medium">{financial_health.investment_diversity_score}/20</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">{tFinancialHealth('components.goalsProgress')}</span>
-              <span className="font-medium">{financial_health.goals_progress_score}/20</span>
-            </div>
-          </div>
-        </Card>
-        )}
-      </div>
-      )}
-
-      {/* Cash Flow Stats */}
+      {/* Cash Flow Stats - Compact */}
       {(isWidgetVisible('income-vs-expenses') || isWidgetVisible('upcoming-bills') || isWidgetVisible('taxes') || isWidgetVisible('debts-owed') || isWidgetVisible('monthly-spending')) && (
-      <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
         {isWidgetVisible('income-vs-expenses') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <TrendingUpIcon className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('income.label')}</p>
-                <p className="text-base md:text-xl font-bold">
-                  <CurrencyDisplay
-                    amount={parseFloat(cash_flow.monthly_income)}
-                    currency={cash_flow.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  />
-                </p>
-              </div>
+        <Card className="p-2.5 xl:p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1 bg-green-100 dark:bg-green-900/20 rounded">
+              <TrendingUpIcon className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-green-600 dark:text-green-400" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">{tTooltips('income.heading')}</p>
-                <p className="text-sm">{tTooltips('income.description')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <p className="text-[10px] xl:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('income.label')}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('income.period')}</p>
+          <p className="text-sm xl:text-base font-bold">
+            <CurrencyDisplay amount={parseFloat(cash_flow.monthly_income)} currency={cash_flow.currency} showSymbol={true} showCode={false} />
+          </p>
         </Card>
         )}
 
         {isWidgetVisible('income-vs-expenses') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('expenses.label')}</p>
-                <p className="text-base md:text-xl font-bold">
-                  <CurrencyDisplay
-                    amount={parseFloat(cash_flow.monthly_expenses)}
-                    currency={cash_flow.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  />
-                </p>
-              </div>
+        <Card className="p-2.5 xl:p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1 bg-red-100 dark:bg-red-900/20 rounded">
+              <CreditCard className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-red-600 dark:text-red-400" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">{tTooltips('expenses.heading')}</p>
-                <p className="text-sm">{tTooltips('expenses.dateBased', { period: getPeriodLabel() })}</p>
-                <p className="text-sm mt-1">{tTooltips('expenses.oneTime')}</p>
-                <p className="text-sm">{tTooltips('expenses.recurring')}</p>
-                <p className="text-xs text-gray-400 mt-2">{getPeriodDescription()}</p>
-              </TooltipContent>
-            </Tooltip>
+            <p className="text-[10px] xl:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('expenses.label')}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{getPeriodLabel()}</p>
+          <p className="text-sm xl:text-base font-bold">
+            <CurrencyDisplay amount={parseFloat(cash_flow.monthly_expenses)} currency={cash_flow.currency} showSymbol={true} showCode={false} />
+          </p>
         </Card>
         )}
 
         {isWidgetVisible('upcoming-bills') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('subscriptions.label')}</p>
-                <p className="text-base md:text-xl font-bold">
-                  <CurrencyDisplay
-                    amount={parseFloat(cash_flow.monthly_subscriptions)}
-                    currency={cash_flow.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  />
-                </p>
-              </div>
+        <Card className="p-2.5 xl:p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1 bg-purple-100 dark:bg-purple-900/20 rounded">
+              <Calendar className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-purple-600 dark:text-purple-400" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">{tTooltips('subscriptions.heading')}</p>
-                <p className="text-sm">{tTooltips('subscriptions.description')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <p className="text-[10px] xl:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('subscriptions.label')}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('subscriptions.period')}</p>
+          <p className="text-sm xl:text-base font-bold">
+            <CurrencyDisplay amount={parseFloat(cash_flow.monthly_subscriptions)} currency={cash_flow.currency} showSymbol={true} showCode={false} />
+          </p>
         </Card>
         )}
 
         {isWidgetVisible('upcoming-bills') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-orange-600 dark:text-orange-400" />
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('installments.label')}</p>
-                <p className="text-base md:text-xl font-bold">
-                  <CurrencyDisplay
-                    amount={parseFloat(cash_flow.monthly_installments)}
-                    currency={cash_flow.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  />
-                </p>
-              </div>
+        <Card className="p-2.5 xl:p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1 bg-orange-100 dark:bg-orange-900/20 rounded">
+              <CreditCard className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-orange-600 dark:text-orange-400" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">{tTooltips('installments.heading')}</p>
-                <p className="text-sm">{tTooltips('installments.description')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <p className="text-[10px] xl:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('installments.label')}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('installments.period')}</p>
+          <p className="text-sm xl:text-base font-bold">
+            <CurrencyDisplay amount={parseFloat(cash_flow.monthly_installments)} currency={cash_flow.currency} showSymbol={true} showCode={false} />
+          </p>
         </Card>
         )}
 
         {isWidgetVisible('taxes') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 bg-amber-100 dark:bg-amber-900/20 rounded-lg">
-                <FileText className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('taxes.label')}</p>
-                <p className="text-base md:text-xl font-bold">
-                  <CurrencyDisplay
-                    amount={parseFloat(cash_flow.monthly_taxes) || 0}
-                    currency={cash_flow.currency}
-                    showSymbol={true}
-                    showCode={false}
-                  />
-                </p>
-              </div>
+        <Card className="p-2.5 xl:p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1 bg-amber-100 dark:bg-amber-900/20 rounded">
+              <FileText className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-amber-600 dark:text-amber-400" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">{tTooltips('taxes.heading')}</p>
-                <p className="text-sm">{tTooltips('taxes.description')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <p className="text-[10px] xl:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('taxes.label')}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{taxStats?.active_taxes || 0} {tCashFlow('taxes.active')}</p>
+          <p className="text-sm xl:text-base font-bold">
+            <CurrencyDisplay amount={parseFloat(cash_flow.monthly_taxes) || 0} currency={cash_flow.currency} showSymbol={true} showCode={false} />
+          </p>
         </Card>
         )}
 
         {isWidgetVisible('debts-owed') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 bg-teal-100 dark:bg-teal-900/20 rounded-lg">
-                <UserMinus className="h-4 w-4 md:h-5 md:w-5 text-teal-600 dark:text-teal-400" />
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('debtsOwed.label')}</p>
-                <p className="text-base md:text-xl font-bold">
-                  <CurrencyDisplay
-                    amount={debtStats?.total_amount_owed || 0}
-                    currency={debtStats?.currency || cash_flow.currency}
-                    showSymbol={true}
-                    showCode={false}
-                  />
-                </p>
-              </div>
+        <Card className="p-2.5 xl:p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1 bg-teal-100 dark:bg-teal-900/20 rounded">
+              <UserMinus className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-teal-600 dark:text-teal-400" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">{tTooltips('debtsOwed.heading')}</p>
-                <p className="text-sm">{tTooltips('debtsOwed.description')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <p className="text-[10px] xl:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('debtsOwed.label')}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{debtStats?.active_debts || 0} {tCashFlow('debtsOwed.active')}</p>
+          <p className="text-sm xl:text-base font-bold">
+            <CurrencyDisplay amount={debtStats?.total_amount_owed || 0} currency={debtStats?.currency || cash_flow.currency} showSymbol={true} showCode={false} />
+          </p>
         </Card>
         )}
 
         {isWidgetVisible('monthly-spending') && (
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                <PiggyBank className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{tCashFlow('netCashFlow.label')}</p>
-                <p className="text-base md:text-xl font-bold">
-                  <CurrencyDisplay
-                    amount={parseFloat(cash_flow.net_cash_flow)}
-                    currency={cash_flow.currency}
-                    showSymbol={true}
-                    showCode={false}
-
-
-                  />
-                </p>
-              </div>
+        <Card className="p-2.5 xl:p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1 bg-blue-100 dark:bg-blue-900/20 rounded">
+              <PiggyBank className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold mb-1">{tTooltips('netCashFlow.heading')}</p>
-                <p className="text-sm">{tTooltips('netCashFlow.formula')}</p>
-                <p className="text-sm mt-2">{tTooltips('netCashFlow.expenses', { period: getPeriodLabel() })}</p>
-                <p className="text-sm">{tTooltips('netCashFlow.others')}</p>
-                <p className="text-sm mt-2">{tTooltips('netCashFlow.savingsRate')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <p className="text-[10px] xl:text-xs text-gray-500 dark:text-gray-400">{tCashFlow('netCashFlow.label')}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
-            {tCashFlow('netCashFlow.savingsRateLabel')}: {formatPercentage(cash_flow.savings_rate)}
+          <p className="text-sm xl:text-base font-bold">
+            <CurrencyDisplay amount={parseFloat(cash_flow.net_cash_flow)} currency={cash_flow.currency} showSymbol={true} showCode={false} />
           </p>
         </Card>
         )}
       </div>
-      )}
-
-      {/* Recent Activity */}
-      {isWidgetVisible('recent-transactions') && (
-      <Card className="p-3 md:p-6">
-        <h2 className="text-sm md:text-lg font-semibold mb-2 md:mb-4">{tRecentActivity('title')}</h2>
-        {recent_activity.length === 0 ? (
-          <p className="text-center text-xs md:text-sm text-gray-500 dark:text-gray-400 py-6 md:py-8">
-            {tRecentActivity('emptyState')}
-          </p>
-        ) : (
-          <div className="space-y-1.5 md:space-y-3">
-            {recent_activity.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-center justify-between p-2 md:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
-                  <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${
-                    activity.is_positive
-                      ? 'bg-green-100 dark:bg-green-900/20'
-                      : 'bg-red-100 dark:bg-red-900/20'
-                  }`}>
-                    {activity.is_positive ? (
-                      <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3 md:h-4 md:w-4 text-red-600 dark:text-red-400" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs md:text-sm font-medium truncate">{activity.name}</p>
-                    <p className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400 capitalize">
-                      {activity.module} • {new Date(activity.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className={`text-right flex-shrink-0 ml-2 ${
-                  activity.is_positive
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  <p className="text-xs md:text-sm font-semibold">
-                    {activity.is_positive ? '+' : '-'}
-                    <CurrencyDisplay
-                      amount={parseFloat(activity.amount)}
-                      currency={activity.currency}
-                      displayCurrency={preferences?.display_currency || preferences?.currency}
-                      showSymbol={true}
-                      showCode={false}
-                      showConversionTooltip={true}
-                    />
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
       )}
 
       {/* Analytics Section */}
@@ -972,23 +578,7 @@ export default function DashboardPage() {
         {/* Charts Grid */}
         {hasVisibleCharts() && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {/* 1. Income vs Expenses Chart - Hidden temporarily */}
-          {/* <IncomeVsExpensesChart
-            data={incomeVsExpensesData?.data || []}
-            isLoading={isLoadingIncomeVsExpenses}
-            chartType="area"
-            currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          /> */}
-
-          {/* 2. Monthly Spending Chart - Hidden temporarily */}
-          {/* <MonthlySpendingChart
-            data={monthlySpendingData?.data || []}
-            isLoading={isLoadingMonthlySpending}
-            showAverage={true}
-            currency={preferences?.display_currency || preferences?.currency || 'USD'}
-          /> */}
-
-          {/* 3. Subscriptions by Category Chart */}
+          {/* 1. Subscriptions by Category Chart */}
           {isWidgetVisible('subscriptions-by-category') && (
             <SubscriptionsByCategoryChart
               data={subscriptionsByCategoryData?.data || []}
@@ -998,7 +588,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 4. Installments by Category Chart */}
+          {/* 2. Installments by Category Chart */}
           {isWidgetVisible('installments-by-category') && (
             <InstallmentsByCategoryChart
               data={installmentsByCategoryData?.data || []}
@@ -1008,7 +598,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 5. Expenses by Category Chart */}
+          {/* 3. Expenses by Category Chart */}
           {isWidgetVisible('expenses-by-category') && (
             <ExpensesByCategoryChart
               data={expensesByCategoryData?.data || []}
@@ -1018,7 +608,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 6. Budgets by Category Chart */}
+          {/* 4. Budgets by Category Chart */}
           {isWidgetVisible('budgets-by-category') && (
             <BudgetsByCategoryChart
               data={budgetsByCategoryData?.data || []}
@@ -1028,7 +618,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 7. Income Allocation Chart */}
+          {/* 5. Income Allocation Chart */}
           {isWidgetVisible('income-allocation') && (
             <IncomeBreakdownChart
               data={incomeBreakdownData?.data || []}
@@ -1038,7 +628,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 8. Net Worth Trend Chart */}
+          {/* 6. Net Worth Trend Chart */}
           {isWidgetVisible('net-worth-trend') && (
             <NetWorthTrendChart
               data={netWorthTrendData?.data || []}
@@ -1055,6 +645,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Action Dialogs */}
+      <SavingsAccountForm
+        isOpen={isAccountFormOpen}
+        onClose={() => setIsAccountFormOpen(false)}
+        accountId={null}
+      />
       <IncomeSourceForm
         isOpen={isIncomeFormOpen}
         onClose={() => setIsIncomeFormOpen(false)}
@@ -1065,10 +660,6 @@ export default function DashboardPage() {
         onClose={() => setIsExpenseFormOpen(false)}
         expenseId={null}
       />
-      <BudgetForm
-        open={isBudgetFormOpen}
-        onClose={() => setIsBudgetFormOpen(false)}
-      />
       <SubscriptionForm
         isOpen={isSubscriptionFormOpen}
         onClose={() => setIsSubscriptionFormOpen(false)}
@@ -1078,11 +669,6 @@ export default function DashboardPage() {
         isOpen={isInstallmentFormOpen}
         onClose={() => setIsInstallmentFormOpen(false)}
         installmentId={null}
-      />
-      <GoalForm
-        isOpen={isGoalFormOpen}
-        onClose={() => setIsGoalFormOpen(false)}
-        goalId={null}
       />
       </div>
     </TooltipProvider>

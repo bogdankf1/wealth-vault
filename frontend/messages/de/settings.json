@@ -291,14 +291,14 @@
     "title": "Dashboard-Layouts",
     "description": "Passen Sie Ihr Dashboard an, indem Sie verschiedene Layouts erstellen und verwalten",
     "wealthTierRequired": "Benutzerdefinierte Layouts erfordern Wealth-Stufe",
-    "initializePresets": "Vorlagen initialisieren",
+    "initializePresets": "Standard-Layouts hinzufügen",
     "createLayout": "Layout erstellen",
     "upgradeToCreate": "Upgrade zum Erstellen",
     "active": "Aktiv",
-    "preset": "Vorlage",
+    "preset": "Standard",
     "widgetsVisible": "Widgets sichtbar",
     "of": "von",
-    "noLayoutsFound": "Keine Layouts gefunden. Erstellen Sie Ihr erstes Layout oder initialisieren Sie Vorlagen.",
+    "noLayoutsFound": "Keine Layouts gefunden. Erstellen Sie Ihr erstes Layout oder fügen Sie Standard-Layouts hinzu.",
     "upgradeToWealth": "Auf Wealth upgraden",
     "customLayoutsInfo": "Benutzerdefinierte Layouts sind für Abonnenten der Wealth-Stufe verfügbar.",
     "viewPricing": "Preise anzeigen",
@@ -413,8 +413,8 @@
         "description": "Dashboard-Layout wurde erfolgreich gelöscht."
       },
       "presetsInitialized": {
-        "title": "Vorlagen initialisiert",
-        "description": "Standard-Layout-Vorlagen wurden erstellt."
+        "title": "Layouts hinzugefügt",
+        "description": "Standard-Layouts wurden erfolgreich hinzugefügt."
       },
       "layoutCreated": {
         "title": "Layout erstellt",

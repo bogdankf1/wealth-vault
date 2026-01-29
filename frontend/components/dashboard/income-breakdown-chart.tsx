@@ -250,38 +250,6 @@ export function IncomeBreakdownChart({
         </div>
       </div>
 
-      {/* Summary insights */}
-      <div className="mt-3 pt-3 md:mt-6 md:pt-6 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-3">
-          {t('summary')}
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-          {data.map((item) => (
-            <div
-              key={item.category}
-              className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
-            >
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor: CATEGORY_COLORS[item.category] || '#64748b',
-                  }}
-                />
-              </div>
-              <p className="text-xs font-medium mb-1 truncate">
-                {formatCategory(item.category)}
-              </p>
-              <p className="text-sm font-bold">
-                {formatCurrency(item.amount)}
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                {item.percentage.toFixed(1)}%
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
       </Card>
     </TooltipProvider>
   );

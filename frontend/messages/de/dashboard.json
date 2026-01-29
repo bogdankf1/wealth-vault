@@ -10,17 +10,17 @@
   "quickActions": {
     "title": "Schnellaktionen",
     "description": "Neue Finanzeinträge schnell hinzufügen",
+    "addAccount": {
+      "label": "Konto",
+      "description": "Bankkonto hinzufügen"
+    },
     "addIncome": {
-      "label": "Einkommen hinzufügen",
+      "label": "Einkommen",
       "description": "Einkommensquelle erfassen"
     },
     "addExpense": {
-      "label": "Ausgabe hinzufügen",
+      "label": "Ausgabe",
       "description": "Ausgabe verfolgen"
-    },
-    "addBudget": {
-      "label": "Budget hinzufügen",
-      "description": "Ausgabenlimit festlegen"
     },
     "subscription": {
       "label": "Abonnement",
@@ -29,10 +29,6 @@
     "installment": {
       "label": "Ratenzahlung",
       "description": "Zahlungsplan"
-    },
-    "createGoal": {
-      "label": "Ziel erstellen",
-      "description": "Ziel festlegen"
     }
   },
   "insightsAlerts": {

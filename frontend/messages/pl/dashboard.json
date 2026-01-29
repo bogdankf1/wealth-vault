@@ -10,17 +10,17 @@
   "quickActions": {
     "title": "Szybkie akcje",
     "description": "Szybko dodawaj nowe wpisy finansowe",
+    "addAccount": {
+      "label": "Konto",
+      "description": "Dodaj konto bankowe"
+    },
     "addIncome": {
-      "label": "Dodaj dochód",
+      "label": "Dochód",
       "description": "Zapisz źródło dochodu"
     },
     "addExpense": {
-      "label": "Dodaj wydatek",
+      "label": "Wydatek",
       "description": "Śledź wydatek"
-    },
-    "addBudget": {
-      "label": "Dodaj budżet",
-      "description": "Ustaw limit wydatków"
     },
     "subscription": {
       "label": "Subskrypcja",
@@ -29,10 +29,6 @@
     "installment": {
       "label": "Rata",
       "description": "Plan płatności"
-    },
-    "createGoal": {
-      "label": "Utwórz cel",
-      "description": "Ustaw docelową kwotę"
     }
   },
   "insightsAlerts": {

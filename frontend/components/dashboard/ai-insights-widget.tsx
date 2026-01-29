@@ -32,49 +32,37 @@ export function AIInsightsWidget() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <CardTitle>{t('title')}</CardTitle>
-            </div>
-            <Badge variant="secondary">{t('badge')}</Badge>
+      <Card className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">{t('title')}</span>
           </div>
-          <CardDescription>{t('description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-full animate-pulse rounded bg-muted" />
-              <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
-            </div>
+          <Badge variant="secondary" className="text-xs">{t('badge')}</Badge>
+        </div>
+        <div className="space-y-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-10 animate-pulse rounded bg-muted" />
           ))}
-        </CardContent>
+        </div>
       </Card>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <CardTitle>{t('title')}</CardTitle>
-            </div>
-            <Badge variant="secondary">{t('badge')}</Badge>
+      <Card className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">{t('title')}</span>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {t('error')}
-            </AlertDescription>
-          </Alert>
-        </CardContent>
+          <Badge variant="secondary" className="text-xs">{t('badge')}</Badge>
+        </div>
+        <Alert variant="destructive" className="py-2">
+          <AlertTriangle className="h-3 w-3" />
+          <AlertDescription className="text-xs">{t('error')}</AlertDescription>
+        </Alert>
       </Card>
     );
   }
@@ -87,115 +75,68 @@ export function AIInsightsWidget() {
 
   return (
     <TooltipProvider>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <CardTitle>{t('title')}</CardTitle>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="font-semibold mb-1">{t('tooltip.heading')}</p>
-                  <p className="text-sm">{t('tooltip.description')}</p>
-                  <p className="text-sm mt-2">• {t('tooltip.spendingPatterns')}</p>
-                  <p className="text-sm">• {t('tooltip.savingsOpportunities')}</p>
-                  <p className="text-sm">• {t('tooltip.budgetOptimization')}</p>
-                  <p className="text-sm">• {t('tooltip.financialHealth')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{t('badge')}</Badge>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleRefresh}
-                disabled={isLoading}
-                title={t('refreshTitle')}
-              >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+      <Card className="p-3 md:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">{t('title')}</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3 w-3 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p className="font-semibold mb-1">{t('tooltip.heading')}</p>
+                <p className="text-sm">{t('tooltip.description')}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <CardDescription>{t('description')}</CardDescription>
-        </CardHeader>
-      <CardContent>
+          <div className="flex items-center gap-1">
+            <Badge variant="secondary" className="text-xs">{t('badge')}</Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              title={t('refreshTitle')}
+            >
+              <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+        </div>
         {!hasInsights ? (
-          <div className="text-center py-4 md:py-8">
-            <Sparkles className="mx-auto h-8 w-8 md:h-12 md:w-12 text-muted-foreground mb-2 md:mb-4" />
-            <p className="text-xs md:text-sm text-muted-foreground mb-2">{t('emptyState.title')}</p>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              {t('emptyState.description')}
-            </p>
+          <div className="text-center py-4">
+            <Sparkles className="mx-auto h-6 w-6 text-muted-foreground mb-2 opacity-50" />
+            <p className="text-xs text-muted-foreground">{t('emptyState.title')}</p>
           </div>
         ) : (
-          <div className="space-y-3 md:space-y-4">
-            {/* Spending Insights */}
+          <div className="space-y-2">
+            {/* Spending Insights - Show first one only */}
             {insights.spending.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-blue-500" />
-                  <h4 className="font-semibold text-sm">{t('sections.spendingPatterns')}</h4>
-                </div>
-                {insights.spending.map((insight, index) => (
-                  <div
-                    key={index}
-                    className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950 p-3"
-                  >
-                    <p className="text-sm text-blue-900 dark:text-blue-100">{insight}</p>
-                  </div>
-                ))}
+              <div className="flex items-start gap-2 p-2 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/50">
+                <TrendingUp className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-blue-900 dark:text-blue-100 line-clamp-2">{insights.spending[0]}</p>
               </div>
             )}
 
-            {/* Savings Insights */}
+            {/* Savings Insights - Show first one only */}
             {insights.savings.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <PiggyBank className="h-4 w-4 text-green-500" />
-                  <h4 className="font-semibold text-sm">{t('sections.savingsOpportunities')}</h4>
-                </div>
-                {insights.savings.map((insight, index) => (
-                  <div
-                    key={index}
-                    className="rounded-lg border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-3"
-                  >
-                    <p className="text-sm text-green-900 dark:text-green-100">{insight}</p>
-                  </div>
-                ))}
+              <div className="flex items-start gap-2 p-2 rounded-md border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/50">
+                <PiggyBank className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-green-900 dark:text-green-100 line-clamp-2">{insights.savings[0]}</p>
               </div>
             )}
 
-            {/* Anomalies */}
+            {/* Anomalies - Show first one only */}
             {insights.anomalies.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  <h4 className="font-semibold text-sm">{t('sections.spendingAlerts')}</h4>
-                </div>
-                {insights.anomalies.map((insight, index) => (
-                  <div
-                    key={index}
-                    className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950 p-3"
-                  >
-                    <p className="text-sm text-amber-900 dark:text-amber-100">{insight}</p>
-                  </div>
-                ))}
+              <div className="flex items-start gap-2 p-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/50">
+                <AlertTriangle className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-amber-900 dark:text-amber-100 line-clamp-2">{insights.anomalies[0]}</p>
               </div>
             )}
-
-            <div className="pt-2 border-t">
-              <p className="text-xs text-muted-foreground text-center">
-                {t('cacheNotice')}
-              </p>
-            </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </Card>
     </TooltipProvider>
   );
 }

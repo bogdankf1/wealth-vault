@@ -74,7 +74,7 @@ export default function PortfolioAnalysisPage() {
   return (
     <div className="space-y-3 lg:space-y-6">
       {/* Performance Overview Card */}
-      <Card className={`${isPositiveReturn ? 'border-green-200 bg-green-50/50' : 'border-red-200 bg-red-50/50'}`}>
+      <Card className={`${isPositiveReturn ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30' : 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/30'}`}>
         <CardHeader className="pb-3">
           <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             {isPositiveReturn ? (
@@ -141,7 +141,7 @@ export default function PortfolioAnalysisPage() {
       {(stats.best_performer || stats.worst_performer) && (
         <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
           {stats.best_performer && (
-            <Card className="border-green-200 bg-green-50/30">
+            <Card className="border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Award className="h-4 w-4 text-green-600" />
@@ -172,7 +172,7 @@ export default function PortfolioAnalysisPage() {
           )}
 
           {stats.worst_performer && (
-            <Card className="border-red-200 bg-red-50/30">
+            <Card className="border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-950/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -206,7 +206,7 @@ export default function PortfolioAnalysisPage() {
 
       {/* Winners vs Losers Grid */}
       <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
-        <Card className="border-green-200 bg-green-50/20">
+        <Card className="border-green-200 dark:border-green-800 bg-green-50/20 dark:bg-green-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -228,7 +228,7 @@ export default function PortfolioAnalysisPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-red-200 bg-red-50/20">
+        <Card className="border-red-200 dark:border-red-800 bg-red-50/20 dark:bg-red-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-red-600" />

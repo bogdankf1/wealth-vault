@@ -291,14 +291,14 @@
     "title": "Dispositions du tableau de bord",
     "description": "Personnalisez votre tableau de bord en créant et gérant différentes dispositions",
     "wealthTierRequired": "Les dispositions personnalisées nécessitent le niveau Wealth",
-    "initializePresets": "Initialiser les préréglages",
+    "initializePresets": "Ajouter dispositions par défaut",
     "createLayout": "Créer une disposition",
     "upgradeToCreate": "Mettre à niveau pour créer",
     "active": "Actif",
-    "preset": "Préréglage",
+    "preset": "Par défaut",
     "widgetsVisible": "widgets visibles",
     "of": "sur",
-    "noLayoutsFound": "Aucune disposition trouvée. Créez votre première disposition ou initialisez les préréglages.",
+    "noLayoutsFound": "Aucune disposition trouvée. Créez votre première disposition ou ajoutez des dispositions par défaut.",
     "upgradeToWealth": "Passer à Wealth",
     "customLayoutsInfo": "Les dispositions personnalisées sont disponibles pour les abonnés du niveau Wealth.",
     "viewPricing": "Voir les tarifs",
@@ -413,8 +413,8 @@
         "description": "La disposition du tableau de bord a été supprimée avec succès."
       },
       "presetsInitialized": {
-        "title": "Préréglages initialisés",
-        "description": "Les préréglages de disposition par défaut ont été créés."
+        "title": "Dispositions ajoutées",
+        "description": "Les dispositions par défaut ont été ajoutées avec succès."
       },
       "layoutCreated": {
         "title": "Disposition créée",

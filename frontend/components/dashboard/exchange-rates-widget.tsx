@@ -72,13 +72,11 @@ function ExchangeRateItem({ from, to, label, refetchKey }: ExchangeRateItemProps
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center justify-between py-2 hover:bg-muted/50 px-2 -mx-2 rounded transition-colors cursor-help">
-            <span className="text-sm font-medium text-muted-foreground">{label}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold tabular-nums">
-                {rate.toFixed(4)}
-              </span>
-            </div>
+          <div className="flex items-center justify-between py-1 hover:bg-muted/50 px-1.5 -mx-1.5 rounded transition-colors cursor-help">
+            <span className="text-xs font-medium text-muted-foreground">{label}</span>
+            <span className="text-xs font-semibold tabular-nums">
+              {rate.toFixed(4)}
+            </span>
           </div>
         </TooltipTrigger>
         <TooltipContent>
@@ -182,15 +180,15 @@ export function ExchangeRatesWidget() {
   }
 
   return (
-    <Card className="p-3 md:p-6">
-      <div className="mb-3 md:mb-6">
-        <div className="flex items-center justify-between mb-1">
+    <Card className="p-3 md:p-4">
+      <div className="mb-2 md:mb-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm md:text-lg font-semibold">{t('title')}</h3>
+            <h3 className="text-sm md:text-base font-semibold">{t('title')}</h3>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                  <Info className="h-3.5 w-3.5 text-gray-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
@@ -199,43 +197,38 @@ export function ExchangeRatesWidget() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            {lastRefreshed && (
+              <span className="text-[10px] text-muted-foreground">
+                {t('refreshed', { time: lastRefreshed.toLocaleTimeString() })}
+              </span>
+            )}
           </div>
           <Button
             variant="ghost"
             size="icon"
+            className="h-7 w-7"
             onClick={handleRefresh}
             disabled={isRefreshing}
             title={t('refreshTitle')}
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
-        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-          {t('description')}
-          {lastRefreshed && (
-            <span className="ml-2 text-xs text-muted-foreground">
-              {t('refreshed', { time: lastRefreshed.toLocaleTimeString() })}
-            </span>
-          )}
-        </p>
       </div>
 
       {/* Exchange Rate Columns - dynamically generated based on active currencies */}
-      <div className={`grid grid-cols-1 gap-3 md:gap-6 ${
+      <div className={`grid grid-cols-1 gap-2 md:gap-4 ${
         currencyColumns.length >= 3 ? 'md:grid-cols-3' : currencyColumns.length === 2 ? 'md:grid-cols-2' : ''
       }`}>
         {currencyColumns.map((column) => (
-          <div key={column.base} className="space-y-3">
+          <div key={column.base} className="space-y-1">
             {/* Column Header */}
-            <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
-              <div>
-                <h4 className="text-sm font-semibold">{column.baseName}</h4>
-                <p className="text-xs text-muted-foreground">{t('equalsLabel', { currency: column.base })}</p>
-              </div>
+            <div className="pb-1 border-b border-gray-200 dark:border-gray-700">
+              <h4 className="text-xs font-semibold">{column.base}</h4>
             </div>
 
             {/* Rates for this currency */}
-            <div className="space-y-1">
+            <div className="space-y-0">
               {column.pairs.map((pair) => (
                 <ExchangeRateItem
                   key={`${pair.from}-${pair.to}`}
@@ -248,17 +241,6 @@ export function ExchangeRatesWidget() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Footer */}
-      <div className="mt-3 pt-2 md:mt-6 md:pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-1">
-            <div className="h-2 w-2 rounded-full bg-green-500" />
-            <span>{t('footer.realTime')}</span>
-          </div>
-          <span>{t('footer.updateFrequency')}</span>
-        </div>
       </div>
     </Card>
   );

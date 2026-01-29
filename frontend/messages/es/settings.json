@@ -291,14 +291,14 @@
     "title": "Diseños del panel",
     "description": "Personaliza tu panel creando y administrando diferentes diseños",
     "wealthTierRequired": "Los diseños personalizados requieren el nivel Wealth",
-    "initializePresets": "Inicializar preestablecidos",
+    "initializePresets": "Agregar diseños predeterminados",
     "createLayout": "Crear diseño",
     "upgradeToCreate": "Actualizar para crear",
     "active": "Activo",
-    "preset": "Preestablecido",
+    "preset": "Predeterminado",
     "widgetsVisible": "widgets visibles",
     "of": "de",
-    "noLayoutsFound": "No se encontraron diseños. Crea tu primer diseño o inicializa los preestablecidos.",
+    "noLayoutsFound": "No se encontraron diseños. Crea tu primer diseño o agrega diseños predeterminados.",
     "upgradeToWealth": "Actualizar a Wealth",
     "customLayoutsInfo": "Los diseños personalizados están disponibles para suscriptores del nivel Wealth.",
     "viewPricing": "Ver precios",
@@ -413,8 +413,8 @@
         "description": "El diseño del panel se ha eliminado correctamente."
       },
       "presetsInitialized": {
-        "title": "Preestablecidos inicializados",
-        "description": "Se han creado los diseños preestablecidos predeterminados."
+        "title": "Layouts agregados",
+        "description": "Los diseños predeterminados se han agregado exitosamente."
       },
       "layoutCreated": {
         "title": "Diseño creado",

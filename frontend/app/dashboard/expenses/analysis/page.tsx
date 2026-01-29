@@ -98,7 +98,7 @@ export default function ExpensesAnalysisPage() {
       {/* Expense Frequency Breakdown - 4 Column Grid */}
       <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Daily Expense */}
-        <Card className="border-teal-200 bg-teal-50/30">
+        <Card className="border-teal-200 dark:border-teal-800 bg-teal-50/30 dark:bg-teal-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-teal-600" />
@@ -123,7 +123,7 @@ export default function ExpensesAnalysisPage() {
         </Card>
 
         {/* Weekly Expense */}
-        <Card className="border-blue-200 bg-blue-50/30">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Calendar className="h-4 w-4 text-blue-600" />
@@ -148,7 +148,7 @@ export default function ExpensesAnalysisPage() {
         </Card>
 
         {/* Monthly Expense */}
-        <Card className="border-purple-200 bg-purple-50/30">
+        <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-purple-600" />
@@ -173,7 +173,7 @@ export default function ExpensesAnalysisPage() {
         </Card>
 
         {/* Annual Expense */}
-        <Card className="border-indigo-200 bg-indigo-50/30">
+        <Card className="border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-indigo-600" />
@@ -268,7 +268,7 @@ export default function ExpensesAnalysisPage() {
       {/* Expense Sources Overview - 2 Column Grid */}
       <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Expenses */}
-        <Card className="border-gray-200 bg-gray-50/30">
+        <Card className="border-gray-200 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4 text-gray-600" />
@@ -288,7 +288,7 @@ export default function ExpensesAnalysisPage() {
         </Card>
 
         {/* Active Expenses */}
-        <Card className="border-green-200 bg-green-50/30">
+        <Card className="border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Activity className="h-4 w-4 text-green-600" />

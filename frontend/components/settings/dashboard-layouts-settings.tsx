@@ -157,12 +157,10 @@ export function DashboardLayoutsSettings() {
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              {!layoutsData?.items?.length && (
-                <Button onClick={handleInitializePresets} variant="outline" size="sm">
-                  <LayoutGrid className="mr-2 h-4 w-4" />
-                  {t('initializePresets')}
-                </Button>
-              )}
+              <Button onClick={handleInitializePresets} variant="outline" size="sm">
+                <LayoutGrid className="mr-2 h-4 w-4" />
+                {t('initializePresets')}
+              </Button>
               {isWealthTier ? (
                 <Button onClick={handleCreate} size="sm">
                   <Plus className="mr-2 h-4 w-4" />
@@ -195,11 +193,6 @@ export function DashboardLayoutsSettings() {
                           {t('active')}
                         </Badge>
                       )}
-                      {layout.is_preset && (
-                        <Badge variant="secondary" className="text-xs">
-                          {t('preset')}
-                        </Badge>
-                      )}
                     </div>
                     <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                       {layout.configuration.widgets.filter((w) => w.visible).length} {t('of')}{' '}
@@ -207,20 +200,16 @@ export function DashboardLayoutsSettings() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {!layout.is_preset && (
-                      <>
-                        <Button onClick={() => handleEdit(layout)} variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(layout.id)}
-                          variant="ghost"
-                          size="sm"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
+                    <Button onClick={() => handleEdit(layout)} variant="ghost" size="sm">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDelete(layout.id)}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     {!layout.is_active && (
                       <Button
                         onClick={() => handleActivate(layout.id)}
@@ -314,7 +303,6 @@ function LayoutEditorDialog({
     { id: 'net-worth', label: t('widgets.net-worth.label'), description: t('widgets.net-worth.description') },
     { id: 'income-vs-expenses', label: t('widgets.income-vs-expenses.label'), description: t('widgets.income-vs-expenses.description') },
     { id: 'monthly-spending', label: t('widgets.monthly-spending.label'), description: t('widgets.monthly-spending.description') },
-    { id: 'recent-transactions', label: t('widgets.recent-transactions.label'), description: t('widgets.recent-transactions.description') },
     { id: 'upcoming-bills', label: t('widgets.upcoming-bills.label'), description: t('widgets.upcoming-bills.description') },
     { id: 'budget-overview', label: t('widgets.budget-overview.label'), description: t('widgets.budget-overview.description') },
     { id: 'goals-progress', label: t('widgets.goals-progress.label'), description: t('widgets.goals-progress.description') },

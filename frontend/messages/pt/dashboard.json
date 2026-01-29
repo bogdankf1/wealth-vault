@@ -10,17 +10,17 @@
   "quickActions": {
     "title": "Ações Rápidas",
     "description": "Adicione novas entradas financeiras rapidamente",
+    "addAccount": {
+      "label": "Conta",
+      "description": "Adicionar conta bancária"
+    },
     "addIncome": {
-      "label": "Adicionar Receita",
+      "label": "Receita",
       "description": "Registrar fonte de receita"
     },
     "addExpense": {
-      "label": "Adicionar Despesa",
+      "label": "Despesa",
       "description": "Rastrear despesa"
-    },
-    "addBudget": {
-      "label": "Adicionar Orçamento",
-      "description": "Definir limite de gastos"
     },
     "subscription": {
       "label": "Assinatura",
@@ -29,10 +29,6 @@
     "installment": {
       "label": "Parcelamento",
       "description": "Plano de pagamento"
-    },
-    "createGoal": {
-      "label": "Criar Meta",
-      "description": "Definir objetivo"
     }
   },
   "insightsAlerts": {

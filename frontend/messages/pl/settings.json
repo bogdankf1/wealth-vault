@@ -291,14 +291,14 @@
     "title": "Układy dashboardu",
     "description": "Dostosuj swój dashboard, tworząc i zarządzając różnymi układami",
     "wealthTierRequired": "Niestandardowe układy wymagają poziomu Wealth",
-    "initializePresets": "Zainicjuj ustawienia wstępne",
+    "initializePresets": "Dodaj domyślne układy",
     "createLayout": "Utwórz układ",
     "upgradeToCreate": "Uaktualnij, aby tworzyć",
     "active": "Aktywny",
-    "preset": "Wstępny",
+    "preset": "Domyślny",
     "widgetsVisible": "widżetów widocznych",
     "of": "z",
-    "noLayoutsFound": "Nie znaleziono układów. Utwórz swój pierwszy układ lub zainicjuj ustawienia wstępne.",
+    "noLayoutsFound": "Nie znaleziono układów. Utwórz swój pierwszy układ lub dodaj domyślne układy.",
     "upgradeToWealth": "Uaktualnij do Wealth",
     "customLayoutsInfo": "Niestandardowe układy są dostępne dla subskrybentów poziomu Wealth.",
     "viewPricing": "Wyświetl cennik",
@@ -413,8 +413,8 @@
         "description": "Układ dashboardu został usunięty pomyślnie."
       },
       "presetsInitialized": {
-        "title": "Ustawienia wstępne zainicjowane",
-        "description": "Domyślne układy wstępne zostały utworzone."
+        "title": "Układy dodane",
+        "description": "Domyślne układy zostały pomyślnie dodane."
       },
       "layoutCreated": {
         "title": "Układ utworzony",

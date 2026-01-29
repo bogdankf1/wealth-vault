@@ -10,17 +10,17 @@
   "quickActions": {
     "title": "Швидкі Дії",
     "description": "Швидко додавайте нові фінансові записи",
+    "addAccount": {
+      "label": "Рахунок",
+      "description": "Додати банківський рахунок"
+    },
     "addIncome": {
-      "label": "Додати Дохід",
+      "label": "Дохід",
       "description": "Записати джерело доходу"
     },
     "addExpense": {
-      "label": "Додати Витрату",
+      "label": "Витрата",
       "description": "Відстежити витрату"
-    },
-    "addBudget": {
-      "label": "Додати Бюджет",
-      "description": "Встановити ліміт витрат"
     },
     "subscription": {
       "label": "Підписка",
@@ -29,10 +29,6 @@
     "installment": {
       "label": "Розстрочка",
       "description": "План платежів"
-    },
-    "createGoal": {
-      "label": "Створити Мету",
-      "description": "Встановити ціль"
     }
   },
   "insightsAlerts": {

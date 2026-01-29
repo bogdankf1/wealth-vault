@@ -96,7 +96,7 @@ export default function InstallmentsAnalysisPage() {
           {/* Installments Overview - Top Cards */}
           <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Total Installments */}
-        <Card className="border-blue-200 bg-blue-50/30">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-blue-600" />
@@ -114,7 +114,7 @@ export default function InstallmentsAnalysisPage() {
         </Card>
 
         {/* Active Installments */}
-        <Card className="border-green-200 bg-green-50/30">
+        <Card className="border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -140,7 +140,7 @@ export default function InstallmentsAnalysisPage() {
       </div>
 
       {/* Debt Overview */}
-      <Card className="border-purple-200 bg-purple-50/50">
+      <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30">
         <CardHeader className="pb-3">
           <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
@@ -203,7 +203,7 @@ export default function InstallmentsAnalysisPage() {
       {/* Payment Information */}
       <div className="grid gap-2 md:gap-3 lg:gap-4 md:grid-cols-2">
         {/* Monthly Payment */}
-        <Card className="border-indigo-200 bg-indigo-50/30">
+        <Card className="border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-indigo-600" />
@@ -229,7 +229,7 @@ export default function InstallmentsAnalysisPage() {
 
         {/* Average Interest Rate */}
         {stats.average_interest_rate !== undefined && stats.average_interest_rate > 0 && (
-          <Card className="border-orange-200 bg-orange-50/30">
+          <Card className="border-orange-200 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-950/30">
             <CardHeader className="pb-3">
               <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Percent className="h-4 w-4 text-orange-600" />
@@ -251,7 +251,7 @@ export default function InstallmentsAnalysisPage() {
 
         {/* Debt Free Date */}
         {stats.debt_free_date && (
-          <Card className="border-green-200 bg-green-50/30">
+          <Card className="border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/30">
             <CardHeader className="pb-3">
               <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-green-600" />
