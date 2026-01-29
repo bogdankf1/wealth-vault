@@ -156,17 +156,17 @@ export function NetWorthTrendChart({
         </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-6">
-        <div className="text-center p-2 md:p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10">
-          <p className="text-[10px] md:text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 mb-3 md:mb-6">
+        <div className="text-center p-2 lg:p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+          <p className="text-[10px] lg:text-xs text-blue-600 dark:text-blue-400 font-medium mb-1 truncate">
             {t('stats.current')}
           </p>
-          <p className="text-sm md:text-lg font-bold text-blue-700 dark:text-blue-300">
+          <p className="text-xs md:text-sm lg:text-lg font-bold text-blue-700 dark:text-blue-300 truncate">
             {formatCurrency(currentNetWorth)}
           </p>
         </div>
 
-        <div className={`text-center p-2 md:p-3 rounded-lg ${
+        <div className={`text-center p-2 lg:p-3 rounded-lg ${
           isPositive
             ? 'bg-green-50 dark:bg-green-900/10'
             : 'bg-red-50 dark:bg-red-900/10'
@@ -177,38 +177,38 @@ export function NetWorthTrendChart({
               : 'text-red-600 dark:text-red-400'
           }`}>
             {isPositive ? (
-              <TrendingUp className="h-3 w-3" />
+              <TrendingUp className="h-3 w-3 flex-shrink-0" />
             ) : (
-              <TrendingDown className="h-3 w-3" />
+              <TrendingDown className="h-3 w-3 flex-shrink-0" />
             )}
-            <p className="text-[10px] md:text-xs font-medium">{t('stats.periodChange')}</p>
+            <p className="text-[10px] lg:text-xs font-medium truncate">{t('stats.periodChange')}</p>
           </div>
-          <p className={`text-sm md:text-lg font-bold ${
+          <p className={`text-xs md:text-sm lg:text-lg font-bold truncate ${
             isPositive
               ? 'text-green-700 dark:text-green-300'
               : 'text-red-700 dark:text-red-300'
           }`}>
             {isPositive ? '+' : ''}{formatCurrency(change)}
           </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
+          <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400">
             {isPositive ? '+' : ''}{changePercentage.toFixed(1)}%
           </p>
         </div>
 
-        <div className="text-center p-2 md:p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-          <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
+        <div className="text-center p-2 lg:p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 font-medium mb-1 truncate">
             {t('stats.peak')}
           </p>
-          <p className="text-sm md:text-lg font-bold">
+          <p className="text-xs md:text-sm lg:text-lg font-bold truncate">
             {formatCurrency(highestNetWorth)}
           </p>
         </div>
 
-        <div className="text-center p-2 md:p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-          <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">
+        <div className="text-center p-2 lg:p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <p className="text-[10px] lg:text-xs text-gray-600 dark:text-gray-400 font-medium mb-1 truncate">
             {t('stats.starting')}
           </p>
-          <p className="text-sm md:text-lg font-bold">
+          <p className="text-xs md:text-sm lg:text-lg font-bold truncate">
             {formatCurrency(startingNetWorth)}
           </p>
         </div>

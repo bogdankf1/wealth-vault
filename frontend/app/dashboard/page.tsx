@@ -244,226 +244,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Actions & Alerts - Side by Side */}
-        {(isWidgetVisible('quick-actions') || (isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0)) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {/* Quick Actions - Compact */}
-            {isWidgetVisible('quick-actions') && (
-              <Card className="p-3 md:p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold">{tQuickActions('title')}</h2>
-                </div>
-                <div className="grid grid-cols-5 gap-2">
-                  <Button
-                    onClick={() => setIsAccountFormOpen(true)}
-                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
-                    variant="outline"
-                  >
-                    <Landmark className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs font-medium">{tQuickActions('addAccount.label')}</span>
-                  </Button>
-                  <Button
-                    onClick={() => setIsIncomeFormOpen(true)}
-                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
-                    variant="outline"
-                  >
-                    <Plus className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <span className="text-xs font-medium">{tQuickActions('addIncome.label')}</span>
-                  </Button>
-                  <Button
-                    onClick={() => setIsExpenseFormOpen(true)}
-                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
-                    variant="outline"
-                  >
-                    <Minus className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    <span className="text-xs font-medium">{tQuickActions('addExpense.label')}</span>
-                  </Button>
-                  <Button
-                    onClick={() => setIsSubscriptionFormOpen(true)}
-                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
-                    variant="outline"
-                  >
-                    <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs font-medium">{tQuickActions('subscription.label')}</span>
-                  </Button>
-                  <Button
-                    onClick={() => setIsInstallmentFormOpen(true)}
-                    className="h-auto py-2.5 px-1 flex flex-col items-center gap-1.5"
-                    variant="outline"
-                  >
-                    <CreditCard className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                    <span className="text-xs font-medium">{tQuickActions('installment.label')}</span>
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {/* Financial Alerts - Compact */}
-            {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (
-              <Card className="p-3 md:p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-sm font-semibold">{t('insightsAlerts.title')}</h2>
-                  <span className="text-xs text-muted-foreground">{data.alerts.length}</span>
-                </div>
-                <div className="space-y-2">
-                  {data.alerts.slice(0, 3).map((alert) => {
-                    const style = getAlertStyle(alert.type);
-                    return (
-                      <div
-                        key={alert.id}
-                        className={`p-2 rounded-md border ${style.bg} flex items-center gap-2`}
-                      >
-                        <div className="flex-shrink-0 [&>svg]:h-3 [&>svg]:w-3">
-                          {style.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-xs font-medium ${style.textColor} line-clamp-1`}>
-                            {alert.title}
-                          </p>
-                        </div>
-                        {alert.actionable && alert.action_url && (
-                          <Link href={alert.action_url}>
-                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                          </Link>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {/* AI Insights & Budget Overview - Side by Side */}
-        {(isWidgetVisible('ai-insights') || isWidgetVisible('budget-overview')) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {/* AI Insights Widget - Only for Wealth tier */}
-            {isWidgetVisible('ai-insights') && currentUser?.tier?.name === 'wealth' && <AIInsightsWidget />}
-
-            {/* Budget Overview Widget */}
-            {isWidgetVisible('budget-overview') && <BudgetOverviewWidget />}
-          </div>
-        )}
-
-        {/* Goals Overview & Net Worth - Side by Side */}
-        {(isWidgetVisible('goals-progress') || isWidgetVisible('net-worth')) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {/* Goals Overview Widget */}
-            {isWidgetVisible('goals-progress') && <GoalsOverviewWidget />}
-
-            {/* Net Worth Card */}
-            {isWidgetVisible('net-worth') && (
-              <Card className="p-4 md:p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Wallet className="h-4 w-4 text-gray-500" />
-                    <h2 className="text-sm md:text-base font-semibold">{tNetWorth('title')}</h2>
-                  </div>
-                  <p className="text-xl md:text-2xl font-bold">
-                    <CurrencyDisplay
-                      amount={parseFloat(net_worth.net_worth)}
-                      currency={net_worth.currency}
-                      showSymbol={true}
-                      showCode={false}
-                    />
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t">
-                  <div>
-                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 mb-1">
-                      <ArrowUpRight className="h-3 w-3" />
-                      <span className="text-xs font-medium">{tNetWorth('assets.label')}</span>
-                    </div>
-                    <p className="text-base md:text-lg font-semibold">
-                      <CurrencyDisplay
-                        amount={parseFloat(net_worth.total_assets)}
-                        currency={net_worth.currency}
-                        showSymbol={true}
-                        showCode={false}
-                      />
-                    </p>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
-                      <div className="flex justify-between">
-                        <span>{tNetWorth('assets.portfolio')}:</span>
-                        <CurrencyDisplay
-                          amount={parseFloat(net_worth.portfolio_value)}
-                          currency={net_worth.currency}
-                          showSymbol={true}
-                          showCode={false}
-                        />
-                      </div>
-                      <div className="flex justify-between">
-                        <span>{tNetWorth('assets.accounts')}:</span>
-                        <CurrencyDisplay
-                          amount={parseFloat(net_worth.savings_balance)}
-                          currency={net_worth.currency}
-                          showSymbol={true}
-                          showCode={false}
-                        />
-                      </div>
-                      {parseFloat(net_worth.debts_receivable) > 0 && (
-                        <div className="flex justify-between">
-                          <span>{tNetWorth('assets.debtsReceivable')}:</span>
-                          <CurrencyDisplay
-                            amount={parseFloat(net_worth.debts_receivable)}
-                            currency={net_worth.currency}
-                            showSymbol={true}
-                            showCode={false}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1 text-red-600 dark:text-red-400 mb-1">
-                      <ArrowDownRight className="h-3 w-3" />
-                      <span className="text-xs font-medium">{tNetWorth('liabilities.label')}</span>
-                    </div>
-                    <p className="text-base md:text-lg font-semibold">
-                      <CurrencyDisplay
-                        amount={parseFloat(net_worth.total_liabilities)}
-                        currency={net_worth.currency}
-                        showSymbol={true}
-                        showCode={false}
-                      />
-                    </p>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      <div className="flex justify-between">
-                        <span>{tNetWorth('liabilities.debt')}:</span>
-                        <CurrencyDisplay
-                          amount={parseFloat(net_worth.total_debt)}
-                          currency={net_worth.currency}
-                          showSymbol={true}
-                          showCode={false}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {/* Planned Payments Widgets */}
-        {(isWidgetVisible('planned-subscriptions') || isWidgetVisible('planned-expenses') || isWidgetVisible('planned-installments')) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-            {isWidgetVisible('planned-subscriptions') && (
-              <PlannedSubscriptionsWidget selectedMonth={selectedMonth} />
-            )}
-            {isWidgetVisible('planned-expenses') && (
-              <PlannedExpensesWidget selectedMonth={selectedMonth} />
-            )}
-            {isWidgetVisible('planned-installments') && (
-              <PlannedInstallmentsWidget selectedMonth={selectedMonth} />
-            )}
-          </div>
-        )}
-
-      {/* Cash Flow Stats - Compact */}
+      {/* Cash Flow Stats - Compact (moved to top for quick overview) */}
       {(isWidgetVisible('income-vs-expenses') || isWidgetVisible('upcoming-bills') || isWidgetVisible('taxes') || isWidgetVisible('debts-owed') || isWidgetVisible('monthly-spending')) && (
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-2">
         {isWidgetVisible('income-vs-expenses') && (
         <Card className="p-2.5 xl:p-3">
           <div className="flex items-center gap-2 mb-1">
@@ -564,6 +347,222 @@ export default function DashboardPage() {
       </div>
       )}
 
+        {/* Quick Actions & Alerts - Side by Side */}
+        {(isWidgetVisible('quick-actions') || (isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0)) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Quick Actions - Compact */}
+            {isWidgetVisible('quick-actions') && (
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold">{tQuickActions('title')}</h2>
+                </div>
+                <div className="grid grid-cols-3 lg:grid-cols-5 gap-1.5 md:gap-2">
+                  <Button
+                    onClick={() => setIsAccountFormOpen(true)}
+                    className="h-auto py-2 md:py-2.5 px-1 md:px-2 flex flex-col items-center gap-1 md:gap-1.5"
+                    variant="outline"
+                  >
+                    <Landmark className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                    <span className="text-[10px] lg:text-xs font-medium text-center">{tQuickActions('addAccount.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsIncomeFormOpen(true)}
+                    className="h-auto py-2 md:py-2.5 px-1 md:px-2 flex flex-col items-center gap-1 md:gap-1.5"
+                    variant="outline"
+                  >
+                    <Plus className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <span className="text-[10px] lg:text-xs font-medium text-center">{tQuickActions('addIncome.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsExpenseFormOpen(true)}
+                    className="h-auto py-2 md:py-2.5 px-1 md:px-2 flex flex-col items-center gap-1 md:gap-1.5"
+                    variant="outline"
+                  >
+                    <Minus className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                    <span className="text-[10px] lg:text-xs font-medium text-center">{tQuickActions('addExpense.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsSubscriptionFormOpen(true)}
+                    className="h-auto py-2 md:py-2.5 px-1 md:px-2 flex flex-col items-center gap-1 md:gap-1.5"
+                    variant="outline"
+                  >
+                    <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                    <span className="text-[10px] lg:text-xs font-medium text-center">{tQuickActions('subscription.label')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsInstallmentFormOpen(true)}
+                    className="h-auto py-2 md:py-2.5 px-1 md:px-2 flex flex-col items-center gap-1 md:gap-1.5"
+                    variant="outline"
+                  >
+                    <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                    <span className="text-[10px] lg:text-xs font-medium text-center">{tQuickActions('installment.label')}</span>
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {/* Financial Alerts - Compact */}
+            {isWidgetVisible('ai-insights') && data.alerts && data.alerts.length > 0 && (
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-sm font-semibold">{t('insightsAlerts.title')}</h2>
+                  <span className="text-xs text-muted-foreground">{data.alerts.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {data.alerts.slice(0, 3).map((alert) => {
+                    const style = getAlertStyle(alert.type);
+                    return (
+                      <div
+                        key={alert.id}
+                        className={`p-2 rounded-md border ${style.bg} flex items-center gap-2`}
+                      >
+                        <div className="flex-shrink-0 [&>svg]:h-3 [&>svg]:w-3">
+                          {style.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-medium ${style.textColor} line-clamp-1`}>
+                            {alert.title}
+                          </p>
+                        </div>
+                        {alert.actionable && alert.action_url && (
+                          <Link href={alert.action_url}>
+                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                          </Link>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* AI Insights & Budget Overview - Dynamic filling grid */}
+        {(isWidgetVisible('ai-insights') || isWidgetVisible('budget-overview')) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 [&>*:only-child]:md:col-span-1">
+            {/* AI Insights Widget - Only for Wealth tier */}
+            {isWidgetVisible('ai-insights') && currentUser?.tier?.name === 'wealth' && <AIInsightsWidget />}
+
+            {/* Budget Overview Widget */}
+            {isWidgetVisible('budget-overview') && <BudgetOverviewWidget />}
+          </div>
+        )}
+
+        {/* Goals Overview & Net Worth - Dynamic filling grid */}
+        {(isWidgetVisible('goals-progress') || isWidgetVisible('net-worth')) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 [&>*:only-child]:md:col-span-1">
+            {/* Goals Overview Widget */}
+            {isWidgetVisible('goals-progress') && <GoalsOverviewWidget />}
+
+            {/* Net Worth Card */}
+            {isWidgetVisible('net-worth') && (
+              <Card className="p-4 md:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-gray-500" />
+                    <h2 className="text-sm md:text-base font-semibold">{tNetWorth('title')}</h2>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold">
+                    <CurrencyDisplay
+                      amount={parseFloat(net_worth.net_worth)}
+                      currency={net_worth.currency}
+                      showSymbol={true}
+                      showCode={false}
+                    />
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-3 border-t">
+                  <div>
+                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 mb-1">
+                      <ArrowUpRight className="h-3 w-3" />
+                      <span className="text-xs font-medium">{tNetWorth('assets.label')}</span>
+                    </div>
+                    <p className="text-base md:text-lg font-semibold">
+                      <CurrencyDisplay
+                        amount={parseFloat(net_worth.total_assets)}
+                        currency={net_worth.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
+                    </p>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                      <div className="flex justify-between">
+                        <span>{tNetWorth('assets.portfolio')}:</span>
+                        <CurrencyDisplay
+                          amount={parseFloat(net_worth.portfolio_value)}
+                          currency={net_worth.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>{tNetWorth('assets.accounts')}:</span>
+                        <CurrencyDisplay
+                          amount={parseFloat(net_worth.savings_balance)}
+                          currency={net_worth.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </div>
+                      {parseFloat(net_worth.debts_receivable) > 0 && (
+                        <div className="flex justify-between">
+                          <span>{tNetWorth('assets.debtsReceivable')}:</span>
+                          <CurrencyDisplay
+                            amount={parseFloat(net_worth.debts_receivable)}
+                            currency={net_worth.currency}
+                            showSymbol={true}
+                            showCode={false}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1 text-red-600 dark:text-red-400 mb-1">
+                      <ArrowDownRight className="h-3 w-3" />
+                      <span className="text-xs font-medium">{tNetWorth('liabilities.label')}</span>
+                    </div>
+                    <p className="text-base md:text-lg font-semibold">
+                      <CurrencyDisplay
+                        amount={parseFloat(net_worth.total_liabilities)}
+                        currency={net_worth.currency}
+                        showSymbol={true}
+                        showCode={false}
+                      />
+                    </p>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="flex justify-between">
+                        <span>{tNetWorth('liabilities.debt')}:</span>
+                        <CurrencyDisplay
+                          amount={parseFloat(net_worth.total_debt)}
+                          currency={net_worth.currency}
+                          showSymbol={true}
+                          showCode={false}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Planned Payments Widgets - Dynamic filling */}
+        {(isWidgetVisible('planned-subscriptions') || isWidgetVisible('planned-expenses') || isWidgetVisible('planned-installments')) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+            {isWidgetVisible('planned-subscriptions') && (
+              <PlannedSubscriptionsWidget selectedMonth={selectedMonth} />
+            )}
+            {isWidgetVisible('planned-expenses') && (
+              <PlannedExpensesWidget selectedMonth={selectedMonth} />
+            )}
+            {isWidgetVisible('planned-installments') && (
+              <PlannedInstallmentsWidget selectedMonth={selectedMonth} />
+            )}
+          </div>
+        )}
       {/* Analytics Section */}
       <div className="space-y-4 md:space-y-6">
         {hasVisibleCharts() && (
