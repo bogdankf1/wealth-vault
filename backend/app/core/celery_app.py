@@ -151,6 +151,11 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=0, minute=42),
         "options": {"queue": "high_priority"},
     },
+    "check-trial-expirations": {
+        "task": "tasks.billing.check_trial_expirations",
+        "schedule": crontab(hour=0, minute=44),
+        "options": {"queue": "high_priority"},
+    },
     "check-budget-alerts": {
         "task": "tasks.budget.check_alerts",
         "schedule": crontab(hour=0, minute=45),

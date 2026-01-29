@@ -17,7 +17,10 @@ from app.schemas.admin import (
     EmailTemplateDetail,
     EmailTemplateCreate,
     EmailTemplateUpdate,
+    TrialSettings,
+    TrialSettingsUpdate,
 )
+from app.services.trial_service import TrialService
 
 
 router = APIRouter(prefix="/config", tags=["admin-config"])
@@ -149,3 +152,32 @@ async def update_email_template(
         is_active=update_data.is_active,
     )
     return EmailTemplateDetail.model_validate(template)
+
+
+# Trial settings endpoints
+@router.get("/trial-settings", response_model=TrialSettings)
+@admin_only
+async def get_trial_settings(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get trial settings. Admin only."""
+    settings = await TrialService.get_trial_settings(db)
+    return TrialSettings(**settings)
+
+
+@router.patch("/trial-settings", response_model=TrialSettings)
+@admin_only
+async def update_trial_settings(
+    settings_update: TrialSettingsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update trial settings. Admin only."""
+    updated = await TrialService.update_trial_settings(
+        db=db,
+        enabled=settings_update.enabled,
+        duration_days=settings_update.duration_days,
+        trial_tier=settings_update.trial_tier,
+    )
+    return TrialSettings(**updated)

@@ -40,7 +40,8 @@ from app.schemas.admin import TierDetail
 from app.services.stripe_service import StripeService
 from app.services.paypal_service import PayPalService
 from app.services.paddle_service import PaddleService
-from app.models.billing import PaymentProvider
+from app.services.trial_service import TrialService
+from app.models.billing import PaymentProvider, SubscriptionStatus
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
@@ -240,6 +241,24 @@ async def get_subscription_status(
     if subscription:
         payment_provider = subscription.payment_provider if subscription.payment_provider else "stripe"
 
+    # Check trial status
+    is_trial = False
+    trial_ends_at = None
+    trial_days_remaining = None
+
+    if subscription and subscription.status == SubscriptionStatus.TRIALING:
+        is_trial = True
+        trial_ends_at = subscription.trial_end
+        if subscription.trial_end:
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
+            # Handle both timezone-aware and naive trial_end
+            trial_end = subscription.trial_end
+            if trial_end.tzinfo is None:
+                trial_end = trial_end.replace(tzinfo=timezone.utc)
+            days_remaining = (trial_end - now).days
+            trial_days_remaining = max(0, days_remaining)
+
     response = SubscriptionStatusResponse(
         has_subscription=subscription is not None,
         subscription=SubscriptionResponse.model_validate(subscription) if subscription else None,
@@ -249,6 +268,9 @@ async def get_subscription_status(
         can_upgrade=can_upgrade,
         can_downgrade=can_downgrade,
         available_tiers=available_tiers,
+        is_trial=is_trial,
+        trial_ends_at=trial_ends_at,
+        trial_days_remaining=trial_days_remaining,
     )
 
     return response

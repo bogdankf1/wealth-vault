@@ -14,6 +14,7 @@ from app.core.permissions import get_current_user
 from app.models.user import User
 from app.models.tier import Tier
 from app.schemas.user import GoogleAuthRequest, TokenResponse, UserResponse, OAuthUserInfo
+from app.services.trial_service import TrialService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -104,8 +105,20 @@ async def google_oauth(
 
     # Create new user if doesn't exist
     if not user:
-        # Get starter tier
-        starter_tier = await get_starter_tier(db)
+        # Check if trial is enabled
+        trial_settings = await TrialService.get_trial_settings(db)
+
+        if trial_settings.get("enabled"):
+            # Get trial tier (wealth or growth)
+            trial_tier = await TrialService.get_trial_tier(db)
+            if trial_tier:
+                assigned_tier = trial_tier
+            else:
+                # Fallback to starter if trial tier not found
+                assigned_tier = await get_starter_tier(db)
+        else:
+            # Original flow - assign starter tier
+            assigned_tier = await get_starter_tier(db)
 
         # Create new user
         user = User(
@@ -113,11 +126,19 @@ async def google_oauth(
             name=user_info.name,
             avatar_url=user_info.picture,
             google_id=user_info.sub,
-            tier_id=starter_tier.id
+            tier_id=assigned_tier.id
         )
         db.add(user)
         await db.commit()
         await db.refresh(user)
+
+        # Create trial subscription if trial is enabled
+        if trial_settings.get("enabled"):
+            await TrialService.create_trial_subscription(
+                db=db,
+                user_id=user.id,
+                duration_days=trial_settings.get("duration_days", 30)
+            )
 
     # Load tier relationship
     await db.refresh(user, ["tier"])

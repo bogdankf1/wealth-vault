@@ -280,6 +280,78 @@ def cleanup_tier_data(self, user_id: str, from_tier: str, to_tier: str) -> Dict[
     return asyncio.get_event_loop().run_until_complete(_cleanup())
 
 
+@celery_app.task(base=BaseTask, bind=True, name="tasks.billing.check_trial_expirations")
+def check_trial_expirations(self) -> Dict[str, Any]:
+    """
+    Daily task to check and process trial subscription expirations.
+
+    For each user subscription where:
+    - status == TRIALING
+    - trial_end < now
+
+    Actions:
+    1. Downgrade user tier to 'starter'
+    2. Update subscription status to canceled
+    3. Log the downgrade for audit
+
+    Returns:
+        Dict with results
+    """
+    import asyncio
+
+    async def _check():
+        from app.services.trial_service import TrialService
+
+        async with get_async_db_session() as db:
+            logger.info("Checking trial expirations...")
+
+            # Get all expired trials
+            expired = await TrialService.get_expired_trials(db)
+
+            downgrades_processed = 0
+            errors = []
+
+            for trial in expired:
+                try:
+                    user_id = UUID(trial["user_id"])
+
+                    # Expire the trial and downgrade
+                    result = await TrialService.expire_trial(db=db, user_id=user_id)
+
+                    if result.get("success"):
+                        downgrades_processed += 1
+                        logger.info(
+                            f"Trial expired for user {user_id}, "
+                            f"downgraded from {result.get('from_tier')} to starter"
+                        )
+                    else:
+                        errors.append({
+                            "user_id": str(user_id),
+                            "error": result.get("error", "Unknown error")
+                        })
+
+                except Exception as e:
+                    logger.error(f"Error processing trial expiration for {trial}: {e}")
+                    errors.append({
+                        "user_id": trial.get("user_id"),
+                        "error": str(e)
+                    })
+
+            logger.info(
+                f"Trial expiration check complete. "
+                f"Checked: {len(expired)}, Downgraded: {downgrades_processed}"
+            )
+
+            return {
+                "trials_checked": len(expired),
+                "downgrades_processed": downgrades_processed,
+                "errors": errors if errors else None,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+
+    return asyncio.get_event_loop().run_until_complete(_check())
+
+
 @celery_app.task(base=BaseTask, bind=True, name="tasks.billing.sync_stripe_status")
 def sync_stripe_status(self) -> Dict[str, Any]:
     """

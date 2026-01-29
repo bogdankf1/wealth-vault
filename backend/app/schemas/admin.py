@@ -244,3 +244,18 @@ class ChurnAnalysis(BaseModel):
     churned_users: int
     churn_rate: float
     top_churn_reasons: List[dict]  # [{"reason": "too_expensive", "count": 10}]
+
+
+# Trial Settings Schemas
+class TrialSettings(BaseModel):
+    """Trial settings response."""
+    enabled: bool = Field(default=False, description="Whether trial is enabled for new users")
+    duration_days: int = Field(default=30, ge=1, le=365, description="Duration of trial in days")
+    trial_tier: str = Field(default="wealth", description="Tier to assign during trial (growth or wealth)")
+
+
+class TrialSettingsUpdate(BaseModel):
+    """Update trial settings request."""
+    enabled: Optional[bool] = Field(None, description="Whether trial is enabled for new users")
+    duration_days: Optional[int] = Field(None, ge=1, le=365, description="Duration of trial in days")
+    trial_tier: Optional[str] = Field(None, description="Tier to assign during trial (growth or wealth)")

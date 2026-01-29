@@ -189,7 +189,11 @@ class SubscriptionStatusResponse(BaseModel):
     subscription: Optional[SubscriptionResponse] = None
     tier_name: Optional[str] = None
     tier_display_name: Optional[str] = None
-    payment_provider: Optional[str] = None  # "stripe" or "paypal"
+    payment_provider: Optional[str] = None  # "stripe", "paypal", or "trial"
     can_upgrade: bool = Field(..., description="Whether user can upgrade to a higher tier")
     can_downgrade: bool = Field(..., description="Whether user can downgrade to a lower tier")
     available_tiers: List[dict] = Field(..., description="List of available tiers to upgrade/downgrade to")
+    # Trial information
+    is_trial: bool = Field(default=False, description="Whether user is on a free trial")
+    trial_ends_at: Optional[datetime] = Field(None, description="When the trial ends")
+    trial_days_remaining: Optional[int] = Field(None, description="Days remaining in trial")
