@@ -16,31 +16,37 @@ from app.modules.dashboard_layouts.schemas import (
 )
 
 
-# Default layout presets
+# Default layout presets - these are created for each new user but can be edited/deleted
 LAYOUT_PRESETS = {
-    "complete": {
-        "name": "Complete View",
+    "optimal": {
+        "name": "Optimal View",
         "configuration": {
             "widgets": [
-                {"id": "quick-actions", "visible": True, "order": 1},
-                {"id": "ai-insights", "visible": True, "order": 2},
-                {"id": "exchange-rates", "visible": True, "order": 3},
-                {"id": "net-worth", "visible": True, "order": 4},
-                {"id": "income-vs-expenses", "visible": True, "order": 5},
-                {"id": "monthly-spending", "visible": True, "order": 6},
-                {"id": "recent-transactions", "visible": True, "order": 7},
-                {"id": "upcoming-bills", "visible": True, "order": 8},
-                {"id": "budget-overview", "visible": True, "order": 9},
-                {"id": "goals-progress", "visible": True, "order": 10},
-                {"id": "portfolio-summary", "visible": True, "order": 11},
-                {"id": "subscriptions-by-category", "visible": True, "order": 12},
-                {"id": "installments-by-category", "visible": True, "order": 13},
-                {"id": "expenses-by-category", "visible": True, "order": 14},
-                {"id": "budgets-by-category", "visible": True, "order": 15},
-                {"id": "income-allocation", "visible": True, "order": 16},
-                {"id": "net-worth-trend", "visible": True, "order": 17},
-                {"id": "taxes", "visible": True, "order": 18},
-                {"id": "debts-owed", "visible": True, "order": 19},
+                # Minimal widgets (stats cards)
+                {"id": "net-worth", "visible": True, "order": 1},
+                {"id": "income-vs-expenses", "visible": True, "order": 2},  # Income & Expenses
+                {"id": "upcoming-bills", "visible": True, "order": 3},  # Subscriptions & Installments
+                {"id": "taxes", "visible": True, "order": 4},
+                {"id": "debts-owed", "visible": True, "order": 5},
+                {"id": "monthly-spending", "visible": True, "order": 6},  # Net Cash Flow
+                # Planned widgets
+                {"id": "planned-subscriptions", "visible": True, "order": 7},
+                {"id": "planned-expenses", "visible": True, "order": 8},
+                {"id": "planned-installments", "visible": True, "order": 9},
+                # Charts (Optimal adds these)
+                {"id": "subscriptions-by-category", "visible": True, "order": 10},
+                {"id": "installments-by-category", "visible": True, "order": 11},
+                {"id": "expenses-by-category", "visible": True, "order": 12},
+                {"id": "income-allocation", "visible": True, "order": 13},
+                # Hidden widgets
+                {"id": "quick-actions", "visible": False, "order": 14},
+                {"id": "ai-insights", "visible": False, "order": 15},
+                {"id": "exchange-rates", "visible": False, "order": 16},
+                {"id": "budget-overview", "visible": False, "order": 17},
+                {"id": "goals-progress", "visible": False, "order": 18},
+                {"id": "portfolio-summary", "visible": False, "order": 19},
+                {"id": "budgets-by-category", "visible": False, "order": 20},
+                {"id": "net-worth-trend", "visible": False, "order": 21},
             ]
         }
     },
@@ -48,77 +54,58 @@ LAYOUT_PRESETS = {
         "name": "Minimal View",
         "configuration": {
             "widgets": [
-                {"id": "quick-actions", "visible": True, "order": 1},
-                {"id": "ai-insights", "visible": False, "order": 2},
-                {"id": "exchange-rates", "visible": False, "order": 3},
-                {"id": "net-worth", "visible": True, "order": 4},
-                {"id": "income-vs-expenses", "visible": False, "order": 5},
-                {"id": "monthly-spending", "visible": False, "order": 6},
-                {"id": "recent-transactions", "visible": True, "order": 7},
-                {"id": "upcoming-bills", "visible": True, "order": 8},
-                {"id": "budget-overview", "visible": False, "order": 9},
-                {"id": "goals-progress", "visible": False, "order": 10},
-                {"id": "portfolio-summary", "visible": False, "order": 11},
-                {"id": "subscriptions-by-category", "visible": False, "order": 12},
-                {"id": "installments-by-category", "visible": False, "order": 13},
-                {"id": "expenses-by-category", "visible": False, "order": 14},
-                {"id": "budgets-by-category", "visible": False, "order": 15},
-                {"id": "income-allocation", "visible": False, "order": 16},
-                {"id": "net-worth-trend", "visible": False, "order": 17},
-                {"id": "taxes", "visible": False, "order": 18},
-                {"id": "debts-owed", "visible": False, "order": 19},
+                # Only stats cards, no charts
+                {"id": "net-worth", "visible": True, "order": 1},
+                {"id": "income-vs-expenses", "visible": True, "order": 2},  # Income & Expenses
+                {"id": "upcoming-bills", "visible": True, "order": 3},  # Subscriptions & Installments
+                {"id": "taxes", "visible": True, "order": 4},
+                {"id": "debts-owed", "visible": True, "order": 5},
+                {"id": "monthly-spending", "visible": True, "order": 6},  # Net Cash Flow
+                # Planned widgets
+                {"id": "planned-subscriptions", "visible": True, "order": 7},
+                {"id": "planned-expenses", "visible": True, "order": 8},
+                {"id": "planned-installments", "visible": True, "order": 9},
+                # All other widgets hidden
+                {"id": "subscriptions-by-category", "visible": False, "order": 10},
+                {"id": "installments-by-category", "visible": False, "order": 11},
+                {"id": "expenses-by-category", "visible": False, "order": 12},
+                {"id": "income-allocation", "visible": False, "order": 13},
+                {"id": "quick-actions", "visible": False, "order": 14},
+                {"id": "ai-insights", "visible": False, "order": 15},
+                {"id": "exchange-rates", "visible": False, "order": 16},
+                {"id": "budget-overview", "visible": False, "order": 17},
+                {"id": "goals-progress", "visible": False, "order": 18},
+                {"id": "portfolio-summary", "visible": False, "order": 19},
+                {"id": "budgets-by-category", "visible": False, "order": 20},
+                {"id": "net-worth-trend", "visible": False, "order": 21},
             ]
         }
     },
-    "investment": {
-        "name": "Investment Focus",
+    "complete": {
+        "name": "Complete View",
         "configuration": {
             "widgets": [
                 {"id": "quick-actions", "visible": True, "order": 1},
                 {"id": "ai-insights", "visible": True, "order": 2},
-                {"id": "exchange-rates", "visible": True, "order": 3},
-                {"id": "net-worth", "visible": True, "order": 4},
-                {"id": "income-vs-expenses", "visible": False, "order": 5},
-                {"id": "monthly-spending", "visible": False, "order": 6},
-                {"id": "recent-transactions", "visible": False, "order": 7},
-                {"id": "upcoming-bills", "visible": False, "order": 8},
-                {"id": "budget-overview", "visible": False, "order": 9},
-                {"id": "goals-progress", "visible": True, "order": 10},
-                {"id": "portfolio-summary", "visible": True, "order": 11},
-                {"id": "subscriptions-by-category", "visible": False, "order": 12},
-                {"id": "installments-by-category", "visible": False, "order": 13},
-                {"id": "expenses-by-category", "visible": False, "order": 14},
-                {"id": "budgets-by-category", "visible": False, "order": 15},
-                {"id": "income-allocation", "visible": False, "order": 16},
-                {"id": "net-worth-trend", "visible": True, "order": 17},
-                {"id": "taxes", "visible": False, "order": 18},
-                {"id": "debts-owed", "visible": False, "order": 19},
-            ]
-        }
-    },
-    "budget": {
-        "name": "Budget Tracker",
-        "configuration": {
-            "widgets": [
-                {"id": "quick-actions", "visible": True, "order": 1},
-                {"id": "ai-insights", "visible": False, "order": 2},
-                {"id": "exchange-rates", "visible": False, "order": 3},
-                {"id": "net-worth", "visible": False, "order": 4},
-                {"id": "income-vs-expenses", "visible": True, "order": 5},
-                {"id": "monthly-spending", "visible": True, "order": 6},
-                {"id": "recent-transactions", "visible": True, "order": 7},
-                {"id": "upcoming-bills", "visible": True, "order": 8},
-                {"id": "budget-overview", "visible": True, "order": 9},
-                {"id": "goals-progress", "visible": False, "order": 10},
-                {"id": "portfolio-summary", "visible": False, "order": 11},
-                {"id": "subscriptions-by-category", "visible": True, "order": 12},
-                {"id": "installments-by-category", "visible": True, "order": 13},
-                {"id": "expenses-by-category", "visible": True, "order": 14},
-                {"id": "budgets-by-category", "visible": True, "order": 15},
-                {"id": "income-allocation", "visible": True, "order": 16},
-                {"id": "net-worth-trend", "visible": False, "order": 17},
-                {"id": "taxes", "visible": False, "order": 18},
-                {"id": "debts-owed", "visible": True, "order": 19},
+                {"id": "budget-overview", "visible": True, "order": 3},
+                {"id": "planned-subscriptions", "visible": True, "order": 4},
+                {"id": "planned-expenses", "visible": True, "order": 5},
+                {"id": "planned-installments", "visible": True, "order": 6},
+                {"id": "net-worth", "visible": True, "order": 7},
+                {"id": "income-vs-expenses", "visible": True, "order": 8},
+                {"id": "upcoming-bills", "visible": True, "order": 9},
+                {"id": "taxes", "visible": True, "order": 10},
+                {"id": "debts-owed", "visible": True, "order": 11},
+                {"id": "monthly-spending", "visible": True, "order": 12},
+                {"id": "subscriptions-by-category", "visible": True, "order": 13},
+                {"id": "installments-by-category", "visible": True, "order": 14},
+                {"id": "expenses-by-category", "visible": True, "order": 15},
+                {"id": "budgets-by-category", "visible": True, "order": 16},
+                {"id": "income-allocation", "visible": True, "order": 17},
+                {"id": "net-worth-trend", "visible": True, "order": 18},
+                {"id": "exchange-rates", "visible": True, "order": 19},
+                {"id": "portfolio-summary", "visible": True, "order": 20},
+                {"id": "goals-progress", "visible": False, "order": 21},
             ]
         }
     },
@@ -127,15 +114,15 @@ LAYOUT_PRESETS = {
 
 async def create_default_layout_for_user(db: AsyncSession, user_id: uuid.UUID) -> DashboardLayout:
     """
-    Create a default "Complete View" layout for a new user.
+    Create a default "Optimal View" layout for a new user.
     """
-    preset = LAYOUT_PRESETS["complete"]
+    preset = LAYOUT_PRESETS["optimal"]
     layout = DashboardLayout(
         id=uuid.uuid4(),
         user_id=user_id,
         name=preset["name"],
         is_active=True,
-        is_preset=True,
+        is_preset=False,  # Not a preset - users can edit/delete
         configuration=preset["configuration"],
     )
     db.add(layout)
@@ -226,13 +213,6 @@ async def update_layout(
     """
     layout = await get_layout(db, layout_id, user_id)
 
-    # Don't allow updating preset layouts
-    if layout.is_preset:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot modify preset layouts"
-        )
-
     if layout_data.name is not None:
         layout.name = layout_data.name
 
@@ -249,13 +229,6 @@ async def delete_layout(db: AsyncSession, layout_id: uuid.UUID, user_id: uuid.UU
     Delete a layout.
     """
     layout = await get_layout(db, layout_id, user_id)
-
-    # Don't allow deleting preset layouts
-    if layout.is_preset:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot delete preset layouts"
-        )
 
     # Don't allow deleting the active layout if it's the only one
     if layout.is_active:
@@ -297,12 +270,13 @@ async def activate_layout(db: AsyncSession, layout_id: uuid.UUID, user_id: uuid.
 
 async def create_preset_layouts_for_user(db: AsyncSession, user_id: uuid.UUID) -> List[DashboardLayout]:
     """
-    Create all preset layouts for a user.
-    Only creates presets that don't already exist (checks by name).
+    Create all default layouts for a user.
+    Only creates layouts that don't already exist (checks by name).
+    These layouts are fully editable and deletable by the user.
     """
-    # Check which presets already exist
+    # Check which layouts already exist
     existing_layouts = await list_layouts(db, user_id)
-    existing_preset_names = {layout.name for layout in existing_layouts if layout.is_preset}
+    existing_layout_names = {layout.name for layout in existing_layouts}
 
     layouts = []
     has_active = any(layout.is_active for layout in existing_layouts)
@@ -310,16 +284,16 @@ async def create_preset_layouts_for_user(db: AsyncSession, user_id: uuid.UUID) -
     for preset_key, preset_data in LAYOUT_PRESETS.items():
         preset_name = preset_data["name"]
 
-        # Skip if this preset already exists
-        if preset_name in existing_preset_names:
+        # Skip if this layout already exists
+        if preset_name in existing_layout_names:
             continue
 
         layout = DashboardLayout(
             id=uuid.uuid4(),
             user_id=user_id,
             name=preset_name,
-            is_active=(preset_key == "complete" and not has_active),  # Only activate if no active layout exists
-            is_preset=True,
+            is_active=(preset_key == "optimal" and not has_active),  # Optimal is default
+            is_preset=False,  # Not a preset - users can edit/delete
             configuration=preset_data["configuration"],
         )
         db.add(layout)
