@@ -182,9 +182,14 @@ export default function AccountsImportPage() {
 
       // Convert to editable accounts and mark duplicates
       const editableAccounts: EditableAccount[] = result.accounts.map((acc, index) => {
-        const duplicate = isDuplicateAccount(acc);
+        // Prepend institution/bank name to account name for clarity (e.g. "Monobank Гривня")
+        const prefixedName = acc.institution && !acc.name.startsWith(acc.institution)
+          ? `${acc.institution} ${acc.name}`
+          : acc.name;
+        const modifiedAcc = { ...acc, name: prefixedName };
+        const duplicate = isDuplicateAccount(modifiedAcc);
         return {
-          ...acc,
+          ...modifiedAcc,
           id: `acc-${index}-${Date.now()}`,
           selected: !duplicate, // Don't select duplicates by default
           isDuplicate: duplicate,

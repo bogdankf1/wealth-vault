@@ -647,8 +647,8 @@ export default function BudgetsPage() {
             icon={Wallet}
             title={tOverview('noBudgets')}
             description={tOverview('noBudgetsDescription')}
-            actionLabel={tOverview('addBudget')}
-            onAction={handleAddBudget}
+            actionLabel={tOverview('aiPresets.button')}
+            onAction={handleOpenAiPresets}
           />
         ) : !filteredBudgets || filteredBudgets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">

@@ -75,9 +75,9 @@ export function AccountSelect({
           <SelectItem value="none">{noAccountLabel}</SelectItem>
           {accounts?.map((account) => (
             <SelectItem key={account.id} value={account.id}>
-              <div className="flex justify-between items-center w-full gap-2">
-                <span>{account.name}</span>
-                <span className="text-muted-foreground text-xs">
+              <div className="flex items-center w-full gap-2 overflow-hidden">
+                <span className="truncate">{account.name}</span>
+                <span className="text-muted-foreground text-xs whitespace-nowrap flex-shrink-0">
                   {formatCurrency(
                     typeof account.current_balance === 'string'
                       ? parseFloat(account.current_balance)

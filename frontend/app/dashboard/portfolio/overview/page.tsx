@@ -484,16 +484,16 @@ export default function PortfolioPage() {
             icon={Target}
             title={tOverview('noAssets')}
             description={tOverview('noAssetsDescription')}
-            actionLabel={tOverview('addAsset')}
-            onAction={handleAddAsset}
+            actionLabel={tOverview('importAssets')}
+            onAction={handleImportAssets}
           />
         ) : !filteredAssets || filteredAssets.length === 0 ? (
           <EmptyState
             icon={Target}
             title={tCommon('common.noResults')}
             description={tOverview('noFilterResults')}
-            actionLabel={tOverview('addAsset')}
-            onAction={handleAddAsset}
+            actionLabel={tOverview('importAssets')}
+            onAction={handleImportAssets}
           />
         ) : viewMode === 'card' ? (
           <div className="space-y-3">

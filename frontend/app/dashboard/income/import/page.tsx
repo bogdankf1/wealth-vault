@@ -167,11 +167,17 @@ export default function IncomeImportPage() {
       // Convert to editable transactions
       // - Convert category names to keys (e.g., "Salary" -> "salary")
       // - Default to 'salary' if not detected
+      // - Auto-select matching currency account
       const editableTransactions: EditableTransaction[] = result.transactions.map((txn, index) => {
         // Convert category name to key, fallback to 'salary'
         const categoryKey = txn.category
           ? INCOME_CATEGORY_NAME_TO_KEY[txn.category] || txn.category.toLowerCase() || 'salary'
           : 'salary';
+
+        // Find an account matching the transaction's currency for auto-selection
+        const matchingAccount = accountsData?.items?.find(
+          (acc: SavingsAccount) => acc.currency === txn.currency
+        );
 
         return {
           ...txn,
@@ -179,7 +185,7 @@ export default function IncomeImportPage() {
           selected: true,
           sourceName: txn.description,
           category: categoryKey,
-          targetAccountId: undefined,
+          targetAccountId: matchingAccount?.id,
           autoDeposit: true,
         };
       });
@@ -658,7 +664,7 @@ export default function IncomeImportPage() {
                               }
                               label=""
                               placeholder={t('selectAccount')}
-                              className="w-36"
+                              className="w-60"
                             />
                           </TableCell>
                           <TableCell>

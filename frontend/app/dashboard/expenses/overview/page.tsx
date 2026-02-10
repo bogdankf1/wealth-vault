@@ -634,8 +634,8 @@ export default function ExpensesPage() {
             icon={DollarSign}
             title={tOverview('noExpenses')}
             description={tOverview('noExpensesDescription')}
-            actionLabel={tOverview('addExpense')}
-            onAction={handleAddExpense}
+            actionLabel={tOverview('importExpenses')}
+            onAction={handleImportExpenses}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
           <CalendarView
@@ -666,8 +666,8 @@ export default function ExpensesPage() {
               ? tOverview('noExpensesForMonthDescription', { month: new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) })
               : tOverview('noExpensesDescription')
             }
-            actionLabel={tOverview('addExpense')}
-            onAction={handleAddExpense}
+            actionLabel={tOverview('importExpenses')}
+            onAction={handleImportExpenses}
           />
         ) : viewMode === 'card' ? (
           <>

@@ -639,8 +639,8 @@ export default function SubscriptionsPage() {
             icon={RefreshCw}
             title={tOverview('noSubscriptions')}
             description={tOverview('noSubscriptionsDescription')}
-            actionLabel={tOverview('addSubscription')}
-            onAction={handleAddSubscription}
+            actionLabel={tOverview('importSubscriptions')}
+            onAction={handleImportSubscriptions}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
           <CalendarView
@@ -671,8 +671,8 @@ export default function SubscriptionsPage() {
               ? `${tOverview('noSubscriptionsDescription')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`
               : tOverview('noSubscriptionsDescription')
             }
-            actionLabel={tOverview('addSubscription')}
-            onAction={handleAddSubscription}
+            actionLabel={tOverview('importSubscriptions')}
+            onAction={handleImportSubscriptions}
           />
         ) : viewMode === 'card' ? (
           <>

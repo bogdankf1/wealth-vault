@@ -492,16 +492,16 @@ export default function SavingsPage() {
           icon={Wallet}
           title={tOverview('noAccounts')}
           description={tOverview('noAccountsDescription')}
-          actionLabel={tOverview('addAccount')}
-          onAction={() => setIsFormOpen(true)}
+          actionLabel={tOverview('importAccounts')}
+          onAction={handleImportAccounts}
         />
       ) : !hasFilteredResults ? (
         <EmptyState
           icon={Wallet}
           title={tCommon('common.noResults')}
           description={tOverview('noFilterResults')}
-          actionLabel={tOverview('addAccount')}
-          onAction={() => setIsFormOpen(true)}
+          actionLabel={tOverview('importAccounts')}
+          onAction={handleImportAccounts}
         />
       ) : viewMode === 'card' ? (
         <>

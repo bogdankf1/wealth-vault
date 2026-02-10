@@ -574,8 +574,8 @@ export default function IncomePage() {
             icon={TrendingUp}
             title={tOverview('noIncome')}
             description={tOverview('noIncomeDescription')}
-            actionLabel={tOverview('addIncome')}
-            onAction={handleAddSource}
+            actionLabel={tOverview('importIncome')}
+            onAction={handleImportIncome}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
           <CalendarView
@@ -608,8 +608,8 @@ export default function IncomePage() {
                 })
               : tOverview('noIncomeDescription')
             }
-            actionLabel={tOverview('addIncome')}
-            onAction={handleAddSource}
+            actionLabel={tOverview('importIncome')}
+            onAction={handleImportIncome}
           />
         ) : viewMode === 'card' ? (
           <>

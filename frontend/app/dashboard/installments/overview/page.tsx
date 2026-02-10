@@ -646,8 +646,8 @@ export default function InstallmentsPage() {
             icon={CreditCard}
             title={tOverview('noInstallments')}
             description={tOverview('noInstallmentsDescription')}
-            actionLabel={tOverview('addInstallment')}
-            onAction={handleAddInstallment}
+            actionLabel={tOverview('importInstallments')}
+            onAction={handleImportInstallments}
           />
         ) : viewMode === 'calendar' && selectedMonth ? (
           <CalendarView
@@ -678,8 +678,8 @@ export default function InstallmentsPage() {
               ? `${tOverview('noInstallmentsForMonthDescription')} ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`
               : tOverview('noFilterResultsDescription')
             }
-            actionLabel={tOverview('addInstallment')}
-            onAction={handleAddInstallment}
+            actionLabel={tOverview('importInstallments')}
+            onAction={handleImportInstallments}
           />
         ) : viewMode === 'card' ? (
           <div className="space-y-3">
