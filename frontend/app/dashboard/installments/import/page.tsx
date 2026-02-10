@@ -157,12 +157,32 @@ export default function InstallmentImportPage() {
     try {
       const result = await parseScreenshots({ file_ids: uploadedFileIds }).unwrap();
 
-      // Convert to editable installments
-      const editableInstallments: EditableInstallment[] = result.installments.map((inst, index) => ({
-        ...inst,
-        id: `inst-${index}-${Date.now()}`,
-        selected: inst.status === 'active', // Only select active by default
-      }));
+      // Convert to editable installments with corrected dates
+      const today = new Date();
+      const currentYear = today.getFullYear();
+
+      const editableInstallments: EditableInstallment[] = result.installments.map((inst, index) => {
+        // Fix start_date: use current year so backend doesn't think all payments are complete
+        let correctedStartDate = inst.start_date;
+        if (correctedStartDate) {
+          const parsed = new Date(correctedStartDate);
+          if (!isNaN(parsed.getTime())) {
+            parsed.setFullYear(currentYear);
+            if (parsed > today) {
+              // If corrected date is in the future, use previous year
+              parsed.setFullYear(currentYear - 1);
+            }
+            correctedStartDate = parsed.toISOString().split('T')[0];
+          }
+        }
+
+        return {
+          ...inst,
+          start_date: correctedStartDate,
+          id: `inst-${index}-${Date.now()}`,
+          selected: inst.status === 'active',
+        };
+      });
 
       setInstallments(editableInstallments);
       setCurrentStep('review');

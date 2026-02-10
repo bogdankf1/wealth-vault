@@ -616,16 +616,16 @@ export default function TaxesPage() {
           icon={FileText}
           title={tOverview('noTaxes')}
           description={tOverview('noTaxesDescription')}
-          actionLabel={tOverview('addTax')}
-          onAction={() => setIsFormOpen(true)}
+          actionLabel={tOverview('aiSearch.button')}
+          onAction={handleOpenAiSearch}
         />
       ) : filteredTaxes.length === 0 ? (
         <EmptyState
           icon={FileText}
           title={tOverview('noFilterResults')}
           description={tOverview('noTaxesDescription')}
-          actionLabel={tOverview('addTax')}
-          onAction={() => setIsFormOpen(true)}
+          actionLabel={tOverview('aiSearch.button')}
+          onAction={handleOpenAiSearch}
         />
       ) : viewMode === 'card' ? (
         <div className="space-y-3">

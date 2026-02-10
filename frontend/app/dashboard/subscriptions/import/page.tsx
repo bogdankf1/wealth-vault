@@ -165,12 +165,31 @@ export default function SubscriptionImportPage() {
     try {
       const result = await parseScreenshots({ file_ids: uploadedFileIds }).unwrap();
 
-      // Convert to editable subscriptions
-      const editableSubs: EditableSubscription[] = result.subscriptions.map((sub, index) => ({
-        ...sub,
-        id: `sub-${index}-${Date.now()}`,
-        selected: sub.status === 'active', // Only select active by default
-      }));
+      // Convert to editable subscriptions with corrected dates
+      const today = new Date();
+      const currentYear = today.getFullYear();
+
+      const editableSubs: EditableSubscription[] = result.subscriptions.map((sub, index) => {
+        // Fix next_payment_date: use current year, and if still in the past, bump to next year
+        let correctedDate = sub.next_payment_date;
+        if (correctedDate) {
+          const parsed = new Date(correctedDate);
+          if (!isNaN(parsed.getTime())) {
+            parsed.setFullYear(currentYear);
+            if (parsed < today) {
+              parsed.setFullYear(currentYear + 1);
+            }
+            correctedDate = parsed.toISOString().split('T')[0];
+          }
+        }
+
+        return {
+          ...sub,
+          next_payment_date: correctedDate,
+          id: `sub-${index}-${Date.now()}`,
+          selected: sub.status === 'active',
+        };
+      });
 
       setSubscriptions(editableSubs);
       setCurrentStep('review');

@@ -498,7 +498,7 @@ export default function GoalsPage() {
               <span>·</span>
               <span><span className="font-semibold text-foreground"><CurrencyDisplay amount={stats.total_target_amount} currency={stats.currency} decimals={0} /></span> target</span>
               <span>·</span>
-              <span><span className="font-semibold text-foreground">{stats.average_progress}%</span> avg</span>
+              <span><span className="font-semibold text-foreground">{Number(stats.average_progress).toFixed(2)}%</span> avg</span>
             </div>
           )}
         </div>
