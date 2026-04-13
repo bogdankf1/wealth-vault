@@ -315,14 +315,11 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription className="text-xs lg:text-sm">
-            {isEditing ? tForm('editDescription') : tForm('addDescription')}
-          </DialogDescription>
         </DialogHeader>
 
         {isLoadingSource ? (
@@ -330,54 +327,73 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('name')} *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-xs">{tForm('name')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('namePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs text-destructive">{errors.name.message}</p>
               )}
             </div>
 
             {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
-                rows={3}
+                rows={2}
                 {...register('description')}
               />
-              {errors.description && (
-                <p className="text-xs lg:text-sm text-destructive">
-                  {errors.description.message}
-                </p>
-              )}
             </div>
 
-            {/* Category */}
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
-              <Select
-                value={watch('category') || ''}
-                onValueChange={(value) => setValue('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={tForm('categoryPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {INCOME_CATEGORY_KEYS.map((key) => (
-                    <SelectItem key={key} value={key}>
-                      {tCategories(key)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Category + Frequency row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="category" className="text-xs">{tForm('category')}</Label>
+                <Select
+                  value={watch('category') || ''}
+                  onValueChange={(value) => setValue('category', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tForm('categoryPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INCOME_CATEGORY_KEYS.map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {tCategories(key)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Frequency */}
+              <div className="space-y-1">
+                <Label htmlFor="frequency" className="text-xs">{tForm('frequency')} *</Label>
+                <Select
+                  value={watch('frequency')}
+                  onValueChange={(value) =>
+                    setValue('frequency', value as IncomeFrequency)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FREQUENCY_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {tFrequency(option.value)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Amount and Currency */}
@@ -406,65 +422,43 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               error={errors.amount?.message}
             />
 
-            {/* Frequency */}
-            <div className="space-y-2">
-              <Label htmlFor="frequency" className="text-xs lg:text-sm">{tForm('frequency')} *</Label>
-              <Select
-                value={watch('frequency')}
-                onValueChange={(value) =>
-                  setValue('frequency', value as IncomeFrequency)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FREQUENCY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {tFrequency(option.value)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Date Fields - Conditional based on frequency */}
             {watch('frequency') === 'one_time' ? (
-              <div className="space-y-2">
-                <Label htmlFor="date" className="text-xs lg:text-sm">{tForm('date')}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="date" className="text-xs">{tForm('date')}</Label>
                 <Input
                   id="date"
                   type="date"
                   {...register('date')}
                   className="cursor-pointer"
-                                  />
+                />
               </div>
             ) : (
-              <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="start_date" className="text-xs lg:text-sm">{tForm('startDate')}</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="start_date" className="text-xs">{tForm('startDate')}</Label>
                   <Input
                     id="start_date"
                     type="date"
                     {...register('start_date')}
                     className="cursor-pointer"
-                                      />
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end_date" className="text-xs lg:text-sm">{tForm('endDate')}</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="end_date" className="text-xs">{tForm('endDate')}</Label>
                   <Input
                     id="end_date"
                     type="date"
                     {...register('end_date')}
                     className="cursor-pointer"
-                                      />
+                  />
                 </div>
               </div>
             )}
 
             {/* Active Status */}
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('isActive')}</Label>
+              <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -473,8 +467,8 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             </div>
 
             {/* Account Integration Section */}
-            <div className="border-t pt-3 lg:pt-4 mt-3 lg:mt-4 space-y-3 lg:space-y-4">
-              <h4 className="text-xs lg:text-sm font-medium text-muted-foreground">
+            <div className="border-t pt-3 mt-1 space-y-3">
+              <h4 className="text-xs font-medium text-muted-foreground">
                 {tForm('accountIntegration')}
               </h4>
 
@@ -493,7 +487,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
               {watch('target_account_id') && watch('target_account_id') !== 'none' && (
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="auto_deposit" className="text-xs lg:text-sm">{tForm('autoDeposit')}</Label>
+                    <Label htmlFor="auto_deposit" className="text-xs">{tForm('autoDeposit')}</Label>
                     <p className="text-xs text-muted-foreground">
                       {tForm('autoDepositHelp')}
                     </p>
@@ -527,10 +521,10 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
+              <Button type="submit" disabled={isLoading} className="text-xs">
                 {isLoading ? tForm('saving') : tActions('save')}
               </Button>
             </DialogFooter>
