@@ -358,7 +358,7 @@ export default function PortfolioPage() {
               </PopoverTrigger>
               <PopoverContent className="w-64 p-0" align="end">
               {/* FILTER section */}
-              <div className="p-2.5 space-y-2">
+              <div className="p-2 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
                 <Select
                   value={selectedCategory ?? '__all__'}
@@ -377,7 +377,7 @@ export default function PortfolioPage() {
               </div>
               <Separator />
               {/* SORT section */}
-              <div className="p-2.5 space-y-2">
+              <div className="p-2 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
                 <div className="flex items-center gap-2">
                   <Select
@@ -404,9 +404,9 @@ export default function PortfolioPage() {
               </div>
               <Separator />
               {/* VIEW section */}
-              <div className="p-2.5 space-y-2">
+              <div className="p-2 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
-                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
+                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '32px' }}>
                   <Button
                     variant={viewMode === 'card' ? 'secondary' : 'ghost'}
                     size="sm"
@@ -429,7 +429,7 @@ export default function PortfolioPage() {
               {viewMode === 'list' && (
                 <>
                   <Separator />
-                  <div className="p-2.5 space-y-2">
+                  <div className="p-2 space-y-1.5">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
                       <Button
@@ -441,7 +441,7 @@ export default function PortfolioPage() {
                         {tCommon('common.showAll')}
                       </Button>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {columnConfig.map((col) => (
                         <label key={col.id} className="flex items-center gap-2 text-sm cursor-pointer">
                           <Checkbox
