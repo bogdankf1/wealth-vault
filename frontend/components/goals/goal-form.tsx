@@ -428,38 +428,33 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription className="text-xs lg:text-sm">
-            {isEditing
-              ? tForm('editDescription')
-              : tForm('addDescription')}
-          </DialogDescription>
-        </DialogHeader>
+</DialogHeader>
 
         {isLoadingGoal ? (
           <LoadingForm count={6} />
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('goalName')} *</Label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-xs">{tForm('goalName')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('goalNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs text-destructive">{errors.name.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -467,14 +462,14 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-xs lg:text-sm text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="category" className="text-xs">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
@@ -518,9 +513,9 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
             {/* Only show Current Amount and Monthly Contribution when auto-track is disabled */}
             {!watch('auto_track_progress') && (
-              <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="current_amount" className="text-xs lg:text-sm">{tForm('currentAmountSaved')}</Label>
+              <div className="grid gap-3 grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="current_amount" className="text-xs">{tForm('currentAmountSaved')}</Label>
                   <Input
                     id="current_amount"
                     type="text"
@@ -537,12 +532,12 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                     }}
                   />
                   {errors.current_amount && (
-                    <p className="text-xs lg:text-sm text-destructive">{errors.current_amount.message}</p>
+                    <p className="text-xs text-destructive">{errors.current_amount.message}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="monthly_contribution" className="text-xs lg:text-sm">{tForm('monthlyContribution')}</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="monthly_contribution" className="text-xs">{tForm('monthlyContribution')}</Label>
                   <Input
                     id="monthly_contribution"
                     type="text"
@@ -559,7 +554,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                     }}
                   />
                   {errors.monthly_contribution && (
-                    <p className="text-xs lg:text-sm text-destructive">
+                    <p className="text-xs text-destructive">
                       {errors.monthly_contribution.message}
                     </p>
                   )}
@@ -567,9 +562,9 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
               </div>
             )}
 
-            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="start_date" className="text-xs lg:text-sm">{tForm('startDate')} *</Label>
+            <div className="grid gap-3 grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="start_date" className="text-xs">{tForm('startDate')} *</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -577,14 +572,14 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   className="cursor-pointer"
                                   />
                 {errors.start_date && (
-                  <p className="text-xs lg:text-sm text-destructive">
+                  <p className="text-xs text-destructive">
                     {errors.start_date.message}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="target_date" className="text-xs lg:text-sm">{tForm('targetDate')}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="target_date" className="text-xs">{tForm('targetDate')}</Label>
                 <Input
                   id="target_date"
                   type="date"
@@ -598,7 +593,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('activeGoal')}</Label>
+              <Label htmlFor="is_active" className="text-xs">{tForm('activeGoal')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -609,7 +604,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto_track_progress" className="text-xs lg:text-sm">{tForm('autoTrackProgress')}</Label>
+                  <Label htmlFor="auto_track_progress" className="text-xs">{tForm('autoTrackProgress')}</Label>
                   <p className="text-xs text-muted-foreground">
                     {tForm('autoTrackProgressDescription')}
                   </p>
@@ -623,7 +618,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
               {/* Savings Account Selection - shows when auto-track is enabled */}
               {watch('auto_track_progress') && (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {/* For new goals: simple dropdown using AccountSelect */}
                   {!isEditing && (
                     <AccountSelect
@@ -640,7 +635,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
                   {isEditing && (
                     <>
                     <Label>{tForm('savingsAccount')}</Label>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {/* Show currently linked accounts */}
                       {linkedAccounts.length > 0 && (
                         <div className="space-y-1">
@@ -699,7 +694,7 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
 
                           {/* Show allocation options when account is selected */}
                           {addingAccountId && (
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                               <Select
                                 value={addingAllocationType}
                                 onValueChange={(v) => setAddingAllocationType(v as 'full' | 'percentage' | 'fixed')}
@@ -759,10 +754,10 @@ export function GoalForm({ goalId, isOpen, onClose }: GoalFormProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
+              <Button type="submit" disabled={isLoading} className="text-xs">
                 {isLoading
                   ? tForm('saving')
                   : isEditing

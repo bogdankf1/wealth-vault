@@ -293,36 +293,33 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription className="text-xs lg:text-sm">
-            {isEditing ? tForm('editDescription') : tForm('addDescription')}
-          </DialogDescription>
-        </DialogHeader>
+</DialogHeader>
 
         {isLoadingDebt ? (
           <LoadingForm count={6} />
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="debtor_name" className="text-xs lg:text-sm">{tForm('debtorName')} *</Label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="debtor_name" className="text-xs">{tForm('debtorName')} *</Label>
               <Input
                 id="debtor_name"
                 placeholder={tForm('debtorNamePlaceholder')}
                 {...register('debtor_name')}
               />
               {errors.debtor_name && (
-                <p className="text-xs lg:text-sm text-destructive">{errors.debtor_name.message}</p>
+                <p className="text-xs text-destructive">{errors.debtor_name.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -330,7 +327,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-xs lg:text-sm text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.description.message}
                 </p>
               )}
@@ -357,8 +354,8 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
               error={errors.amount?.message}
             />
 
-            <div className="space-y-2">
-              <Label htmlFor="amount_paid" className="text-xs lg:text-sm">{tForm('amountPaid')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="amount_paid" className="text-xs">{tForm('amountPaid')}</Label>
               <Input
                 id="amount_paid"
                 type="number"
@@ -379,15 +376,15 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                 }}
               />
               {errors.amount_paid && (
-                <p className="text-xs lg:text-sm text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.amount_paid.message}
                 </p>
               )}
             </div>
 
-            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="due_date" className="text-xs lg:text-sm">{tForm('dueDate')}</Label>
+            <div className="grid gap-3 grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="due_date" className="text-xs">{tForm('dueDate')}</Label>
                 <Input
                   id="due_date"
                   type="date"
@@ -395,8 +392,8 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                   className="cursor-pointer"
                                   />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="paid_date" className="text-xs lg:text-sm">{tForm('paidDate')}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="paid_date" className="text-xs">{tForm('paidDate')}</Label>
                 <Input
                   id="paid_date"
                   type="date"
@@ -407,10 +404,10 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
             </div>
 
             {/* Payment Integration Section */}
-            <div className="space-y-3 lg:space-y-4 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+            <div className="space-y-3 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
               <h3 className="text-sm lg:text-base font-semibold text-foreground">{tForm('paymentIntegration')}</h3>
 
-              <div className="space-y-3 lg:space-y-4">
+              <div className="space-y-3">
                 <AccountSelect
                   value={watch('deposit_account_id')}
                   onChange={(accountId) => setValue('deposit_account_id', accountId)}
@@ -423,7 +420,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="auto_deposit" className="text-xs lg:text-sm">{tForm('autoDeposit')}</Label>
+                    <Label htmlFor="auto_deposit" className="text-xs">{tForm('autoDeposit')}</Label>
                     <p className="text-xs text-muted-foreground">{tForm('autoDepositHelp')}</p>
                   </div>
                   <Switch
@@ -436,7 +433,7 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="sync_historical" className="text-xs lg:text-sm">{tForm('syncHistorical')}</Label>
+                    <Label htmlFor="sync_historical" className="text-xs">{tForm('syncHistorical')}</Label>
                     <p className="text-xs text-muted-foreground">{tForm('syncHistoricalHelp')}</p>
                   </div>
                   <Switch
@@ -447,9 +444,9 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                   />
                 </div>
 
-                <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="interest_rate" className="text-xs lg:text-sm">{tForm('interestRate')}</Label>
+                <div className="grid gap-3 grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="interest_rate" className="text-xs">{tForm('interestRate')}</Label>
                     <Input
                       id="interest_rate"
                       type="number"
@@ -460,8 +457,8 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                       {...register('interest_rate', { valueAsNumber: true })}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reminder_days_before" className="text-xs lg:text-sm">{tForm('reminderDaysBefore')}</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="reminder_days_before" className="text-xs">{tForm('reminderDaysBefore')}</Label>
                     <Input
                       id="reminder_days_before"
                       type="number"
@@ -473,9 +470,9 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                   </div>
                 </div>
 
-                <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="payment_frequency" className="text-xs lg:text-sm">{tForm('paymentFrequency')}</Label>
+                <div className="grid gap-3 grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="payment_frequency" className="text-xs">{tForm('paymentFrequency')}</Label>
                     <Select
                       value={watch('payment_frequency') || ''}
                       onValueChange={(value) => setValue('payment_frequency', value)}
@@ -492,8 +489,8 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="next_payment_date" className="text-xs lg:text-sm">{tForm('nextPaymentDate')}</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="next_payment_date" className="text-xs">{tForm('nextPaymentDate')}</Label>
                     <Input
                       id="next_payment_date"
                       type="date"
@@ -503,8 +500,8 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="expected_payment_amount" className="text-xs lg:text-sm">{tForm('expectedPaymentAmount')}</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="expected_payment_amount" className="text-xs">{tForm('expectedPaymentAmount')}</Label>
                   <Input
                     id="expected_payment_amount"
                     type="number"
@@ -529,8 +526,8 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-xs lg:text-sm">{tForm('notes')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="notes" className="text-xs">{tForm('notes')}</Label>
               <Textarea
                 id="notes"
                 placeholder={tForm('notesPlaceholder')}
@@ -538,14 +535,14 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
                 {...register('notes')}
               />
               {errors.notes && (
-                <p className="text-xs lg:text-sm text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.notes.message}
                 </p>
               )}
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_paid" className="text-xs lg:text-sm">{tForm('markedAsPaid')}</Label>
+              <Label htmlFor="is_paid" className="text-xs">{tForm('markedAsPaid')}</Label>
               <Switch
                 id="is_paid"
                 checked={watch('is_paid')}
@@ -554,10 +551,10 @@ export function DebtForm({ debtId, isOpen, onClose }: DebtFormProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
+              <Button type="submit" disabled={isLoading} className="text-xs">
                 {isLoading
                   ? tForm('saving')
                   : isEditing

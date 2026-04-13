@@ -247,15 +247,12 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base lg:text-lg">{isEditing ? tForm('editTitle') : tForm('addTitle')}</DialogTitle>
-          <DialogDescription className="text-xs lg:text-sm">
-            {isEditing ? tForm('editDescription') : tForm('addDescription')}
-          </DialogDescription>
-        </DialogHeader>
+</DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4" autoComplete="off">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" autoComplete="off">
           {/* Account Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('name')}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="name" className="text-xs">{tForm('name')}</Label>
             <Input
               id="name"
               {...register('name')}
@@ -263,13 +260,13 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
               autoComplete="off"
             />
             {errors.name && (
-              <p className="text-xs lg:text-sm text-red-500">{errors.name.message}</p>
+              <p className="text-xs text-red-500">{errors.name.message}</p>
             )}
           </div>
 
           {/* Account Type */}
-          <div className="space-y-2">
-            <Label htmlFor="account_type" className="text-xs lg:text-sm">{tForm('accountType')}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="account_type" className="text-xs">{tForm('accountType')}</Label>
             <Select
               value={accountType}
               onValueChange={(value) => setValue('account_type', value as AccountType)}
@@ -286,13 +283,13 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
               </SelectContent>
             </Select>
             {errors.account_type && (
-              <p className="text-xs lg:text-sm text-red-500">{errors.account_type.message}</p>
+              <p className="text-xs text-red-500">{errors.account_type.message}</p>
             )}
           </div>
 
           {/* Institution */}
-          <div className="space-y-2">
-            <Label htmlFor="institution" className="text-xs lg:text-sm">{tForm('institution')}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="institution" className="text-xs">{tForm('institution')}</Label>
             <Input
               id="institution"
               {...register('institution')}
@@ -301,8 +298,8 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           </div>
 
           {/* Last 4 Digits */}
-          <div className="space-y-2">
-            <Label htmlFor="account_number_last4" className="text-xs lg:text-sm">{tForm('accountNumberLast4')}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="account_number_last4" className="text-xs">{tForm('accountNumberLast4')}</Label>
             <Input
               id="account_number_last4"
               {...register('account_number_last4')}
@@ -310,7 +307,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
               maxLength={4}
             />
             {errors.account_number_last4 && (
-              <p className="text-xs lg:text-sm text-red-500">{errors.account_number_last4.message}</p>
+              <p className="text-xs text-red-500">{errors.account_number_last4.message}</p>
             )}
           </div>
 
@@ -340,12 +337,12 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           />
 
           {/* Interest Settings Section */}
-          <div className="space-y-3 lg:space-y-4 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+          <div className="space-y-3 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
             <h3 className="text-sm lg:text-base font-semibold text-foreground">{tInterest('settings')}</h3>
 
             {/* Interest Rate */}
-            <div className="space-y-2">
-              <Label htmlFor="interest_rate_percent" className="text-xs lg:text-sm">{tInterest('rate')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="interest_rate_percent" className="text-xs">{tInterest('rate')}</Label>
               <div className="relative">
                 <Input
                   id="interest_rate_percent"
@@ -373,15 +370,15 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
               </div>
               <p className="text-xs text-muted-foreground">{tInterest('rateHelp')}</p>
               {errors.interest_rate_percent && (
-                <p className="text-xs lg:text-sm text-red-500">{errors.interest_rate_percent.message}</p>
+                <p className="text-xs text-red-500">{errors.interest_rate_percent.message}</p>
               )}
             </div>
 
             {/* Interest Frequency and Method */}
-            <div className="grid grid-cols-2 gap-3 lg:gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {/* Interest Frequency */}
-              <div className="space-y-2">
-                <Label htmlFor="interest_frequency" className="text-xs lg:text-sm">{tInterest('frequency')}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="interest_frequency" className="text-xs">{tInterest('frequency')}</Label>
                 <Select
                   value={interestFrequency}
                   onValueChange={(value) => setValue('interest_frequency', value as 'daily' | 'monthly' | 'quarterly' | 'annually')}
@@ -400,8 +397,8 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
               </div>
 
               {/* Interest Accrual Method */}
-              <div className="space-y-2">
-                <Label htmlFor="interest_accrual_method" className="text-xs lg:text-sm">{tInterest('method')}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="interest_accrual_method" className="text-xs">{tInterest('method')}</Label>
                 <Select
                   value={interestMethod}
                   onValueChange={(value) => setValue('interest_accrual_method', value as 'simple' | 'compound')}
@@ -422,8 +419,8 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           </div>
 
           {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes" className="text-xs lg:text-sm">{tForm('notes')}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="notes" className="text-xs">{tForm('notes')}</Label>
             <Textarea
               id="notes"
               {...register('notes')}
@@ -434,7 +431,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
 
           {/* Active Status */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('isActive')}</Label>
+            <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
             <Switch
               id="is_active"
               checked={isActive}
@@ -443,13 +440,13 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
           </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs">
                 {tActions('cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={isCreating || isUpdating || isLoadingAccount}
-                className="text-xs lg:text-sm"
+                className="text-xs"
               >
                 {isCreating || isUpdating ? tForm('saving') : isEditing ? tForm('update') : tForm('create')}
               </Button>

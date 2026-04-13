@@ -407,38 +407,35 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription className="text-xs lg:text-sm">
-            {isEditing ? tForm('editDescription') : tForm('addDescription')}
-          </DialogDescription>
-        </DialogHeader>
+</DialogHeader>
 
         {isLoadingAsset ? (
           <LoadingForm count={8} />
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             {/* Basic Info */}
-            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="asset_name" className="text-xs lg:text-sm">{tForm('assetName')} *</Label>
+            <div className="grid gap-3 grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="asset_name" className="text-xs">{tForm('assetName')} *</Label>
                 <Input
                   id="asset_name"
                   placeholder={tForm('assetNamePlaceholder')}
                   {...register('asset_name')}
                 />
                 {errors.asset_name && (
-                  <p className="text-xs lg:text-sm text-destructive">{errors.asset_name.message}</p>
+                  <p className="text-xs text-destructive">{errors.asset_name.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="symbol" className="text-xs lg:text-sm">{tForm('symbol')}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="symbol" className="text-xs">{tForm('symbol')}</Label>
                 <Input
                   id="symbol"
                   placeholder={tForm('symbolPlaceholder')}
@@ -447,8 +444,8 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="asset_type" className="text-xs lg:text-sm">{tForm('assetType')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="asset_type" className="text-xs">{tForm('assetType')}</Label>
               <Select
                 key={`asset_type_${watch('asset_type') || 'empty'}`}
                 value={watch('asset_type') || undefined}
@@ -467,8 +464,8 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -478,8 +475,8 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             {/* Quantity & Prices */}
-            <div className="space-y-2">
-              <Label htmlFor="quantity" className="text-xs lg:text-sm">{tForm('quantity')} *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="quantity" className="text-xs">{tForm('quantity')} *</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -488,7 +485,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                 {...register('quantity', { valueAsNumber: true })}
               />
               {errors.quantity && (
-                <p className="text-xs lg:text-sm text-destructive">{errors.quantity.message}</p>
+                <p className="text-xs text-destructive">{errors.quantity.message}</p>
               )}
             </div>
 
@@ -516,8 +513,8 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
             {/* Current Price - only shown when dynamic pricing is disabled */}
             {!watchUseDynamicPricing && (
-              <div className="space-y-2">
-                <Label htmlFor="current_price" className="text-xs lg:text-sm">{tForm('currentPrice')} *</Label>
+              <div className="space-y-1">
+                <Label htmlFor="current_price" className="text-xs">{tForm('currentPrice')} *</Label>
                 <Input
                   id="current_price"
                   type="number"
@@ -526,13 +523,13 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                   {...register('current_price', { valueAsNumber: true })}
                 />
                 {errors.current_price && (
-                  <p className="text-xs lg:text-sm text-destructive">{errors.current_price.message}</p>
+                  <p className="text-xs text-destructive">{errors.current_price.message}</p>
                 )}
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="purchase_date" className="text-xs lg:text-sm">{tForm('purchaseDate')} *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="purchase_date" className="text-xs">{tForm('purchaseDate')} *</Label>
               <Input
                 id="purchase_date"
                 type="date"
@@ -545,7 +542,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             {(quantity > 0 && purchasePrice > 0 && effectiveCurrentPrice > 0) && (
               <div className="rounded-lg border bg-muted p-4 space-y-2">
                 <h4 className="text-sm font-semibold">{tForm('calculatedMetrics')}</h4>
-                <div className="grid gap-2 sm:grid-cols-2 text-sm">
+                <div className="grid gap-2 grid-cols-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{tForm('totalInvested')}</span>
                     <CurrencyDisplay amount={totalInvested} currency={selectedCurrency} showSymbol showCode={false} />
@@ -571,12 +568,12 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             )}
 
             {/* Dynamic Pricing Section */}
-            <div className="space-y-3 lg:space-y-4 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+            <div className="space-y-3 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
               <h3 className="text-sm lg:text-base font-semibold text-foreground">{tForm('dynamicPricing')}</h3>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="use_dynamic_pricing" className="text-xs lg:text-sm">{tForm('useDynamicPricing')}</Label>
+                  <Label htmlFor="use_dynamic_pricing" className="text-xs">{tForm('useDynamicPricing')}</Label>
                   <p className="text-xs text-muted-foreground">{tForm('useDynamicPricingHelp')}</p>
                 </div>
                 <Switch
@@ -587,8 +584,8 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
               </div>
 
               {watchUseDynamicPricing && (
-                <div className="space-y-2">
-                  <Label htmlFor="ticker" className="text-xs lg:text-sm">{tForm('ticker')} *</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="ticker" className="text-xs">{tForm('ticker')} *</Label>
                   <div className="flex gap-2">
                     <Input
                       id="ticker"
@@ -616,7 +613,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                   </div>
                   <p className="text-xs text-muted-foreground">{tForm('tickerHelp')}</p>
                   {errors.ticker && (
-                    <p className="text-xs lg:text-sm text-destructive">{errors.ticker.message}</p>
+                    <p className="text-xs text-destructive">{errors.ticker.message}</p>
                   )}
                   {tickerPrice && (
                     <p className="text-sm text-green-600 dark:text-green-400">
@@ -628,7 +625,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             {/* Payment Integration Section */}
-            <div className="space-y-3 lg:space-y-4 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+            <div className="space-y-3 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
               <h3 className="text-sm lg:text-base font-semibold text-foreground">{tForm('paymentIntegration')}</h3>
 
               <AccountSelect
@@ -645,7 +642,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                 <>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="auto_transact" className="text-xs lg:text-sm">{tForm('autoTransact')}</Label>
+                      <Label htmlFor="auto_transact" className="text-xs">{tForm('autoTransact')}</Label>
                       <p className="text-xs text-muted-foreground">{tForm('autoTransactHelp')}</p>
                     </div>
                     <Switch
@@ -658,7 +655,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                   {!isEditing && (
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="sync_historical" className="text-xs lg:text-sm">{tForm('syncHistorical')}</Label>
+                        <Label htmlFor="sync_historical" className="text-xs">{tForm('syncHistorical')}</Label>
                         <p className="text-xs text-muted-foreground">{tForm('syncHistoricalHelp')}</p>
                       </div>
                       <Switch
@@ -673,12 +670,12 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             {/* Dividend Section */}
-            <div className="space-y-3 lg:space-y-4 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+            <div className="space-y-3 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
               <h3 className="text-sm lg:text-base font-semibold text-foreground">{tForm('dividendSettings')}</h3>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="is_dividend_paying" className="text-xs lg:text-sm">{tForm('isDividendPaying')}</Label>
+                  <Label htmlFor="is_dividend_paying" className="text-xs">{tForm('isDividendPaying')}</Label>
                   <p className="text-xs text-muted-foreground">{tForm('isDividendPayingHelp')}</p>
                 </div>
                 <Switch
@@ -690,9 +687,9 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
               {watchIsDividendPaying && (
                 <>
-                  <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="dividend_yield" className="text-xs lg:text-sm">{tForm('dividendYield')}</Label>
+                  <div className="grid gap-3 grid-cols-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="dividend_yield" className="text-xs">{tForm('dividendYield')}</Label>
                       <Input
                         id="dividend_yield"
                         type="number"
@@ -705,8 +702,8 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                       <p className="text-xs text-muted-foreground">{tForm('dividendYieldHelp')}</p>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="dividend_per_share" className="text-xs lg:text-sm">{tForm('dividendPerShare')}</Label>
+                    <div className="space-y-1">
+                      <Label htmlFor="dividend_per_share" className="text-xs">{tForm('dividendPerShare')}</Label>
                       <Input
                         id="dividend_per_share"
                         type="number"
@@ -718,9 +715,9 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                     </div>
                   </div>
 
-                  <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="dividend_frequency" className="text-xs lg:text-sm">{tForm('dividendFrequency')}</Label>
+                  <div className="grid gap-3 grid-cols-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="dividend_frequency" className="text-xs">{tForm('dividendFrequency')}</Label>
                       <Select
                         key={`dividend_freq_${watch('dividend_frequency') || 'empty'}`}
                         value={watch('dividend_frequency') || undefined}
@@ -739,8 +736,8 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="next_dividend_date" className="text-xs lg:text-sm">{tForm('nextDividendDate')}</Label>
+                    <div className="space-y-1">
+                      <Label htmlFor="next_dividend_date" className="text-xs">{tForm('nextDividendDate')}</Label>
                       <Input
                         id="next_dividend_date"
                         type="date"
@@ -763,7 +760,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
                   {watchDividendAccountId && (
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="auto_deposit_dividends" className="text-xs lg:text-sm">{tForm('autoDepositDividends')}</Label>
+                        <Label htmlFor="auto_deposit_dividends" className="text-xs">{tForm('autoDepositDividends')}</Label>
                         <p className="text-xs text-muted-foreground">{tForm('autoDepositDividendsHelp')}</p>
                       </div>
                       <Switch
@@ -779,7 +776,7 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
 
             {/* Active Status */}
             <div className="flex items-center justify-between pt-4 border-t">
-              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('isActive')}</Label>
+              <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -788,10 +785,10 @@ export function PortfolioForm({ assetId, isOpen, onClose }: PortfolioFormProps) 
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
+              <Button type="submit" disabled={isLoading} className="text-xs">
                 {isLoading ? tForm('saving') : isEditing ? tForm('update') : tForm('create')}
               </Button>
             </DialogFooter>

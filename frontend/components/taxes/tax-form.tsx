@@ -292,38 +292,33 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription className="text-xs lg:text-sm">
-            {isEditing
-              ? tForm('editDescription')
-              : tForm('addDescription')}
-          </DialogDescription>
-        </DialogHeader>
+</DialogHeader>
 
         {isLoadingTax ? (
           <LoadingForm count={6} />
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('taxName')} *</Label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-xs">{tForm('taxName')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('taxNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs text-destructive">{errors.name.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -331,15 +326,15 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-xs lg:text-sm text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
 
-            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="tax_type" className="text-xs lg:text-sm">{tForm('taxType')} *</Label>
+            <div className="grid gap-3 grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="tax_type" className="text-xs">{tForm('taxType')} *</Label>
                 <Select
                   value={watch('tax_type')}
                   onValueChange={(value: 'fixed' | 'percentage') => {
@@ -363,8 +358,8 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="frequency" className="text-xs lg:text-sm">{tForm('frequency')} *</Label>
+              <div className="space-y-1">
+                <Label htmlFor="frequency" className="text-xs">{tForm('frequency')} *</Label>
                 <Select
                   value={watch('frequency')}
                   onValueChange={(value: 'monthly' | 'quarterly' | 'annually') => {
@@ -406,8 +401,8 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
               />
             ) : (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="percentage" className="text-xs lg:text-sm">{tForm('percentageLabel')} *</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="percentage" className="text-xs">{tForm('percentageLabel')} *</Label>
                   <div className="relative">
                     <Input
                       id="percentage"
@@ -423,14 +418,14 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                     </span>
                   </div>
                   {errors.percentage && (
-                    <p className="text-xs lg:text-sm text-destructive">
+                    <p className="text-xs text-destructive">
                       {errors.percentage.message}
                     </p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="income_source_id" className="text-xs lg:text-sm">{tForm('incomeSourceLabel')}</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="income_source_id" className="text-xs">{tForm('incomeSourceLabel')}</Label>
                   <Select
                     value={watch('income_source_id') || 'all'}
                     onValueChange={(value) => {
@@ -456,8 +451,8 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
               </>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-xs lg:text-sm">{tForm('notes')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="notes" className="text-xs">{tForm('notes')}</Label>
               <Textarea
                 id="notes"
                 placeholder={tForm('notesPlaceholder')}
@@ -465,15 +460,15 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
                 {...register('notes')}
               />
               {errors.notes && (
-                <p className="text-xs lg:text-sm text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.notes.message}
                 </p>
               )}
             </div>
 
             {/* Payment Settings Section */}
-            <div className="border-t pt-3 lg:pt-4 space-y-3 lg:space-y-4">
-              <h4 className="font-medium text-xs lg:text-sm">{tForm('paymentSettings')}</h4>
+            <div className="border-t pt-3 lg:pt-4 space-y-3">
+              <h4 className="font-medium text-xs">{tForm('paymentSettings')}</h4>
 
               <AccountSelect
                 value={watch('payment_account_id')}
@@ -494,7 +489,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto_pay" className="text-xs lg:text-sm">{tForm('autoPayLabel')}</Label>
+                  <Label htmlFor="auto_pay" className="text-xs">{tForm('autoPayLabel')}</Label>
                   <p className="text-xs text-muted-foreground">
                     {tForm('autoPayHelp')}
                   </p>
@@ -510,7 +505,7 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('isActiveLabel')}</Label>
+                <Label htmlFor="is_active" className="text-xs">{tForm('isActiveLabel')}</Label>
                 <p className="text-xs text-muted-foreground">
                   {tForm('isActiveHelp')}
                 </p>
@@ -523,10 +518,10 @@ export function TaxForm({ taxId, isOpen, onClose }: TaxFormProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
+              <Button type="submit" disabled={isLoading} className="text-xs">
                 {isLoading
                   ? tForm('saving')
                   : isEditing

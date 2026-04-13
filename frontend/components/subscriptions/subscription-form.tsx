@@ -291,36 +291,33 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-base lg:text-lg">
             {isEditing ? tForm('editTitle') : tForm('addTitle')}
           </DialogTitle>
-          <DialogDescription className="text-xs lg:text-sm">
-            {isEditing ? tForm('editDescription') : tForm('addDescription')}
-          </DialogDescription>
-        </DialogHeader>
+</DialogHeader>
 
         {isLoadingSubscription ? (
           <LoadingForm count={6} />
         ) : error ? (
           <ApiErrorState error={error} />
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 lg:space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs lg:text-sm">{tForm('subscriptionName')} *</Label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-xs">{tForm('subscriptionName')} *</Label>
               <Input
                 id="name"
                 placeholder={tForm('subscriptionNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs lg:text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-xs text-destructive">{errors.name.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs lg:text-sm">{tForm('description')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
               <Textarea
                 id="description"
                 placeholder={tForm('descriptionPlaceholder')}
@@ -328,14 +325,14 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-xs lg:text-sm text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-xs lg:text-sm">{tForm('category')}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="category" className="text-xs">{tForm('category')}</Label>
               <Select
                 value={watch('category') || ''}
                 onValueChange={(value) => setValue('category', value)}
@@ -377,8 +374,8 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
               error={errors.amount?.message}
             />
 
-            <div className="space-y-2">
-              <Label htmlFor="frequency" className="text-xs lg:text-sm">{tForm('frequency')} *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="frequency" className="text-xs">{tForm('frequency')} *</Label>
               <Select
                 value={watch('frequency')}
                 onValueChange={(value) =>
@@ -398,9 +395,9 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
               </Select>
             </div>
 
-            <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="start_date" className="text-xs lg:text-sm">{tForm('startDate')} *</Label>
+            <div className="grid gap-3 grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="start_date" className="text-xs">{tForm('startDate')} *</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -408,13 +405,13 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                   className="cursor-pointer"
                                   />
                 {errors.start_date && (
-                  <p className="text-xs lg:text-sm text-destructive">
+                  <p className="text-xs text-destructive">
                     {errors.start_date.message}
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="end_date" className="text-xs lg:text-sm">{tForm('endDate')}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="end_date" className="text-xs">{tForm('endDate')}</Label>
                 <Input
                   id="end_date"
                   type="date"
@@ -426,7 +423,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="is_active" className="text-xs lg:text-sm">{tForm('activeSubscription')}</Label>
+              <Label htmlFor="is_active" className="text-xs">{tForm('activeSubscription')}</Label>
               <Switch
                 id="is_active"
                 checked={watch('is_active')}
@@ -435,7 +432,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
             </div>
 
             {/* Payment Integration Section */}
-            <div className="space-y-3 lg:space-y-4 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+            <div className="space-y-3 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
               <h3 className="text-sm lg:text-base font-semibold text-foreground">{tForm('accountIntegration')}</h3>
 
               {/* Payment Account */}
@@ -464,7 +461,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="auto_pay" className="text-xs lg:text-sm">{tForm('autoPay')}</Label>
+                      <Label htmlFor="auto_pay" className="text-xs">{tForm('autoPay')}</Label>
                       <p className="text-xs text-muted-foreground">
                         {tForm('autoPayHelp')}
                       </p>
@@ -493,7 +490,7 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                         className="mt-1"
                       />
                       <div className="space-y-0.5">
-                        <Label htmlFor="sync_historical" className="text-xs lg:text-sm font-normal cursor-pointer">
+                        <Label htmlFor="sync_historical" className="text-xs font-normal cursor-pointer">
                           {tForm('syncHistorical')}
                         </Label>
                         <p className="text-xs text-muted-foreground">
@@ -504,8 +501,8 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
                   )}
 
                   {/* Reminder Days Before */}
-                  <div className="space-y-2">
-                    <Label htmlFor="reminder_days_before" className="text-xs lg:text-sm">{tForm('reminderDaysBefore')}</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="reminder_days_before" className="text-xs">{tForm('reminderDaysBefore')}</Label>
                     <Input
                       id="reminder_days_before"
                       type="number"
@@ -522,10 +519,10 @@ export function SubscriptionForm({ subscriptionId, isOpen, onClose }: Subscripti
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} className="text-xs lg:text-sm">
+              <Button type="button" variant="outline" onClick={handleClose} className="text-xs">
                 {tActions('cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading} className="text-xs lg:text-sm">
+              <Button type="submit" disabled={isLoading} className="text-xs">
                 {isLoading
                   ? tForm('saving')
                   : isEditing
