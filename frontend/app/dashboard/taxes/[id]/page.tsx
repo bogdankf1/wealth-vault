@@ -445,7 +445,7 @@ export default function TaxDetailPage() {
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">{t('paymentAmount')}</p>
-              <p className="text-2xl font-bold">
+              <p className="text-lg md:text-2xl font-bold">
                 <CurrencyDisplay amount={calculatedAmount} currency={displayCurrency} />
               </p>
               {tax.payment_account && (

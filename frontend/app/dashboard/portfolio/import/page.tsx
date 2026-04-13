@@ -498,11 +498,11 @@ export default function PortfolioImportPage() {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('totalHoldings')}</p>
-                <p className="text-2xl font-bold">{selectedHoldings.length}</p>
+                <p className="text-lg md:text-2xl font-bold">{selectedHoldings.length}</p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('totalValue')}</p>
-                <p className="text-2xl font-bold">
+                <p className="text-lg md:text-2xl font-bold">
                   {isConverting ? (
                     <Loader2 className="h-6 w-6 animate-spin" />
                   ) : convertedTotal !== null ? (

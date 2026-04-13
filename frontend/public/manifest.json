@@ -1,0 +1,17 @@
+{
+  "name": "Wealth Vault — Personal Finance",
+  "short_name": "Wealth Vault",
+  "description": "Personal finance management platform with AI-powered insights.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

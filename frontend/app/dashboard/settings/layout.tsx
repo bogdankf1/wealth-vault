@@ -5,7 +5,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, CreditCard, Palette, LayoutGrid } from 'lucide-react';
+import { User, CreditCard, Palette, LayoutGrid, HelpCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
@@ -16,9 +16,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   const SETTINGS_TABS = [
     { value: 'account', label: tTabs('account'), icon: User, href: '/dashboard/settings/account' },
-    { value: 'subscription', label: tTabs('subscription'), icon: CreditCard, href: '/dashboard/settings/subscription' },
+    // { value: 'subscription', label: tTabs('subscription'), icon: CreditCard, href: '/dashboard/settings/subscription' },
     { value: 'appearance', label: tTabs('appearance'), icon: Palette, href: '/dashboard/settings/appearance' },
     { value: 'dashboard-layouts', label: tTabs('dashboard'), icon: LayoutGrid, href: '/dashboard/settings/dashboard-layouts' },
+    // { value: 'help', label: tTabs('help'), icon: HelpCircle, href: '/dashboard/settings/help' },
     // TODO: Hidden tabs — re-enable when backend implementations exist:
     // { value: 'notifications', label: tTabs('notifications'), icon: Bell, href: '/dashboard/settings/notifications' },
     // { value: 'privacy', label: tTabs('privacy'), icon: Shield, href: '/dashboard/settings/privacy' },
@@ -27,8 +28,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   return (
     <div className="container mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
-      {/* Header */}
-      <div>
+      {/* Header (desktop only) */}
+      <div className="hidden">
         <h1 className="text-lg lg:text-2xl font-bold tracking-tight">{tPage('title')}</h1>
         <p className="text-xs lg:text-sm text-muted-foreground">
           {tPage('description')}

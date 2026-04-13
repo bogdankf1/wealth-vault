@@ -475,17 +475,17 @@ export default function SubscriptionImportPage() {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('totalSubscriptions')}</p>
-                <p className="text-2xl font-bold">{selectedCount}</p>
+                <p className="text-lg md:text-2xl font-bold">{selectedCount}</p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('monthlyTotal')}</p>
-                <p className="text-2xl font-bold">
+                <p className="text-lg md:text-2xl font-bold">
                   <CurrencyDisplay amount={monthlyTotal} currency="USD" />
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('annualTotal')}</p>
-                <p className="text-2xl font-bold">
+                <p className="text-lg md:text-2xl font-bold">
                   <CurrencyDisplay amount={monthlyTotal * 12} currency="USD" />
                 </p>
               </div>

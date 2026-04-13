@@ -16,8 +16,6 @@ import {
   Target,
   CreditCard,
   Receipt,
-  Menu,
-  X,
   Wallet,
   Sparkles,
   Settings,
@@ -38,6 +36,9 @@ import { cn } from '@/lib/utils';
 import { useSidebarSwipe } from '@/hooks/use-sidebar-swipe';
 import { useBackSwipe } from '@/hooks/use-back-swipe';
 import { useSidebarCollapse } from '@/hooks/use-sidebar-collapse';
+import { BottomNavBar } from '@/components/navigation/bottom-nav-bar';
+import { SubPagePillBar } from '@/components/navigation/sub-page-pill-bar';
+import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetCurrenciesQuery } from '@/lib/api/currenciesApi';
 import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
@@ -61,6 +62,7 @@ export default function DashboardLayout({
     setIsOpen: setSidebarOpen,
     sidebarWidth: 256,
     desktopQuery: '(min-width: 1280px)',
+    enabled: false, // Disabled — mobile uses bottom nav instead
   });
   useBackSwipe({ enabled: !sidebarOpen });
   const { isCollapsed, toggleCollapsed } = useSidebarCollapse();
@@ -131,9 +133,9 @@ export default function DashboardLayout({
   ];
 
   const bottomNavigation = [
-    { name: t('bottomNavigation.pricing'), href: '/dashboard/pricing', icon: Sparkles, desktopOnly: false },
-    { name: t('bottomNavigation.helpCenter'), href: '/dashboard/help', icon: HelpCircle, desktopOnly: true },
-    { name: t('bottomNavigation.notifications'), href: '/dashboard/notifications', icon: Bell, desktopOnly: true },
+    // { name: t('bottomNavigation.pricing'), href: '/dashboard/pricing', icon: Sparkles, desktopOnly: false },
+    // { name: t('bottomNavigation.helpCenter'), href: '/dashboard/help', icon: HelpCircle, desktopOnly: true },
+    // { name: t('bottomNavigation.notifications'), href: '/dashboard/notifications', icon: Bell, desktopOnly: true },
     { name: t('bottomNavigation.settings'), href: '/dashboard/settings', icon: Settings, desktopOnly: true },
   ];
 
@@ -187,24 +189,23 @@ export default function DashboardLayout({
       <AuthErrorHandler />
 
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-        {/* Mobile/Tablet sidebar backdrop */}
+        {/* Mobile/Tablet sidebar backdrop (desktop sidebar only) */}
         <div
           ref={backdropRef}
           className={cn(
-            'fixed inset-0 z-40 bg-black xl:hidden transition-opacity duration-300',
+            'fixed inset-0 z-40 bg-black xl:hidden transition-opacity duration-300 hidden',
             sidebarOpen && !isDragging ? 'opacity-75 pointer-events-auto' : 'opacity-0 pointer-events-none'
           )}
           onClick={() => setSidebarOpen(false)}
         />
 
-      {/* Sidebar */}
+      {/* Sidebar (desktop only — mobile uses bottom nav) */}
       <div
         ref={sidebarRef}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 md:w-72 transform bg-white dark:bg-gray-800 xl:translate-x-0 xl:static shadow-2xl xl:shadow-none',
+          'hidden xl:block fixed inset-y-0 left-0 z-50 transform bg-white dark:bg-gray-800 xl:translate-x-0 xl:static shadow-2xl xl:shadow-none',
           isCollapsed ? 'xl:w-16' : 'xl:w-64',
-          !isDragging ? 'transition-[transform,width] duration-300 ease-in-out' : 'transition-[width] duration-300 ease-in-out',
-          !isDragging && (sidebarOpen ? 'translate-x-0' : '-translate-x-full')
+          'transition-[width] duration-300 ease-in-out'
         )}
       >
         <div className="flex h-full flex-col">
@@ -232,12 +233,6 @@ export default function DashboardLayout({
               ) : (
                 <PanelLeftClose className="h-5 w-5" />
               )}
-            </button>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="xl:hidden"
-            >
-              <X className="h-6 w-6 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
 
@@ -305,54 +300,12 @@ export default function DashboardLayout({
               <div className="border-t dark:border-gray-700" />
             </div>
 
-            {/* Data Management Group (Export & Backups) */}
-            {accessibleDataManagementItems.length > 0 && (
+            {/* Data Management Group (Export & Backups) — hidden for now */}
+            {/* {accessibleDataManagementItems.length > 0 && (
               <div className={cn('mt-1', isCollapsed && 'xl:mt-0 xl:space-y-0.5')}>
-                <button
-                  onClick={() => toggleGroup('dataManagement')}
-                  className={cn(
-                    'w-full flex items-center justify-between gap-1 overflow-hidden px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors',
-                    isCollapsed && 'xl:hidden'
-                  )}
-                >
-                  <span className="truncate">{t('groups.dataManagement')}</span>
-                  <ChevronDown
-                    className={cn(
-                      'h-3.5 w-3.5 transition-transform duration-200',
-                      expandedGroups.dataManagement ? '' : '-rotate-90'
-                    )}
-                  />
-                </button>
-                {(expandedGroups.dataManagement || isCollapsed) && accessibleDataManagementItems.map((item) => {
-                  const isActive = isNavItemActive(item.href);
-                  const Icon = item.icon;
-
-                  return (
-                    <div key={item.name} className="group/nav relative">
-                      <Link
-                        href={item.href}
-                        onClick={() => setSidebarOpen(false)}
-                        className={cn(
-                          'flex items-center overflow-hidden px-3 py-2.5 md:py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation',
-                          isActive
-                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                            : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600',
-                          isCollapsed && 'xl:justify-center xl:px-0 xl:py-2 xl:mx-auto xl:w-10 xl:h-10'
-                        )}
-                      >
-                        <Icon className={cn('mr-3 h-5 w-5 flex-shrink-0', isCollapsed && 'xl:mr-0')} />
-                        <span className={cn('truncate', isCollapsed && 'xl:hidden')}>{item.name}</span>
-                      </Link>
-                      {isCollapsed && (
-                        <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover/nav:opacity-100 transition-opacity hidden xl:block z-[60]">
-                          {item.name}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
+                ...
               </div>
-            )}
+            )} */}
 
             {/* Bottom Navigation */}
             {accessibleBottomNavigation.map((item) => {
@@ -452,49 +405,22 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile/Tablet header with menu and quick actions */}
-        <div className="xl:hidden flex items-center justify-between h-10 px-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-1.5 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 touch-manipulation"
-            aria-label={t('user.openMenu')}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+        {/* Mobile header with quick actions */}
+        <div className="xl:hidden flex items-center justify-between h-10 px-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          {/* Logo */}
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <WealthVaultLogo size={24} className="flex-shrink-0" />
+            <span className="text-sm font-bold text-gray-900 dark:text-white">
+              {t('logo.title')}
+            </span>
+          </Link>
 
           {/* Right side icons */}
           <div className="flex items-center gap-1">
-            {hasFeatureAccess('/dashboard/help') && (
-              <Link
-                href="/dashboard/help"
-                className={cn(
-                  'p-1.5 rounded-md transition-colors touch-manipulation',
-                  pathname.startsWith('/dashboard/help')
-                    ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/50'
-                    : 'text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700'
-                )}
-                title={t('bottomNavigation.helpCenter')}
-              >
-                <HelpCircle className="h-5 w-5" />
-              </Link>
-            )}
-            {hasFeatureAccess('/dashboard/notifications') && (
-              <Link
-                href="/dashboard/notifications"
-                className={cn(
-                  'p-1.5 rounded-md transition-colors touch-manipulation',
-                  pathname.startsWith('/dashboard/notifications')
-                    ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/50'
-                    : 'text-gray-500 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700'
-                )}
-                title={t('bottomNavigation.notifications')}
-              >
-                <Bell className="h-5 w-5" />
-              </Link>
-            )}
+            <InstallPrompt />
             {hasFeatureAccess('/dashboard/settings') && (
               <Link
-                href="/dashboard/settings"
+                href="/dashboard/settings/account"
                 className={cn(
                   'p-1.5 rounded-md transition-colors touch-manipulation',
                   pathname.startsWith('/dashboard/settings')
@@ -520,36 +446,20 @@ export default function DashboardLayout({
                 <Shield className="h-5 w-5" />
               </Link>
             )}
-            {/* Profile avatar */}
-            <Link
-              href="/dashboard/settings/account"
-              className="ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-gray-300 dark:hover:ring-gray-600 transition-all touch-manipulation"
-              title={session?.user?.name || 'Account'}
-            >
-              <div className="h-7 w-7 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                {session?.user?.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt={session.user.name || 'User'}
-                    width={28}
-                    height={28}
-                    className="h-7 w-7 rounded-full"
-                  />
-                ) : (
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                    {session?.user?.name?.[0] || 'U'}
-                  </span>
-                )}
-              </div>
-            </Link>
           </div>
         </div>
 
+        {/* Sub-page pill bar (mobile only — shows within tab groups) */}
+        <SubPagePillBar />
+
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-16 xl:pb-0">
           {children}
         </main>
       </div>
+
+        {/* Bottom navigation bar (mobile only) */}
+        <BottomNavBar />
 
         {/* Debug panel (development only) - Hidden but available for debugging */}
         {/* <SessionDebug /> */}

@@ -17,6 +17,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Wealth Vault - Personal Finance Management",
   description: "Ultimate personal finance management platform with AI-powered insights",
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default async function RootLayout({
@@ -28,6 +32,18 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')};window.__deferredInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__deferredInstallPrompt=e})`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ErrorBoundary>
           <SessionProvider>

@@ -35,6 +35,13 @@
     "logout": "Sair",
     "openMenu": "Abrir menu"
   },
+  "tabs": {
+    "dashboard": "Painel",
+    "cashflow": "Fluxo de caixa",
+    "assets": "Ativos",
+    "recurring": "Recorrente",
+    "liabilities": "Passivos"
+  },
   "logo": {
     "title": "Wealth Vault"
   }

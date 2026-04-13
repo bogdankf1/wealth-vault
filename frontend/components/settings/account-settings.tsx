@@ -134,7 +134,7 @@ export function AccountSettings() {
           <User className="h-4 w-4" />
           {t('title')}
         </CardTitle>
-        <CardDescription className="text-xs lg:text-sm">{t('description')}</CardDescription>
+        <CardDescription className="hidden">{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-0 divide-y">
         {/* Name */}
@@ -157,8 +157,8 @@ export function AccountSettings() {
           </div>
         )}
 
-        {/* Authentication */}
-        <div className="flex items-center justify-between py-3">
+        {/* Authentication — hidden */}
+        <div className="hidden items-center justify-between py-3">
           <div className="flex items-center gap-2">
             <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

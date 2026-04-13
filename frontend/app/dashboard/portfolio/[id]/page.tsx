@@ -311,7 +311,7 @@ export default function PortfolioDetailPage() {
   if (error || !asset) {
     return (
       <div className="text-center py-8">
-        <h1 className="text-2xl font-bold mb-4">{t('notFound')}</h1>
+        <h1 className="text-lg md:text-2xl font-bold mb-4">{t('notFound')}</h1>
         <p className="text-muted-foreground mb-4">{t('notFoundDescription')}</p>
         <Button onClick={handleBack}>{t('backToPortfolio')}</Button>
       </div>

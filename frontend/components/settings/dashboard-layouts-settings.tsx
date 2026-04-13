@@ -140,13 +140,13 @@ export function DashboardLayoutsSettings() {
     <>
       <Card>
         <CardHeader className="p-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="space-y-1.5">
               <CardTitle className="flex items-center gap-2 text-sm lg:text-base">
                 <LayoutGrid className="h-4 w-4 lg:h-5 lg:w-5" />
                 {t('title')}
               </CardTitle>
-              <CardDescription className="text-xs lg:text-sm">
+              <CardDescription className="hidden">
                 {t('description')}
                 {!isWealthTier && (
                   <span className="block mt-1 text-amber-600 dark:text-amber-400 flex items-center gap-1">

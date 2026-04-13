@@ -100,7 +100,7 @@ export function AppearanceSettings() {
           <Settings2 className="h-4 w-4" />
           {t('preferences.title')}
         </CardTitle>
-        <CardDescription className="text-xs lg:text-sm">{t('preferences.description')}</CardDescription>
+        <CardDescription className="hidden">{t('preferences.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-0 divide-y">
         {/* Theme */}
@@ -158,8 +158,8 @@ export function AppearanceSettings() {
           </Select>
         </div>
 
-        {/* Page Descriptions */}
-        {uiVisibilityLoaded && (
+        {/* Page Descriptions — hidden since page titles are removed */}
+        {/* {uiVisibilityLoaded && (
           <div className="flex items-center justify-between py-3">
             <div>
               <Label className="text-sm">{t('uiElements.showPageDescription.label')}</Label>
@@ -170,7 +170,7 @@ export function AppearanceSettings() {
               onCheckedChange={(checked) => updateUIVisibility({ showPageDescription: checked })}
             />
           </div>
-        )}
+        )} */}
       </CardContent>
     </Card>
   );

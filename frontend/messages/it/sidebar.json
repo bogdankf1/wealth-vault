@@ -35,6 +35,13 @@
     "logout": "Esci",
     "openMenu": "Apri menu"
   },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "cashflow": "Flusso di cassa",
+    "assets": "Patrimonio",
+    "recurring": "Ricorrente",
+    "liabilities": "Passività"
+  },
   "logo": {
     "title": "Wealth Vault"
   }

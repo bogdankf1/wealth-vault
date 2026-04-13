@@ -35,6 +35,13 @@
     "logout": "Wyloguj",
     "openMenu": "Otwórz menu"
   },
+  "tabs": {
+    "dashboard": "Panel",
+    "cashflow": "Przepływy",
+    "assets": "Aktywa",
+    "recurring": "Cykliczne",
+    "liabilities": "Zobowiązania"
+  },
   "logo": {
     "title": "Wealth Vault"
   }

@@ -19,7 +19,7 @@ export function SecuritySettings() {
             <Shield className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('authMethod.title')}
           </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
+          <CardDescription className="hidden">
             {t('authMethod.description')}
           </CardDescription>
         </CardHeader>

@@ -495,11 +495,11 @@ export default function IncomeImportPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('totalTransactions')}</p>
-                <p className="text-2xl font-bold">{selectedTransactions.length}</p>
+                <p className="text-lg md:text-2xl font-bold">{selectedTransactions.length}</p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('totalSelected')}</p>
-                <p className="text-2xl font-bold">
+                <p className="text-lg md:text-2xl font-bold">
                   {isConverting ? (
                     <Loader2 className="h-6 w-6 animate-spin" />
                   ) : convertedTotal !== null ? (
@@ -511,7 +511,7 @@ export default function IncomeImportPage() {
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('recurringSources')}</p>
-                <p className="text-2xl font-bold">{recurringCount}</p>
+                <p className="text-lg md:text-2xl font-bold">{recurringCount}</p>
               </div>
             </div>
 

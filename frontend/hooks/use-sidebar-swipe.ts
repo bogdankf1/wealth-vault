@@ -5,6 +5,7 @@ interface UseSidebarSwipeOptions {
   setIsOpen: (open: boolean) => void;
   sidebarWidth?: number;
   desktopQuery?: string;
+  enabled?: boolean;
 }
 
 /**
@@ -21,6 +22,7 @@ export function useSidebarSwipe({
   setIsOpen,
   sidebarWidth = 256,
   desktopQuery = '(min-width: 1280px)',
+  enabled = true,
 }: UseSidebarSwipeOptions) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -55,7 +57,7 @@ export function useSidebarSwipe({
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
-      if (isDesktop()) return;
+      if (!enabled || isDesktop()) return;
       if (e.touches.length !== 1) return;
 
       const touch = e.touches[0];
@@ -207,7 +209,7 @@ export function useSidebarSwipe({
       document.removeEventListener('touchend', handleTouchEnd);
       document.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [isOpen, setIsOpen, sidebarWidth, desktopQuery, isDesktop, clearInlineStyles]);
+  }, [isOpen, setIsOpen, sidebarWidth, desktopQuery, isDesktop, clearInlineStyles, enabled]);
 
   // Clean up inline styles on desktop resize
   useEffect(() => {

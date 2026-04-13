@@ -186,7 +186,7 @@ export function SubscriptionSettings() {
                 {/* Days Remaining */}
                 <div className="flex items-center gap-4 lg:gap-6 mt-3 lg:mt-4">
                   <div className="text-center">
-                    <div className="text-2xl lg:text-3xl font-bold text-purple-600 dark:text-purple-400">
+                    <div className="text-lg md:text-2xl lg:text-3xl font-bold text-purple-600 dark:text-purple-400">
                       {trialDaysRemaining}
                     </div>
                     <div className="text-xs text-muted-foreground uppercase">{t('trial.daysRemaining')}</div>
@@ -245,19 +245,19 @@ export function SubscriptionSettings() {
                 {countdown && (
                   <div className="flex items-center gap-4 lg:gap-6 mt-3 lg:mt-4">
                     <div className="text-center">
-                      <div className={`text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <div className={`text-lg md:text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {countdown.days}
                       </div>
                       <div className="text-xs text-muted-foreground uppercase">{t('expiration.days')}</div>
                     </div>
                     <div className="text-center">
-                      <div className={`text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <div className={`text-lg md:text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {countdown.hours}
                       </div>
                       <div className="text-xs text-muted-foreground uppercase">{t('expiration.hours')}</div>
                     </div>
                     <div className="text-center">
-                      <div className={`text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <div className={`text-lg md:text-2xl lg:text-3xl font-bold ${countdown.isUrgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {countdown.minutes}
                       </div>
                       <div className="text-xs text-muted-foreground uppercase">{t('expiration.minutes')}</div>
@@ -301,7 +301,7 @@ export function SubscriptionSettings() {
                 <CreditCard className="h-4 w-4 lg:h-5 lg:w-5" />
                 {t('title')}
               </CardTitle>
-              <CardDescription className="text-xs lg:text-sm">
+              <CardDescription className="hidden">
                 {t('description')}
               </CardDescription>
             </div>
@@ -387,7 +387,7 @@ export function SubscriptionSettings() {
               <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
               {t('paymentHistory.title')}
             </CardTitle>
-            <CardDescription className="text-xs lg:text-sm">{t('paymentHistory.description')}</CardDescription>
+            <CardDescription className="hidden">{t('paymentHistory.description')}</CardDescription>
           </CardHeader>
           <CardContent className="p-3 pt-0">
             <div className="space-y-3">

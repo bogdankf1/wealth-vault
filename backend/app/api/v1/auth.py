@@ -19,14 +19,14 @@ from app.services.trial_service import TrialService
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-async def get_starter_tier(db: AsyncSession) -> Tier:
-    """Get the starter tier for new users."""
-    result = await db.execute(select(Tier).where(Tier.name == "starter"))
+async def get_default_tier(db: AsyncSession) -> Tier:
+    """Get the default tier for new users (wealth tier — all features unlocked)."""
+    result = await db.execute(select(Tier).where(Tier.name == "wealth"))
     tier = result.scalar_one_or_none()
     if not tier:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Starter tier not found. Please run database migrations."
+            detail="Wealth tier not found. Please run database migrations."
         )
     return tier
 
@@ -105,20 +105,8 @@ async def google_oauth(
 
     # Create new user if doesn't exist
     if not user:
-        # Check if trial is enabled
-        trial_settings = await TrialService.get_trial_settings(db)
-
-        if trial_settings.get("enabled"):
-            # Get trial tier (wealth or growth)
-            trial_tier = await TrialService.get_trial_tier(db)
-            if trial_tier:
-                assigned_tier = trial_tier
-            else:
-                # Fallback to starter if trial tier not found
-                assigned_tier = await get_starter_tier(db)
-        else:
-            # Original flow - assign starter tier
-            assigned_tier = await get_starter_tier(db)
+        # All new users get wealth tier (all features unlocked)
+        assigned_tier = await get_default_tier(db)
 
         # Create new user
         user = User(

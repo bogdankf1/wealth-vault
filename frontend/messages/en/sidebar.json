@@ -35,6 +35,13 @@
     "logout": "Logout",
     "openMenu": "Open menu"
   },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "cashflow": "Cashflow",
+    "assets": "Assets",
+    "recurring": "Recurring",
+    "liabilities": "Liabilities"
+  },
   "logo": {
     "title": "Wealth Vault"
   }

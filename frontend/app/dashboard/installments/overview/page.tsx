@@ -451,9 +451,9 @@ export default function InstallmentsPage() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-0" align="end">
+            <PopoverContent className="w-64 p-0" align="end">
               {/* Filter section */}
-              <div className="p-3 space-y-3">
+              <div className="p-2.5 space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
 
                 {/* Category */}
@@ -508,7 +508,7 @@ export default function InstallmentsPage() {
               <Separator />
 
               {/* Sort section */}
-              <div className="p-3 space-y-3">
+              <div className="p-2.5 space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
                 <div className="flex items-center gap-2">
                   <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
@@ -543,7 +543,7 @@ export default function InstallmentsPage() {
               <Separator />
 
               {/* View section */}
-              <div className="p-3 space-y-3">
+              <div className="p-2.5 space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
                 <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
                   <Button
@@ -582,7 +582,7 @@ export default function InstallmentsPage() {
               {viewMode === 'list' && (
                 <>
                   <Separator />
-                  <div className="p-3 space-y-3">
+                  <div className="p-2.5 space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
                       {Object.values(visibleColumns).filter(Boolean).length < columnConfig.length && (

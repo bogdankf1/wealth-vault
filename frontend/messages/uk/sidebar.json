@@ -35,6 +35,13 @@
     "logout": "Вийти",
     "openMenu": "Відкрити меню"
   },
+  "tabs": {
+    "dashboard": "Панель",
+    "cashflow": "Грошовий потік",
+    "assets": "Активи",
+    "recurring": "Регулярні",
+    "liabilities": "Зобов'язання"
+  },
   "logo": {
     "title": "Wealth Vault"
   }

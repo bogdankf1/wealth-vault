@@ -360,9 +360,9 @@ export default function GoalsPage() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-0" align="end">
+            <PopoverContent className="w-64 p-0" align="end">
               {/* Filter section */}
-              <div className="p-3 space-y-3">
+              <div className="p-2.5 space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
 
                 {/* Category */}
@@ -390,7 +390,7 @@ export default function GoalsPage() {
               <Separator />
 
               {/* Sort section */}
-              <div className="p-3 space-y-3">
+              <div className="p-2.5 space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
                 <div className="flex items-center gap-2">
                   <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
@@ -425,7 +425,7 @@ export default function GoalsPage() {
               <Separator />
 
               {/* View section */}
-              <div className="p-3 space-y-3">
+              <div className="p-2.5 space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
                 <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '36px' }}>
                   <Button
@@ -451,7 +451,7 @@ export default function GoalsPage() {
               {viewMode === 'list' && (
                 <>
                   <Separator />
-                  <div className="p-3 space-y-3">
+                  <div className="p-2.5 space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
                       {Object.values(visibleColumns).filter(Boolean).length < columnConfig.length && (
@@ -594,7 +594,7 @@ export default function GoalsPage() {
                       <div className="rounded-lg border bg-muted/50 p-3">
                         <div className="flex items-baseline justify-between mb-1">
                           <span className="text-xs text-muted-foreground">{tOverview('saved')}</span>
-                          <span className="text-2xl font-bold">
+                          <span className="text-lg md:text-2xl font-bold">
                             <CurrencyDisplay
                               amount={displayCurrent}
                               currency={displayCurrency}

@@ -98,7 +98,7 @@ export function PrivacySettings() {
             <Shield className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('analytics.title')}
           </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
+          <CardDescription className="hidden">
             {t('analytics.description')}
           </CardDescription>
         </CardHeader>
@@ -154,7 +154,7 @@ export function PrivacySettings() {
             <Eye className="h-4 w-4 lg:h-5 lg:w-5" />
             {t('dataVisibility.title')}
           </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
+          <CardDescription className="hidden">
             {t('dataVisibility.description')}
           </CardDescription>
         </CardHeader>

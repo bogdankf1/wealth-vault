@@ -116,7 +116,7 @@ export function NotificationSettings() {
               {t('email.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
+          <CardDescription className="hidden">
             {t('email.description')}
           </CardDescription>
         </CardHeader>
@@ -208,7 +208,7 @@ export function NotificationSettings() {
               {t('push.comingSoon')}
             </span>
           </CardTitle>
-          <CardDescription className="text-xs lg:text-sm">
+          <CardDescription className="hidden">
             {t('push.description')}
           </CardDescription>
         </CardHeader>

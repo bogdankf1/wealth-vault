@@ -459,17 +459,17 @@ export default function InstallmentImportPage() {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('totalInstallments')}</p>
-                <p className="text-2xl font-bold">{selectedCount}</p>
+                <p className="text-lg md:text-2xl font-bold">{selectedCount}</p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('totalDebt')}</p>
-                <p className="text-2xl font-bold">
+                <p className="text-lg md:text-2xl font-bold">
                   <CurrencyDisplay amount={totalDebt} currency="UAH" />
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">{t('monthlyPayment')}</p>
-                <p className="text-2xl font-bold">
+                <p className="text-lg md:text-2xl font-bold">
                   <CurrencyDisplay amount={monthlyPayment} currency="UAH" />
                 </p>
               </div>

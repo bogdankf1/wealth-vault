@@ -76,26 +76,14 @@ export default function SubscriptionsLayout({
     <SubscriptionsActionsContext.Provider value={{ setActions }}>
       <div className="container mx-auto p-4 md:p-6">
         {/* Page Header with Actions */}
-        <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between mb-6">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-              {t('layout.title')}
-            </h1>
-            {showPageDescription && (
-              <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                {t('layout.description')}
-              </p>
-            )}
-          </div>
-          {actions && (
-            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 flex-shrink-0">
+        {actions && (
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 flex-shrink-0 mb-4">
               {actions}
             </div>
           )}
-        </div>
 
         {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border">
+        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {SUBSCRIPTIONS_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -106,7 +94,7 @@ export default function SubscriptionsLayout({
                   key={tab.value}
                   href={tab.href}
                   className={cn(
-                    'flex items-center justify-center sm:justify-start flex-1 sm:flex-initial gap-2 px-3 sm:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px',
+                    'flex items-center justify-center flex-1 xl:flex-initial gap-2 px-1 xl:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px',
                     isActive
                       ? 'border-primary text-primary'
                       : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'

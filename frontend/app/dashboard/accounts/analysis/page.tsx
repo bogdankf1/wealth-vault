@@ -65,7 +65,7 @@ export default function SavingsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-blue-600">{stats.total_accounts}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">{stats.total_accounts}</p>
               </div>
               <p className="text-sm text-muted-foreground">
                 {tOverview('totalAccounts').toLowerCase()}
@@ -85,7 +85,7 @@ export default function SavingsAnalysisPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold text-green-600">{stats.active_accounts}</p>
+                <p className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.active_accounts}</p>
                 <Badge variant="outline" className="text-green-600 border-green-300">
                   {stats.total_accounts > 0
                     ? ((stats.active_accounts / stats.total_accounts) * 100).toFixed(0)
@@ -113,7 +113,7 @@ export default function SavingsAnalysisPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <p className="text-4xl font-bold text-purple-600">
+            <p className="text-base sm:text-lg lg:text-2xl font-bold text-purple-600">
               <CurrencyDisplay
                 amount={stats.total_balance_usd}
                 currency={stats.currency}
