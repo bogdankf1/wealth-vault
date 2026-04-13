@@ -326,23 +326,15 @@ export default function ImportStatementPage() {
 
       {/* Step 1: Upload */}
       {currentStep === 'upload' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              {t('uploadStep')}
-            </CardTitle>
-            <CardDescription>
-              {t('step1Description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FileUpload
-              onUploadSuccess={handleUploadSuccess}
-              onUploadError={setError}
-            />
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {t('step1Description')}
+          </p>
+          <FileUpload
+            onUploadSuccess={handleUploadSuccess}
+            onUploadError={setError}
+          />
+        </div>
       )}
 
       {/* Step 2: Parse */}

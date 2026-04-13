@@ -107,17 +107,17 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
         <div
           {...getRootProps()}
           className={`
-            border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
+            border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
             transition-colors duration-200
             ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
           `}
         >
           <input {...getInputProps()} />
-          <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium mb-2">
+          <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
+          <p className="text-sm font-medium mb-1">
             {isDragActive ? t('dropHere') : t('dragDrop')}
           </p>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-xs text-muted-foreground mb-3">
             {t('clickToBrowse')}
           </p>
           <p className="text-xs text-muted-foreground">
