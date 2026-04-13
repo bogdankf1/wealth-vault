@@ -34,18 +34,18 @@ export default function TaxesLayout({
       icon: LayoutGrid,
       href: '/dashboard/taxes/overview',
     },
-    {
-      value: 'analysis',
-      label: tNav('analysis'),
-      icon: BarChart3,
-      href: '/dashboard/taxes/analysis',
-    },
-    {
-      value: 'archive',
-      label: tNav('archive'),
-      icon: Archive,
-      href: '/dashboard/taxes/archive',
-    },
+    // {
+    //   value: 'analysis',
+    //   label: tNav('analysis'),
+    //   icon: BarChart3,
+    //   href: '/dashboard/taxes/analysis',
+    // },
+    // {
+    //   value: 'archive',
+    //   label: tNav('archive'),
+    //   icon: Archive,
+    //   href: '/dashboard/taxes/archive',
+    // },
   ];
 
   // Check if we're on a detail page (not a known tab route)

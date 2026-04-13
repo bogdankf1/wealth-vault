@@ -22,10 +22,10 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
 
   const INCOME_TABS: ModuleTab[] = [
     { value: 'overview', label: tNav('overview'), icon: LayoutGrid, href: '/dashboard/income/overview' },
-    { value: 'analysis', label: tNav('analysis'), icon: BarChart3, href: '/dashboard/income/analysis' },
-    { value: 'history', label: tNav('history'), icon: History, href: '/dashboard/income/history' },
+    // { value: 'analysis', label: tNav('analysis'), icon: BarChart3, href: '/dashboard/income/analysis' },
+    // { value: 'history', label: tNav('history'), icon: History, href: '/dashboard/income/history' },
     { value: 'import', label: tNav('import'), icon: Upload, href: '/dashboard/income/import' },
-    { value: 'archive', label: tNav('archive'), icon: Archive, href: '/dashboard/income/archive' },
+    // { value: 'archive', label: tNav('archive'), icon: Archive, href: '/dashboard/income/archive' },
   ];
 
   // Check if we're on a detail page (not a known tab route)

@@ -31,18 +31,18 @@ export default function GoalsLayout({
       icon: LayoutGrid,
       href: '/dashboard/goals/overview',
     },
-    {
-      value: 'analysis',
-      label: t('navigation.analysis'),
-      icon: BarChart3,
-      href: '/dashboard/goals/analysis',
-    },
-    {
-      value: 'archive',
-      label: t('navigation.archive'),
-      icon: Archive,
-      href: '/dashboard/goals/archive',
-    },
+    // {
+    //   value: 'analysis',
+    //   label: t('navigation.analysis'),
+    //   icon: BarChart3,
+    //   href: '/dashboard/goals/analysis',
+    // },
+    // {
+    //   value: 'archive',
+    //   label: t('navigation.archive'),
+    //   icon: Archive,
+    //   href: '/dashboard/goals/archive',
+    // },
   ];
 
   // Check if we're on a detail page (not a known tab route)

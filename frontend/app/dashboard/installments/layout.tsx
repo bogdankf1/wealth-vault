@@ -34,24 +34,24 @@ export default function InstallmentsLayout({
       icon: LayoutGrid,
       href: '/dashboard/installments/overview',
     },
-    {
-      value: 'analysis',
-      label: tNav('analysis'),
-      icon: BarChart3,
-      href: '/dashboard/installments/analysis',
-    },
-    {
-      value: 'history',
-      label: tNav('history'),
-      icon: History,
-      href: '/dashboard/installments/history',
-    },
-    {
-      value: 'archive',
-      label: tNav('archive'),
-      icon: Archive,
-      href: '/dashboard/installments/archive',
-    },
+    // {
+    //   value: 'analysis',
+    //   label: tNav('analysis'),
+    //   icon: BarChart3,
+    //   href: '/dashboard/installments/analysis',
+    // },
+    // {
+    //   value: 'history',
+    //   label: tNav('history'),
+    //   icon: History,
+    //   href: '/dashboard/installments/history',
+    // },
+    // {
+    //   value: 'archive',
+    //   label: tNav('archive'),
+    //   icon: Archive,
+    //   href: '/dashboard/installments/archive',
+    // },
     {
       value: 'import',
       label: tNav('import'),

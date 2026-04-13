@@ -31,24 +31,24 @@ export default function SubscriptionsLayout({
       icon: LayoutGrid,
       href: '/dashboard/subscriptions/overview',
     },
-    {
-      value: 'analysis',
-      label: t('navigation.analysis'),
-      icon: BarChart3,
-      href: '/dashboard/subscriptions/analysis',
-    },
-    {
-      value: 'history',
-      label: t('navigation.history'),
-      icon: History,
-      href: '/dashboard/subscriptions/history',
-    },
-    {
-      value: 'archive',
-      label: t('navigation.archive'),
-      icon: Archive,
-      href: '/dashboard/subscriptions/archive',
-    },
+    // {
+    //   value: 'analysis',
+    //   label: t('navigation.analysis'),
+    //   icon: BarChart3,
+    //   href: '/dashboard/subscriptions/analysis',
+    // },
+    // {
+    //   value: 'history',
+    //   label: t('navigation.history'),
+    //   icon: History,
+    //   href: '/dashboard/subscriptions/history',
+    // },
+    // {
+    //   value: 'archive',
+    //   label: t('navigation.archive'),
+    //   icon: Archive,
+    //   href: '/dashboard/subscriptions/archive',
+    // },
     {
       value: 'import',
       label: t('navigation.import'),

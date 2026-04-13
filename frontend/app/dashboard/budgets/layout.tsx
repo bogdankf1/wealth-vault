@@ -26,8 +26,8 @@ export default function BudgetsLayout({
 
   const BUDGETS_TABS: ModuleTab[] = [
     { value: 'overview', label: t('navigation.overview'), icon: LayoutGrid, href: '/dashboard/budgets/overview' },
-    { value: 'analysis', label: t('navigation.analysis'), icon: BarChart3, href: '/dashboard/budgets/analysis' },
-    { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/budgets/archive' },
+    // { value: 'analysis', label: t('navigation.analysis'), icon: BarChart3, href: '/dashboard/budgets/analysis' },
+    // { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/budgets/archive' },
   ];
 
   // Check if we're on a detail page (not a known tab route)

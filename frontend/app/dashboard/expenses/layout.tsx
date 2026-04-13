@@ -21,10 +21,10 @@ export default function ExpensesLayout({ children }: { children: React.ReactNode
 
   const EXPENSES_TABS: ModuleTab[] = [
     { value: 'overview', label: t('navigation.overview'), icon: LayoutGrid, href: '/dashboard/expenses/overview' },
-    { value: 'analysis', label: t('navigation.analysis'), icon: BarChart3, href: '/dashboard/expenses/analysis' },
-    { value: 'history', label: t('navigation.history'), icon: History, href: '/dashboard/expenses/history' },
+    // { value: 'analysis', label: t('navigation.analysis'), icon: BarChart3, href: '/dashboard/expenses/analysis' },
+    // { value: 'history', label: t('navigation.history'), icon: History, href: '/dashboard/expenses/history' },
     { value: 'import', label: t('navigation.import'), icon: Upload, href: '/dashboard/expenses/import' },
-    { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/expenses/archive' },
+    // { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/expenses/archive' },
   ];
 
   // Check if we're on a detail page (not a known tab route)

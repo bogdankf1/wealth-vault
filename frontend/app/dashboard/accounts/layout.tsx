@@ -32,24 +32,24 @@ export default function AccountsLayout({
       icon: LayoutGrid,
       href: '/dashboard/accounts/overview',
     },
-    {
-      value: 'analysis',
-      label: t('navigation.analysis'),
-      icon: BarChart3,
-      href: '/dashboard/accounts/analysis',
-    },
+    // {
+    //   value: 'analysis',
+    //   label: t('navigation.analysis'),
+    //   icon: BarChart3,
+    //   href: '/dashboard/accounts/analysis',
+    // },
     {
       value: 'import',
       label: t('navigation.import'),
       icon: Upload,
       href: '/dashboard/accounts/import',
     },
-    {
-      value: 'archive',
-      label: t('navigation.archive'),
-      icon: Archive,
-      href: '/dashboard/accounts/archive',
-    },
+    // {
+    //   value: 'archive',
+    //   label: t('navigation.archive'),
+    //   icon: Archive,
+    //   href: '/dashboard/accounts/archive',
+    // },
   ];
 
   // Check if we're on a detail page (not a known tab route)

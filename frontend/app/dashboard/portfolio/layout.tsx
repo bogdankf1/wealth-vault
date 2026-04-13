@@ -31,24 +31,24 @@ export default function PortfolioLayout({
       icon: LayoutGrid,
       href: '/dashboard/portfolio/overview',
     },
-    {
-      value: 'analysis',
-      label: t('navigation.analysis'),
-      icon: BarChart3,
-      href: '/dashboard/portfolio/analysis',
-    },
+    // {
+    //   value: 'analysis',
+    //   label: t('navigation.analysis'),
+    //   icon: BarChart3,
+    //   href: '/dashboard/portfolio/analysis',
+    // },
     {
       value: 'import',
       label: t('navigation.import'),
       icon: Upload,
       href: '/dashboard/portfolio/import',
     },
-    {
-      value: 'archive',
-      label: t('navigation.archive'),
-      icon: Archive,
-      href: '/dashboard/portfolio/archive',
-    },
+    // {
+    //   value: 'archive',
+    //   label: t('navigation.archive'),
+    //   icon: Archive,
+    //   href: '/dashboard/portfolio/archive',
+    // },
   ];
 
   // Check if we're on a detail page (not a known tab route)

@@ -34,18 +34,18 @@ export default function DebtsLayout({
       icon: LayoutGrid,
       href: '/dashboard/debts/overview',
     },
-    {
-      value: 'analysis',
-      label: tNav('analysis'),
-      icon: BarChart3,
-      href: '/dashboard/debts/analysis',
-    },
-    {
-      value: 'archive',
-      label: tNav('archive'),
-      icon: Archive,
-      href: '/dashboard/debts/archive',
-    },
+    // {
+    //   value: 'analysis',
+    //   label: tNav('analysis'),
+    //   icon: BarChart3,
+    //   href: '/dashboard/debts/analysis',
+    // },
+    // {
+    //   value: 'archive',
+    //   label: tNav('archive'),
+    //   icon: Archive,
+    //   href: '/dashboard/debts/archive',
+    // },
   ];
 
   // Check if we're on a detail page (not a known tab route)
