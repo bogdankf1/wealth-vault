@@ -357,7 +357,7 @@ export default function SubscriptionImportPage() {
   return (
     <div className="space-y-6">
       {/* Step Progress */}
-      <div className="flex items-center justify-center gap-2 mb-8">
+      <div className="flex items-center justify-between gap-1 mb-6">
         {STEPS.map((step, index) => {
           const Icon = step.icon;
           const isActive = step.key === currentStep;
@@ -367,7 +367,7 @@ export default function SubscriptionImportPage() {
             <React.Fragment key={step.key}>
               <div
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors',
                   isActive && 'bg-primary text-primary-foreground',
                   isPast && 'bg-primary/20 text-primary',
                   !isActive && !isPast && 'bg-muted text-muted-foreground'
@@ -388,15 +388,7 @@ export default function SubscriptionImportPage() {
 
       {/* Step 1: Upload */}
       {currentStep === 'upload' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              {t('steps.upload')}
-            </CardTitle>
-            <CardDescription>{t('uploadDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <div className="space-y-4">
             <ImageUpload onFilesReady={handleFilesReady} maxFiles={10} />
 
             {files.length > 0 && (
@@ -416,8 +408,7 @@ export default function SubscriptionImportPage() {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </div>
       )}
 
       {/* Step 2: Parse */}

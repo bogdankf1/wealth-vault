@@ -123,7 +123,7 @@ export function ImageUpload({ onFilesReady, maxFiles = 10, className }: ImageUpl
       <div
         {...getRootProps()}
         className={cn(
-          'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+          'border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer',
           isDragActive
             ? 'border-primary bg-primary/5'
             : 'border-muted-foreground/25 hover:border-primary/50',
@@ -134,7 +134,7 @@ export function ImageUpload({ onFilesReady, maxFiles = 10, className }: ImageUpl
         <div className="flex flex-col items-center gap-3">
           {isProcessing ? (
             <>
-              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+              <Loader2 className="h-8 w-8 text-primary animate-spin" />
               <p className="text-sm text-muted-foreground">
                 {t('processing', {
                   current: processingProgress.current,
@@ -144,7 +144,7 @@ export function ImageUpload({ onFilesReady, maxFiles = 10, className }: ImageUpl
             </>
           ) : (
             <>
-              <Upload className="h-10 w-10 text-muted-foreground" />
+              <Upload className="h-8 w-8 text-muted-foreground" />
               <div>
                 <p className="font-medium">
                   {isDragActive ? t('dropHere') : t('dragDrop')}
