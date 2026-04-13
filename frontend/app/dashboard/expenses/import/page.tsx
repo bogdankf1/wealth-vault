@@ -326,10 +326,7 @@ export default function ImportStatementPage() {
 
       {/* Step 1: Upload */}
       {currentStep === 'upload' && (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {t('step1Description')}
-          </p>
+        <div>
           <FileUpload
             onUploadSuccess={handleUploadSuccess}
             onUploadError={setError}
