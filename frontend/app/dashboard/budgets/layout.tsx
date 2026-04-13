@@ -55,8 +55,8 @@ export default function BudgetsLayout({
             </div>
           )}
 
-        {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
+        {/* Tab Navigation — hidden when only 1 tab */}
+        {BUDGETS_TABS.length > 1 && <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {BUDGETS_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -79,7 +79,7 @@ export default function BudgetsLayout({
               );
             })}
           </nav>
-        </div>
+        </div>}
 
         {/* Tab Content */}
         <div className="mt-6">{children}</div>

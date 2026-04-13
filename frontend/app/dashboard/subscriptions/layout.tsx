@@ -49,12 +49,12 @@ export default function SubscriptionsLayout({
     //   icon: Archive,
     //   href: '/dashboard/subscriptions/archive',
     // },
-    {
-      value: 'import',
-      label: t('navigation.import'),
-      icon: Upload,
-      href: '/dashboard/subscriptions/import',
-    },
+    // {
+    // value: 'import',
+    // label: t('navigation.import'),
+    // icon: Upload,
+    // href: '/dashboard/subscriptions/import',
+    // },
   ];
 
   // Check if we're on a detail page (not a known tab route)
@@ -82,8 +82,8 @@ export default function SubscriptionsLayout({
             </div>
           )}
 
-        {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
+        {/* Tab Navigation — hidden when only 1 tab */}
+        {SUBSCRIPTIONS_TABS.length > 1 && <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {SUBSCRIPTIONS_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -106,7 +106,7 @@ export default function SubscriptionsLayout({
               );
             })}
           </nav>
-        </div>
+        </div>}
 
         {/* Tab Content */}
         <div className="mt-6">{children}</div>

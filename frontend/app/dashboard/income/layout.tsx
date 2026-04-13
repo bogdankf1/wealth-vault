@@ -24,7 +24,7 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
     { value: 'overview', label: tNav('overview'), icon: LayoutGrid, href: '/dashboard/income/overview' },
     // { value: 'analysis', label: tNav('analysis'), icon: BarChart3, href: '/dashboard/income/analysis' },
     // { value: 'history', label: tNav('history'), icon: History, href: '/dashboard/income/history' },
-    { value: 'import', label: tNav('import'), icon: Upload, href: '/dashboard/income/import' },
+    // { value: 'import', label: tNav('import'), icon: Upload, href: '/dashboard/income/import' },
     // { value: 'archive', label: tNav('archive'), icon: Archive, href: '/dashboard/income/archive' },
   ];
 
@@ -53,8 +53,8 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
             </div>
           )}
 
-        {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
+        {/* Tab Navigation — hidden when only 1 tab */}
+        {INCOME_TABS.length > 1 && <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {INCOME_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -77,7 +77,7 @@ export default function IncomeLayout({ children }: { children: React.ReactNode }
               );
             })}
           </nav>
-        </div>
+        </div>}
 
         {/* Tab Content */}
         <div className="mt-6">{children}</div>

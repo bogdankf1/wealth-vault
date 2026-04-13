@@ -18,6 +18,8 @@ All changes are commented out, not deleted — easy to re-enable.
 - **Analysis tab** — commented out in all module layouts
 - **History tab** — commented out (income, expenses, subscriptions, installments)
 - **Archive tab** — commented out in all module layouts
+- **Import tab** — commented out (income, expenses, accounts, portfolio, subscriptions, installments); Import button in header navigates directly to import page
+- **Tab bar** — auto-hides when only 1 tab remains (currently all modules)
 
 ## Page Titles & Descriptions
 

@@ -37,12 +37,12 @@ export default function PortfolioLayout({
     //   icon: BarChart3,
     //   href: '/dashboard/portfolio/analysis',
     // },
-    {
-      value: 'import',
-      label: t('navigation.import'),
-      icon: Upload,
-      href: '/dashboard/portfolio/import',
-    },
+    // {
+    // value: 'import',
+    // label: t('navigation.import'),
+    // icon: Upload,
+    // href: '/dashboard/portfolio/import',
+    // },
     // {
     //   value: 'archive',
     //   label: t('navigation.archive'),
@@ -76,8 +76,8 @@ export default function PortfolioLayout({
             </div>
           )}
 
-        {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
+        {/* Tab Navigation — hidden when only 1 tab */}
+        {PORTFOLIO_TABS.length > 1 && <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {PORTFOLIO_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -100,7 +100,7 @@ export default function PortfolioLayout({
               );
             })}
           </nav>
-        </div>
+        </div>}
 
         {/* Tab Content */}
         <div className="mt-6">{children}</div>

@@ -23,7 +23,7 @@ export default function ExpensesLayout({ children }: { children: React.ReactNode
     { value: 'overview', label: t('navigation.overview'), icon: LayoutGrid, href: '/dashboard/expenses/overview' },
     // { value: 'analysis', label: t('navigation.analysis'), icon: BarChart3, href: '/dashboard/expenses/analysis' },
     // { value: 'history', label: t('navigation.history'), icon: History, href: '/dashboard/expenses/history' },
-    { value: 'import', label: t('navigation.import'), icon: Upload, href: '/dashboard/expenses/import' },
+    // { value: 'import', label: t('navigation.import'), icon: Upload, href: '/dashboard/expenses/import' },
     // { value: 'archive', label: t('navigation.archive'), icon: Archive, href: '/dashboard/expenses/archive' },
   ];
 
@@ -52,8 +52,8 @@ export default function ExpensesLayout({ children }: { children: React.ReactNode
             </div>
           )}
 
-        {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
+        {/* Tab Navigation — hidden when only 1 tab */}
+        {EXPENSES_TABS.length > 1 && <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {EXPENSES_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -76,7 +76,7 @@ export default function ExpensesLayout({ children }: { children: React.ReactNode
               );
             })}
           </nav>
-        </div>
+        </div>}
 
         {/* Tab Content */}
         <div className="mt-6">{children}</div>

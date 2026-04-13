@@ -38,12 +38,12 @@ export default function AccountsLayout({
     //   icon: BarChart3,
     //   href: '/dashboard/accounts/analysis',
     // },
-    {
-      value: 'import',
-      label: t('navigation.import'),
-      icon: Upload,
-      href: '/dashboard/accounts/import',
-    },
+    // {
+    // value: 'import',
+    // label: t('navigation.import'),
+    // icon: Upload,
+    // href: '/dashboard/accounts/import',
+    // },
     // {
     //   value: 'archive',
     //   label: t('navigation.archive'),
@@ -77,8 +77,8 @@ export default function AccountsLayout({
             </div>
           )}
 
-        {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
+        {/* Tab Navigation — hidden when only 1 tab */}
+        {ACCOUNTS_TABS.length > 1 && <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {ACCOUNTS_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -101,7 +101,7 @@ export default function AccountsLayout({
               );
             })}
           </nav>
-        </div>
+        </div>}
 
         {/* Tab Content */}
         <div className="mt-6">{children}</div>

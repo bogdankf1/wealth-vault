@@ -52,12 +52,12 @@ export default function InstallmentsLayout({
     //   icon: Archive,
     //   href: '/dashboard/installments/archive',
     // },
-    {
-      value: 'import',
-      label: tNav('import'),
-      icon: Upload,
-      href: '/dashboard/installments/import',
-    },
+    // {
+    // value: 'import',
+    // label: tNav('import'),
+    // icon: Upload,
+    // href: '/dashboard/installments/import',
+    // },
   ];
 
   // Check if we're on a detail page (not a known tab route)
@@ -85,8 +85,8 @@ export default function InstallmentsLayout({
             </div>
           )}
 
-        {/* Tab Navigation with full-width border */}
-        <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
+        {/* Tab Navigation — hidden when only 1 tab */}
+        {INSTALLMENTS_TABS.length > 1 && <div className="border-b border-border -mx-4 md:-mx-6 xl:mx-0">
           <nav className="flex overflow-x-auto overflow-y-hidden scrollbar-hide">
             {INSTALLMENTS_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -109,7 +109,7 @@ export default function InstallmentsLayout({
               );
             })}
           </nav>
-        </div>
+        </div>}
 
         {/* Tab Content */}
         <div className="mt-6">{children}</div>
