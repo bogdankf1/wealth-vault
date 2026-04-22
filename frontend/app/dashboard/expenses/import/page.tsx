@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Download, CheckCircle, AlertCircle, Loader2, X, Trash2, Upload, Sparkles, Edit3, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Download, CheckCircle, AlertCircle, Loader2, X, Trash2, Upload, Edit3, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,12 +41,11 @@ import { useListInstallmentsQuery } from '@/lib/api/installmentsApi';
 import { EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 
 // Step type
-type ImportStep = 'upload' | 'parse' | 'review' | 'import';
+type ImportStep = 'upload' | 'review' | 'import';
 
 // Progress steps configuration
 const STEPS: { key: ImportStep; icon: React.ElementType }[] = [
   { key: 'upload', icon: Upload },
-  { key: 'parse', icon: Sparkles },
   { key: 'review', icon: Edit3 },
   { key: 'import', icon: CheckCircle },
 ];
@@ -78,18 +77,13 @@ export default function ImportStatementPage() {
     errors: string[];
   } | null>(null);
 
-  const handleUploadSuccess = (fileId: string, filename: string) => {
+  const handleUploadSuccess = async (fileId: string, filename: string) => {
     setUploadedFileId(fileId);
     setUploadedFilename(filename);
-    setCurrentStep('parse');
-  };
-
-  const handleParseStatement = async () => {
-    if (!uploadedFileId) return;
 
     try {
       setError(null);
-      const response = await parseStatement({ file_id: uploadedFileId }).unwrap();
+      const response = await parseStatement({ file_id: fileId }).unwrap();
       setTransactions(response.transactions);
       setCurrentStep('review');
     } catch (err: unknown) {
@@ -324,59 +318,18 @@ export default function ImportStatementPage() {
         </Alert>
       )}
 
-      {/* Step 1: Upload */}
+      {/* Step 1: Upload & Parse */}
       {currentStep === 'upload' && (
         <div>
           <FileUpload
             onUploadSuccess={handleUploadSuccess}
             onUploadError={setError}
+            isParsing={isParsing}
           />
         </div>
       )}
 
-      {/* Step 2: Parse */}
-      {currentStep === 'parse' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              {t('parseStep')}
-            </CardTitle>
-            <CardDescription>
-              {t('step2Description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center py-8">
-              {isParsing ? (
-                <div className="space-y-4">
-                  <Loader2 className="h-12 w-12 mx-auto text-primary animate-spin" />
-                  <p className="text-muted-foreground">{t('parsing')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">{uploadedFilename}</span> - {t('readyToParse')}
-                  </p>
-                  <Button onClick={handleParseStatement} size="lg">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {t('parseButton')}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-start">
-              <Button variant="ghost" onClick={() => setCurrentStep('upload')}>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                {t('backButton') || 'Back'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step 3: Review */}
+      {/* Step 2: Review */}
       {currentStep === 'review' && (
         <Card>
           <CardHeader>
@@ -784,7 +737,7 @@ export default function ImportStatementPage() {
         </Card>
       )}
 
-      {/* Step 4: Import Results */}
+      {/* Step 3: Import Results */}
       {currentStep === 'import' && importResults && (
         <Card>
           <CardHeader>

@@ -45,7 +45,7 @@ import { ApiErrorState } from '@/components/ui/error-state';
 import { EXPENSE_CATEGORY_KEYS, CATEGORY_NAME_TO_KEY } from '@/lib/constants/expense-categories';
 import { CurrencyInput } from '@/components/currency';
 import { formatCurrency } from '@/lib/utils/currency';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ChevronDown } from 'lucide-react';
 import { AccountSelect } from '@/components/ui/account-select';
 
 interface ExpenseFormProps {
@@ -166,6 +166,7 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
+  const [showDetails, setShowDetails] = React.useState(false);
 
   // Get savings accounts for payment account dropdown
   const { data: accountsData } = useListAccountsQuery({
@@ -380,62 +381,48 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
           <ApiErrorState error={error} />
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="name" className="text-xs">{tForm('name')} *</Label>
-              <Input
-                id="name"
-                placeholder={tForm('namePlaceholder')}
-                {...register('name')}
-              />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
-              )}
+            {/* Name + Category row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-xs">{tForm('name')} *</Label>
+                <Input
+                  id="name"
+                  placeholder={tForm('namePlaceholder')}
+                  {...register('name')}
+                />
+                {errors.name && (
+                  <p className="text-xs text-destructive">{errors.name.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="category" className="text-xs">{tForm('category')}</Label>
+                <Select
+                  value={watch('category') || ''}
+                  onValueChange={(value) => setValue('category', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={tForm('categoryPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXPENSE_CATEGORY_KEYS.map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {tCategories(key)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
-              <Textarea
-                id="description"
-                placeholder={tForm('descriptionPlaceholder')}
-                rows={3}
-                {...register('description')}
-              />
-              {errors.description && (
-                <p className="text-xs text-destructive">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="category" className="text-xs">{tForm('category')}</Label>
-              <Select
-                value={watch('category') || ''}
-                onValueChange={(value) => setValue('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={tForm('categoryPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {EXPENSE_CATEGORY_KEYS.map((key) => (
-                    <SelectItem key={key} value={key}>
-                      {tCategories(key)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+            {/* Amount and Currency */}
             <CurrencyInput
               key={`currency-${existingExpense?.id || 'new'}-${watch('currency')}`}
               label={tForm('amount')}
               amount={amountInput}
               currency={watch('currency')}
               onAmountChange={(value) => {
-                // Update the local string state to allow typing decimal points
                 setAmountInput(value);
-
-                // Update the form state with the numeric value
                 if (value === '') {
                   setValue('amount', 0, { shouldValidate: true });
                 } else {
@@ -450,39 +437,40 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
               error={errors.amount?.message}
             />
 
-            <div className="space-y-1">
-              <Label htmlFor="frequency" className="text-xs">{tForm('frequency')} *</Label>
-              <Select
-                value={watch('frequency')}
-                onValueChange={(value) =>
-                  setValue('frequency', value as ExpenseFrequency)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(['one_time', 'daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'annually'] as const).map((freq) => (
-                    <SelectItem key={freq} value={freq}>
-                      {tFrequency(freq)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {watch('frequency') === 'one_time' ? (
+            {/* Frequency + Date row */}
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="date" className="text-xs">{tForm('date')}</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  {...register('date')}
-                  className="cursor-pointer"
-                                  />
+                <Label htmlFor="frequency" className="text-xs">{tForm('frequency')} *</Label>
+                <Select
+                  value={watch('frequency')}
+                  onValueChange={(value) =>
+                    setValue('frequency', value as ExpenseFrequency)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(['one_time', 'daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'annually'] as const).map((freq) => (
+                      <SelectItem key={freq} value={freq}>
+                        {tFrequency(freq)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ) : (
-              <div className="grid gap-3 grid-cols-2">
+
+              {watch('frequency') === 'one_time' ? (
+                <div className="space-y-1">
+                  <Label htmlFor="date" className="text-xs">{tForm('date')}</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    {...register('date')}
+                    className="cursor-pointer"
+                  />
+                </div>
+              ) : (
                 <div className="space-y-1">
                   <Label htmlFor="start_date" className="text-xs">{tForm('startDate')}</Label>
                   <Input
@@ -490,39 +478,17 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                     type="date"
                     {...register('start_date')}
                     className="cursor-pointer"
-                                      />
+                  />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="end_date" className="text-xs">{tForm('endDate')} (Optional)</Label>
-                  <Input
-                    id="end_date"
-                    type="date"
-                    {...register('end_date')}
-                    className="cursor-pointer"
-                                      />
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
-              <Switch
-                id="is_active"
-                checked={watch('is_active')}
-                onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
-              />
+              )}
             </div>
 
-            {/* Payment Integration Section */}
-            <div className="space-y-3 pt-3 lg:pt-4 border-t">
-              <h4 className="text-xs font-medium">{tForm('accountIntegration')}</h4>
-
-              {/* Payment Account */}
+            {/* Payment Account Section */}
+            <div className="space-y-3 pt-3 border-t">
               <AccountSelect
                 value={watch('payment_account_id')}
                 onChange={(accountId) => {
                   setValue('payment_account_id', accountId);
-                  // Auto-enable auto_pay and sync_historical when account is selected
                   if (accountId) {
                     setValue('auto_pay', true);
                     setValue('sync_historical', true);
@@ -538,7 +504,6 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                 helpText={tForm('paymentAccountHelp')}
               />
 
-              {/* Warning if expense amount exceeds account balance */}
               <InsufficientBalanceWarning
                 selectedAccountId={watch('payment_account_id')}
                 expenseAmount={watch('amount') || 0}
@@ -550,7 +515,6 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                 })}
               />
 
-              {/* Auto Pay Toggle - only visible when payment account is selected */}
               {watch('payment_account_id') && watch('payment_account_id') !== 'none' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -565,7 +529,6 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                       checked={watch('auto_pay') || false}
                       onCheckedChange={(checked: boolean) => {
                         setValue('auto_pay', checked);
-                        // Auto-enable sync_historical when auto_pay is turned on
                         if (checked) {
                           setValue('sync_historical', true);
                         }
@@ -573,7 +536,6 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                     />
                   </div>
 
-                  {/* Sync Historical Checkbox - only visible when auto_pay is enabled */}
                   {watch('auto_pay') && (
                     <div className="flex items-start gap-2 p-3 rounded-md bg-muted/50">
                       <input
@@ -595,27 +557,79 @@ export function ExpenseForm({ expenseId, isOpen, onClose }: ExpenseFormProps) {
                   )}
                 </div>
               )}
+            </div>
 
-              {/* Payment Method */}
-              <div className="space-y-1">
-                <Label htmlFor="payment_method" className="text-xs">{tForm('paymentMethod')}</Label>
-                <Select
-                  value={watch('payment_method') || 'none'}
-                  onValueChange={(value) => setValue('payment_method', value === 'none' ? null : value as PaymentMethod)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tForm('paymentMethodPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{tForm('noPaymentMethod')}</SelectItem>
-                    {paymentMethodOptions.map((method) => (
-                      <SelectItem key={method} value={method}>
-                        {tForm(`paymentMethods.${method}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Additional Details Section */}
+            <div className="border-t pt-3 mt-1">
+              <button
+                type="button"
+                onClick={() => setShowDetails(!showDetails)}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronDown className={`h-4 w-4 transition-transform ${showDetails ? '' : '-rotate-90'}`} />
+                Additional Details
+              </button>
+
+              {showDetails && (
+              <div className="space-y-3 mt-3">
+                {/* Description */}
+                <div className="space-y-1">
+                  <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
+                  <Textarea
+                    id="description"
+                    placeholder={tForm('descriptionPlaceholder')}
+                    rows={2}
+                    {...register('description')}
+                  />
+                </div>
+
+                {/* End Date - only for recurring */}
+                {watch('frequency') !== 'one_time' && (
+                <div className="space-y-1">
+                  <Label htmlFor="end_date" className="text-xs">{tForm('endDate')}</Label>
+                  <Input
+                    id="end_date"
+                    type="date"
+                    {...register('end_date')}
+                    className="cursor-pointer"
+                  />
+                </div>
+                )}
+
+                {/* Payment Method */}
+                <div className="space-y-1">
+                  <Label htmlFor="payment_method" className="text-xs">{tForm('paymentMethod')}</Label>
+                  <Select
+                    value={watch('payment_method') || 'none'}
+                    onValueChange={(value) => setValue('payment_method', value === 'none' ? null : value as PaymentMethod)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={tForm('paymentMethodPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{tForm('noPaymentMethod')}</SelectItem>
+                      {paymentMethodOptions.map((method) => (
+                        <SelectItem key={method} value={method}>
+                          {tForm(`paymentMethods.${method}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Active Status - only when editing */}
+                {isEditing && (
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
+                  <Switch
+                    id="is_active"
+                    checked={watch('is_active')}
+                    onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
+                  />
+                </div>
+                )}
               </div>
+              )}
             </div>
 
             <DialogFooter>

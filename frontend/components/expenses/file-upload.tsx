@@ -6,7 +6,7 @@
 
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, File, X, CheckCircle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,10 @@ import { useUploadFileMutation } from '@/lib/api/aiApi';
 interface FileUploadProps {
   onUploadSuccess?: (fileId: string, filename: string) => void;
   onUploadError?: (error: string) => void;
+  isParsing?: boolean;
 }
 
-export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) {
+export function FileUpload({ onUploadSuccess, onUploadError, isParsing = false }: FileUploadProps) {
   const t = useTranslations('expenses.import');
   const [uploadFile, { isLoading }] = useUploadFileMutation();
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -140,7 +141,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
       )}
 
       {/* Selected File */}
-      {selectedFile && !uploadedFileId && (
+      {selectedFile && (!uploadedFileId || isParsing) && (
         <Card>
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
@@ -153,7 +154,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
                   </p>
                 </div>
               </div>
-              {!isLoading && (
+              {!isLoading && !isParsing && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -174,11 +175,21 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
               </div>
             )}
 
-            {/* Upload Button */}
-            {!isLoading && uploadProgress === 0 && (
-              <Button onClick={handleUpload} className="w-full">
-                <Upload className="mr-2 h-4 w-4" />
-                {t('uploadFile')}
+            {/* Parsing indicator */}
+            {!isLoading && isParsing && (
+              <div className="flex items-center justify-center gap-2 py-2">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <p className="text-xs text-muted-foreground">
+                  {t('parsing')}
+                </p>
+              </div>
+            )}
+
+            {/* Upload & Parse Button */}
+            {!isLoading && !isParsing && uploadProgress === 0 && (
+              <Button onClick={handleUpload} className="w-full" disabled={isLoading || isParsing}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                {t('parseButton')}
               </Button>
             )}
           </CardContent>
@@ -186,7 +197,7 @@ export function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) 
       )}
 
       {/* Upload Success */}
-      {uploadedFileId && (
+      {uploadedFileId && !isParsing && (
         <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
           <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
           <AlertDescription className="text-green-600 dark:text-green-400">

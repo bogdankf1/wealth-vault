@@ -34,7 +34,6 @@ import {
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useSidebarSwipe } from '@/hooks/use-sidebar-swipe';
-import { useBackSwipe } from '@/hooks/use-back-swipe';
 import { useSidebarCollapse } from '@/hooks/use-sidebar-collapse';
 import { BottomNavBar } from '@/components/navigation/bottom-nav-bar';
 import { SubPagePillBar } from '@/components/navigation/sub-page-pill-bar';
@@ -64,7 +63,8 @@ export default function DashboardLayout({
     desktopQuery: '(min-width: 1280px)',
     enabled: false, // Disabled — mobile uses bottom nav instead
   });
-  useBackSwipe({ enabled: !sidebarOpen });
+  // Back swipe disabled — not useful on mobile
+  // useBackSwipe({ enabled: !sidebarOpen });
   const { isCollapsed, toggleCollapsed } = useSidebarCollapse();
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     incomeExpenses: true,

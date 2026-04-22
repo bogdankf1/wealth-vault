@@ -47,7 +47,7 @@ import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 
 // Step enum
-type ImportStep = 'upload' | 'parse' | 'review' | 'import';
+type ImportStep = 'upload' | 'review' | 'import';
 
 // Extended holding type for editing
 interface EditableHolding extends ParsedPortfolioHolding {
@@ -58,7 +58,6 @@ interface EditableHolding extends ParsedPortfolioHolding {
 
 const STEPS: { key: ImportStep; icon: React.ElementType }[] = [
   { key: 'upload', icon: Upload },
-  { key: 'parse', icon: Sparkles },
   { key: 'review', icon: Edit3 },
   { key: 'import', icon: CheckCircle },
 ];
@@ -126,7 +125,7 @@ export default function PortfolioImportPage() {
     setFiles(newFiles);
   }, []);
 
-  // Upload files and move to parse step
+  // Upload files and parse screenshots in one step
   const handleUploadAndParse = async () => {
     if (!canUseFeature) {
       setShowUpgradeDialog(true);
@@ -147,19 +146,8 @@ export default function PortfolioImportPage() {
       const fileIds = uploadResult.files.map((f) => f.id);
       setUploadedFileIds(fileIds);
 
-      // Move to parse step
-      setCurrentStep('parse');
-    } catch (error) {
-      toast.error(t('uploadError'));
-    }
-  };
-
-  // Parse screenshots with AI
-  const handleParseScreenshots = async () => {
-    if (uploadedFileIds.length === 0) return;
-
-    try {
-      const result = await parseScreenshots({ file_ids: uploadedFileIds }).unwrap();
+      // Parse screenshots with AI
+      const result = await parseScreenshots({ file_ids: fileIds }).unwrap();
 
       if (result.holdings.length === 0) {
         toast.info(t('noHoldingsFound'));
@@ -180,7 +168,7 @@ export default function PortfolioImportPage() {
       setCurrentStep('review');
       toast.success(t('holdingsFound', { count: result.total_count }));
     } catch (error) {
-      toast.error(t('parseError'));
+      toast.error(t('uploadError'));
     }
   };
 
@@ -416,16 +404,16 @@ export default function PortfolioImportPage() {
 
             {files.length > 0 && (
               <div className="flex justify-end">
-                <Button onClick={handleUploadAndParse} disabled={isUploading}>
-                  {isUploading ? (
+                <Button onClick={handleUploadAndParse} disabled={isUploading || isParsing}>
+                  {isUploading || isParsing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {t('uploading')}
+                      {isUploading ? t('uploading') : t('parsing')}
                     </>
                   ) : (
                     <>
-                      {t('continueToParseButton')}
-                      <ChevronRight className="h-4 w-4 ml-2" />
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {t('parseButton')}
                     </>
                   )}
                 </Button>
@@ -434,47 +422,7 @@ export default function PortfolioImportPage() {
         </div>
       )}
 
-      {/* Step 2: Parse */}
-      {currentStep === 'parse' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              {t('steps.parse')}
-            </CardTitle>
-            <CardDescription>{t('parseDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center py-8">
-              {isParsing ? (
-                <div className="space-y-4">
-                  <Loader2 className="h-12 w-12 mx-auto text-primary animate-spin" />
-                  <p className="text-muted-foreground">{t('parsing')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    {t('readyToParse', { count: uploadedFileIds.length })}
-                  </p>
-                  <Button onClick={handleParseScreenshots} size="lg">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {t('parseButton')}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between">
-              <Button variant="ghost" onClick={handleStartOver}>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                {t('backButton')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step 3: Review */}
+      {/* Step 2: Review */}
       {currentStep === 'review' && (
         <Card>
           <CardHeader>

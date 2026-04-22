@@ -47,7 +47,7 @@ import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 
 // Step enum
-type ImportStep = 'upload' | 'parse' | 'review' | 'import';
+type ImportStep = 'upload' | 'review' | 'import';
 
 // Extended installment type for editing
 interface EditableInstallment extends ParsedInstallment {
@@ -57,7 +57,6 @@ interface EditableInstallment extends ParsedInstallment {
 
 const STEPS: { key: ImportStep; icon: React.ElementType }[] = [
   { key: 'upload', icon: Upload },
-  { key: 'parse', icon: Sparkles },
   { key: 'review', icon: Edit3 },
   { key: 'import', icon: CheckCircle },
 ];
@@ -122,7 +121,7 @@ export default function InstallmentImportPage() {
     setFiles(newFiles);
   }, []);
 
-  // Upload files and move to parse step
+  // Upload files and parse screenshots with AI
   const handleUploadAndParse = async () => {
     if (!canUseFeature) {
       setShowUpgradeDialog(true);
@@ -143,19 +142,8 @@ export default function InstallmentImportPage() {
       const fileIds = uploadResult.files.map((f) => f.id);
       setUploadedFileIds(fileIds);
 
-      // Move to parse step
-      setCurrentStep('parse');
-    } catch (error) {
-      toast.error(t('uploadError'));
-    }
-  };
-
-  // Parse screenshots with AI
-  const handleParseScreenshots = async () => {
-    if (uploadedFileIds.length === 0) return;
-
-    try {
-      const result = await parseScreenshots({ file_ids: uploadedFileIds }).unwrap();
+      // Parse screenshots immediately
+      const result = await parseScreenshots({ file_ids: fileIds }).unwrap();
 
       // Convert to editable installments with corrected dates
       const today = new Date();
@@ -190,7 +178,7 @@ export default function InstallmentImportPage() {
       // Show success message
       toast.success(t('installmentsFound', { count: result.total_count }));
     } catch (error) {
-      toast.error(t('parseError'));
+      toast.error(t('uploadError'));
     }
   };
 
@@ -327,7 +315,7 @@ export default function InstallmentImportPage() {
 
   // Get step status for progress indicator
   const getStepStatus = (step: ImportStep): 'completed' | 'current' | 'upcoming' => {
-    const stepOrder: ImportStep[] = ['upload', 'parse', 'review', 'import'];
+    const stepOrder: ImportStep[] = ['upload', 'review', 'import'];
     const currentIndex = stepOrder.indexOf(currentStep);
     const stepIndex = stepOrder.indexOf(step);
 
@@ -377,16 +365,16 @@ export default function InstallmentImportPage() {
 
             {files.length > 0 && (
               <div className="flex justify-end">
-                <Button onClick={handleUploadAndParse} disabled={isUploading}>
-                  {isUploading ? (
+                <Button onClick={handleUploadAndParse} disabled={isUploading || isParsing}>
+                  {isUploading || isParsing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {t('uploading')}
+                      {isUploading ? t('uploading') : t('parsing')}
                     </>
                   ) : (
                     <>
-                      {t('continueButton')}
-                      <ChevronRight className="h-4 w-4 ml-2" />
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {t('parseButton')}
                     </>
                   )}
                 </Button>
@@ -395,47 +383,7 @@ export default function InstallmentImportPage() {
         </div>
       )}
 
-      {/* Step 2: Parse */}
-      {currentStep === 'parse' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              {t('steps.parse')}
-            </CardTitle>
-            <CardDescription>{t('parseDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center py-8">
-              {isParsing ? (
-                <div className="space-y-4">
-                  <Loader2 className="h-12 w-12 mx-auto text-primary animate-spin" />
-                  <p className="text-muted-foreground">{t('parsing')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    {t('readyToParse', { count: uploadedFileIds.length })}
-                  </p>
-                  <Button onClick={handleParseScreenshots} size="lg">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {t('parseButton')}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between">
-              <Button variant="ghost" onClick={handleStartOver}>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                {t('backButton')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step 3: Review */}
+      {/* Step 2: Review */}
       {currentStep === 'review' && (
         <Card>
           <CardHeader>

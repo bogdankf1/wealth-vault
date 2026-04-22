@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useCreateAccountMutation,
@@ -104,6 +105,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
   // Local state to track the string value while user is typing
   const [currentBalanceInput, setCurrentBalanceInput] = React.useState<string>('');
   const [interestRateInput, setInterestRateInput] = React.useState<string>('');
+  const [showDetails, setShowDetails] = React.useState(false);
 
   const {
     data: existingAccount,
@@ -166,6 +168,7 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
       // Set interest rate input string
       if (interestRatePercent !== undefined) {
         setInterestRateInput(String(interestRatePercent));
+        setShowDetails(true);
       } else {
         setInterestRateInput('');
       }
@@ -264,51 +267,38 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
             )}
           </div>
 
-          {/* Account Type */}
-          <div className="space-y-1">
-            <Label htmlFor="account_type" className="text-xs">{tForm('accountType')}</Label>
-            <Select
-              value={accountType}
-              onValueChange={(value) => setValue('account_type', value as AccountType)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={tForm('accountTypePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {ACCOUNT_TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.account_type && (
-              <p className="text-xs text-red-500">{errors.account_type.message}</p>
-            )}
-          </div>
+          {/* Account Type & Institution */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="account_type" className="text-xs">{tForm('accountType')}</Label>
+              <Select
+                value={accountType}
+                onValueChange={(value) => setValue('account_type', value as AccountType)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={tForm('accountTypePlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.account_type && (
+                <p className="text-xs text-red-500">{errors.account_type.message}</p>
+              )}
+            </div>
 
-          {/* Institution */}
-          <div className="space-y-1">
-            <Label htmlFor="institution" className="text-xs">{tForm('institution')}</Label>
-            <Input
-              id="institution"
-              {...register('institution')}
-              placeholder={tForm('institutionPlaceholder')}
-            />
-          </div>
-
-          {/* Last 4 Digits */}
-          <div className="space-y-1">
-            <Label htmlFor="account_number_last4" className="text-xs">{tForm('accountNumberLast4')}</Label>
-            <Input
-              id="account_number_last4"
-              {...register('account_number_last4')}
-              placeholder="1234"
-              maxLength={4}
-            />
-            {errors.account_number_last4 && (
-              <p className="text-xs text-red-500">{errors.account_number_last4.message}</p>
-            )}
+            <div className="space-y-1">
+              <Label htmlFor="institution" className="text-xs">{tForm('institution')}</Label>
+              <Input
+                id="institution"
+                {...register('institution')}
+                placeholder={tForm('institutionPlaceholder')}
+              />
+            </div>
           </div>
 
           {/* Current Balance with Currency */}
@@ -336,107 +326,137 @@ export function SavingsAccountForm({ accountId, isOpen, onClose }: SavingsAccoun
             error={errors.current_balance?.message}
           />
 
-          {/* Interest Settings Section */}
-          <div className="space-y-3 border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
-            <h3 className="text-sm lg:text-base font-semibold text-foreground">{tInterest('settings')}</h3>
+          {/* Additional Details Section */}
+          <div className="border-t pt-3 lg:pt-4 mt-3 lg:mt-4">
+            <button
+              type="button"
+              onClick={() => setShowDetails(!showDetails)}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronDown className={`h-4 w-4 transition-transform ${showDetails ? '' : '-rotate-90'}`} />
+              Additional Details
+            </button>
 
-            {/* Interest Rate */}
-            <div className="space-y-1">
-              <Label htmlFor="interest_rate_percent" className="text-xs">{tInterest('rate')}</Label>
-              <div className="relative">
+            {showDetails && (
+            <div className="space-y-3 mt-3">
+              {/* Last 4 Digits */}
+              <div className="space-y-1">
+                <Label htmlFor="account_number_last4" className="text-xs">{tForm('accountNumberLast4')}</Label>
                 <Input
-                  id="interest_rate_percent"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  value={interestRateInput}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setInterestRateInput(value);
-                    if (value === '') {
-                      setValue('interest_rate_percent', undefined, { shouldValidate: true });
-                    } else {
-                      const numValue = parseFloat(value);
-                      if (!isNaN(numValue)) {
-                        setValue('interest_rate_percent', numValue, { shouldValidate: true });
-                      }
-                    }
-                  }}
-                  placeholder={tInterest('ratePlaceholder')}
-                  className="pr-8"
+                  id="account_number_last4"
+                  {...register('account_number_last4')}
+                  placeholder="1234"
+                  maxLength={4}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                {errors.account_number_last4 && (
+                  <p className="text-xs text-red-500">{errors.account_number_last4.message}</p>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">{tInterest('rateHelp')}</p>
-              {errors.interest_rate_percent && (
-                <p className="text-xs text-red-500">{errors.interest_rate_percent.message}</p>
+
+              {/* Interest Settings */}
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tInterest('settings')}</h4>
+
+              {/* Interest Rate */}
+              <div className="space-y-1">
+                <Label htmlFor="interest_rate_percent" className="text-xs">{tInterest('rate')}</Label>
+                <div className="relative">
+                  <Input
+                    id="interest_rate_percent"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={interestRateInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setInterestRateInput(value);
+                      if (value === '') {
+                        setValue('interest_rate_percent', undefined, { shouldValidate: true });
+                      } else {
+                        const numValue = parseFloat(value);
+                        if (!isNaN(numValue)) {
+                          setValue('interest_rate_percent', numValue, { shouldValidate: true });
+                        }
+                      }
+                    }}
+                    placeholder={tInterest('ratePlaceholder')}
+                    className="pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{tInterest('rateHelp')}</p>
+                {errors.interest_rate_percent && (
+                  <p className="text-xs text-red-500">{errors.interest_rate_percent.message}</p>
+                )}
+              </div>
+
+              {/* Interest Frequency and Method */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Interest Frequency */}
+                <div className="space-y-1">
+                  <Label htmlFor="interest_frequency" className="text-xs">{tInterest('frequency')}</Label>
+                  <Select
+                    value={interestFrequency}
+                    onValueChange={(value) => setValue('interest_frequency', value as 'daily' | 'monthly' | 'quarterly' | 'annually')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={tInterest('frequencyPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INTEREST_FREQUENCY_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Interest Accrual Method */}
+                <div className="space-y-1">
+                  <Label htmlFor="interest_accrual_method" className="text-xs">{tInterest('method')}</Label>
+                  <Select
+                    value={interestMethod}
+                    onValueChange={(value) => setValue('interest_accrual_method', value as 'simple' | 'compound')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={tInterest('methodPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INTEREST_METHOD_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-1">
+                <Label htmlFor="notes" className="text-xs">{tForm('notes')}</Label>
+                <Textarea
+                  id="notes"
+                  {...register('notes')}
+                  placeholder={tForm('notesPlaceholder')}
+                  rows={3}
+                />
+              </div>
+
+              {/* Active Status - only show when editing */}
+              {isEditing && (
+              <div className="flex items-center justify-between">
+                <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
+                <Switch
+                  id="is_active"
+                  checked={isActive}
+                  onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
+                />
+              </div>
               )}
             </div>
-
-            {/* Interest Frequency and Method */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Interest Frequency */}
-              <div className="space-y-1">
-                <Label htmlFor="interest_frequency" className="text-xs">{tInterest('frequency')}</Label>
-                <Select
-                  value={interestFrequency}
-                  onValueChange={(value) => setValue('interest_frequency', value as 'daily' | 'monthly' | 'quarterly' | 'annually')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tInterest('frequencyPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INTEREST_FREQUENCY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Interest Accrual Method */}
-              <div className="space-y-1">
-                <Label htmlFor="interest_accrual_method" className="text-xs">{tInterest('method')}</Label>
-                <Select
-                  value={interestMethod}
-                  onValueChange={(value) => setValue('interest_accrual_method', value as 'simple' | 'compound')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tInterest('methodPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INTEREST_METHOD_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-1">
-            <Label htmlFor="notes" className="text-xs">{tForm('notes')}</Label>
-            <Textarea
-              id="notes"
-              {...register('notes')}
-              placeholder={tForm('notesPlaceholder')}
-              rows={3}
-            />
-          </div>
-
-          {/* Active Status */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
-            <Switch
-              id="is_active"
-              checked={isActive}
-              onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
-            />
+            )}
           </div>
 
             <DialogFooter>

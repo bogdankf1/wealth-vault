@@ -46,7 +46,7 @@ import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 
 // Step enum
-type ImportStep = 'upload' | 'parse' | 'review' | 'import';
+type ImportStep = 'upload' | 'review' | 'import';
 
 // Extended account type for editing
 interface EditableAccount extends ParsedAccount {
@@ -57,7 +57,6 @@ interface EditableAccount extends ParsedAccount {
 
 const STEPS: { key: ImportStep; icon: React.ElementType }[] = [
   { key: 'upload', icon: Upload },
-  { key: 'parse', icon: Sparkles },
   { key: 'review', icon: Edit3 },
   { key: 'import', icon: CheckCircle },
 ];
@@ -140,7 +139,7 @@ export default function AccountsImportPage() {
     setFiles(newFiles);
   }, []);
 
-  // Upload files and move to parse step
+  // Upload files, parse with AI, and move to review step
   const handleUploadAndParse = async () => {
     if (!canUseFeature) {
       setShowUpgradeDialog(true);
@@ -150,30 +149,18 @@ export default function AccountsImportPage() {
     if (files.length === 0) return;
 
     try {
-      // Create FormData
+      // Create FormData and upload
       const formData = new FormData();
       files.forEach((file) => {
         formData.append('files', file);
       });
 
-      // Upload files
       const uploadResult = await uploadImages(formData).unwrap();
       const fileIds = uploadResult.files.map((f) => f.id);
       setUploadedFileIds(fileIds);
 
-      // Move to parse step
-      setCurrentStep('parse');
-    } catch (error) {
-      toast.error(t('uploadError'));
-    }
-  };
-
-  // Parse screenshots with AI
-  const handleParseScreenshots = async () => {
-    if (uploadedFileIds.length === 0) return;
-
-    try {
-      const result = await parseScreenshots({ file_ids: uploadedFileIds }).unwrap();
+      // Parse screenshots with AI
+      const result = await parseScreenshots({ file_ids: fileIds }).unwrap();
 
       if (result.accounts.length === 0) {
         toast.info(t('noAccountsFound'));
@@ -182,7 +169,6 @@ export default function AccountsImportPage() {
 
       // Convert to editable accounts and mark duplicates
       const editableAccounts: EditableAccount[] = result.accounts.map((acc, index) => {
-        // Prepend institution/bank name to account name for clarity (e.g. "Monobank Гривня")
         const prefixedName = acc.institution && !acc.name.startsWith(acc.institution)
           ? `${acc.institution} ${acc.name}`
           : acc.name;
@@ -191,12 +177,11 @@ export default function AccountsImportPage() {
         return {
           ...modifiedAcc,
           id: `acc-${index}-${Date.now()}`,
-          selected: !duplicate, // Don't select duplicates by default
+          selected: !duplicate,
           isDuplicate: duplicate,
         };
       });
 
-      // Notify about duplicates
       const duplicateCount = editableAccounts.filter(a => a.isDuplicate).length;
       if (duplicateCount > 0) {
         toast.info(t('duplicatesFound', { count: duplicateCount }));
@@ -206,7 +191,7 @@ export default function AccountsImportPage() {
       setCurrentStep('review');
       toast.success(t('accountsFound', { count: result.total_count }));
     } catch (error) {
-      toast.error(t('parseError'));
+      toast.error(t('uploadError'));
     }
   };
 
@@ -424,16 +409,16 @@ export default function AccountsImportPage() {
 
             {files.length > 0 && (
               <div className="flex justify-end">
-                <Button onClick={handleUploadAndParse} disabled={isUploading}>
-                  {isUploading ? (
+                <Button onClick={handleUploadAndParse} disabled={isUploading || isParsing}>
+                  {isUploading || isParsing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {t('uploading')}
+                      {isParsing ? t('parsing') : t('uploading')}
                     </>
                   ) : (
                     <>
-                      {t('continueToParseButton')}
-                      <ChevronRight className="h-4 w-4 ml-2" />
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {t('parseButton')}
                     </>
                   )}
                 </Button>
@@ -442,47 +427,7 @@ export default function AccountsImportPage() {
         </div>
       )}
 
-      {/* Step 2: Parse */}
-      {currentStep === 'parse' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              {t('steps.parse')}
-            </CardTitle>
-            <CardDescription>{t('parseDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center py-8">
-              {isParsing ? (
-                <div className="space-y-4">
-                  <Loader2 className="h-12 w-12 mx-auto text-primary animate-spin" />
-                  <p className="text-muted-foreground">{t('parsing')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    {t('readyToParse', { count: uploadedFileIds.length })}
-                  </p>
-                  <Button onClick={handleParseScreenshots} size="lg">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {t('parseButton')}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between">
-              <Button variant="ghost" onClick={handleStartOver}>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                {t('backButton')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step 3: Review */}
+      {/* Step 2: Review */}
       {currentStep === 'review' && (
         <Card>
           <CardHeader>

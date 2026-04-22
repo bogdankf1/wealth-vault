@@ -40,6 +40,7 @@ import {
 import { LoadingForm } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
 import { CurrencyInput } from '@/components/currency/currency-input';
+import { ChevronDown } from 'lucide-react';
 import { AccountSelect } from '@/components/ui/account-select';
 import { toast } from 'sonner';
 import { INCOME_CATEGORY_KEYS, INCOME_CATEGORY_NAME_TO_KEY } from '@/lib/constants/income-categories';
@@ -110,6 +111,7 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
 
   // Local state to track the string value of amount while user is typing
   const [amountInput, setAmountInput] = React.useState<string>('');
+  const [showDetails, setShowDetails] = React.useState(false);
 
   // Get savings accounts for target account dropdown
   const { data: accountsData } = useListAccountsQuery({
@@ -328,32 +330,20 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
           <ApiErrorState error={error} />
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-            {/* Name */}
-            <div className="space-y-1">
-              <Label htmlFor="name" className="text-xs">{tForm('name')} *</Label>
-              <Input
-                id="name"
-                placeholder={tForm('namePlaceholder')}
-                {...register('name')}
-              />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1">
-              <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
-              <Textarea
-                id="description"
-                placeholder={tForm('descriptionPlaceholder')}
-                rows={2}
-                {...register('description')}
-              />
-            </div>
-
-            {/* Category + Frequency row */}
+            {/* Name + Category row */}
             <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-xs">{tForm('name')} *</Label>
+                <Input
+                  id="name"
+                  placeholder={tForm('namePlaceholder')}
+                  {...register('name')}
+                />
+                {errors.name && (
+                  <p className="text-xs text-destructive">{errors.name.message}</p>
+                )}
+              </div>
+
               <div className="space-y-1">
                 <Label htmlFor="category" className="text-xs">{tForm('category')}</Label>
                 <Select
@@ -372,8 +362,32 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              {/* Frequency */}
+            {/* Amount and Currency */}
+            <CurrencyInput
+              key={`currency-${existingSource?.id || 'new'}-${watch('currency')}`}
+              label={tForm('amount')}
+              amount={amountInput}
+              currency={watch('currency')}
+              onAmountChange={(value) => {
+                setAmountInput(value);
+                if (value === '') {
+                  setValue('amount', 0, { shouldValidate: true });
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    setValue('amount', numValue, { shouldValidate: true });
+                  }
+                }
+              }}
+              onCurrencyChange={(value) => setValue('currency', value)}
+              required
+              error={errors.amount?.message}
+            />
+
+            {/* Frequency + Date row */}
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="frequency" className="text-xs">{tForm('frequency')} *</Label>
                 <Select
@@ -394,47 +408,18 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {/* Amount and Currency */}
-            <CurrencyInput
-              key={`currency-${existingSource?.id || 'new'}-${watch('currency')}`}
-              label={tForm('amount')}
-              amount={amountInput}
-              currency={watch('currency')}
-              onAmountChange={(value) => {
-                // Update the local string state to allow typing decimal points
-                setAmountInput(value);
-
-                // Update the form state with the numeric value
-                // Allow empty string, otherwise parse the number
-                if (value === '') {
-                  setValue('amount', 0, { shouldValidate: true });
-                } else {
-                  const numValue = parseFloat(value);
-                  if (!isNaN(numValue)) {
-                    setValue('amount', numValue, { shouldValidate: true });
-                  }
-                }
-              }}
-              onCurrencyChange={(value) => setValue('currency', value)}
-              required
-              error={errors.amount?.message}
-            />
-
-            {/* Date Fields - Conditional based on frequency */}
-            {watch('frequency') === 'one_time' ? (
-              <div className="space-y-1">
-                <Label htmlFor="date" className="text-xs">{tForm('date')}</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  {...register('date')}
-                  className="cursor-pointer"
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
+              {watch('frequency') === 'one_time' ? (
+                <div className="space-y-1">
+                  <Label htmlFor="date" className="text-xs">{tForm('date')}</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    {...register('date')}
+                    className="cursor-pointer"
+                  />
+                </div>
+              ) : (
                 <div className="space-y-1">
                   <Label htmlFor="start_date" className="text-xs">{tForm('startDate')}</Label>
                   <Input
@@ -444,34 +429,11 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                     className="cursor-pointer"
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="end_date" className="text-xs">{tForm('endDate')}</Label>
-                  <Input
-                    id="end_date"
-                    type="date"
-                    {...register('end_date')}
-                    className="cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Active Status */}
-            <div className="flex items-center justify-between">
-              <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
-              <Switch
-                id="is_active"
-                checked={watch('is_active')}
-                onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
-              />
+              )}
             </div>
 
             {/* Account Integration Section */}
             <div className="border-t pt-3 mt-1 space-y-3">
-              <h4 className="text-xs font-medium text-muted-foreground">
-                {tForm('accountIntegration')}
-              </h4>
-
               {/* Target Account */}
               <AccountSelect
                 value={watch('target_account_id')}
@@ -517,6 +479,58 @@ export function IncomeSourceForm({ sourceId, isOpen, onClose }: IncomeSourceForm
                     onCheckedChange={(checked: boolean) => setValue('sync_historical', checked)}
                   />
                 </div>
+              )}
+            </div>
+
+            {/* Additional Details Section */}
+            <div className="border-t pt-3 mt-1">
+              <button
+                type="button"
+                onClick={() => setShowDetails(!showDetails)}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronDown className={`h-4 w-4 transition-transform ${showDetails ? '' : '-rotate-90'}`} />
+                Additional Details
+              </button>
+
+              {showDetails && (
+              <div className="space-y-3 mt-3">
+                {/* Description */}
+                <div className="space-y-1">
+                  <Label htmlFor="description" className="text-xs">{tForm('description')}</Label>
+                  <Textarea
+                    id="description"
+                    placeholder={tForm('descriptionPlaceholder')}
+                    rows={2}
+                    {...register('description')}
+                  />
+                </div>
+
+                {/* End Date - only for recurring */}
+                {watch('frequency') !== 'one_time' && (
+                <div className="space-y-1">
+                  <Label htmlFor="end_date" className="text-xs">{tForm('endDate')}</Label>
+                  <Input
+                    id="end_date"
+                    type="date"
+                    {...register('end_date')}
+                    className="cursor-pointer"
+                  />
+                </div>
+                )}
+
+                {/* Active Status - only when editing */}
+                {isEditing && (
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is_active" className="text-xs">{tForm('isActive')}</Label>
+                  <Switch
+                    id="is_active"
+                    checked={watch('is_active')}
+                    onCheckedChange={(checked: boolean) => setValue('is_active', checked)}
+                  />
+                </div>
+                )}
+              </div>
               )}
             </div>
 
