@@ -408,8 +408,8 @@ export default function AccountsImportPage() {
             <ImageUpload onFilesReady={handleFilesReady} maxFiles={10} />
 
             {files.length > 0 && (
-              <div className="flex justify-end">
-                <Button onClick={handleUploadAndParse} disabled={isUploading || isParsing}>
+              <div>
+                <Button onClick={handleUploadAndParse} disabled={isUploading || isParsing} className="w-full sm:w-auto sm:float-right">
                   {isUploading || isParsing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -435,62 +435,38 @@ export default function AccountsImportPage() {
               <Edit3 className="h-5 w-5" />
               {t('steps.review')}
             </CardTitle>
-            <CardDescription>{t('reviewDescription')}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-muted">
-                <p className="text-sm text-muted-foreground">{t('totalAccounts')}</p>
-                <p className="text-lg md:text-2xl font-bold">{selectedAccounts.length}</p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted">
-                <p className="text-sm text-muted-foreground">{t('totalBalance')}</p>
-                <p className="text-lg md:text-2xl font-bold">
-                  {isConverting ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  ) : convertedTotal !== null ? (
-                    <CurrencyDisplay amount={convertedTotal} currency={displayCurrency} />
-                  ) : (
-                    '-'
-                  )}
-                </p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted">
-                <p className="text-sm text-muted-foreground">{t('cardVsDeposit')}</p>
-                <p className="text-lg md:text-2xl font-bold">{cardsCount} / {depositsCount}</p>
-              </div>
+          <CardContent className="space-y-4">
+            {/* Summary - compact one-liner */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{selectedAccounts.length} {t('totalAccounts').toLowerCase()}</span>
+              <span>·</span>
+              <span className="font-medium text-foreground">
+                {isConverting ? (
+                  <Loader2 className="h-4 w-4 animate-spin inline" />
+                ) : convertedTotal !== null ? (
+                  <CurrencyDisplay amount={convertedTotal} currency={displayCurrency} />
+                ) : (
+                  '-'
+                )}
+              </span>
             </div>
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <TabsList>
-                  <TabsTrigger value="all">
+              <div className="flex items-center gap-2 flex-wrap">
+                <TabsList className="h-8">
+                  <TabsTrigger value="all" className="text-xs px-2 h-6">
                     {t('tabAll')} ({accounts.length})
                   </TabsTrigger>
-                  <TabsTrigger value="cards">
+                  <TabsTrigger value="cards" className="text-xs px-2 h-6">
                     {t('tabCards')} ({accounts.filter((a) => a.account_type === 'card').length})
                   </TabsTrigger>
-                  <TabsTrigger value="deposits">
+                  <TabsTrigger value="deposits" className="text-xs px-2 h-6">
                     {t('tabDeposits')} ({accounts.filter((a) => a.account_type === 'deposit' || a.account_type === 'savings').length})
                   </TabsTrigger>
                 </TabsList>
 
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={selectAll}>
-                    {t('selectAll')}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={deselectAll}>
-                    {t('deselectAll')}
-                  </Button>
-                  {selectedInView > 0 && (
-                    <Button variant="destructive" size="sm" onClick={removeSelected}>
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      {t('removeSelected', { count: selectedInView })}
-                    </Button>
-                  )}
-                </div>
               </div>
 
               <TabsContent value={activeTab} className="mt-4">
@@ -657,7 +633,7 @@ export default function AccountsImportPage() {
               <CheckCircle className="h-5 w-5" />
               {t('steps.import')}
             </CardTitle>
-            <CardDescription>{t('importDescription')}</CardDescription>
+            {/* <CardDescription>{t('importDescription')}</CardDescription> */}
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="text-center py-8 space-y-6">
