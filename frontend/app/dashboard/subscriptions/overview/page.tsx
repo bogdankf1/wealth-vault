@@ -360,6 +360,7 @@ export default function SubscriptionsPage() {
       <>
         {selectedSubscriptionIds.size > 0 && (
           <>
+            {/* Archive hidden for now
             <Button
               onClick={handleBatchArchive}
               variant="outline"
@@ -369,6 +370,7 @@ export default function SubscriptionsPage() {
               <Archive className="mr-2 h-4 w-4" />
               <span className="truncate">{tOverview('archiveSelected', { count: selectedSubscriptionIds.size })}</span>
             </Button>
+            */}
             <Button
               onClick={handleBatchDelete}
               variant="destructive"

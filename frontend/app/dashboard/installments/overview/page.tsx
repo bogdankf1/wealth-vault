@@ -373,6 +373,7 @@ export default function InstallmentsPage() {
       <>
         {selectedInstallmentIds.size > 0 && (
           <>
+            {/* Archive hidden for now
             <Button
               onClick={handleBatchArchive}
               variant="outline"
@@ -382,6 +383,7 @@ export default function InstallmentsPage() {
               <Archive className="mr-2 h-4 w-4" />
               <span className="truncate">{tOverview('archiveSelected', { count: selectedInstallmentIds.size })}</span>
             </Button>
+            */}
             <Button onClick={handleBatchDelete} variant="destructive" size="default" className="w-full sm:w-auto">
               <Trash2 className="mr-2 h-4 w-4" />
               <span className="truncate">{tOverview('deleteSelected', { count: selectedInstallmentIds.size })}</span>

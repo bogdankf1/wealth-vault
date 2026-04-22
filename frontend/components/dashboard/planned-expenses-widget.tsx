@@ -94,7 +94,7 @@ export function PlannedExpensesWidget({ selectedMonth }: PlannedExpensesWidgetPr
             <CalendarClock className="h-5 w-5 text-primary" />
             <CardTitle>{t('title')}</CardTitle>
           </div>
-          <CardDescription>{t('description')}</CardDescription>
+          <CardDescription className="hidden md:block">{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -137,7 +137,7 @@ export function PlannedExpensesWidget({ selectedMonth }: PlannedExpensesWidgetPr
             <Badge variant="secondary">{upcomingExpenses.length}</Badge>
           )}
         </div>
-        <CardDescription>{t('description')}</CardDescription>
+        <CardDescription className="hidden md:block">{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {!upcomingExpenses || upcomingExpenses.length === 0 ? (

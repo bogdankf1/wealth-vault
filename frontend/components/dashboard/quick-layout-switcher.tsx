@@ -54,11 +54,8 @@ export function QuickLayoutSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-9 gap-2">
+        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
           <LayoutGrid className="h-4 w-4" />
-          <span className="hidden sm:inline">
-            {activeLayout?.name || t('selectLayout')}
-          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

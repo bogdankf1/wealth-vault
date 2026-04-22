@@ -102,7 +102,7 @@ export function PlannedSubscriptionsWidget({ selectedMonth }: PlannedSubscriptio
             <CalendarClock className="h-5 w-5 text-primary" />
             <CardTitle>{t('title')}</CardTitle>
           </div>
-          <CardDescription>{t('description')}</CardDescription>
+          <CardDescription className="hidden md:block">{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -145,7 +145,7 @@ export function PlannedSubscriptionsWidget({ selectedMonth }: PlannedSubscriptio
             <Badge variant="secondary">{upcomingSubscriptions.length}</Badge>
           )}
         </div>
-        <CardDescription>{t('description')}</CardDescription>
+        <CardDescription className="hidden md:block">{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {!upcomingSubscriptions || upcomingSubscriptions.length === 0 ? (

@@ -74,7 +74,7 @@ export function IncomeBreakdownChart({
   if (isLoading) {
     return (
       <Card className="p-4 md:p-6">
-        <Skeleton className="h-[300px] md:h-[400px] w-full" />
+        <Skeleton className="h-[120px] md:h-[400px] w-full" />
       </Card>
     );
   }
@@ -82,7 +82,7 @@ export function IncomeBreakdownChart({
   if (!data || data.length === 0) {
     return (
       <Card className="p-4 md:p-6">
-        <div className="flex flex-col items-center justify-center h-[300px] md:h-[400px] text-gray-500">
+        <div className="flex flex-col items-center justify-center h-[120px] md:h-[400px] text-gray-500">
           <PieChartIcon className="h-8 w-8 md:h-12 md:w-12 mb-2 md:mb-4 opacity-50" />
           <p className="text-sm md:text-base">{t('emptyState')}</p>
         </div>
@@ -177,7 +177,7 @@ export function IncomeBreakdownChart({
               </TooltipContent>
             </ChartTooltip>
           </div>
-          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+          <p className="hidden md:block text-xs md:text-sm text-gray-600 dark:text-gray-400">
             {t('description')}
           </p>
         </div>

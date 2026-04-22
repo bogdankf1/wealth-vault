@@ -54,11 +54,11 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     key: 'recurring',
     labelKey: 'tabs.recurring',
     icon: Repeat,
-    defaultHref: '/dashboard/budgets',
+    defaultHref: '/dashboard/subscriptions',
     subPages: [
-      { href: '/dashboard/budgets', labelKey: 'navigation.budgets' },
       { href: '/dashboard/subscriptions', labelKey: 'navigation.subscriptions' },
       { href: '/dashboard/installments', labelKey: 'navigation.installments' },
+      { href: '/dashboard/budgets', labelKey: 'navigation.budgets' },
     ],
   },
   {

@@ -391,6 +391,7 @@ export default function BudgetsPage() {
       <>
         {selectedBudgetIds.size > 0 && (
           <>
+            {/* Archive hidden for now
             <Button
               onClick={handleBatchArchive}
               variant="outline"
@@ -399,6 +400,7 @@ export default function BudgetsPage() {
             >
               <span className="truncate">{tOverview('archiveSelected', { count: selectedBudgetIds.size })}</span>
             </Button>
+            */}
             <Button
               onClick={handleBatchDelete}
               variant="destructive"

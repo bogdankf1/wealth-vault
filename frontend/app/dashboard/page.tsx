@@ -231,7 +231,7 @@ export default function DashboardPage() {
               {t('description')}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex items-center gap-2">
             {/* Quick Layout Switcher */}
             <QuickLayoutSwitcher />
             {/* Month Filter */}
@@ -246,7 +246,7 @@ export default function DashboardPage() {
 
       {/* Cash Flow Stats - Compact (moved to top for quick overview) */}
       {(isWidgetVisible('income-vs-expenses') || isWidgetVisible('upcoming-bills') || isWidgetVisible('taxes') || isWidgetVisible('debts-owed') || isWidgetVisible('monthly-spending')) && (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-2">
         {isWidgetVisible('income-vs-expenses') && (
         <Card className="p-2.5 xl:p-3">
           <div className="flex items-center gap-2 mb-1">
@@ -566,7 +566,7 @@ export default function DashboardPage() {
       {/* Analytics Section */}
       <div className="space-y-4 md:space-y-6">
         {hasVisibleCharts() && (
-          <div>
+          <div className="hidden md:block">
             <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">{tAnalytics('title')}</h2>
             <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
               {tAnalytics('description')}

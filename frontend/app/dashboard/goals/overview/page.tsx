@@ -246,6 +246,7 @@ export default function GoalsPage() {
       <>
         {selectedGoalIds.size > 0 && (
           <>
+            {/* Archive hidden for now
             <Button
               onClick={handleBatchArchive}
               variant="outline"
@@ -255,6 +256,7 @@ export default function GoalsPage() {
               <Archive className="mr-2 h-4 w-4" />
               <span className="truncate">{tOverview('archiveSelected', { count: selectedGoalIds.size })}</span>
             </Button>
+            */}
             <Button
               onClick={handleBatchDelete}
               variant="destructive"

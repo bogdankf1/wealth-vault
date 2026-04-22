@@ -325,6 +325,7 @@ export default function TaxesPage() {
       <div className="flex gap-2 flex-wrap">
         {selectedTaxIds.size > 0 && (
           <>
+            {/* Archive hidden for now
             <Button
               onClick={handleBatchArchive}
               variant="outline"
@@ -334,6 +335,7 @@ export default function TaxesPage() {
               <Archive className="mr-2 h-4 w-4" />
               <span className="truncate">{tOverview('archiveSelected', { count: selectedTaxIds.size })}</span>
             </Button>
+            */}
             <Button
               onClick={handleBatchDelete}
               variant="destructive"

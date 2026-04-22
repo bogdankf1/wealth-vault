@@ -230,6 +230,7 @@ export default function PortfolioPage() {
       <>
         {selectedAssetIds.size > 0 && (
           <>
+            {/* Archive hidden for now
             <Button
               onClick={handleBatchArchive}
               variant="outline"
@@ -239,6 +240,7 @@ export default function PortfolioPage() {
               <Archive className="mr-2 h-4 w-4" />
               <span className="truncate">{tOverview('archiveSelected', { count: selectedAssetIds.size })}</span>
             </Button>
+            */}
             <Button
               onClick={handleBatchDelete}
               variant="destructive"
