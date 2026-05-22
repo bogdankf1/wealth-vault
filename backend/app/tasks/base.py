@@ -30,6 +30,7 @@ from app.modules.dashboard_layouts.models import DashboardLayout
 from app.modules.backups.models import Backup
 from app.modules.support.models import SupportTopic, SupportMessage
 from app.modules.dashboard.models import NetWorthSnapshot, CashFlowSnapshot
+from app.modules.monobank.models import MonobankConnection
 
 # Import event handlers to register them in Celery worker context
 import app.core.event_handlers  # noqa: F401

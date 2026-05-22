@@ -5,7 +5,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, CreditCard, Palette, LayoutGrid, HelpCircle } from 'lucide-react';
+import { User, CreditCard, Palette, LayoutGrid, HelpCircle, Plug } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     // { value: 'subscription', label: tTabs('subscription'), icon: CreditCard, href: '/dashboard/settings/subscription' },
     { value: 'appearance', label: tTabs('appearance'), icon: Palette, href: '/dashboard/settings/appearance' },
     { value: 'dashboard-layouts', label: tTabs('dashboard'), icon: LayoutGrid, href: '/dashboard/settings/dashboard-layouts' },
+    { value: 'integrations', label: 'Integrations', icon: Plug, href: '/dashboard/settings/integrations' },
     // { value: 'help', label: tTabs('help'), icon: HelpCircle, href: '/dashboard/settings/help' },
     // TODO: Hidden tabs — re-enable when backend implementations exist:
     // { value: 'notifications', label: tTabs('notifications'), icon: Bell, href: '/dashboard/settings/notifications' },

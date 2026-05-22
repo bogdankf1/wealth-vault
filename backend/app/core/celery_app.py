@@ -28,6 +28,7 @@ celery_app = Celery(
         "app.tasks.dashboard_tasks",
         "app.tasks.notification_tasks",
         "app.tasks.tax_tasks",
+        "app.tasks.monobank_tasks",
     ]
 )
 
@@ -211,6 +212,13 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=1, minute=9),
         "options": {"queue": "low_priority"},
         "kwargs": {"days_old": 90},
+    },
+    "monobank-safety-net-sync": {
+        # Webhook is the primary delivery path; this catches anything dropped.
+        # Sleeps ~65s between accounts (Mono rate limit), so duration scales with linked-account count.
+        "task": "tasks.monobank.sync_recent",
+        "schedule": crontab(hour=4, minute=0),
+        "options": {"queue": "low_priority"},
     },
 
     # =========================================================================

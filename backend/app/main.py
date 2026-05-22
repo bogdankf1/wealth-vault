@@ -43,6 +43,7 @@ from app.api.v1.admin.config import router as admin_config_router
 from app.api.v1.admin.analytics import router as admin_analytics_router
 from app.modules.currency.router import router as currency_router
 from app.modules.notifications.api import router as notifications_router
+from app.modules.monobank.router import router as monobank_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
@@ -233,6 +234,7 @@ app.include_router(billing_router, prefix="/api/v1")
 app.include_router(preferences_router, prefix="/api/v1/preferences", tags=["preferences"])
 app.include_router(currency_router, prefix="/api/v1")
 app.include_router(notifications_router, prefix="/api/v1")
+app.include_router(monobank_router)  # router already declares /api/v1/integrations/monobank prefix
 
 # Admin routers
 app.include_router(admin_users_router, prefix="/api/v1/admin")

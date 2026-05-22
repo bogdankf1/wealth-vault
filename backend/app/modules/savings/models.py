@@ -3,7 +3,7 @@ Savings module database models
 """
 import enum
 import uuid
-from sqlalchemy import Column, String, Numeric, DateTime, Boolean, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, String, Numeric, DateTime, Boolean, ForeignKey, Index, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -81,10 +81,23 @@ class SavingsAccount(Base):
     # Status
     is_active = Column(Boolean, nullable=False, default=True)
 
+    # External integration linkage (e.g. Monobank). Nullable for manual accounts.
+    external_source = Column(String(32), nullable=True)
+    external_id = Column(String(128), nullable=True)
+
     # Metadata
     notes = Column(String(500), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index(
+            "ix_savings_accounts_external",
+            "user_id", "external_source", "external_id",
+            unique=True,
+            postgresql_where=Column("external_id").isnot(None),
+        ),
+    )
 
     # Relationships
     user = relationship("User", back_populates="savings_accounts")
@@ -154,9 +167,22 @@ class AccountTransaction(Base):
     # Status
     status = Column(String(20), nullable=False, default="completed")
 
+    # External integration linkage (e.g. Monobank statement item id). Nullable for manual entries.
+    external_source = Column(String(32), nullable=True)
+    external_id = Column(String(128), nullable=True)
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index(
+            "ix_account_transactions_external",
+            "user_id", "external_source", "external_id",
+            unique=True,
+            postgresql_where=Column("external_id").isnot(None),
+        ),
+    )
 
     # Relationships
     account = relationship("SavingsAccount", back_populates="transactions")
