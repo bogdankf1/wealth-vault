@@ -1,0 +1,105 @@
+name: agent-evals
+
+# Gate the financial agent on every change to the backend. Promptfoo hits the real running
+# API against a freshly-seeded pgvector database; a failing assertion fails the job, which
+# blocks the PR. Ground truth comes from the deterministic seed, so this is a real gate.
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/agent-evals.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/agent-evals.yml'
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16   # Postgres with the vector extension preinstalled
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wealth_vault_ai
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/wealth_vault_ai
+      SECRET_KEY: ci-secret-key-not-for-prod-0123456789012345
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      AGENT_BASE_URL: http://localhost:8000
+      PYTHONPATH: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'   # promptfoo@0.121 requires node >=22.22 (or >=20.20)
+
+      - name: Install backend deps
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Bootstrap schema (create_all + migrations)
+        working-directory: backend
+        run: |
+          python create_all_tables.py
+          alembic upgrade head
+
+      - name: Seed demo data
+        working-directory: backend
+        run: python -m app.scripts.seed_demo_data
+
+      - name: Compute-tool tests (key-free gate)
+        working-directory: backend
+        run: python -m pytest tests/ -q
+
+      - name: Embed backfill
+        working-directory: backend
+        run: python -m app.scripts.embed_backfill
+
+      - name: Agent eval gate (in-process, deterministic)
+        working-directory: backend
+        run: python evals/run_eval_assertions.py
+
+      - name: Start API
+        working-directory: backend
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          echo "Waiting for API…"
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/health >/dev/null && { echo "up"; break; }
+            sleep 2
+          done
+
+      - name: Mint demo token
+        working-directory: backend
+        run: echo "AGENT_TOKEN=$(python -m app.scripts.make_demo_token)" >> "$GITHUB_ENV"
+
+      - name: Run Promptfoo evals (gate)
+        working-directory: backend/evals
+        run: npx --yes promptfoo@0.121.17 eval -c promptfooconfig.yaml --no-progress-bar --output results.json
+
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptfoo-results
+          path: backend/evals/results.json
+          if-no-files-found: ignore
