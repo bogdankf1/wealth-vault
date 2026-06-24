@@ -333,7 +333,9 @@ async def _print_ground_truth(session) -> None:
                           .where(Debt.user_id == uid, Debt.is_active == True, Debt.is_paid == False))
     print(f"portfolio_value         : {pf}")
     print(f"debts_outstanding       : {debts}")
-    print("==================================================================\n")
+    print("==================================================================")
+    # Seeding wiped this user's document_embeddings; the agent's semantic/RAG arm needs them.
+    print("NEXT: run  python -m app.scripts.embed_backfill  to (re)build embeddings for RAG.\n")
 
 
 if __name__ == "__main__":
