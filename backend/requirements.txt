@@ -26,6 +26,13 @@ email-validator==2.2.0
 anthropic==0.39.0
 openai==1.54.4
 
+# AI Agent: RAG (pgvector) + LangGraph orchestration
+# langchain-openai 0.2.x targets openai>=1.40,<2, compatible with openai==1.54.4 above.
+# Pinned as compatible ranges; exact resolution is verified during environment setup.
+pgvector==0.3.6
+langgraph>=0.2.50,<0.3.0
+langchain-openai>=0.2.0,<0.3.0
+
 # External APIs
 httpx==0.27.2
 yfinance==1.0
