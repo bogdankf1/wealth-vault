@@ -19,6 +19,8 @@ from datetime import date
 from typing import List, Literal, Optional
 from uuid import UUID
 
+from sqlalchemy import select, func
+
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
@@ -37,6 +39,15 @@ Available compute tools (you choose which to call and fill the args):
 - net_worth(): sum of current account balances.
 - list_subscriptions(active_only=true): active subscriptions and combined monthly cost.
 - find_expenses(category?, min_amount?, start?, end?, limit?): list largest matching expenses.
+- portfolio_summary(asset_type?): holdings, total value, return. asset_type e.g. 'stock','etf','crypto'.
+- debts_summary(): money owed TO the user — outstanding + overdue.
+- installments_summary(): loans the user owes — remaining balance + monthly payment.
+- taxes_summary(): configured taxes (rates / fixed amounts).
+- budget_status(category?, start?, end?): budget vs actual spend per category over [start,end).
+- goals_progress(name?): progress toward savings goals.
+- compare_spending(start_a,end_a,start_b,end_b,category?): spending across two periods.
+- financial_ratios(start?,end?): savings rate + debt-to-income.
+- affordability(amount, start?, end?): whether the user can afford `amount`.
 Dates are ISO (YYYY-MM-DD). `end` is EXCLUSIVE — for "May 2026" use start=2026-05-01, end=2026-06-01.
 """
 
@@ -48,7 +59,7 @@ class ToolCall(BaseModel):
 
 class RouteDecision(BaseModel):
     """Structured routing decision returned by the router LLM."""
-    route: Literal["compute", "semantic", "hybrid", "refuse"]
+    route: Literal["compute", "semantic", "hybrid", "refuse", "capability"]
     reason: str
     tool_calls: List[ToolCall] = Field(default_factory=list)
     search_query: Optional[str] = Field(
@@ -103,10 +114,13 @@ Choose route:
 breakdowns/distributions (e.g. "how is my net worth split across accounts", "my spending by \
 category"), AND rankings/superlatives ("biggest/most expensive purchase", "top expenses" — \
 find_expenses sorts by amount). net_worth returns the per-account balances, so a net-worth \
-breakdown IS a compute question. Provide tool_calls.
+breakdown IS a compute question. Domain questions (investments/portfolio, debts, loans/installments, \
+taxes, budgets, goals) and analytics (compare periods, savings rate, "can I afford X") are compute \
+— pick the matching tool(s). Provide tool_calls.
 - "semantic" : qualitative/fuzzy question best answered by searching the user's transactions \
 and documents (e.g. "what was that big electronics purchase?"). Provide search_query.
 - "hybrid"   : needs BOTH an exact number AND context. Provide tool_calls AND search_query.
+- "capability": the user asks what you can do / for help → list what you can answer.
 - "refuse"   : ONLY for things outside the user's tracked data — general knowledge, chit-chat, \
 or ADVICE/RECOMMENDATIONS ("what should I buy/invest/do"). A factual breakdown of existing data \
 is NOT a refusal. Provide a short reason.
@@ -137,7 +151,31 @@ def route_decider(state: AgentState) -> str:
     return state.get("route", "refuse")
 
 
+# ----------------------------------------------------------------------- capability
+CAPABILITIES = (
+    "I can answer questions about your Wealth Vault data: spending & income, accounts & net "
+    "worth, subscriptions, portfolio/investments, debts owed to you, loans/installments, taxes, "
+    "budgets (vs actual), and goals. I can compare periods, compute savings rate / debt-to-income, "
+    "check affordability, and do simple what-if math — always from your real figures. I can't give "
+    "market or product advice."
+)
+
+
+async def capability_node(state: AgentState) -> dict:
+    return {"answer": CAPABILITIES, "refused": False,
+            "steps": _trace(state, "capability", "described capabilities")}
+
+
 # ------------------------------------------------------------------------- compute
+async def _data_range(db, user_id):
+    from app.modules.expenses.models import Expense
+    row = (await db.execute(
+        select(func.min(Expense.date), func.max(Expense.date)).where(Expense.user_id == user_id)
+    )).first()
+    fmt = lambda d: d.date().isoformat() if d else None
+    return (fmt(row[0]), fmt(row[1])) if row else (None, None)
+
+
 async def compute_node(state: AgentState) -> dict:
     user_id = UUID(state["user_id"])
     calls = state.get("plan", {}).get("tool_calls", [])
@@ -148,8 +186,14 @@ async def compute_node(state: AgentState) -> dict:
             results.append(res)
             cited.extend(res.get("cited_ids", []))
     detail = ", ".join(f"{r.get('tool')}→{r.get('total', r.get('count', 'ok'))}" for r in results) or "no tools"
+    empty = bool(results) and all((r.get("total", 0) in (0, 0.0) and r.get("count", 0) == 0) for r in results)
+    extra = {}
+    if empty:
+        async with AsyncSessionLocal() as db2:
+            lo, hi = await _data_range(db2, user_id)
+        extra = {"data_range": {"from": lo, "to": hi}}
     return {
-        "computed": {"results": results, "cited_ids": cited},
+        "computed": {"results": results, "cited_ids": cited, **extra},
         "cited_ids": list(dict.fromkeys(state.get("cited_ids", []) + cited)),
         "steps": _trace(state, "compute", detail),
     }
@@ -193,7 +237,12 @@ $190.00 = $130.50" or "15% of $23,820.50 = $3,573.08") — one operation only, n
 or a number from the question.
 - If you reference a transaction, mention it naturally (merchant, amount, date).
 - Be concise (1-4 sentences). Use the user's currency (USD).
-- If the evidence is empty or doesn't answer the question, say you don't have that data."""
+- If the evidence is empty or doesn't answer the question, say you don't have that data.
+- If results are empty and a `data_range` is given, say there's no data in that range and state \
+the coverage (from–to) instead of implying zero.
+- You MAY add ONE short, data-grounded observation or nudge when clearly relevant \
+(e.g. "that's about 2× last month", "you're at 90% of this budget"). Keep it factual and about \
+THEIR data — never market/product/tax advice."""
 
 
 def _evidence_block(state: AgentState) -> str:
@@ -247,18 +296,23 @@ def _numbers_in(text: str) -> set[float]:
     return out
 
 
+def _extract_nums(obj, out: set[float]) -> None:
+    """Recursively collect all numeric values from a tool result dict/list."""
+    if isinstance(obj, (int, float)) and not isinstance(obj, bool):
+        out.add(round(float(obj), 2))
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            _extract_nums(v, out)
+    elif isinstance(obj, list):
+        for item in obj:
+            _extract_nums(item, out)
+
+
 def _computed_numbers(state: AgentState) -> set[float]:
     nums: set[float] = set()
     computed = state.get("computed") or {}
     for r in computed.get("results", []):
-        for key in ("total", "monthly_total", "count"):
-            if isinstance(r.get(key), (int, float)):
-                nums.add(round(float(r[key]), 2))
-        for acc in r.get("accounts", []) or []:
-            nums.add(round(float(acc["balance"]), 2))
-        for item in r.get("items", []) or []:
-            if "amount" in item:
-                nums.add(round(float(item["amount"]), 2))
+        _extract_nums(r, nums)
     return nums
 
 
