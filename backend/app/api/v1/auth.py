@@ -121,6 +121,7 @@ async def google_oauth(
         await db.refresh(user)
 
         # Create trial subscription if trial is enabled
+        trial_settings = await TrialService.get_trial_settings(db)
         if trial_settings.get("enabled"):
             await TrialService.create_trial_subscription(
                 db=db,

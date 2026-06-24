@@ -764,8 +764,14 @@ async def get_recent_activity(
                 is_positive=False
             ))
 
-    # Sort all activities by date and limit
-    activities.sort(key=lambda x: x.date, reverse=True)
+    # Sort all activities by date and limit. Activities come from tables with mixed
+    # tz-aware (BaseModel.created_at) and tz-naive (Expense/Subscription.date) datetimes,
+    # which can't be compared directly — normalize the sort key to naive (the returned
+    # item.date values are left untouched).
+    activities.sort(
+        key=lambda x: x.date.replace(tzinfo=None) if x.date and x.date.tzinfo else x.date,
+        reverse=True,
+    )
     return activities[:limit]
 
 
