@@ -3,6 +3,7 @@ from uuid import UUID
 from app.modules.agent.tools import (
     portfolio_summary, debts_summary, installments_summary,
     taxes_summary, budget_status, goals_progress,
+    compare_spending, financial_ratios, affordability,
 )
 
 @pytest.mark.asyncio
@@ -50,3 +51,25 @@ async def test_goals_progress(db, user_id):
     r = await goals_progress(db, user_id)
     ef = next(g for g in r["goals"] if g["name"] == "Emergency Fund")
     assert ef["target"] == 10000.0 and ef["current"] == 6000.0 and ef["pct"] == 60.0
+
+@pytest.mark.asyncio
+async def test_compare_spending_total(db, user_id):
+    r = await compare_spending(db, user_id, start_a="2026-05-01", end_a="2026-06-01",
+                               start_b="2026-04-01", end_b="2026-05-01")
+    assert r["a"]["total"] == 1123.25
+    assert r["b"]["total"] == 1355.95
+    assert r["delta"] == -232.70
+
+@pytest.mark.asyncio
+async def test_financial_ratios_may(db, user_id):
+    r = await financial_ratios(db, user_id, start="2026-05-01", end="2026-06-01")
+    assert r["income"] == 6500.00
+    assert r["expenses"] == 1123.25
+    assert r["savings_rate"] == 82.72
+    assert r["debt_to_income"] == 6.92
+
+@pytest.mark.asyncio
+async def test_affordability(db, user_id):
+    r = await affordability(db, user_id, amount=1200, start="2026-05-01", end="2026-06-01")
+    assert r["disposable_monthly"] == 4851.78
+    assert r["can_afford"] is True

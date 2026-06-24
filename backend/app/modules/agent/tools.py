@@ -290,6 +290,47 @@ async def goals_progress(db: AsyncSession, user_id: UUID, name: Optional[str] = 
     return {"tool": "goals_progress", "goals": goals, "currency": "USD", "cited_ids": [g["id"] for g in goals]}
 
 
+async def compare_spending(db: AsyncSession, user_id: UUID, start_a: str, end_a: str,
+                          start_b: str, end_b: str, category: Optional[str] = None) -> dict:
+    """Compare spending between two periods (optionally one category)."""
+    a = await sum_expenses(db, user_id, category=category, start=start_a, end=end_a)
+    b = await sum_expenses(db, user_id, category=category, start=start_b, end=end_b)
+    delta = round(a["total"] - b["total"], 2)
+    pct = round((delta / b["total"] * 100), 2) if b["total"] else 0.0
+    return {"tool": "compare_spending", "category": category or "all",
+            "a": {"label": f"{start_a}..{end_a}", "total": a["total"]},
+            "b": {"label": f"{start_b}..{end_b}", "total": b["total"]},
+            "delta": delta, "pct_change": pct, "currency": "USD",
+            "cited_ids": (a["cited_ids"] + b["cited_ids"])[:_CITED_CAP]}
+
+
+async def financial_ratios(db: AsyncSession, user_id: UUID,
+                          start: Optional[str] = None, end: Optional[str] = None) -> dict:
+    """Savings rate + debt-to-income over [start, end). Debt = installment obligations."""
+    income = (await total_income(db, user_id, start=start, end=end))["total"]
+    expenses = (await sum_expenses(db, user_id, start=start, end=end))["total"]
+    debt = (await installments_summary(db, user_id))["monthly_obligation"]
+    savings = round(income - expenses, 2)
+    return {"tool": "financial_ratios", "income": income, "expenses": expenses, "savings": savings,
+            "savings_rate": round(savings / income * 100, 2) if income else 0.0,
+            "debt_to_income": round(debt / income * 100, 2) if income else 0.0,
+            "currency": "USD", "cited_ids": []}
+
+
+async def affordability(db: AsyncSession, user_id: UUID, amount: float,
+                       start: Optional[str] = None, end: Optional[str] = None) -> dict:
+    """Can the user afford `amount`? Disposable = income − expenses − subscriptions − loan payments."""
+    income = (await total_income(db, user_id, start=start, end=end))["total"]
+    expenses = (await sum_expenses(db, user_id, start=start, end=end))["total"]
+    subs = (await list_subscriptions(db, user_id))["monthly_total"]
+    debt = (await installments_summary(db, user_id))["monthly_obligation"]
+    disposable = round(income - expenses - subs - debt, 2)
+    return {"tool": "affordability", "amount": round(float(amount), 2), "disposable_monthly": disposable,
+            "can_afford": amount <= disposable,
+            "months_to_afford": round(float(amount) / disposable, 1) if disposable > 0 else None,
+            "currency": "USD", "cited_ids": []}
+
+
 # Registry the router selects from. Keep names + arg shapes in sync with ROUTE_TOOL_CATALOG
 # in nodes.py (that catalog is what the LLM sees).
 TOOLS = {
@@ -304,6 +345,9 @@ TOOLS = {
     "taxes_summary": taxes_summary,
     "budget_status": budget_status,
     "goals_progress": goals_progress,
+    "compare_spending": compare_spending,
+    "financial_ratios": financial_ratios,
+    "affordability": affordability,
 }
 
 
