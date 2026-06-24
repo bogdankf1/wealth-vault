@@ -28,6 +28,7 @@ from app.modules.goals.router import router as goals_router
 from app.modules.portfolio.router import router as portfolio_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.ai.router import router as ai_router
+from app.modules.agent.router import router as agent_router
 from app.modules.budgets.router import router as budgets_router
 from app.modules.debts.router import router as debts_router
 from app.modules.taxes.router import router as taxes_router
@@ -96,6 +97,7 @@ async def lifespan(app: FastAPI):
         from app.modules.backups.models import Backup  # noqa: F401
         from app.modules.support.models import SupportTopic, SupportMessage  # noqa: F401
         from app.modules.ai.models import AIInsight  # noqa: F401
+        from app.modules.rag.models import ParsedDocument, DocumentEmbedding  # noqa: F401
         from app.models.user_preferences import UserPreferences  # noqa: F401
         from app.modules.currency.models import Currency, ExchangeRate  # noqa: F401
         from app.modules.notifications.models import Notification  # noqa: F401
@@ -222,6 +224,7 @@ app.include_router(goals_router)
 app.include_router(portfolio_router)
 app.include_router(dashboard_router)
 app.include_router(ai_router, prefix="/api/v1")
+app.include_router(agent_router, prefix="/api/v1")
 app.include_router(budgets_router)
 app.include_router(debts_router, prefix="/api/v1")
 app.include_router(taxes_router, prefix="/api/v1")
