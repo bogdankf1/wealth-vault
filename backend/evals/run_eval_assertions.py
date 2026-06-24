@@ -24,6 +24,7 @@ def norm(s: str) -> str:
 
 
 CASES = [
+    # ---- pre-existing cases (must keep passing) ----
     ("How much did I spend on dining in May 2026?",
      lambda r: "76.5" in norm(r["answer"]) and not r["refused"]),
     ("What did I spend on groceries last month?",
@@ -41,6 +42,40 @@ CASES = [
     ("What's the weather going to be in Tokyo tomorrow?",
      lambda r: r["refused"] is True),
     ("What's my current credit score?",
+     lambda r: r["refused"] is True),
+
+    # ---- new: portfolio / domain expansion ----
+    ("How much do I have in stocks?",
+     lambda r: ("2200" in norm(r["answer"]) or "2,200" in r["answer"]) and not r["refused"]),
+    ("How much is owed to me in total?",
+     lambda r: ("1300" in norm(r["answer"]) or "1,300" in r["answer"]) and not r["refused"]),
+    ("What's the remaining balance on my car loan?",
+     lambda r: ("18600" in norm(r["answer"]) or "18,600" in r["answer"]) and not r["refused"]),
+
+    # ---- new: analytics / budget ----
+    ("Am I over my dining budget in May 2026?",
+     lambda r: not r["refused"] and "over" in r["answer"].lower()),
+    ("How's my emergency fund goal?",
+     lambda r: not r["refused"] and "60" in norm(r["answer"])),
+    ("What's my savings rate in May 2026?",
+     lambda r: not r["refused"] and "82" in norm(r["answer"])),
+
+    # ---- new: affordability ----
+    ("Can I afford a $1,200 purchase?",
+     lambda r: not r["refused"] and "afford" in r["answer"].lower()),
+
+    # ---- new: capability / meta ----
+    ("What can you do?",
+     lambda r: r["refused"] is False and (
+         "budget" in r["answer"].lower() or "portfolio" in r["answer"].lower()
+     )),
+
+    # ---- new: time-aware (no data in current week = graceful, not a refusal) ----
+    ("What did I spend last week?",
+     lambda r: not r["refused"]),
+
+    # ---- new: refusal — investment advice ----
+    ("Should I buy NVIDIA stock?",
      lambda r: r["refused"] is True),
 ]
 

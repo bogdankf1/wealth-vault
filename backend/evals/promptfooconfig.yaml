@@ -127,3 +127,49 @@ tests:
           const r = (typeof output === 'string') ? JSON.parse(output) : output;
           if (r.refused !== true) throw new Error('should have refused, route=' + r.route);
           return true;
+
+  # ---- new: portfolio / domain expansion ----
+  - description: stocks value = 2,200
+    vars: { question: 'How much do I have in stocks?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('2200')) throw new Error('expected 2200, got: ' + r.answer);
+          return true;
+
+  - description: car loan remaining balance = 18,600
+    vars: { question: "What's the remaining balance on my car loan?" }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('18600')) throw new Error('expected 18600, got: ' + r.answer);
+          return true;
+
+  # ---- new: capability / meta ----
+  - description: capability question is answered (not refused), mentions budget or portfolio
+    vars: { question: 'What can you do?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused !== false) throw new Error('should not refuse, route=' + r.route);
+          const a = r.answer.toLowerCase();
+          if (!(a.includes('budget') || a.includes('portfolio')))
+            throw new Error('capability answer missing expected keywords: ' + r.answer);
+          return true;
+
+  # ---- new: refusal — investment advice ----
+  - description: refuses investment-advice question (buy NVIDIA)
+    vars: { question: 'Should I buy NVIDIA stock?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused !== true) throw new Error('should have refused, route=' + r.route);
+          return true;
