@@ -14,6 +14,10 @@ on:
       - 'backend/**'
       - '.github/workflows/agent-evals.yml'
 
+permissions:
+  contents: read
+  pull-requests: write   # lets CI post the eval-gate summary as a sticky PR comment
+
 jobs:
   evals:
     runs-on: ubuntu-latest
@@ -67,6 +71,7 @@ jobs:
         run: python -m app.scripts.seed_demo_data
 
       - name: Compute-tool tests (key-free gate)
+        id: pytest
         working-directory: backend
         run: python -m pytest tests/ -q
 
@@ -75,6 +80,7 @@ jobs:
         run: python -m app.scripts.embed_backfill
 
       - name: Agent eval gate (in-process, deterministic)
+        id: inproc
         working-directory: backend
         run: python evals/run_eval_assertions.py
 
@@ -93,6 +99,7 @@ jobs:
         run: echo "AGENT_TOKEN=$(python -m app.scripts.make_demo_token)" >> "$GITHUB_ENV"
 
       - name: Run Promptfoo evals (gate)
+        id: promptfoo
         working-directory: backend/evals
         run: npx --yes promptfoo@0.121.17 eval -c promptfooconfig.yaml --no-progress-bar --output results.json
 
@@ -103,3 +110,23 @@ jobs:
           name: promptfoo-results
           path: backend/evals/results.json
           if-no-files-found: ignore
+
+      # Post the gate result into the PR (sticky github-actions[bot] comment) + job summary,
+      # the way Vercel posts its deployment table. Runs even on failure so a red gate shows.
+      - name: Eval summary + sticky PR comment
+        if: always()
+        working-directory: backend
+        env:
+          PYTEST_OUTCOME: ${{ steps.pytest.outcome }}
+          INPROC_OUTCOME: ${{ steps.inproc.outcome }}
+          PROMPTFOO_OUTCOME: ${{ steps.promptfoo.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python evals/ci_summary.py
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh pr comment "${{ github.event.pull_request.number }}" \
+              --body-file eval-summary.md --edit-last --create-if-none \
+              || gh pr comment "${{ github.event.pull_request.number }}" --body-file eval-summary.md
+          fi
