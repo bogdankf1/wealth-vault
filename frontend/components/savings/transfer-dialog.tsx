@@ -87,7 +87,7 @@ export function TransferDialog({
 
   // Get accounts list
   const { data: accountsData } = useListAccountsQuery({ is_active: true });
-  const accounts = accountsData?.items || [];
+  const accounts = React.useMemo(() => accountsData?.items || [], [accountsData]);
 
   const [createTransfer, { isLoading }] = useCreateTransferMutation();
 

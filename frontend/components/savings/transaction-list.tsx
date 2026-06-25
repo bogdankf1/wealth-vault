@@ -91,14 +91,14 @@ export function TransactionList({ accountId, currency = 'USD' }: TransactionList
 
   // Debounce search input
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      if (searchQuery !== debouncedSearch) {
-        setPage(1);
-      }
-    }, 300);
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Reset to the first page whenever the (debounced) search term changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const { data, isLoading, isFetching } = useListTransactionsQuery({
     accountId,

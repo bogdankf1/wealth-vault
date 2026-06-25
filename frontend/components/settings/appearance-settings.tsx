@@ -6,14 +6,12 @@ import { Settings2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useGetMyPreferencesQuery, useUpdateMyPreferencesMutation } from '@/lib/api/preferencesApi';
 import { CurrencySelect } from '@/components/currency';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { localeNames, type Locale } from '@/i18n';
 import { useTranslations } from 'next-intl';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
 
 export function AppearanceSettings() {
   const t = useTranslations('settings.appearance');
@@ -23,8 +21,6 @@ export function AppearanceSettings() {
 
   const { data: preferences, isLoading } = useGetMyPreferencesQuery();
   const [updatePreferences] = useUpdateMyPreferencesMutation();
-
-  const { settings: uiVisibility, updateSettings: updateUIVisibility, isLoaded: uiVisibilityLoaded } = useUIVisibility();
 
   const [currency, setCurrency] = useState('USD');
   const [defaultContentView, setDefaultContentView] = useState<'card' | 'list'>('card');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { LayoutGrid, Plus, Trash2, Edit, GripVertical, CheckCircle, Crown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -296,7 +296,7 @@ function LayoutEditorDialog({
   const [updateLayout] = useUpdateLayoutMutation();
 
   // Define widgets inside component for translation
-  const AVAILABLE_WIDGETS: { id: string; label: string; description: string }[] = [
+  const AVAILABLE_WIDGETS: { id: string; label: string; description: string }[] = useMemo(() => [
     { id: 'quick-actions', label: t('widgets.quick-actions.label'), description: t('widgets.quick-actions.description') },
     { id: 'ai-insights', label: t('widgets.ai-insights.label'), description: t('widgets.ai-insights.description') },
     { id: 'exchange-rates', label: t('widgets.exchange-rates.label'), description: t('widgets.exchange-rates.description') },
@@ -318,7 +318,7 @@ function LayoutEditorDialog({
     { id: 'planned-subscriptions', label: t('widgets.planned-subscriptions.label'), description: t('widgets.planned-subscriptions.description') },
     { id: 'planned-expenses', label: t('widgets.planned-expenses.label'), description: t('widgets.planned-expenses.description') },
     { id: 'planned-installments', label: t('widgets.planned-installments.label'), description: t('widgets.planned-installments.description') },
-  ];
+  ], [t]);
 
   const [name, setName] = useState(layout?.name || '');
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
@@ -346,7 +346,7 @@ function LayoutEditorDialog({
       setName('');
       setWidgets(AVAILABLE_WIDGETS.map((w, i) => ({ id: w.id, visible: true, order: i + 1 })));
     }
-  }, [layout, isOpen]);
+  }, [layout, isOpen, AVAILABLE_WIDGETS]);
 
   const handleSave = async () => {
     if (!name.trim()) {

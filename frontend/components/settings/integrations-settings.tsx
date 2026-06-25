@@ -25,7 +25,6 @@ const ALLOWED_TIERS = new Set(['growth', 'wealth']);
 
 
 export function IntegrationsSettings() {
-  const { toast } = useToast();
   const { data: currentUser } = useGetCurrentUserQuery();
   const tierName = currentUser?.tier?.name?.toLowerCase();
   const hasAccess = tierName ? ALLOWED_TIERS.has(tierName) : false;
@@ -64,10 +63,10 @@ function MonobankCard({ hasAccess, tierName }: { hasAccess: boolean; tierName?: 
       await connect({ token: token.trim() }).unwrap();
       setToken('');
       toast({ title: 'Connected to Monobank', description: 'Pick the accounts you want to sync below.' });
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: 'Connection failed',
-        description: e?.data?.detail || 'Monobank rejected the token.',
+        description: (e as { data?: { detail?: string } })?.data?.detail || 'Monobank rejected the token.',
         variant: 'destructive',
       });
     }
@@ -208,7 +207,7 @@ function MonoAccountsList() {
   const handleLink = async (acc: MonoAccount) => {
     setPendingId(acc.mono_account_id);
     try {
-      const res = await linkAccount({
+      await linkAccount({
         monoAccountId: acc.mono_account_id,
         body: { backfill_months: 3 },
       }).unwrap();
@@ -216,10 +215,10 @@ function MonoAccountsList() {
         title: 'Account linked',
         description: 'Started backfilling the last 3 months — this can take several minutes per account.',
       });
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: 'Link failed',
-        description: e?.data?.detail || 'Could not link this account.',
+        description: (e as { data?: { detail?: string } })?.data?.detail || 'Could not link this account.',
         variant: 'destructive',
       });
     } finally {
