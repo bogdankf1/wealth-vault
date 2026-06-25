@@ -15,6 +15,7 @@ from app.core.database import Base
 from app.models.user import User
 from app.models.tier import Tier, Feature, TierFeature
 from app.modules.income.models import IncomeSource, IncomeTransaction
+from app.modules.monobank.models import MonobankConnection  # noqa: F401
 
 # this is the Alembic Config object
 config = context.config

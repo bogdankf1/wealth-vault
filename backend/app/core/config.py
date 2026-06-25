@@ -64,6 +64,11 @@ class Settings(BaseSettings):
     PADDLE_GROWTH_PRICE_ID: str = ""
     PADDLE_WEALTH_PRICE_ID: str = ""
 
+    # Monobank
+    MONOBANK_API_URL: str = "https://api.monobank.ua"
+    MONOBANK_TEST_TOKEN: str = ""  # dev-only; production tokens come from MonobankConnection rows
+    MONOBANK_WEBHOOK_BASE_URL: str = ""  # public HTTPS base, e.g., https://api.wealthvault.app — leave empty to skip webhook registration
+
     # Email (for future use)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587

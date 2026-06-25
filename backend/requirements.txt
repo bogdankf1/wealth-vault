@@ -16,6 +16,7 @@ celery==5.4.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 pyjwt==2.9.0
+cryptography==43.0.3  # explicit pin; used directly by app/core/encryption.py
 
 # Validation and serialization
 pydantic[email]==2.10.0

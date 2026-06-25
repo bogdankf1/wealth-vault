@@ -269,3 +269,31 @@ def require_tier(required_tier_name: str) -> Callable:
             return await func(*args, current_user=current_user, **kwargs)
         return wrapper
     return decorator
+
+
+def require_any_tier(*allowed_tier_names: str) -> Callable:
+    """
+    Decorator that allows any of the listed tiers. Admins bypass.
+    Example: @require_any_tier("growth", "wealth")
+    """
+    allowed = {name.lower() for name in allowed_tier_names}
+
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(
+            *args,
+            current_user: User = Depends(get_current_user),
+            **kwargs
+        ):
+            if current_user.is_admin():
+                return await func(*args, current_user=current_user, **kwargs)
+            tier_name = (current_user.tier.name.lower() if current_user.tier else None)
+            if tier_name not in allowed:
+                pretty = ", ".join(sorted(n.title() for n in allowed))
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"This feature requires one of: {pretty}",
+                )
+            return await func(*args, current_user=current_user, **kwargs)
+        return wrapper
+    return decorator
