@@ -31,10 +31,10 @@ const NODE_ICON: Record<string, typeof Route> = {
 };
 
 const SUGGESTIONS = [
-  'How much did I spend on dining in May 2026?',
-  "What's my net worth right now?",
-  'How much do my subscriptions cost per month?',
-  'What was the single biggest thing I bought this year?',
+  'How much do I have in stocks?',
+  'Am I over my dining budget in May 2026?',
+  "How's my emergency fund goal?",
+  'Can I afford a $1,200 purchase?',
 ];
 
 interface Turn {

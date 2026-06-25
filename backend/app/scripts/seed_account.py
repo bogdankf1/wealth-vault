@@ -25,6 +25,12 @@ from app.modules.income.models import (
 from app.modules.subscriptions.models import Subscription
 from app.modules.ai.models import UploadedFile  # noqa: F401 — registers uploaded_files FK
 from app.modules.rag.models import ParsedDocument, DocumentEmbedding
+from app.modules.portfolio.models import PortfolioAsset
+from app.modules.debts.models import Debt
+from app.modules.installments.models import Installment
+from app.modules.taxes.models import Tax, TaxType, TaxFrequency
+from app.modules.budgets.models import Budget, BudgetPeriod
+from app.modules.goals.models import Goal
 from app.scripts.seed_demo_data import (
     _d, MONTHS, MONTHLY_TEMPLATE, ONE_OFFS, SUBSCRIPTIONS, ACCOUNTS,
 )
@@ -118,6 +124,69 @@ async def insert_financial_data(session, user_id) -> None:
         ),
     ])
 
+    # --- portfolio ---
+    for name, symbol, atype, qty, buy, cur in [
+        ("Apple Inc.", "AAPL", "stock", "10", "150.00", "220.00"),
+        ("Vanguard S&P 500", "VOO", "etf", "5", "400.00", "500.00"),
+        ("Bitcoin", "BTC", "crypto", "0.1", "40000.00", "60000.00"),
+    ]:
+        q, b, c = _d(qty), _d(buy), _d(cur)
+        session.add(PortfolioAsset(
+            user_id=user_id, asset_name=name, symbol=symbol, ticker=symbol,
+            asset_type=atype, quantity=q, purchase_price=b, current_price=c,
+            currency="USD", purchase_date=datetime(2025, 6, 1),
+            total_invested=q * b, current_value=q * c, total_return=q * (c - b),
+            is_active=True,
+        ))
+    # --- debts (money owed TO the user) ---
+    for debtor, amount, paid, due in [
+        ("Alex Rivera", "500.00", "0.00", datetime(2026, 7, 1)),
+        ("Jordan Lee", "1200.00", "400.00", datetime(2026, 5, 1)),
+    ]:
+        session.add(Debt(
+            user_id=user_id, debtor_name=debtor, amount=_d(amount),
+            amount_paid=_d(paid), currency="USD", is_active=True, is_paid=False, due_date=due,
+        ))
+    # --- installments (loans the user owes) ---
+    session.add(Installment(
+        user_id=user_id, name="Car Loan", category="Auto",
+        total_amount=_d("24000.00"), amount_per_payment=_d("450.00"), currency="USD",
+        interest_rate=_d("5.50"), frequency="monthly", number_of_payments=60,
+        payments_made=12, start_date=datetime(2025, 6, 1),
+        first_payment_date=datetime(2025, 7, 1), is_active=True, status="active",
+        remaining_balance=_d("18600.00"), next_payment_date=datetime(2026, 7, 1),
+    ))
+    # --- taxes ---
+    session.add(Tax(
+        user_id=user_id, name="Federal Income Tax", tax_type=TaxType.percentage,
+        frequency=TaxFrequency.annually, percentage=_d("22.00"), currency="USD", is_active=True,
+    ))
+    session.add(Tax(
+        user_id=user_id, name="Self-Employment Tax", tax_type=TaxType.fixed,
+        frequency=TaxFrequency.quarterly, fixed_amount=_d("1200.00"), currency="USD", is_active=True,
+    ))
+    # --- budgets (monthly) ---
+    for name, category, amount in [
+        ("Monthly Groceries", "Groceries", "300.00"),
+        ("Monthly Dining", "Dining", "60.00"),
+        ("Monthly Transport", "Transport", "100.00"),
+    ]:
+        session.add(Budget(
+            user_id=user_id, name=name, category=category, amount=_d(amount),
+            currency="USD", period=BudgetPeriod.MONTHLY, start_date=datetime(2025, 12, 1),
+            is_active=True, alert_threshold=80,
+        ))
+    # --- goals ---
+    for name, target, current, contrib in [
+        ("Emergency Fund", "10000.00", "6000.00", "500.00"),
+        ("Hawaii 2026", "5000.00", "1500.00", "250.00"),
+    ]:
+        session.add(Goal(
+            user_id=user_id, name=name, target_amount=_d(target),
+            current_amount=_d(current), currency="USD", monthly_contribution=_d(contrib),
+            start_date=datetime(2026, 1, 1), is_active=True,
+        ))
+
 
 async def seed_for_email(target_email: str) -> None:
     async with AsyncSessionLocal() as session:
@@ -128,7 +197,8 @@ async def seed_for_email(target_email: str) -> None:
             raise SystemExit(f"No user with email {target_email!r}. Sign in once first, then re-run.")
 
         # Replace this user's financial data only — leave the User row untouched.
-        for model in (DocumentEmbedding, ParsedDocument, IncomeTransaction,
+        for model in (PortfolioAsset, Debt, Installment, Tax, Budget, Goal,
+                      DocumentEmbedding, ParsedDocument, IncomeTransaction,
                       IncomeSource, Expense, Subscription, SavingsAccount):
             await session.execute(delete(model).where(model.user_id == user.id))
         await insert_financial_data(session, user.id)
