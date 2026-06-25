@@ -1,0 +1,175 @@
+# Wealth Vault — financial agent evals.
+#
+# These hit the REAL HTTP agent endpoint (/api/v1/agent/query) so the whole graph is under
+# test: routing, the compute tools, retrieval, synthesis and the validation gate. Ground
+# truth comes from the deterministic seed (app/scripts/seed_demo_data.py prints it). The
+# three required dimensions are covered:
+#   * exact number correct   — dining/groceries/net worth/income/subscriptions cases
+#   * retrieves the right txn — "biggest purchase" asserts on cited_ids + content
+#   * refuses when out of scope — weather / credit-score cases
+#
+# Assertions are deterministic JavaScript (no LLM judge) so the CI gate is reliable. The
+# provider returns our JSON; assertions parse it and check structured fields + the answer.
+description: Wealth Vault financial agent — correctness + refusal gate
+
+prompts:
+  - '{{question}}'
+
+providers:
+  - id: 'http://localhost:8000/api/v1/agent/query'
+    config:
+      method: POST
+      headers:
+        Content-Type: application/json
+        Authorization: 'Bearer {{ env.AGENT_TOKEN }}'
+      body:
+        question: '{{ question }}'
+
+defaultTest:
+  assert:
+    # Every response must be valid JSON with an answer string.
+    - type: javascript
+      value: |
+        const r = (typeof output === 'string') ? JSON.parse(output) : output;
+        if (typeof r.answer !== 'string' || r.answer.length === 0)
+          throw new Error('no answer in response');
+        return true;
+
+tests:
+  # ---- exact number: category spend in a month ----
+  - description: dining spend in May 2026 = 76.50
+    vars: { question: 'How much did I spend on dining in May 2026?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('76.5')) throw new Error('expected 76.50, got: ' + r.answer);
+          return true;
+
+  - description: groceries spend in May 2026 = 140.95
+    vars: { question: 'What did I spend on groceries last month?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('140.95')) throw new Error('expected 140.95, got: ' + r.answer);
+          return true;
+
+  # ---- exact number: net worth from account balances ----
+  - description: net worth = 23,820.50
+    vars: { question: "What's my net worth right now?" }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('23820.5')) throw new Error('expected 23820.50, got: ' + r.answer);
+          return true;
+
+  # ---- exact number: monthly subscriptions total ----
+  - description: subscriptions monthly total = 74.97
+    vars: { question: 'How much do my subscriptions cost me per month?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('74.97')) throw new Error('expected 74.97, got: ' + r.answer);
+          return true;
+
+  # ---- exact number: income YTD ----
+  - description: income in 2026 = 34,600
+    vars: { question: 'How much income have I received in 2026 so far?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('34600')) throw new Error('expected 34600, got: ' + r.answer);
+          return true;
+
+  # ---- retrieval / semantic: the biggest purchase ----
+  - description: surfaces the MacBook Pro ($2,499) electronics purchase, with citations
+    vars: { question: 'What was that big electronics purchase I made?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          const a = r.answer.replace(/,/g, '').toLowerCase();
+          const mentionsItem = a.includes('macbook') || a.includes('apple');
+          const mentionsAmt = a.includes('2499');
+          if (!(mentionsItem && mentionsAmt))
+            throw new Error('did not surface the MacBook/$2499: ' + r.answer);
+          if (!Array.isArray(r.cited_ids) || r.cited_ids.length === 0)
+            throw new Error('no cited transactions');
+          return true;
+
+  # ---- refusal: out of scope (general knowledge) ----
+  - description: refuses a weather question
+    vars: { question: "What's the weather going to be in Tokyo tomorrow?" }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused !== true) throw new Error('should have refused, route=' + r.route);
+          return true;
+
+  # ---- refusal: data the app does not track ----
+  - description: refuses a credit-score question (not tracked)
+    vars: { question: "What's my current credit score?" }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused !== true) throw new Error('should have refused, route=' + r.route);
+          return true;
+
+  # ---- new: portfolio / domain expansion ----
+  - description: stocks value = 2,200
+    vars: { question: 'How much do I have in stocks?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('2200')) throw new Error('expected 2200, got: ' + r.answer);
+          return true;
+
+  - description: car loan remaining balance = 18,600
+    vars: { question: "What's the remaining balance on my car loan?" }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('18600')) throw new Error('expected 18600, got: ' + r.answer);
+          return true;
+
+  # ---- new: capability / meta ----
+  - description: capability question is answered (not refused), mentions budget or portfolio
+    vars: { question: 'What can you do?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused !== false) throw new Error('should not refuse, route=' + r.route);
+          const a = r.answer.toLowerCase();
+          if (!(a.includes('budget') || a.includes('portfolio')))
+            throw new Error('capability answer missing expected keywords: ' + r.answer);
+          return true;
+
+  # ---- new: refusal — investment advice ----
+  - description: refuses investment-advice question (buy NVIDIA)
+    vars: { question: 'Should I buy NVIDIA stock?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused !== true) throw new Error('should have refused, route=' + r.route);
+          return true;

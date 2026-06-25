@@ -44,6 +44,7 @@ import { WealthVaultLogo } from '@/components/ui/wealth-vault-logo';
 import { NAVIGATION_FEATURES } from '@/lib/constants/feature-map';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
 import { AuthErrorHandler } from '@/components/auth/auth-error-handler';
+import { AgentSheet } from '@/components/agent/agent-sheet';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 export default function DashboardLayout({
@@ -460,6 +461,9 @@ export default function DashboardLayout({
 
         {/* Bottom navigation bar (mobile only) */}
         <BottomNavBar />
+
+        {/* AI assistant — floating trigger + right-side slide-over, available on every page */}
+        <AgentSheet />
 
         {/* Debug panel (development only) - Hidden but available for debugging */}
         {/* <SessionDebug /> */}

@@ -26,8 +26,10 @@ ENV/
 # Backend specific
 backend/.env
 backend/logs/
-backend/alembic/versions/*.py
-!backend/alembic/versions/__init__.py
+# Alembic migrations are versioned artifacts — they MUST be tracked, otherwise
+# `alembic upgrade head` (run on deploy and in CI) finds nothing on a fresh checkout.
+# (This previously ignored backend/alembic/versions/*.py, which left even the existing
+# monobank migration out of the repo.)
 
 # Frontend / Node
 node_modules/

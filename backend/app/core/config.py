@@ -77,7 +77,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True
+        case_sensitive=True,
+        # Tolerate unrelated env vars (e.g. MONOBANK_TEST_TOKEN, CI/tooling vars) instead
+        # of refusing to start. Settings only binds the fields declared above.
+        extra="ignore",
     )
 
     @field_validator("DATABASE_URL", mode="before")
