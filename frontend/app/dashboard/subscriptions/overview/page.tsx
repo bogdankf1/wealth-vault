@@ -86,11 +86,11 @@ export default function SubscriptionsPage() {
           : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       )
       .join('');
-    try {
-      return tCategories(key as Parameters<typeof tCategories>[0]);
-    } catch {
-      return category;
-    }
+    // `category` is free text, so fall back to the raw value when there's no translation
+    // for it. (next-intl logs a MISSING_MESSAGE error rather than throwing, so a try/catch
+    // wouldn't suppress it — `has` must be checked first.)
+    const messageKey = key as Parameters<typeof tCategories>[0];
+    return tCategories.has(messageKey) ? tCategories(messageKey) : category;
   };
 
   const FREQUENCY_LABELS: Record<string, string> = {

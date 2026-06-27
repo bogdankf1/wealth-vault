@@ -167,6 +167,9 @@
     "annually": "Щороку"
   },
   "categories": {
+    "streaming": "Стрімінг",
+    "software": "Програмне забезпечення",
+    "fitness": "Фітнес",
     "cloudStorage": "Хмарне сховище",
     "music": "Музика",
     "video": "Відео",
