@@ -14,11 +14,15 @@ export function AgentSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        {/* Inline position so it can't be overridden by class-ordering/containing-block quirks. */}
+        {/* Inline position (fixed/right/z) so it can't be overridden by containing-block quirks.
+            `bottom` is responsive: below `xl` the fixed bottom nav (BottomNavBar, h-14 + safe-area,
+            z-50) is visible and would hide the button, so lift it above the nav; at `xl`+ the nav
+            is hidden and the button drops to the corner. */}
         <button
           aria-label="Ask your finances"
-          style={{ position: 'fixed', right: '1.5rem', bottom: '1.5rem', zIndex: 40 }}
+          style={{ position: 'fixed', right: '1.5rem', zIndex: 40 }}
           className={cn(
+            'bottom-24 xl:bottom-6',
             'flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground',
             'shadow-lg ring-1 ring-black/5 hover:opacity-90 transition-opacity',
           )}
