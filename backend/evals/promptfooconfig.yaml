@@ -173,3 +173,27 @@ tests:
           const r = (typeof output === 'string') ? JSON.parse(output) : output;
           if (r.refused !== true) throw new Error('should have refused, route=' + r.route);
           return true;
+
+  # ---- new: savings summary (read) ----
+  - description: savings total = 23,820.50
+    vars: { question: 'How much do I have in savings?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          const a = r.answer.replace(/,/g, '');
+          if (!a.includes('23820.5')) throw new Error('expected 23820.50, got: ' + r.answer);
+          return true;
+
+  # ---- new: savings projection carries the disclaimer ----
+  - description: 5-year savings projection answers with the projection disclaimer
+    vars: { question: 'What will my savings be worth in 5 years?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (!r.answer.toLowerCase().includes('not financial advice'))
+            throw new Error('projection missing disclaimer: ' + r.answer);
+          return true;
