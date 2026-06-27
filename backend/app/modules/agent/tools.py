@@ -513,5 +513,7 @@ async def run_tool(db: AsyncSession, user_id: UUID, name: str, args: dict) -> di
         return {"tool": name, "error": f"unknown tool '{name}'", "cited_ids": []}
     try:
         return await fn(db, user_id, **(args or {}))
-    except TypeError as exc:
+    except (TypeError, ValueError) as exc:
+        # Bad args fail soft (e.g. a non-numeric months/amount, or an unparseable date) so one
+        # bad LLM tool call doesn't crash the graph — the validate node catches the gap.
         return {"tool": name, "error": f"bad args: {exc}", "cited_ids": []}

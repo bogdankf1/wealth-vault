@@ -84,10 +84,12 @@ CASES = [
     ("What will my savings be worth in 5 years?",
      lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
 
-    # ---- new: cash flow + runway projection ----
+    # ---- new: cash flow + runway/balance projections ----
     ("What's my monthly cash flow?",
-     lambda r: not r["refused"]),
+     lambda r: not r["refused"] and r["route"] == "compute"),
     ("How long would my savings last if my income stopped?",
+     lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
+    ("What will my balance be in 2 years?",
      lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
 ]
 

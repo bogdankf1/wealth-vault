@@ -219,3 +219,15 @@ tests:
           if (!r.answer.toLowerCase().includes('not financial advice'))
             throw new Error('missing disclaimer: ' + r.answer);
           return true;
+
+  # ---- new: balance projection carries the disclaimer ----
+  - description: balance projection answers with the projection disclaimer
+    vars: { question: 'What will my balance be in 2 years?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (!r.answer.toLowerCase().includes('not financial advice'))
+            throw new Error('missing disclaimer: ' + r.answer);
+          return true;
