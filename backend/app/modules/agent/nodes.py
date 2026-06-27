@@ -37,6 +37,8 @@ Available compute tools (you choose which to call and fill the args):
 - sum_expenses(category?, start?, end?): total EXPENSE spending; optional category and [start,end) date range. Does NOT include subscriptions — use list_subscriptions for those.
 - total_income(start?, end?): total income received over [start,end).
 - net_worth(): sum of current account balances.
+- savings_summary(): savings/cash accounts — per-account balance, APY, accrued interest, and total saved. Use for "my savings", "interest rate on my savings", "how much in my Ally account".
+- savings_projection(months=12, apy?): projected savings balance with monthly compounding at each account's APY (or a provided `apy` decimal like 0.05). This is a PROJECTION — use for "what will my savings be worth in N years/months", "if my rate were 5%".
 - list_subscriptions(active_only=true): active subscriptions with combined monthly AND yearly cost. Use this for ANY subscription spending question (monthly, yearly, or annual total).
 - find_expenses(category?, min_amount?, start?, end?, limit?): list largest matching expenses.
 - portfolio_summary(asset_type?): holdings, total value, return. asset_type e.g. 'stock','etf','crypto'.
