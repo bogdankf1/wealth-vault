@@ -25,3 +25,32 @@ def test_trailing_full_months_shape():
     sy, sm, _ = map(int, start.split("-"))
     ey, em, _ = map(int, end.split("-"))
     assert (ey - sy) * 12 + (em - sm) == 3
+
+
+from app.modules.agent.tools import cash_runway, balance_projection, net_worth
+
+
+@pytest.mark.asyncio
+async def test_cash_runway(db, user_id):
+    cf = await cash_flow(db, user_id)
+    nw = (await net_worth(db, user_id))["total"]
+    r = await cash_runway(db, user_id)
+    assert r["projection"] is True
+    assert r["liquid_balance"] == nw
+    assert r["monthly_outflow"] == cf["outflow_avg"]
+    if cf["outflow_avg"] > 0:
+        assert r["runway_months"] == round(nw / cf["outflow_avg"], 1)
+    assert r["count"] == 1
+
+
+@pytest.mark.asyncio
+async def test_balance_projection(db, user_id):
+    cf = await cash_flow(db, user_id)
+    nw = (await net_worth(db, user_id))["total"]
+    r = await balance_projection(db, user_id, months=12)
+    assert r["projection"] is True
+    assert r["current_balance"] == nw
+    assert r["net_flow_monthly"] == cf["net_flow_avg"]
+    assert r["projected_balance"] == round(nw + cf["net_flow_avg"] * 12, 2)
+    assert r["change"] == round(r["projected_balance"] - nw, 2)
+    assert r["months"] == 12

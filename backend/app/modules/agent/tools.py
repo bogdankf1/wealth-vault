@@ -424,6 +424,48 @@ async def cash_flow(db: AsyncSession, user_id: UUID, months: int = 3) -> dict:
     }
 
 
+async def cash_runway(db: AsyncSession, user_id: UUID) -> dict:
+    """How many months liquid savings would cover outflow IF income stopped:
+    net_worth / monthly outflow. A projection (carries the standard disclaimer)."""
+    cf = await cash_flow(db, user_id)
+    liquid = (await net_worth(db, user_id))["total"]
+    outflow = cf["outflow_avg"]
+    runway = round(liquid / outflow, 1) if outflow > 0 else None
+    return {
+        "tool": "cash_runway",
+        "projection": True,
+        "liquid_balance": liquid,
+        "monthly_outflow": outflow,
+        "runway_months": runway,
+        "assumption": "assumes income stops; savings cover average monthly outflow",
+        "count": 1,  # non-zero so the empty-result heuristic won't misfire
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
+async def balance_projection(db: AsyncSession, user_id: UUID, months: int = 12) -> dict:
+    """Projected savings balance: current net worth + average monthly net cash flow × months.
+    A projection (carries the standard disclaimer)."""
+    months = max(0, int(months))
+    cf = await cash_flow(db, user_id)
+    current = (await net_worth(db, user_id))["total"]
+    net = cf["net_flow_avg"]
+    projected = round(current + net * months, 2)
+    return {
+        "tool": "balance_projection",
+        "projection": True,
+        "months": months,
+        "current_balance": current,
+        "net_flow_monthly": net,
+        "projected_balance": projected,
+        "change": round(projected - current, 2),
+        "count": months or 1,  # non-zero so the empty-result heuristic won't misfire
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
 async def affordability(db: AsyncSession, user_id: UUID, amount: float,
                        start: Optional[str] = None, end: Optional[str] = None) -> dict:
     """Can the user afford `amount`? Disposable = income − expenses − subscriptions − loan payments."""
@@ -458,6 +500,8 @@ TOOLS = {
     "financial_ratios": financial_ratios,
     "affordability": affordability,
     "cash_flow": cash_flow,
+    "cash_runway": cash_runway,
+    "balance_projection": balance_projection,
 }
 
 
