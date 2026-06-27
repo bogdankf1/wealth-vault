@@ -114,6 +114,36 @@ async def net_worth(db: AsyncSession, user_id: UUID) -> dict:
     }
 
 
+async def savings_summary(db: AsyncSession, user_id: UUID) -> dict:
+    """Savings/cash accounts: balances, APY, accrued interest, and the combined total."""
+    rows = (await db.execute(
+        select(SavingsAccount.id, SavingsAccount.name, SavingsAccount.account_type,
+               SavingsAccount.institution, SavingsAccount.current_balance,
+               SavingsAccount.interest_rate, SavingsAccount.accrued_interest)
+        .where(SavingsAccount.user_id == user_id, SavingsAccount.is_active.is_(True))
+        .order_by(SavingsAccount.current_balance.desc())
+    )).all()
+    total = sum((r.current_balance for r in rows), Decimal("0"))
+    accrued = sum((r.accrued_interest or Decimal("0") for r in rows), Decimal("0"))
+    accounts = []
+    for r in rows:
+        rate = float(r.interest_rate or 0)
+        accounts.append({
+            "name": r.name, "account_type": r.account_type, "institution": r.institution,
+            "balance": float(r.current_balance), "apy": rate, "apy_pct": round(rate * 100, 2),
+            "accrued_interest": float(r.accrued_interest or 0), "id": str(r.id),
+        })
+    return {
+        "tool": "savings_summary",
+        "total_balance": round(float(total), 2),
+        "total_accrued_interest": round(float(accrued), 2),
+        "account_count": len(rows),
+        "currency": "USD",
+        "accounts": accounts,
+        "cited_ids": [a["id"] for a in accounts],
+    }
+
+
 async def list_subscriptions(db: AsyncSession, user_id: UUID, active_only: bool = True) -> dict:
     """Active subscriptions and their combined monthly cost."""
     conds = [Subscription.user_id == user_id]
@@ -339,6 +369,7 @@ TOOLS = {
     "sum_expenses": sum_expenses,
     "total_income": total_income,
     "net_worth": net_worth,
+    "savings_summary": savings_summary,
     "list_subscriptions": list_subscriptions,
     "find_expenses": find_expenses,
     "portfolio_summary": portfolio_summary,
