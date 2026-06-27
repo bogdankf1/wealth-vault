@@ -244,6 +244,37 @@ async def find_expenses(
     }
 
 
+async def spending_breakdown(
+    db: AsyncSession, user_id: UUID, start: Optional[str] = None, end: Optional[str] = None,
+) -> dict:
+    """Spending grouped by category over [start, end), with each category's share of the total."""
+    conds = [Expense.user_id == user_id, Expense.is_active.is_(True)]
+    sd, ed = _parse_date(start), _parse_date(end)
+    if sd:
+        conds.append(Expense.date >= sd)
+    if ed:
+        conds.append(Expense.date < ed)
+    rows = (await db.execute(
+        select(Expense.category, func.sum(Expense.amount))
+        .where(*conds).group_by(Expense.category)
+    )).all()
+    total = sum((amt for _, amt in rows), Decimal("0"))
+    categories = sorted(
+        ({"category": cat or "Uncategorized", "amount": float(amt),
+          "share_pct": round(float(amt) / float(total) * 100, 2) if total else 0.0}
+         for cat, amt in rows),
+        key=lambda c: c["amount"], reverse=True,
+    )
+    return {
+        "tool": "spending_breakdown",
+        "total": round(float(total), 2),
+        "count": len(categories),
+        "currency": "USD",
+        "categories": categories,
+        "cited_ids": [],
+    }
+
+
 async def portfolio_summary(db: AsyncSession, user_id: UUID, asset_type: Optional[str] = None) -> dict:
     """Holdings, total value, and return. Optional asset_type filter (e.g. 'stock','etf','crypto')."""
     conds = [PortfolioAsset.user_id == user_id, PortfolioAsset.is_active.is_(True)]
@@ -490,6 +521,7 @@ TOOLS = {
     "savings_projection": savings_projection,
     "list_subscriptions": list_subscriptions,
     "find_expenses": find_expenses,
+    "spending_breakdown": spending_breakdown,
     "portfolio_summary": portfolio_summary,
     "debts_summary": debts_summary,
     "installments_summary": installments_summary,
