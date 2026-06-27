@@ -135,9 +135,10 @@ async def savings_summary(db: AsyncSession, user_id: UUID) -> dict:
         })
     return {
         "tool": "savings_summary",
-        "total_balance": round(float(total), 2),
+        # `total`/`count` match the cross-tool convention compute_node's empty-result check keys on.
+        "total": round(float(total), 2),
         "total_accrued_interest": round(float(accrued), 2),
-        "account_count": len(rows),
+        "count": len(rows),
         "currency": "USD",
         "accounts": accounts,
         "cited_ids": [a["id"] for a in accounts],
@@ -168,6 +169,7 @@ async def savings_projection(
         "tool": "savings_projection",
         "projection": True,
         "months": months,
+        "count": len(rows),  # non-zero => compute_node's empty-result heuristic won't misfire
         "assumed_apy": float(apy) if apy is not None else None,  # None => per-account APY
         "current_balance": round(float(current), 2),
         "projected_balance": round(float(projected), 2),
