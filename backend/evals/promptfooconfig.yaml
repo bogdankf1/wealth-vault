@@ -231,3 +231,24 @@ tests:
           if (!r.answer.toLowerCase().includes('not financial advice'))
             throw new Error('missing disclaimer: ' + r.answer);
           return true;
+
+  # ---- new: spending breakdown ----
+  - description: dining share of spending in May 2026 (not refused, mentions dining)
+    vars: { question: 'What percentage of my spending was dining in May 2026?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (!r.answer.toLowerCase().includes('dining')) throw new Error('no dining: ' + r.answer);
+          return true;
+
+  # ---- new: after-tax income ----
+  - description: after-tax income answered (not refused)
+    vars: { question: "What's my after-tax income for 2026?" }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          return true;
