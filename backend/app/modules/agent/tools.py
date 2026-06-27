@@ -144,6 +144,39 @@ async def savings_summary(db: AsyncSession, user_id: UUID) -> dict:
     }
 
 
+async def savings_projection(
+    db: AsyncSession, user_id: UUID, months: int = 12, apy: Optional[float] = None,
+) -> dict:
+    """Project savings balance forward with monthly compounding. Each account grows at its
+    own stored APY, unless `apy` (decimal, e.g. 0.05) overrides the rate for all accounts.
+    Deterministic; `projection` flag triggers the standard disclaimer in synthesis."""
+    rows = (await db.execute(
+        select(SavingsAccount.id, SavingsAccount.current_balance, SavingsAccount.interest_rate)
+        .where(SavingsAccount.user_id == user_id, SavingsAccount.is_active.is_(True))
+    )).all()
+    months = max(0, int(months))
+    current = sum((r.current_balance for r in rows), Decimal("0"))
+    projected = Decimal("0")
+    for r in rows:
+        rate = Decimal(str(apy)) if apy is not None else (r.interest_rate or Decimal("0"))
+        monthly = rate / Decimal("12")
+        bal = r.current_balance
+        for _ in range(months):
+            bal = bal * (Decimal("1") + monthly)
+        projected += bal
+    return {
+        "tool": "savings_projection",
+        "projection": True,
+        "months": months,
+        "assumed_apy": float(apy) if apy is not None else None,  # None => per-account APY
+        "current_balance": round(float(current), 2),
+        "projected_balance": round(float(projected), 2),
+        "interest_earned": round(float(projected - current), 2),
+        "currency": "USD",
+        "cited_ids": [str(r.id) for r in rows],
+    }
+
+
 async def list_subscriptions(db: AsyncSession, user_id: UUID, active_only: bool = True) -> dict:
     """Active subscriptions and their combined monthly cost."""
     conds = [Subscription.user_id == user_id]
@@ -370,6 +403,7 @@ TOOLS = {
     "total_income": total_income,
     "net_worth": net_worth,
     "savings_summary": savings_summary,
+    "savings_projection": savings_projection,
     "list_subscriptions": list_subscriptions,
     "find_expenses": find_expenses,
     "portfolio_summary": portfolio_summary,
