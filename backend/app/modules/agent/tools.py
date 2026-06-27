@@ -127,6 +127,8 @@ async def list_subscriptions(db: AsyncSession, user_id: UUID, active_only: bool 
     return {
         "tool": "list_subscriptions",
         "monthly_total": round(float(monthly), 2),
+        # Annualized so "how much is it yearly" is answerable directly (grounded by construction).
+        "yearly_total": round(float(monthly) * 12, 2),
         "count": len(rows),
         "currency": "USD",
         "items": [{"name": r.name, "amount": float(r.amount), "frequency": r.frequency,

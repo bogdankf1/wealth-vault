@@ -34,10 +34,10 @@ MAX_RETRIES = 1  # one grounding self-correction pass, then refuse
 # What the router is allowed to choose. Kept in sync with tools.TOOLS.
 ROUTE_TOOL_CATALOG = """\
 Available compute tools (you choose which to call and fill the args):
-- sum_expenses(category?, start?, end?): total spending; optional category and [start,end) date range.
+- sum_expenses(category?, start?, end?): total EXPENSE spending; optional category and [start,end) date range. Does NOT include subscriptions — use list_subscriptions for those.
 - total_income(start?, end?): total income received over [start,end).
 - net_worth(): sum of current account balances.
-- list_subscriptions(active_only=true): active subscriptions and combined monthly cost.
+- list_subscriptions(active_only=true): active subscriptions with combined monthly AND yearly cost. Use this for ANY subscription spending question (monthly, yearly, or annual total).
 - find_expenses(category?, min_amount?, start?, end?, limit?): list largest matching expenses.
 - portfolio_summary(asset_type?): holdings, total value, return. asset_type e.g. 'stock','etf','crypto'.
 - debts_summary(): money owed TO the user — outstanding + overdue.
@@ -331,6 +331,13 @@ def _question_numbers(text: str) -> set[float]:
     return out
 
 
+# Well-known time-unit constants allowed as arithmetic operands when grounding. Without these,
+# legitimate conversions like "yearly = monthly × 12" read as ungrounded (the 12 is in neither the
+# tool output nor the question) and get refused. They're safe: a constant alone can't fabricate a
+# meaningful dollar figure — it only unlocks `grounded_figure op constant` derivations.
+GROUNDING_CONSTANTS = {12.0, 52.0, 365.0, 7.0, 24.0, 30.0, 4.0}
+
+
 def _derivable(n: float, base: list[float]) -> bool:
     """True if n is a grounded figure, or a SINGLE arithmetic step (+, -, *, /, or 'a% of b')
     over two grounded figures. This grounds legitimate derived / what-if numbers while still
@@ -366,7 +373,7 @@ async def validate_node(state: AgentState) -> dict:
     grounded = True
     reason = "grounded"
     if used_compute:
-        base = list(_computed_numbers(state) | _question_numbers(state.get("question", "")))
+        base = list(_computed_numbers(state) | _question_numbers(state.get("question", "")) | GROUNDING_CONSTANTS)
         unmatched = [n for n in _numbers_in(draft) if not _derivable(n, base)]
         grounded = not unmatched
         if unmatched:
