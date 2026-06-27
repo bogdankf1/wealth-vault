@@ -275,6 +275,40 @@ async def spending_breakdown(
     }
 
 
+async def spending_trend(db: AsyncSession, user_id: UUID, months: int = 6) -> dict:
+    """Monthly expense totals for the trailing `months` full calendar months, oldest first,
+    plus the change from the first to the last month."""
+    months = max(1, int(months))
+    today = date.today()
+    cursor = date(today.year, today.month, 1)
+    bounds = []
+    for _ in range(months):
+        y, m = cursor.year, cursor.month - 1
+        if m == 0:
+            m = 12
+            y -= 1
+        start = date(y, m, 1)
+        bounds.append((start, cursor))
+        cursor = start
+    bounds.reverse()
+    series = []
+    for start, end in bounds:
+        total = (await sum_expenses(db, user_id, start=start.isoformat(), end=end.isoformat()))["total"]
+        series.append({"month": start.strftime("%Y-%m"), "start": start.isoformat(),
+                       "end": end.isoformat(), "total": total})
+    first, last = series[0]["total"], series[-1]["total"]
+    change = round(last - first, 2)
+    return {
+        "tool": "spending_trend",
+        "series": series,
+        "change_first_to_last": change,
+        "pct_change": round(change / first * 100, 2) if first else 0.0,
+        "count": months,
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
 async def portfolio_summary(db: AsyncSession, user_id: UUID, asset_type: Optional[str] = None) -> dict:
     """Holdings, total value, and return. Optional asset_type filter (e.g. 'stock','etf','crypto')."""
     conds = [PortfolioAsset.user_id == user_id, PortfolioAsset.is_active.is_(True)]
@@ -522,6 +556,7 @@ TOOLS = {
     "list_subscriptions": list_subscriptions,
     "find_expenses": find_expenses,
     "spending_breakdown": spending_breakdown,
+    "spending_trend": spending_trend,
     "portfolio_summary": portfolio_summary,
     "debts_summary": debts_summary,
     "installments_summary": installments_summary,
