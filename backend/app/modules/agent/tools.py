@@ -57,6 +57,17 @@ def _trailing_full_months(months: int) -> tuple[str, str]:
     return date(y, m, 1).isoformat(), end.isoformat()
 
 
+# Months covered by a [start, end) range (end exclusive), for prorating fixed taxes.
+_FREQ_MONTHS = {"annually": 12, "semiannually": 6, "biannually": 6,
+                "quarterly": 3, "monthly": 1, "weekly": 0.25}
+
+
+def _months_in_range(start_iso: str, end_iso: str) -> int:
+    sy, sm, _ = map(int, start_iso.split("-"))
+    ey, em, _ = map(int, end_iso.split("-"))
+    return max(1, (ey - sy) * 12 + (em - sm))
+
+
 async def sum_expenses(
     db: AsyncSession, user_id: UUID,
     category: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None,
@@ -492,6 +503,35 @@ async def financial_ratios(db: AsyncSession, user_id: UUID,
             "currency": "USD", "cited_ids": []}
 
 
+async def after_tax_income(
+    db: AsyncSession, user_id: UUID, start: Optional[str] = None, end: Optional[str] = None,
+) -> dict:
+    """Estimated after-tax income over a period. Percentage taxes apply to income; fixed taxes
+    are prorated to the period by their frequency. Defaults to the trailing 12 full months."""
+    if not start or not end:
+        start, end = _trailing_full_months(12)
+    months = _months_in_range(start, end)
+    income = (await total_income(db, user_id, start=start, end=end))["total"]
+    items = (await taxes_summary(db, user_id))["items"]
+    pct_rate = sum(i["percentage"] or 0 for i in items if i["tax_type"] == "percentage") / 100.0
+    fixed_monthly = sum((i["fixed_amount"] or 0) / _FREQ_MONTHS.get(i["frequency"], 12)
+                        for i in items if i["tax_type"] == "fixed")
+    estimated_tax = round(income * pct_rate + fixed_monthly * months, 2)
+    net = round(income - estimated_tax, 2)
+    return {
+        "tool": "after_tax_income",
+        "window": {"start": start, "end": end, "months": months},
+        "months": months,
+        "income": income,
+        "estimated_tax": estimated_tax,
+        "net_income": net,
+        "effective_rate": round(estimated_tax / income * 100, 2) if income else 0.0,
+        "count": months,
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
 async def cash_flow(db: AsyncSession, user_id: UUID, months: int = 3) -> dict:
     """Average monthly cash flow over the trailing `months` full calendar months. Outflow =
     expenses + active subscriptions + installment payments. Composes existing tools."""
@@ -597,6 +637,7 @@ TOOLS = {
     "goals_progress": goals_progress,
     "compare_spending": compare_spending,
     "financial_ratios": financial_ratios,
+    "after_tax_income": after_tax_income,
     "affordability": affordability,
     "cash_flow": cash_flow,
     "cash_runway": cash_runway,
