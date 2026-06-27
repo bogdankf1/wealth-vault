@@ -1,5 +1,6 @@
 import pytest
 from app.modules.agent.tools import spending_breakdown, sum_expenses, spending_trend, _trailing_full_months
+from app.modules.agent.tools import income_breakdown, total_income
 
 
 @pytest.mark.asyncio
@@ -28,3 +29,16 @@ async def test_spending_trend(db, user_id):
     labels = [p["month"] for p in r["series"]]
     assert labels == sorted(labels)
     assert r["count"] == 6
+
+
+@pytest.mark.asyncio
+async def test_income_breakdown_2026(db, user_id):
+    r = await income_breakdown(db, user_id, start="2026-01-01", end="2026-06-01")
+    total = (await total_income(db, user_id, start="2026-01-01", end="2026-06-01"))["total"]
+    assert r["tool"] == "income_breakdown"
+    assert r["total"] == total
+    by = {s["category"]: s for s in r["sources"]}
+    assert "Salary" in by
+    assert by["Salary"]["amount"] == 6500.0 * 5
+    assert by["Salary"]["share_pct"] == round(6500.0 * 5 / total * 100, 2)
+    assert abs(sum(s["share_pct"] for s in r["sources"]) - 100.0) < 0.1

@@ -110,6 +110,37 @@ async def total_income(
     }
 
 
+async def income_breakdown(
+    db: AsyncSession, user_id: UUID, start: Optional[str] = None, end: Optional[str] = None,
+) -> dict:
+    """Income grouped by category/source (e.g. Salary vs Freelance) over [start, end)."""
+    conds = [IncomeTransaction.user_id == user_id]
+    sd, ed = _parse_date(start), _parse_date(end)
+    if sd:
+        conds.append(IncomeTransaction.date >= sd)
+    if ed:
+        conds.append(IncomeTransaction.date < ed)
+    rows = (await db.execute(
+        select(IncomeTransaction.category, func.sum(IncomeTransaction.amount))
+        .where(*conds).group_by(IncomeTransaction.category)
+    )).all()
+    total = sum((amt for _, amt in rows), Decimal("0"))
+    sources = sorted(
+        ({"category": cat or "Uncategorized", "amount": float(amt),
+          "share_pct": round(float(amt) / float(total) * 100, 2) if total else 0.0}
+         for cat, amt in rows),
+        key=lambda s: s["amount"], reverse=True,
+    )
+    return {
+        "tool": "income_breakdown",
+        "total": round(float(total), 2),
+        "count": len(sources),
+        "currency": "USD",
+        "sources": sources,
+        "cited_ids": [],
+    }
+
+
 async def net_worth(db: AsyncSession, user_id: UUID) -> dict:
     """Sum of active account balances (assets). Demo net worth = liquid balances."""
     rows = (await db.execute(
@@ -550,6 +581,7 @@ async def affordability(db: AsyncSession, user_id: UUID, amount: float,
 TOOLS = {
     "sum_expenses": sum_expenses,
     "total_income": total_income,
+    "income_breakdown": income_breakdown,
     "net_worth": net_worth,
     "savings_summary": savings_summary,
     "savings_projection": savings_projection,
