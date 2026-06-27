@@ -11,7 +11,7 @@ tool:
 
 Single-currency (USD) for the demo dataset, so sums are exact with no FX rounding.
 """
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
@@ -43,6 +43,18 @@ def _parse_date(value: Optional[str]) -> Optional[datetime]:
     if not value:
         return None
     return datetime.fromisoformat(value)
+
+
+def _trailing_full_months(months: int) -> tuple[str, str]:
+    """ISO [start, end) covering the `months` full calendar months before the current month.
+    today 2026-06-27, months=3 -> ('2026-03-01', '2026-06-01'). `end` is exclusive."""
+    today = date.today()
+    end = date(today.year, today.month, 1)
+    y, m = end.year, end.month - months
+    while m <= 0:
+        m += 12
+        y -= 1
+    return date(y, m, 1).isoformat(), end.isoformat()
 
 
 async def sum_expenses(
@@ -384,6 +396,76 @@ async def financial_ratios(db: AsyncSession, user_id: UUID,
             "currency": "USD", "cited_ids": []}
 
 
+async def cash_flow(db: AsyncSession, user_id: UUID, months: int = 3) -> dict:
+    """Average monthly cash flow over the trailing `months` full calendar months. Outflow =
+    expenses + active subscriptions + installment payments. Composes existing tools."""
+    months = max(1, int(months))
+    start, end = _trailing_full_months(months)
+    income = (await total_income(db, user_id, start=start, end=end))["total"]
+    expenses = (await sum_expenses(db, user_id, start=start, end=end))["total"]
+    subs = (await list_subscriptions(db, user_id))["monthly_total"]
+    debt = (await installments_summary(db, user_id))["monthly_obligation"]
+    income_avg = round(income / months, 2)
+    expenses_avg = round(expenses / months, 2)
+    recurring_monthly = round(subs + debt, 2)
+    outflow_avg = round(expenses_avg + recurring_monthly, 2)
+    net_flow_avg = round(income_avg - outflow_avg, 2)
+    return {
+        "tool": "cash_flow",
+        "window": {"start": start, "end": end, "months": months},
+        "income_avg": income_avg,
+        "expenses_avg": expenses_avg,
+        "recurring_monthly": recurring_monthly,
+        "outflow_avg": outflow_avg,
+        "net_flow_avg": net_flow_avg,
+        "count": months,  # non-zero so compute_node's empty-result heuristic won't misfire
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
+async def cash_runway(db: AsyncSession, user_id: UUID) -> dict:
+    """How many months liquid savings would cover outflow IF income stopped:
+    net_worth / monthly outflow. A projection (carries the standard disclaimer)."""
+    cf = await cash_flow(db, user_id)
+    liquid = (await net_worth(db, user_id))["total"]
+    outflow = cf["outflow_avg"]
+    runway = round(liquid / outflow, 1) if outflow > 0 else None
+    return {
+        "tool": "cash_runway",
+        "projection": True,
+        "liquid_balance": liquid,
+        "monthly_outflow": outflow,
+        "runway_months": runway,
+        "assumption": "assumes income stops; savings cover average monthly outflow",
+        "count": 1,  # non-zero so the empty-result heuristic won't misfire
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
+async def balance_projection(db: AsyncSession, user_id: UUID, months: int = 12) -> dict:
+    """Projected savings balance: current net worth + average monthly net cash flow × months.
+    A projection (carries the standard disclaimer)."""
+    months = max(0, int(months))
+    cf = await cash_flow(db, user_id)
+    current = (await net_worth(db, user_id))["total"]
+    net = cf["net_flow_avg"]
+    projected = round(current + net * months, 2)
+    return {
+        "tool": "balance_projection",
+        "projection": True,
+        "months": months,
+        "current_balance": current,
+        "net_flow_monthly": net,
+        "projected_balance": projected,
+        "change": round(projected - current, 2),
+        "count": months or 1,  # non-zero so the empty-result heuristic won't misfire
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
 async def affordability(db: AsyncSession, user_id: UUID, amount: float,
                        start: Optional[str] = None, end: Optional[str] = None) -> dict:
     """Can the user afford `amount`? Disposable = income − expenses − subscriptions − loan payments."""
@@ -417,6 +499,9 @@ TOOLS = {
     "compare_spending": compare_spending,
     "financial_ratios": financial_ratios,
     "affordability": affordability,
+    "cash_flow": cash_flow,
+    "cash_runway": cash_runway,
+    "balance_projection": balance_projection,
 }
 
 
@@ -428,5 +513,7 @@ async def run_tool(db: AsyncSession, user_id: UUID, name: str, args: dict) -> di
         return {"tool": name, "error": f"unknown tool '{name}'", "cited_ids": []}
     try:
         return await fn(db, user_id, **(args or {}))
-    except TypeError as exc:
+    except (TypeError, ValueError) as exc:
+        # Bad args fail soft (e.g. a non-numeric months/amount, or an unparseable date) so one
+        # bad LLM tool call doesn't crash the graph — the validate node catches the gap.
         return {"tool": name, "error": f"bad args: {exc}", "cited_ids": []}

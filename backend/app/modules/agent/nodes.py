@@ -50,6 +50,9 @@ Available compute tools (you choose which to call and fill the args):
 - compare_spending(start_a,end_a,start_b,end_b,category?): spending across two periods.
 - financial_ratios(start?,end?): savings rate + debt-to-income.
 - affordability(amount, start?, end?): whether the user can afford `amount`.
+- cash_flow(months=3): average monthly income vs outflow (expenses + subscriptions + loan payments) over the trailing N full months — net cash flow / burn rate.
+- cash_runway(): how many months your savings would cover outflow if income stopped (net worth ÷ monthly outflow). A PROJECTION.
+- balance_projection(months=12): projected savings balance from current net cash flow. A PROJECTION. For "what will my balance be in N months/years".
 Dates are ISO (YYYY-MM-DD). `end` is EXCLUSIVE — for "May 2026" use start=2026-05-01, end=2026-06-01.
 """
 
