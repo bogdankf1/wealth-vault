@@ -260,6 +260,21 @@ def _evidence_block(state: AgentState) -> str:
     return "\n".join(parts) if parts else "(no evidence found)"
 
 
+PROJECTION_DISCLAIMER = (
+    "Projection based on your current data and stated assumptions — "
+    "not financial advice; actual results will vary."
+)
+
+
+def _with_projection_disclaimer(draft: str, computed) -> str:
+    """Append the standard disclaimer when any evidence row is a projection. Deterministic,
+    so it can't be dropped by the LLM. Reused by every projection tool (flag: projection=True)."""
+    results = (computed or {}).get("results", [])
+    if any(r.get("projection") for r in results) and PROJECTION_DISCLAIMER not in draft:
+        return draft.rstrip() + "\n\n" + PROJECTION_DISCLAIMER
+    return draft
+
+
 async def synthesize_node(state: AgentState) -> dict:
     strict = state.get("strict", False)
     system = SYNTH_SYSTEM + (
@@ -275,6 +290,7 @@ async def synthesize_node(state: AgentState) -> dict:
         [("system", system), *_history_messages(state.get("history")), ("human", human)]
     )
     draft = msg.content if isinstance(msg.content, str) else str(msg.content)
+    draft = _with_projection_disclaimer(draft, state.get("computed"))
     return {"draft": draft, "steps": _trace(state, "synthesize", f"{len(draft)} chars")}
 
 
