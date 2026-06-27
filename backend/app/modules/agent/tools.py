@@ -57,9 +57,9 @@ def _trailing_full_months(months: int) -> tuple[str, str]:
     return date(y, m, 1).isoformat(), end.isoformat()
 
 
-# Months covered by a [start, end) range (end exclusive), for prorating fixed taxes.
-_FREQ_MONTHS = {"annually": 12, "semiannually": 6, "biannually": 6,
-                "quarterly": 3, "monthly": 1, "weekly": 0.25}
+# Fixed-tax frequency -> months per occurrence, for prorating to a period. Keys match the
+# TaxFrequency enum; anything unmapped falls back to 12 (annual) at the call site.
+_FREQ_MONTHS = {"annually": 12, "quarterly": 3, "monthly": 1}
 
 
 def _months_in_range(start_iso: str, end_iso: str) -> int:
