@@ -197,3 +197,25 @@ tests:
           if (!r.answer.toLowerCase().includes('not financial advice'))
             throw new Error('projection missing disclaimer: ' + r.answer);
           return true;
+
+  # ---- new: cash flow (read) ----
+  - description: monthly cash flow answered (not refused)
+    vars: { question: "What's my monthly cash flow?" }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          return true;
+
+  # ---- new: cash runway projection carries the disclaimer ----
+  - description: cash runway answers with the projection disclaimer
+    vars: { question: 'How long would my savings last if my income stopped?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (!r.answer.toLowerCase().includes('not financial advice'))
+            throw new Error('missing disclaimer: ' + r.answer);
+          return true;

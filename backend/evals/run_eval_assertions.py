@@ -83,6 +83,12 @@ CASES = [
      lambda r: not r["refused"] and "23820.5" in norm(r["answer"])),
     ("What will my savings be worth in 5 years?",
      lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
+
+    # ---- new: cash flow + runway projection ----
+    ("What's my monthly cash flow?",
+     lambda r: not r["refused"]),
+    ("How long would my savings last if my income stopped?",
+     lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
 ]
 
 
