@@ -77,6 +77,12 @@ CASES = [
     # ---- new: refusal — investment advice ----
     ("Should I buy NVIDIA stock?",
      lambda r: r["refused"] is True),
+
+    # ---- new: savings (read + projection with disclaimer) ----
+    ("How much do I have in savings?",
+     lambda r: not r["refused"] and "23820.5" in norm(r["answer"])),
+    ("What will my savings be worth in 5 years?",
+     lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
 ]
 
 

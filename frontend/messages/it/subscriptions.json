@@ -167,6 +167,9 @@
     "annually": "Annuale"
   },
   "categories": {
+    "streaming": "Streaming",
+    "software": "Software",
+    "fitness": "Fitness",
     "cloudStorage": "Cloud Storage",
     "music": "Musica",
     "video": "Video",

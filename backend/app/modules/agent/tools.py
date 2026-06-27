@@ -114,6 +114,71 @@ async def net_worth(db: AsyncSession, user_id: UUID) -> dict:
     }
 
 
+async def savings_summary(db: AsyncSession, user_id: UUID) -> dict:
+    """Savings/cash accounts: balances, APY, accrued interest, and the combined total."""
+    rows = (await db.execute(
+        select(SavingsAccount.id, SavingsAccount.name, SavingsAccount.account_type,
+               SavingsAccount.institution, SavingsAccount.current_balance,
+               SavingsAccount.interest_rate, SavingsAccount.accrued_interest)
+        .where(SavingsAccount.user_id == user_id, SavingsAccount.is_active.is_(True))
+        .order_by(SavingsAccount.current_balance.desc())
+    )).all()
+    total = sum((r.current_balance for r in rows), Decimal("0"))
+    accrued = sum((r.accrued_interest or Decimal("0") for r in rows), Decimal("0"))
+    accounts = []
+    for r in rows:
+        rate = float(r.interest_rate or 0)
+        accounts.append({
+            "name": r.name, "account_type": r.account_type, "institution": r.institution,
+            "balance": float(r.current_balance), "apy": rate, "apy_pct": round(rate * 100, 2),
+            "accrued_interest": float(r.accrued_interest or 0), "id": str(r.id),
+        })
+    return {
+        "tool": "savings_summary",
+        # `total`/`count` match the cross-tool convention compute_node's empty-result check keys on.
+        "total": round(float(total), 2),
+        "total_accrued_interest": round(float(accrued), 2),
+        "count": len(rows),
+        "currency": "USD",
+        "accounts": accounts,
+        "cited_ids": [a["id"] for a in accounts],
+    }
+
+
+async def savings_projection(
+    db: AsyncSession, user_id: UUID, months: int = 12, apy: Optional[float] = None,
+) -> dict:
+    """Project savings balance forward with monthly compounding. Each account grows at its
+    own stored APY, unless `apy` (decimal, e.g. 0.05) overrides the rate for all accounts.
+    Deterministic; `projection` flag triggers the standard disclaimer in synthesis."""
+    rows = (await db.execute(
+        select(SavingsAccount.id, SavingsAccount.current_balance, SavingsAccount.interest_rate)
+        .where(SavingsAccount.user_id == user_id, SavingsAccount.is_active.is_(True))
+    )).all()
+    months = max(0, int(months))
+    current = sum((r.current_balance for r in rows), Decimal("0"))
+    projected = Decimal("0")
+    for r in rows:
+        rate = Decimal(str(apy)) if apy is not None else (r.interest_rate or Decimal("0"))
+        monthly = rate / Decimal("12")
+        bal = r.current_balance
+        for _ in range(months):
+            bal = bal * (Decimal("1") + monthly)
+        projected += bal
+    return {
+        "tool": "savings_projection",
+        "projection": True,
+        "months": months,
+        "count": len(rows),  # non-zero => compute_node's empty-result heuristic won't misfire
+        "assumed_apy": float(apy) if apy is not None else None,  # None => per-account APY
+        "current_balance": round(float(current), 2),
+        "projected_balance": round(float(projected), 2),
+        "interest_earned": round(float(projected - current), 2),
+        "currency": "USD",
+        "cited_ids": [str(r.id) for r in rows],
+    }
+
+
 async def list_subscriptions(db: AsyncSession, user_id: UUID, active_only: bool = True) -> dict:
     """Active subscriptions and their combined monthly cost."""
     conds = [Subscription.user_id == user_id]
@@ -127,6 +192,8 @@ async def list_subscriptions(db: AsyncSession, user_id: UUID, active_only: bool 
     return {
         "tool": "list_subscriptions",
         "monthly_total": round(float(monthly), 2),
+        # Annualized so "how much is it yearly" is answerable directly (grounded by construction).
+        "yearly_total": round(float(monthly) * 12, 2),
         "count": len(rows),
         "currency": "USD",
         "items": [{"name": r.name, "amount": float(r.amount), "frequency": r.frequency,
@@ -337,6 +404,8 @@ TOOLS = {
     "sum_expenses": sum_expenses,
     "total_income": total_income,
     "net_worth": net_worth,
+    "savings_summary": savings_summary,
+    "savings_projection": savings_projection,
     "list_subscriptions": list_subscriptions,
     "find_expenses": find_expenses,
     "portfolio_summary": portfolio_summary,

@@ -94,11 +94,11 @@ SUBSCRIPTIONS = [
     ("ChatGPT Plus", "Software", "20.00", "OpenAI ChatGPT Plus"),
 ]
 
-# (name, type, institution, balance)
+# (name, type, institution, balance, apy_decimal, accrued_interest)
 ACCOUNTS = [
-    ("Chase Checking", "personal", "Chase", "8500.00"),
-    ("Ally Online Savings", "personal", "Ally Bank", "15000.00"),
-    ("Cash Wallet", "cash", None, "320.50"),
+    ("Chase Checking", "personal", "Chase", "8500.00", "0", "0"),
+    ("Ally Online Savings", "personal", "Ally Bank", "15000.00", "0.0425", "250.00"),
+    ("Cash Wallet", "cash", None, "320.50", "0", "0"),
 ]
 
 
@@ -125,11 +125,12 @@ async def seed() -> None:
         ))
 
         # --- accounts ---
-        for name, atype, institution, balance in ACCOUNTS:
+        for name, atype, institution, balance, apy, accrued in ACCOUNTS:
             session.add(SavingsAccount(
                 user_id=DEMO_USER_ID, name=name, account_type=atype,
                 institution=institution, current_balance=_d(balance),
                 currency="USD", is_active=True,
+                interest_rate=_d(apy), accrued_interest=_d(accrued),
             ))
 
         # --- expenses: monthly template + one-offs (all one-time, all paid) ---
@@ -321,6 +322,8 @@ async def _print_ground_truth(session) -> None:
     print("\n================= GROUND TRUTH (copy into evals) =================")
     print(f"demo_user_id            : {uid}")
     print(f"net_worth (USD)         : {net_worth}")
+    print(f"savings_total (USD)     : {net_worth}  # == sum of savings_accounts")
+    print(f"ally_apy                : 0.0425  # 4.25% on $15000, accrued $250.00")
     print(f"active_subs_monthly     : {subs_total}")
     print(f"dining_may_2026         : {dining_may}")
     print(f"groceries_may_2026      : {groceries_may}")
