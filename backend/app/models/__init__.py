@@ -18,6 +18,7 @@ from app.modules.dashboard_layouts.models import DashboardLayout
 from app.modules.backups.models import Backup
 from app.modules.support.models import SupportTopic, SupportMessage
 from app.modules.dashboard.models import NetWorthSnapshot, CashFlowSnapshot
+from app.modules.agent.models import AgentActionLog
 
 # Now import User (which has relationships to the above models)
 from app.models.user import User
@@ -49,4 +50,5 @@ __all__ = [
     "SupportMessage",
     "NetWorthSnapshot",
     "CashFlowSnapshot",
+    "AgentActionLog",
 ]
