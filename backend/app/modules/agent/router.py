@@ -8,13 +8,15 @@ POST /api/v1/agent/query   — non-streaming JSON. Returns the answer plus the s
 """
 import json
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from app.core.permissions import get_current_user
 from app.models.user import User
 from app.modules.agent.graph import run_agent, astream_agent
+from app.core.database import AsyncSessionLocal
+from app.modules.agent.actions import commit_action, ActionError
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
@@ -41,6 +43,7 @@ class AgentQueryResponse(BaseModel):
     retrieved: list[dict] = []
     steps: list[dict] = []
     validation: dict | None = None
+    proposed_action: dict | None = None  # Level D: a typed action awaiting user confirmation
 
 
 @router.post("/query", response_model=AgentQueryResponse)
@@ -71,3 +74,26 @@ async def stream_agent(
             yield f"event: error\ndata: {json.dumps({'message': str(exc)})}\n\n"
 
     return StreamingResponse(event_source(), media_type="text/event-stream", headers=SSE_HEADERS)
+
+
+class ConfirmActionRequest(BaseModel):
+    action_type: str = Field(..., min_length=1, max_length=50)
+    args: dict = Field(default_factory=dict)
+    idempotency_key: str = Field(..., min_length=8, max_length=100)
+
+
+@router.post("/actions/confirm")
+async def confirm_action(
+    body: ConfirmActionRequest,
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Deterministically commit a proposed agent action (no LLM). The sole write path; the
+    action is re-validated server-side and scoped to the authenticated user."""
+    async with AsyncSessionLocal() as db:
+        try:
+            return await commit_action(db, current_user.id, body.action_type,
+                                       body.args, body.idempotency_key)
+        except ActionError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        except ValidationError as exc:
+            raise HTTPException(status_code=422, detail=str(exc))

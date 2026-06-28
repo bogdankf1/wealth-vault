@@ -35,6 +35,7 @@ NODE_LABELS = {
     "validate": "Checking the numbers…",
     "refuse": "Preparing a response…",
     "capability": "Preparing a response…",
+    "propose_action": "Preparing an action…",
 }
 
 
@@ -49,13 +50,15 @@ def build_graph():
     b.add_node("validate", nodes.validate_node)
     b.add_node("refuse", nodes.refuse_node)
     b.add_node("capability", nodes.capability_node)
+    b.add_node("propose_action", nodes.propose_action)
 
     b.add_edge(START, "classify")
     b.add_conditional_edges("classify", nodes.route_decider, {
         "compute": "compute", "semantic": "retrieve", "hybrid": "compute", "refuse": "refuse",
-        "capability": "capability",
+        "capability": "capability", "action": "propose_action",
     })
     b.add_edge("capability", END)
+    b.add_edge("propose_action", END)
     b.add_conditional_edges("compute", nodes.after_compute, {
         "retrieve": "retrieve", "synthesize": "synthesize",
     })
@@ -95,6 +98,7 @@ def format_result(final: dict) -> dict:
         ],
         "steps": final.get("steps", []),
         "validation": final.get("validation"),
+        "proposed_action": final.get("proposed_action"),
     }
 
 

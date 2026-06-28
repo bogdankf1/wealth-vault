@@ -19,7 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { useAgentStream, type AgentStreamState } from '@/hooks/useAgentStream';
+import { getSession } from 'next-auth/react';
+import { useAgentStream, type AgentResult, type AgentStreamState } from '@/hooks/useAgentStream';
 
 const NODE_ICON: Record<string, typeof Route> = {
   classify: Route,
@@ -171,10 +172,15 @@ function AnswerBlock({ view }: { view: AgentStreamState }) {
             <AlertCircle className="h-4 w-4" /> {view.error}
           </p>
         ) : (
-          <p className="whitespace-pre-wrap text-sm">
-            {answer}
-            {view.isStreaming && <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-foreground/60 align-middle" />}
-          </p>
+          <>
+            <p className="whitespace-pre-wrap text-sm">
+              {answer}
+              {view.isStreaming && <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-foreground/60 align-middle" />}
+            </p>
+            {view.result?.proposed_action?.action_type === 'create_expense' && (
+              <ConfirmExpenseCard action={view.result.proposed_action} />
+            )}
+          </>
         )}
 
         {/* Metrics + provenance */}
@@ -201,5 +207,66 @@ function AnswerBlock({ view }: { view: AgentStreamState }) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function ConfirmExpenseCard({ action }: { action: NonNullable<AgentResult['proposed_action']> }) {
+  const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'cancelled' | 'error'>('idle');
+  const [err, setErr] = useState<string | null>(null);
+  const a = action.args;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  async function confirm() {
+    setStatus('saving');
+    try {
+      const session = await getSession();
+      const token = (session as { accessToken?: string } | null)?.accessToken
+        || process.env.NEXT_PUBLIC_DEV_AGENT_TOKEN || '';
+      const res = await fetch(`${API_URL}/api/v1/agent/actions/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          action_type: action.action_type,
+          args: a,
+          idempotency_key: crypto.randomUUID(),
+        }),
+      });
+      if (!res.ok) throw new Error(`(${res.status})`);
+      setStatus('done');
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+      setStatus('error');
+    }
+  }
+
+  if (status === 'done') {
+    return <div className="mt-2 text-sm text-green-600 dark:text-green-400">✓ Added &quot;{a.name}&quot; (${a.amount.toFixed(2)})</div>;
+  }
+  if (status === 'cancelled') {
+    return <div className="mt-2 text-sm text-muted-foreground">Cancelled.</div>;
+  }
+  return (
+    <div className="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-sm">
+      <div className="font-medium mb-1">Add this expense?</div>
+      <div className="text-gray-600 dark:text-gray-300">
+        {a.name} · ${a.amount.toFixed(2)}{a.category ? ` · ${a.category}` : ''}{a.date ? ` · ${a.date}` : ''}
+      </div>
+      {status === 'error' && <div className="text-red-600 dark:text-red-400 mt-1">Couldn&apos;t save {err}</div>}
+      <div className="mt-2 flex gap-2">
+        <button
+          onClick={confirm}
+          disabled={status === 'saving'}
+          className="rounded-md bg-primary px-3 py-1 text-primary-foreground disabled:opacity-50"
+        >
+          {status === 'saving' ? 'Saving…' : 'Confirm'}
+        </button>
+        <button
+          onClick={() => setStatus('cancelled')}
+          className="rounded-md px-3 py-1 ring-1 ring-gray-300 dark:ring-gray-600"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
   );
 }

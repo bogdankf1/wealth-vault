@@ -33,3 +33,4 @@ class AgentState(TypedDict, total=False):
     answer: str
     refused: bool
     steps: list[dict[str, Any]]  # node-by-node trace, surfaced to the UI/stream
+    proposed_action: Optional[dict]  # {action_type, args} when the turn proposes a write (Level D)
