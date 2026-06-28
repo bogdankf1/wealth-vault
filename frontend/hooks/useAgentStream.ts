@@ -30,6 +30,10 @@ export interface AgentResult {
   validation?: Record<string, unknown> | null;
   ttft_ms?: number | null;
   total_ms?: number | null;
+  proposed_action?: {
+    action_type: string;
+    args: { name: string; amount: number; category?: string | null; date?: string | null };
+  } | null;
 }
 
 export interface AgentStreamState {
