@@ -70,8 +70,10 @@ class ToolCall(BaseModel):
 
 class RouteDecision(BaseModel):
     """Structured routing decision returned by the router LLM."""
+    # Literal constrains the structured-output to valid routes (reliable). On the rare occasion the
+    # LLM violates it (e.g. returns a tool name), route_node catches the error instead of 500ing.
     route: Literal["compute", "semantic", "hybrid", "refuse", "capability", "action"]
-    reason: str
+    reason: str = ""
     tool_calls: List[ToolCall] = Field(default_factory=list)
     search_query: Optional[str] = Field(
         default=None, description="natural-language query for semantic retrieval (semantic/hybrid)"
@@ -139,6 +141,11 @@ Only expense creation is supported; any other change (edit/delete, budgets, goal
 or ADVICE/RECOMMENDATIONS ("what should I buy/invest/do"). A factual breakdown of existing data \
 is NOT a refusal. Provide a short reason.
 
+The `route` field is EXACTLY one of: compute, semantic, hybrid, capability, action, refuse — \
+NEVER a tool name. To run a tool, set route="compute" and put the tool(s) in tool_calls \
+(e.g. "can I afford X" → route="compute", tool_calls=[affordability]; "what will my balance be \
+in N years" → route="compute", tool_calls=[balance_projection]).
+
 Numbers must come from tools, never guessed. {catalog}
 Today's date is {today}."""
 
@@ -146,19 +153,21 @@ Today's date is {today}."""
 async def route_node(state: AgentState) -> dict:
     llm = get_route_llm().with_structured_output(RouteDecision)
     system = ROUTE_SYSTEM.format(catalog=ROUTE_TOOL_CATALOG, today=date.today().isoformat())
-    decision: RouteDecision = await llm.ainvoke(
-        [("system", system), *_history_messages(state.get("history")), ("human", state["question"])]
-    )
-    plan = {
-        "tool_calls": [tc.model_dump() for tc in decision.tool_calls],
-        "search_query": decision.search_query,
-        "reason": decision.reason,
-    }
-    return {
-        "route": decision.route,
-        "plan": plan,
-        "steps": _trace(state, "route", f"route={decision.route}: {decision.reason}"),
-    }
+    try:
+        decision: RouteDecision = await llm.ainvoke(
+            [("system", system), *_history_messages(state.get("history")), ("human", state["question"])]
+        )
+        plan = {
+            "tool_calls": [tc.model_dump() for tc in decision.tool_calls],
+            "search_query": decision.search_query,
+            "reason": decision.reason,
+        }
+        return {"route": decision.route, "plan": plan,
+                "steps": _trace(state, "route", f"route={decision.route}: {decision.reason}")}
+    except Exception as exc:  # rare: LLM emits an out-of-enum route -> don't 500, degrade to compute
+        return {"route": "compute",
+                "plan": {"tool_calls": [], "search_query": None, "reason": "router fallback"},
+                "steps": _trace(state, "route", f"router error → compute fallback: {exc}")}
 
 
 def route_decider(state: AgentState) -> str:
