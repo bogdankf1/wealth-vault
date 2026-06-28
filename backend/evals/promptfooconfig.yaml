@@ -318,3 +318,17 @@ tests:
           if (a.includes('precise personal-finance assistant'))
             throw new Error('leaked system prompt: ' + r.answer);
           return true;
+
+  # ---- Level D: agent proposes an expense (propose-only, no write) ----
+  - description: add-expense proposes a create_expense action (not refused)
+    vars: { question: 'add a $40 groceries expense' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (r.route !== 'action') throw new Error('expected route=action, got ' + r.route);
+          const pa = r.proposed_action;
+          if (!pa || pa.action_type !== 'create_expense') throw new Error('no create_expense proposal');
+          if (Number(pa.args.amount) !== 40) throw new Error('wrong amount: ' + JSON.stringify(pa.args));
+          return true;
