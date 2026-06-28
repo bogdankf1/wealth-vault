@@ -6,8 +6,10 @@ from celery import Task
 from typing import Any
 
 
-# Import all models to ensure SQLAlchemy mappers are configured
-# This must happen before any database operations in tasks
+# Import the full models package (side effect) so SQLAlchemy mappers are registered in the
+# correct order. Must run before any task module imports an individual module's models, or that
+# triggers a circular import via app.models.__init__.
+import app.models  # noqa: F401
 
 # Import event handlers to register them in Celery worker context
 import app.core.event_handlers  # noqa: F401
