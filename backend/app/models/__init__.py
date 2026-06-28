@@ -18,7 +18,10 @@ from app.modules.dashboard_layouts.models import DashboardLayout
 from app.modules.backups.models import Backup
 from app.modules.support.models import SupportTopic, SupportMessage
 from app.modules.dashboard.models import NetWorthSnapshot, CashFlowSnapshot
-from app.modules.agent.models import AgentActionLog
+# NOTE: AgentActionLog is intentionally NOT imported here. Like the RAG tables, it is
+# alembic-owned — create_all_tables.py builds every table in Base.metadata, so listing it
+# here would make create_all create it and then the c1actions migration would fail with
+# "relation already exists". It's mapped where used (actions.py) and seen by alembic/env.py.
 
 # Now import User (which has relationships to the above models)
 from app.models.user import User
@@ -50,5 +53,4 @@ __all__ = [
     "SupportMessage",
     "NetWorthSnapshot",
     "CashFlowSnapshot",
-    "AgentActionLog",
 ]
