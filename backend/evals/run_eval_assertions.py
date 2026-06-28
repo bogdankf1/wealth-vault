@@ -91,6 +91,14 @@ CASES = [
      lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
     ("What will my balance be in 2 years?",
      lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
+
+    # ---- new: expense/income analysis ----
+    ("What percentage of my spending was dining in May 2026?",
+     lambda r: not r["refused"] and "dining" in r["answer"].lower()),
+    ("How much of my income is from freelance vs salary?",
+     lambda r: not r["refused"] and r["route"] == "compute"),
+    ("What's my after-tax income for 2026?",
+     lambda r: not r["refused"] and r["route"] == "compute"),
 ]
 
 

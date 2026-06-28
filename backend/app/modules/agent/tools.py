@@ -57,6 +57,17 @@ def _trailing_full_months(months: int) -> tuple[str, str]:
     return date(y, m, 1).isoformat(), end.isoformat()
 
 
+# Fixed-tax frequency -> months per occurrence, for prorating to a period. Keys match the
+# TaxFrequency enum; anything unmapped falls back to 12 (annual) at the call site.
+_FREQ_MONTHS = {"annually": 12, "quarterly": 3, "monthly": 1}
+
+
+def _months_in_range(start_iso: str, end_iso: str) -> int:
+    sy, sm, _ = map(int, start_iso.split("-"))
+    ey, em, _ = map(int, end_iso.split("-"))
+    return max(1, (ey - sy) * 12 + (em - sm))
+
+
 async def sum_expenses(
     db: AsyncSession, user_id: UUID,
     category: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None,
@@ -107,6 +118,37 @@ async def total_income(
         "currency": "USD",
         "filters": {"start": start, "end": end},
         "cited_ids": [str(r.id) for r in rows[:_CITED_CAP]],
+    }
+
+
+async def income_breakdown(
+    db: AsyncSession, user_id: UUID, start: Optional[str] = None, end: Optional[str] = None,
+) -> dict:
+    """Income grouped by category/source (e.g. Salary vs Freelance) over [start, end)."""
+    conds = [IncomeTransaction.user_id == user_id]
+    sd, ed = _parse_date(start), _parse_date(end)
+    if sd:
+        conds.append(IncomeTransaction.date >= sd)
+    if ed:
+        conds.append(IncomeTransaction.date < ed)
+    rows = (await db.execute(
+        select(IncomeTransaction.category, func.sum(IncomeTransaction.amount))
+        .where(*conds).group_by(IncomeTransaction.category)
+    )).all()
+    total = sum((amt for _, amt in rows), Decimal("0"))
+    sources = sorted(
+        ({"category": cat or "Uncategorized", "amount": float(amt),
+          "share_pct": round(float(amt) / float(total) * 100, 2) if total else 0.0}
+         for cat, amt in rows),
+        key=lambda s: s["amount"], reverse=True,
+    )
+    return {
+        "tool": "income_breakdown",
+        "total": round(float(total), 2),
+        "count": len(sources),
+        "currency": "USD",
+        "sources": sources,
+        "cited_ids": [],
     }
 
 
@@ -241,6 +283,71 @@ async def find_expenses(
                    "category": r.category, "date": r.date.date().isoformat() if r.date else None}
                   for r in rows],
         "cited_ids": [str(r.id) for r in rows],
+    }
+
+
+async def spending_breakdown(
+    db: AsyncSession, user_id: UUID, start: Optional[str] = None, end: Optional[str] = None,
+) -> dict:
+    """Spending grouped by category over [start, end), with each category's share of the total."""
+    conds = [Expense.user_id == user_id, Expense.is_active.is_(True)]
+    sd, ed = _parse_date(start), _parse_date(end)
+    if sd:
+        conds.append(Expense.date >= sd)
+    if ed:
+        conds.append(Expense.date < ed)
+    rows = (await db.execute(
+        select(Expense.category, func.sum(Expense.amount))
+        .where(*conds).group_by(Expense.category)
+    )).all()
+    total = sum((amt for _, amt in rows), Decimal("0"))
+    categories = sorted(
+        ({"category": cat or "Uncategorized", "amount": float(amt),
+          "share_pct": round(float(amt) / float(total) * 100, 2) if total else 0.0}
+         for cat, amt in rows),
+        key=lambda c: c["amount"], reverse=True,
+    )
+    return {
+        "tool": "spending_breakdown",
+        "total": round(float(total), 2),
+        "count": len(categories),
+        "currency": "USD",
+        "categories": categories,
+        "cited_ids": [],
+    }
+
+
+async def spending_trend(db: AsyncSession, user_id: UUID, months: int = 6) -> dict:
+    """Monthly expense totals for the trailing `months` full calendar months, oldest first,
+    plus the change from the first to the last month."""
+    months = max(1, int(months))
+    today = date.today()
+    cursor = date(today.year, today.month, 1)
+    bounds = []
+    for _ in range(months):
+        y, m = cursor.year, cursor.month - 1
+        if m == 0:
+            m = 12
+            y -= 1
+        start = date(y, m, 1)
+        bounds.append((start, cursor))
+        cursor = start
+    bounds.reverse()
+    series = []
+    for start, end in bounds:
+        total = (await sum_expenses(db, user_id, start=start.isoformat(), end=end.isoformat()))["total"]
+        series.append({"month": start.strftime("%Y-%m"), "start": start.isoformat(),
+                       "end": end.isoformat(), "total": total})
+    first, last = series[0]["total"], series[-1]["total"]
+    change = round(last - first, 2)
+    return {
+        "tool": "spending_trend",
+        "series": series,
+        "change_first_to_last": change,
+        "pct_change": round(change / first * 100, 2) if first else 0.0,
+        "count": months,
+        "currency": "USD",
+        "cited_ids": [],
     }
 
 
@@ -396,6 +503,35 @@ async def financial_ratios(db: AsyncSession, user_id: UUID,
             "currency": "USD", "cited_ids": []}
 
 
+async def after_tax_income(
+    db: AsyncSession, user_id: UUID, start: Optional[str] = None, end: Optional[str] = None,
+) -> dict:
+    """Estimated after-tax income over a period. Percentage taxes apply to income; fixed taxes
+    are prorated to the period by their frequency. Defaults to the trailing 12 full months."""
+    if not start or not end:
+        start, end = _trailing_full_months(12)
+    months = _months_in_range(start, end)
+    income = (await total_income(db, user_id, start=start, end=end))["total"]
+    items = (await taxes_summary(db, user_id))["items"]
+    pct_rate = sum(i["percentage"] or 0 for i in items if i["tax_type"] == "percentage") / 100.0
+    fixed_monthly = sum((i["fixed_amount"] or 0) / _FREQ_MONTHS.get(i["frequency"], 12)
+                        for i in items if i["tax_type"] == "fixed")
+    estimated_tax = round(income * pct_rate + fixed_monthly * months, 2)
+    net = round(income - estimated_tax, 2)
+    return {
+        "tool": "after_tax_income",
+        "window": {"start": start, "end": end, "months": months},
+        "months": months,
+        "income": income,
+        "estimated_tax": estimated_tax,
+        "net_income": net,
+        "effective_rate": round(estimated_tax / income * 100, 2) if income else 0.0,
+        "count": months,
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
 async def cash_flow(db: AsyncSession, user_id: UUID, months: int = 3) -> dict:
     """Average monthly cash flow over the trailing `months` full calendar months. Outflow =
     expenses + active subscriptions + installment payments. Composes existing tools."""
@@ -485,11 +621,14 @@ async def affordability(db: AsyncSession, user_id: UUID, amount: float,
 TOOLS = {
     "sum_expenses": sum_expenses,
     "total_income": total_income,
+    "income_breakdown": income_breakdown,
     "net_worth": net_worth,
     "savings_summary": savings_summary,
     "savings_projection": savings_projection,
     "list_subscriptions": list_subscriptions,
     "find_expenses": find_expenses,
+    "spending_breakdown": spending_breakdown,
+    "spending_trend": spending_trend,
     "portfolio_summary": portfolio_summary,
     "debts_summary": debts_summary,
     "installments_summary": installments_summary,
@@ -498,6 +637,7 @@ TOOLS = {
     "goals_progress": goals_progress,
     "compare_spending": compare_spending,
     "financial_ratios": financial_ratios,
+    "after_tax_income": after_tax_income,
     "affordability": affordability,
     "cash_flow": cash_flow,
     "cash_runway": cash_runway,

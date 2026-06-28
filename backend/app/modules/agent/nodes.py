@@ -41,6 +41,10 @@ Available compute tools (you choose which to call and fill the args):
 - savings_projection(months=12, apy?): projected savings balance with monthly compounding at each account's APY (or a provided `apy` decimal like 0.05). This is a PROJECTION — use for "what will my savings be worth in N years/months", "if my rate were 5%".
 - list_subscriptions(active_only=true): active subscriptions with combined monthly AND yearly cost. Use this for ANY subscription spending question (monthly, yearly, or annual total).
 - find_expenses(category?, min_amount?, start?, end?, limit?): list largest matching expenses.
+- spending_breakdown(start?, end?): spending grouped by category with each category's % share. For "what % of my spending is dining", "break down my spending".
+- spending_trend(months=6): monthly expense totals over the last N months + the change. For "is my spending going up", "spending trend".
+- income_breakdown(start?, end?): income grouped by source/category (e.g. Salary vs Freelance) with % share.
+- after_tax_income(start?, end?): estimated income after taxes (percentage taxes + prorated fixed taxes) — income, tax, net, effective rate.
 - portfolio_summary(asset_type?): holdings, total value, return. asset_type e.g. 'stock','etf','crypto'.
 - debts_summary(): money owed TO the user — outstanding + overdue.
 - installments_summary(): loans the user owes — remaining balance + monthly payment.
