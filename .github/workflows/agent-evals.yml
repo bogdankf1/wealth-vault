@@ -73,7 +73,11 @@ jobs:
       - name: Compute-tool tests (key-free gate)
         id: pytest
         working-directory: backend
-        run: python -m pytest tests/ -q
+        # tee + pipefail (GitHub bash default) keeps the gate failing on test failure while
+        # capturing the pass count for the sticky-comment summary.
+        run: |
+          python -m pytest tests/ -q | tee pytest.out
+          echo "PYTEST_PASSED=$(grep -oE '[0-9]+ passed' pytest.out | head -1 | grep -oE '^[0-9]+')" >> "$GITHUB_ENV"
 
       - name: Embed backfill
         working-directory: backend

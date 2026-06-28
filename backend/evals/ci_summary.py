@@ -44,6 +44,23 @@ try:
 except Exception:
     pass
 
+# pytest pass count (best-effort; the workflow writes PYTEST_PASSED to the env).
+_pytest_n = os.environ.get("PYTEST_PASSED", "").strip()
+pt_extra = f" — {_pytest_n} passed" if _pytest_n else ""
+
+# In-process eval counts + a dedicated Safety row (best-effort, from inproc-summary.json).
+inproc_extra = ""
+safety_row = ""
+try:
+    s = json.load(open("evals/inproc-summary.json"))
+    inproc_extra = f" — {s['passed']}/{s['total']} passed"
+    sf = (s.get("by_category") or {}).get("safety")
+    if sf and sf.get("total"):
+        sem = "✅" if sf["passed"] == sf["total"] else "❌"
+        safety_row = f"\n| Safety / injection (subset) | {sem} {sf['passed']}/{sf['total']} passed |"
+except Exception:
+    pass
+
 overall = "✅ passed" if pf == "success" else ("❌ failed" if "failure" in (pt, ip, pf) else "⏭️ incomplete")
 run_url = os.environ.get("RUN_URL", "")
 sha = os.environ.get("SHA", "")[:7]
@@ -52,8 +69,8 @@ md = f"""## 🤖 Agent eval gate — {overall}
 
 | Check | Result |
 | --- | --- |
-| Compute-tool tests (pytest) | {emoji(pt)} {pt} |
-| In-process eval cases | {emoji(ip)} {ip} |
+| Compute-tool tests (pytest) | {emoji(pt)} {pt}{pt_extra} |
+| In-process eval cases | {emoji(ip)} {ip}{inproc_extra} |{safety_row}
 | Promptfoo (vs live agent endpoint) | {emoji(pf)} {pf}{counts} |
 
 📊 [Full run &amp; logs]({run_url}) · commit `{sha}`
