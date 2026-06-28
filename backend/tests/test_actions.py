@@ -1,9 +1,25 @@
 import pytest
+from uuid import UUID
 from sqlalchemy import select, func
 from app.modules.agent.actions import commit_action, ActionError
 from app.modules.agent.models import AgentActionLog
 from app.modules.expenses.models import Expense
 from pydantic import ValidationError
+
+
+@pytest.mark.asyncio
+async def test_user_id_in_args_is_ignored(db, user_id):
+    """Auth scoping: a user_id smuggled into args is ignored — entity + audit use the caller's id."""
+    r = await commit_action(db, user_id, "create_expense",
+                            {"name": "Scoped", "amount": 2,
+                             "user_id": "11111111-1111-1111-1111-111111111111"},
+                            "idem-scope-1")
+    log = (await db.execute(select(AgentActionLog).where(
+        AgentActionLog.idempotency_key == "idem-scope-1"))).scalar_one()
+    assert log.user_id == user_id
+    exp = (await db.execute(select(Expense).where(
+        Expense.id == UUID(r["created"]["id"])))).scalar_one()
+    assert exp.user_id == user_id
 
 
 async def _expense_count(db, user_id):

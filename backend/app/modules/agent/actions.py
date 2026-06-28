@@ -69,6 +69,10 @@ async def commit_action(db: AsyncSession, user_id: UUID, action_type: str,
 
     validated = args_model.model_validate(args)  # pydantic ValidationError -> caller maps to 422
     created = await committer(db, user_id, validated)
+    # Audit only committed actions (status is always "committed"; failed attempts aren't logged).
+    # v2 hardening: create_expense already committed above, so this audit row is a SECOND commit
+    # (entity+audit not atomic), and the idempotency check is check-then-insert (the unique
+    # constraint is the concurrency backstop). Acceptable for single-user v1; revisit under load.
     db.add(AgentActionLog(
         user_id=user_id, action_type=action_type, args=args, status="committed",
         created_entity_type=created["entity_type"], created_entity_id=UUID(created["id"]),
