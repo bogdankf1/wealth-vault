@@ -2,12 +2,12 @@
 Savings module Pydantic schemas
 """
 from pydantic import BaseModel, Field, computed_field
-from typing import Optional, List, Literal
+from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from app.modules.savings.models import AccountType, InterestFrequency, InterestMethod, TransactionType, TransactionStatus
+from app.modules.savings.models import AccountType
 
 
 # ============================================================================

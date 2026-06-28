@@ -3,7 +3,7 @@ Savings module database models
 """
 import enum
 import uuid
-from sqlalchemy import Column, String, Numeric, DateTime, Boolean, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, String, Numeric, DateTime, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime

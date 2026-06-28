@@ -7,7 +7,7 @@ Tasks:
 - Auto-pay expenses from linked accounts
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Any
 from uuid import UUID

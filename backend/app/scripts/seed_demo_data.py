@@ -323,7 +323,7 @@ async def _print_ground_truth(session) -> None:
     print(f"demo_user_id            : {uid}")
     print(f"net_worth (USD)         : {net_worth}")
     print(f"savings_total (USD)     : {net_worth}  # == sum of savings_accounts")
-    print(f"ally_apy                : 0.0425  # 4.25% on $15000, accrued $250.00")
+    print("ally_apy                : 0.0425  # 4.25% on $15000, accrued $250.00")
     print(f"active_subs_monthly     : {subs_total}")
     print(f"dining_may_2026         : {dining_may}")
     print(f"groceries_may_2026      : {groceries_may}")

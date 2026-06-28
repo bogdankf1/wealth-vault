@@ -4,9 +4,7 @@ API endpoints for file upload, parsing, and AI categorization
 """
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 from typing import List
-import os
 import tempfile
 from pathlib import Path
 
@@ -15,7 +13,7 @@ from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.ai import schemas
 from app.modules.ai.service import AIService
-from app.modules.ai.models import UploadedFile, AIInsight
+from app.modules.ai.models import UploadedFile
 from app.services.ai_insights import AIInsightsService
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -45,7 +43,7 @@ async def upload_file(
     if file_ext not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File type not supported. Only CSV, XLS/XLSX, and PDF files are allowed.",
+            detail="File type not supported. Only CSV, XLS/XLSX, and PDF files are allowed.",
         )
 
     # Read file content

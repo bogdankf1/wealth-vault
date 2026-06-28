@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from app.modules.expenses.models import ExpenseFrequency, ExpenseStatus, PaymentMethod
+from app.modules.expenses.models import ExpenseFrequency
 
 
 # Base schema with common fields

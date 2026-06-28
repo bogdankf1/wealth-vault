@@ -72,7 +72,7 @@ async def add_debt_tax_features():
             await db.commit()
             print(f"\n✓ Added {added_count} new features")
         else:
-            print(f"\n- No new features to add")
+            print("\n- No new features to add")
 
         # Get all tiers
         result = await db.execute(select(Tier))
@@ -120,7 +120,7 @@ async def add_debt_tax_features():
             await db.commit()
             print(f"\n✓ Created {mappings_added} tier-feature mappings")
         else:
-            print(f"\n- No new tier-feature mappings to create")
+            print("\n- No new tier-feature mappings to create")
 
         print("-" * 50)
         print("✓ Database update completed successfully!")

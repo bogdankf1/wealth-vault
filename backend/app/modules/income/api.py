@@ -1,12 +1,12 @@
 """
 Income module API endpoints.
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select, func, and_, or_, extract, case
+from sqlalchemy import select, func, and_, or_, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -384,7 +384,6 @@ async def update_income_source(
     Requires: income_tracking feature
     """
     from dateutil.relativedelta import relativedelta
-    from app.modules.savings.models import AccountTransaction
 
     query = select(IncomeSource).where(
         IncomeSource.id == source_id,
@@ -499,7 +498,7 @@ async def update_income_source(
                         await transaction_service.reverse_transaction(
                             transaction_id=income_txn.account_transaction_id,
                             user_id=current_user.id,
-                            reason=f"Sync historical: Income source updated",
+                            reason="Sync historical: Income source updated",
                         )
                         reversed_count += 1
                     except Exception as e:

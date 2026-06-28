@@ -11,8 +11,6 @@ from app.modules.dashboard_layouts.models import DashboardLayout
 from app.modules.dashboard_layouts.schemas import (
     DashboardLayoutCreate,
     DashboardLayoutUpdate,
-    LayoutConfiguration,
-    WidgetConfig,
 )
 
 

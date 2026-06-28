@@ -7,7 +7,7 @@ Tasks:
 - Process notification queues
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, List
 
 from app.core.celery_app import celery_app
@@ -34,7 +34,7 @@ def send_email_notifications(self) -> Dict[str, Any]:
     import asyncio
 
     async def _send():
-        async with get_async_db_session() as db:
+        async with get_async_db_session() as _:
             # TODO: Implement when email system is added
             logger.info("Sending email notifications - placeholder")
             return {

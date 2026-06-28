@@ -22,7 +22,6 @@ from app.modules.subscriptions.service import (
     calculate_next_payment_date,
 )
 from app.core.events import event_dispatcher, SubscriptionEvents
-from app.tasks.notification_tasks import create_notification
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,6 @@ Service layer for backup operations.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, Date, DateTime
-from sqlalchemy.orm import selectinload
 from typing import List, Dict, Any
 from uuid import UUID
 from datetime import datetime, date
@@ -11,7 +10,7 @@ from decimal import Decimal
 from dateutil import parser as date_parser
 
 from app.modules.backups.models import Backup
-from app.modules.backups.schemas import BackupCreate, ModuleType
+from app.modules.backups.schemas import BackupCreate
 from app.modules.income.models import IncomeSource
 from app.modules.expenses.models import Expense
 from app.modules.subscriptions.models import Subscription

@@ -3,12 +3,10 @@ Goals module Pydantic schemas.
 """
 from pydantic import BaseModel, Field, field_validator, model_validator
 from uuid import UUID
-from typing import Optional, Any
+from typing import Optional
 from datetime import datetime
 from decimal import Decimal
-import pytz
 
-from app.modules.goals.models import AllocationType, ProgressTriggerType
 
 
 # ============================================

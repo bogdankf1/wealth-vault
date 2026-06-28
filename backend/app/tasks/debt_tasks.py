@@ -235,7 +235,6 @@ def calculate_monthly_interest(self) -> Dict[str, Any]:
         from app.modules.notifications.service import NotificationService
 
         async with get_async_db_session() as db:
-            now = datetime.utcnow()
             debts_processed = 0
             total_interest_accrued = Decimal('0')
             notifications_sent = 0

@@ -137,7 +137,7 @@ class StatementParser:
                             currency=currency,
                         )
                     )
-                except (ValueError, TypeError) as e:
+                except (ValueError, TypeError):
                     # Skip rows that can't be parsed
                     continue
 
@@ -457,7 +457,7 @@ class StatementParser:
                     )
                 )
 
-            except (ValueError, TypeError, IndexError) as e:
+            except (ValueError, TypeError, IndexError):
                 # Skip rows that can't be parsed
                 continue
 

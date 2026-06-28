@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 
-from sqlalchemy import and_, select, func, desc
+from sqlalchemy import and_, select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.dashboard.models import NetWorthSnapshot, CashFlowSnapshot
@@ -14,10 +14,6 @@ from app.modules.portfolio.models import PortfolioAsset
 from app.modules.savings.models import SavingsAccount
 from app.modules.installments.models import Installment
 from app.modules.debts.models import Debt
-from app.modules.income.models import IncomeSource
-from app.modules.expenses.models import Expense
-from app.modules.subscriptions.models import Subscription
-from app.modules.taxes.models import Tax
 from app.services.currency_service import CurrencyService
 from app.modules.dashboard.service import get_user_display_currency
 

@@ -10,7 +10,7 @@ from uuid import UUID
 from sqlalchemy import select
 
 from app.core.database import get_db
-from app.core.permissions import get_current_user, require_feature, check_usage_limit
+from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.savings.transaction_service import InsufficientFundsError
 from app.modules.savings.models import SavingsAccount
@@ -470,7 +470,7 @@ async def record_subscription_payment(
             "notes": payment.notes,
             "created_at": payment.created_at,
         }
-    except InsufficientFundsError as e:
+    except InsufficientFundsError:
         # Get account details for detailed error response
         account_id = subscription.payment_account_id
         account_name = "Unknown"
@@ -572,7 +572,7 @@ async def process_due_payments_endpoint(
                     auto_paid=payment.account_transaction_id is not None,
                 )
 
-        except InsufficientFundsError as e:
+        except InsufficientFundsError:
             failed_payments.append({
                 "subscription_id": str(subscription.id),
                 "subscription_name": subscription.name,

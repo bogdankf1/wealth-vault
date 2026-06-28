@@ -374,7 +374,6 @@ def process_period_resets(self) -> Dict[str, Any]:
         Dict with results
     """
     import asyncio
-    from dateutil.relativedelta import relativedelta
 
     async def _process():
         async with get_async_db_session() as db:
@@ -516,7 +515,7 @@ def calculate_weekly_summary(self) -> Dict[str, Any]:
     import asyncio
 
     async def _calculate():
-        async with get_async_db_session() as db:
+        async with get_async_db_session() as _:
             # TODO: Implement in Phase 4
             logger.info("Calculating weekly budget summaries - placeholder")
             return {

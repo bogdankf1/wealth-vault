@@ -118,7 +118,7 @@ async def assign_features_to_tiers():
                         limit_value=None
                     )
                 )
-                print(f"✓ Assigning 'Custom Dashboard Layouts' to wealth tier")
+                print("✓ Assigning 'Custom Dashboard Layouts' to wealth tier")
 
         if tier_feature_mappings:
             db.add_all(tier_feature_mappings)

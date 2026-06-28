@@ -182,7 +182,7 @@ def require_feature(feature_key: str) -> Callable:
             if not has_access:
                 tier_name = current_user.tier.name if current_user.tier else "none"
                 raise TierLimitException(
-                    message=f"This feature requires a higher tier subscription",
+                    message="This feature requires a higher tier subscription",
                     current_tier=tier_name,
                     required_tier="growth"  # This should be dynamic based on feature
                 )
@@ -261,7 +261,6 @@ def require_tier(required_tier_name: str) -> Callable:
 
             # Check if user has the required tier
             if not current_user.tier or current_user.tier.name.lower() != required_tier_name.lower():
-                tier_name = current_user.tier.name if current_user.tier else "none"
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"This feature requires {required_tier_name.title()} tier subscription"

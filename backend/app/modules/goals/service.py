@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 
 logger = logging.getLogger(__name__)
 
-from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory, ProgressTriggerType
+from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory
 from app.modules.goals.schemas import (
     GoalCreate,
     GoalUpdate,
@@ -21,8 +21,7 @@ from app.modules.goals.schemas import (
     GoalAccountLinkCreate,
     GoalAccountLinkUpdate,
     GoalAccountLinkResponse,
-    LinkedAccountInfo,
-    GoalProgressHistoryResponse
+    LinkedAccountInfo
 )
 from app.modules.savings.models import SavingsAccount
 from app.services.currency_service import CurrencyService

@@ -7,7 +7,6 @@ Handlers are organized by the action they perform (notifications, account update
 These handlers are registered when the application starts.
 """
 import logging
-from typing import Optional
 from uuid import UUID
 
 from app.core.events import (
@@ -25,8 +24,6 @@ from app.core.events import (
     InstallmentEvents,
     DebtEvents,
     BillingEvents,
-    DashboardEvents,
-    TransactionEvents,
 )
 
 logger = logging.getLogger(__name__)
@@ -147,7 +144,7 @@ async def notify_budget_exceeded(event: Event) -> None:
         user_id=user_id,
         notification_type="alert",
         category="budget",
-        title=f"Budget Exceeded!",
+        title="Budget Exceeded!",
         message=f"You've exceeded '{budget_name}' by {overspent:.2f} {currency} "
                 f"({spent_percent:.0f}% of budget)",
         priority=1,
@@ -240,7 +237,6 @@ async def notify_subscription_renewed(event: Event) -> None:
     amount = event.payload.get("amount", 0)
     currency = event.payload.get("currency", "USD")
     auto_paid = event.payload.get("auto_paid", False)
-    next_payment_date = event.payload.get("next_payment_date", "")
 
     if auto_paid:
         message = f"'{subscription_name}' renewed and paid {amount:.2f} {currency} automatically"
@@ -290,7 +286,6 @@ async def notify_subscription_resumed(event: Event) -> None:
 
     user_id = str(event.user_id)
     subscription_name = event.payload.get("subscription_name", "Your subscription")
-    next_payment_date = event.payload.get("next_payment_date", "")
 
     create_notification.delay(
         user_id=user_id,
@@ -322,7 +317,7 @@ async def notify_installment_due(event: Event) -> None:
         user_id=user_id,
         notification_type="reminder",
         category="installment",
-        title=f"Installment Payment Due",
+        title="Installment Payment Due",
         message=f"Payment {payment_number}/{total_payments} for '{installment_name}' "
                 f"({amount:.2f} {currency}) is due in {days_until} days",
         priority=2 if days_until > 3 else 1,
@@ -347,7 +342,7 @@ async def notify_installment_late(event: Event) -> None:
         user_id=user_id,
         notification_type="alert",
         category="installment",
-        title=f"Installment Payment Overdue",
+        title="Installment Payment Overdue",
         message=f"Payment for '{installment_name}' is {days_overdue} days overdue. "
                 f"Amount due: {amount:.2f} {currency}",
         priority=1,
@@ -372,7 +367,7 @@ async def notify_debt_payment_due(event: Event) -> None:
         user_id=user_id,
         notification_type="reminder",
         category="debt",
-        title=f"Debt Payment Due Soon",
+        title="Debt Payment Due Soon",
         message=f"Minimum payment of {amount:.2f} {currency} for '{debt_name}' is due in {days_until} days",
         priority=2 if days_until > 3 else 1,
         action_url=f"/debts/{event.payload.get('debt_id')}",
@@ -624,7 +619,7 @@ async def check_budget_on_expense_created(event: Event) -> None:
     category = event.payload.get("category")
 
     if not user_id or not category:
-        logger.debug(f"Skipping budget check: missing user_id or category")
+        logger.debug("Skipping budget check: missing user_id or category")
         return
 
     # Trigger async budget check for this category
@@ -641,7 +636,7 @@ async def check_budget_on_expense_updated(event: Event) -> None:
     category = event.payload.get("category")
 
     if not user_id or not category:
-        logger.debug(f"Skipping budget check: missing user_id or category")
+        logger.debug("Skipping budget check: missing user_id or category")
         return
 
     # Trigger async budget check for this category
