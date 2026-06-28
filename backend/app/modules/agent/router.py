@@ -43,6 +43,7 @@ class AgentQueryResponse(BaseModel):
     retrieved: list[dict] = []
     steps: list[dict] = []
     validation: dict | None = None
+    proposed_action: dict | None = None  # Level D: a typed action awaiting user confirmation
 
 
 @router.post("/query", response_model=AgentQueryResponse)
