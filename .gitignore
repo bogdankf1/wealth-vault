@@ -67,3 +67,9 @@ logs/
 .env
 .env.local
 .env.production
+
+# Generated eval/CI artifacts
+backend/evals/results.json
+backend/evals/inproc-summary.json
+backend/eval-summary.md
+backend/pytest.out
