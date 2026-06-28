@@ -47,6 +47,9 @@ export function AskYourFinances() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Ref the native <form> (not the shadcn <Input>, which doesn't forward refs) and focus its
+  // input through it — reliable regardless of the wrapper's ref behavior.
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Finalize the active turn once the stream ends.
   useEffect(() => {
@@ -59,6 +62,15 @@ export function AskYourFinances() {
       });
     }
   }, [stream.isStreaming, stream.result, stream.error]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep the input focused whenever we're not streaming (on mount and after each answer) so the
+  // user can fire off back-to-back messages without clicking back in. The input is disabled while
+  // streaming, which drops focus; we defer with rAF so focus lands after React re-enables it.
+  useEffect(() => {
+    if (stream.isStreaming) return;
+    const id = requestAnimationFrame(() => formRef.current?.querySelector('input')?.focus());
+    return () => cancelAnimationFrame(id);
+  }, [stream.isStreaming]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -122,6 +134,7 @@ export function AskYourFinances() {
       </div>
 
       <form
+        ref={formRef}
         onSubmit={(e) => { e.preventDefault(); ask(input); }}
         className="flex items-center gap-2"
       >
