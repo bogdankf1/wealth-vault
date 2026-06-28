@@ -423,6 +423,29 @@ async def portfolio_allocation(db: AsyncSession, user_id: UUID) -> dict:
     }
 
 
+async def portfolio_projection(
+    db: AsyncSession, user_id: UUID, years: int = 10, annual_return: float = 0.07,
+) -> dict:
+    """Project total portfolio value forward at an ASSUMED annual return (default 7%),
+    compounded yearly. Tier-3 market assumption — carries the standard disclaimer."""
+    years = max(0, int(years))
+    rate = float(annual_return)
+    current = (await portfolio_summary(db, user_id))["total_value"]
+    projected = round(current * (1 + rate) ** years, 2)
+    return {
+        "tool": "portfolio_projection",
+        "projection": True,
+        "years": years,
+        "annual_return": rate,
+        "current_value": current,
+        "projected_value": projected,
+        "gain": round(projected - current, 2),
+        "count": 1,
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
 async def debts_summary(db: AsyncSession, user_id: UUID) -> dict:
     """Money owed TO the user: outstanding totals + overdue list."""
     rows = (await db.execute(
@@ -681,6 +704,7 @@ TOOLS = {
     "spending_trend": spending_trend,
     "portfolio_summary": portfolio_summary,
     "portfolio_allocation": portfolio_allocation,
+    "portfolio_projection": portfolio_projection,
     "debts_summary": debts_summary,
     "installments_summary": installments_summary,
     "taxes_summary": taxes_summary,
