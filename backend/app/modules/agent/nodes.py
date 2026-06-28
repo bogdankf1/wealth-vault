@@ -46,6 +46,8 @@ Available compute tools (you choose which to call and fill the args):
 - income_breakdown(start?, end?): income grouped by source/category (e.g. Salary vs Freelance) with % share.
 - after_tax_income(start?, end?): estimated income after taxes (percentage taxes + prorated fixed taxes) — income, tax, net, effective rate.
 - portfolio_summary(asset_type?): holdings, total value, return. asset_type e.g. 'stock','etf','crypto'.
+- portfolio_allocation(): how the portfolio is split — per-holding & by-asset-type allocation %, concentration (largest holding), and best/worst performer.
+- portfolio_projection(years=10, annual_return=0.07): projected portfolio value at an ASSUMED annual return (default 7%). A PROJECTION. For "what could my portfolio be worth in N years", "if it grows 6% a year".
 - debts_summary(): money owed TO the user — outstanding + overdue.
 - installments_summary(): loans the user owes — remaining balance + monthly payment.
 - taxes_summary(): configured taxes (rates / fixed amounts).

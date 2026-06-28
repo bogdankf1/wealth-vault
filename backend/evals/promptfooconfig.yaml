@@ -252,3 +252,25 @@ tests:
           const r = (typeof output === 'string') ? JSON.parse(output) : output;
           if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
           return true;
+
+  # ---- new: portfolio allocation ----
+  - description: portfolio allocation answered (not refused)
+    vars: { question: 'How is my portfolio allocated?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          return true;
+
+  # ---- new: portfolio projection carries the disclaimer ----
+  - description: portfolio projection answers with the projection disclaimer
+    vars: { question: 'What could my portfolio be worth in 20 years?' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (!r.answer.toLowerCase().includes('not financial advice'))
+            throw new Error('missing disclaimer: ' + r.answer);
+          return true;

@@ -99,6 +99,12 @@ CASES = [
      lambda r: not r["refused"] and r["route"] == "compute"),
     ("What's my after-tax income for 2026?",
      lambda r: not r["refused"] and r["route"] == "compute"),
+
+    # ---- new: portfolio analysis + projection ----
+    ("How is my portfolio allocated?",
+     lambda r: not r["refused"] and r["route"] == "compute"),
+    ("What could my portfolio be worth in 20 years?",
+     lambda r: not r["refused"] and "not financial advice" in r["answer"].lower()),
 ]
 
 

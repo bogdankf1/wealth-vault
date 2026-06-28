@@ -373,6 +373,79 @@ async def portfolio_summary(db: AsyncSession, user_id: UUID, asset_type: Optiona
             "cited_ids": [str(r.id) for r in rows[:_CITED_CAP]], "filters": {"asset_type": asset_type}}
 
 
+async def portfolio_allocation(db: AsyncSession, user_id: UUID) -> dict:
+    """Per-holding allocation %, allocation by asset type, concentration (largest holding),
+    and best/worst performer by return %. Read-only analysis."""
+    rows = (await db.execute(
+        select(PortfolioAsset.id, PortfolioAsset.asset_name, PortfolioAsset.symbol,
+               PortfolioAsset.asset_type, PortfolioAsset.current_value,
+               PortfolioAsset.total_invested, PortfolioAsset.total_return)
+        .where(PortfolioAsset.user_id == user_id, PortfolioAsset.is_active.is_(True))
+    )).all()
+    total = sum((r.current_value or Decimal("0") for r in rows), Decimal("0"))
+    tot = float(total)
+    holdings = []
+    for r in rows:
+        val = float(r.current_value or 0)
+        inv = float(r.total_invested or 0)
+        ret = float(r.total_return or 0)
+        holdings.append({
+            "name": r.asset_name, "symbol": r.symbol, "asset_type": r.asset_type,
+            "value": val, "allocation_pct": round(val / tot * 100, 2) if tot else 0.0,
+            "return_pct": round(ret / inv * 100, 2) if inv else 0.0, "id": str(r.id),
+        })
+    holdings.sort(key=lambda h: h["value"], reverse=True)
+    by_type_totals = {}
+    for h in holdings:
+        by_type_totals[h["asset_type"]] = by_type_totals.get(h["asset_type"], 0.0) + h["value"]
+    by_type = sorted(
+        ({"asset_type": t, "value": round(v, 2),
+          "allocation_pct": round(v / tot * 100, 2) if tot else 0.0}
+         for t, v in by_type_totals.items()),
+        key=lambda t: t["value"], reverse=True,
+    )
+    concentration = ({"name": holdings[0]["name"], "symbol": holdings[0]["symbol"],
+                      "allocation_pct": holdings[0]["allocation_pct"]} if holdings else None)
+    best = max(holdings, key=lambda h: h["return_pct"], default=None)
+    worst = min(holdings, key=lambda h: h["return_pct"], default=None)
+    pick = lambda h: {"name": h["name"], "symbol": h["symbol"], "return_pct": h["return_pct"]} if h else None
+    return {
+        "tool": "portfolio_allocation",
+        "total_value": round(tot, 2),
+        "count": len(holdings),
+        "by_type": by_type,
+        "concentration": concentration,
+        "best_performer": pick(best),
+        "worst_performer": pick(worst),
+        "holdings": holdings,
+        "currency": "USD",
+        "cited_ids": [h["id"] for h in holdings],
+    }
+
+
+async def portfolio_projection(
+    db: AsyncSession, user_id: UUID, years: int = 10, annual_return: float = 0.07,
+) -> dict:
+    """Project total portfolio value forward at an ASSUMED annual return (default 7%),
+    compounded yearly. Tier-3 market assumption — carries the standard disclaimer."""
+    years = max(0, int(years))
+    rate = float(annual_return)
+    current = (await portfolio_summary(db, user_id))["total_value"]
+    projected = round(current * (1 + rate) ** years, 2)
+    return {
+        "tool": "portfolio_projection",
+        "projection": True,
+        "years": years,
+        "annual_return": rate,
+        "current_value": current,
+        "projected_value": projected,
+        "gain": round(projected - current, 2),
+        "count": 1,
+        "currency": "USD",
+        "cited_ids": [],
+    }
+
+
 async def debts_summary(db: AsyncSession, user_id: UUID) -> dict:
     """Money owed TO the user: outstanding totals + overdue list."""
     rows = (await db.execute(
@@ -630,6 +703,8 @@ TOOLS = {
     "spending_breakdown": spending_breakdown,
     "spending_trend": spending_trend,
     "portfolio_summary": portfolio_summary,
+    "portfolio_allocation": portfolio_allocation,
+    "portfolio_projection": portfolio_projection,
     "debts_summary": debts_summary,
     "installments_summary": installments_summary,
     "taxes_summary": taxes_summary,
