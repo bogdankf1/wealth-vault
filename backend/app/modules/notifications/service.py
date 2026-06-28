@@ -1,6 +1,7 @@
 """
 Notification service layer.
 """
+from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update, delete, and_
 from typing import Optional, List, Dict, Any
@@ -13,7 +14,6 @@ from app.modules.notifications.models import (
     NotificationCategory
 )
 from app.modules.notifications.schemas import (
-    NotificationCreate,
     NotificationStatsResponse,
 )
 
@@ -336,7 +336,6 @@ class NotificationService:
         Returns:
             Created Notification object
         """
-        from decimal import Decimal
 
         title = "Payment Failed - Insufficient Funds"
 

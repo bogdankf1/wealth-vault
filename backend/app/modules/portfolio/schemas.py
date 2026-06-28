@@ -3,7 +3,7 @@ Portfolio Pydantic schemas for request/response validation.
 """
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator

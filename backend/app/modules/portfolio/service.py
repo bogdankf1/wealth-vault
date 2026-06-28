@@ -3,18 +3,17 @@ Portfolio business logic and database operations.
 """
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from uuid import UUID
 import logging
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.modules.portfolio.models import PortfolioAsset, PortfolioTransaction, TransactionType
 from app.modules.portfolio.schemas import (
     PortfolioAssetCreate, PortfolioAssetUpdate, PortfolioStats,
-    PortfolioTransactionCreate, BuyAssetRequest, SellAssetRequest,
+    BuyAssetRequest, SellAssetRequest,
     RecordDividendRequest, PriceUpdateResponse
 )
 from app.services.currency_service import CurrencyService

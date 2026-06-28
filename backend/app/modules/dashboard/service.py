@@ -3,7 +3,13 @@ Dashboard business logic and data aggregation.
 """
 from datetime import datetime, date, timedelta
 from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from app.modules.dashboard.schemas import (
+        FinancialProjectionsResponse,
+        GoalProjectionsResponse,
+    )
 from uuid import UUID
 
 from sqlalchemy import and_, func, select, or_
@@ -1023,7 +1029,7 @@ async def get_financial_alerts(
                 id=f"alert_{alert_counter}",
                 type="success",
                 category="goal",
-                title=f"Goal Almost Complete!",
+                title="Goal Almost Complete!",
                 message=f"'{goal.name}' is {goal.progress_percentage:.0f}% complete. You're almost there!",
                 priority=2,
                 actionable=True,
@@ -1134,7 +1140,7 @@ async def get_income_vs_expenses_chart(
             logger.info(f"=== Income vs Expenses DEBUG for {month_label} ===")
             logger.info(f"Monthly Income: {cash_flow.monthly_income}")
             logger.info(f"Monthly Expenses (total): {total_expenses}")
-            logger.info(f"Breakdown:")
+            logger.info("Breakdown:")
             logger.info(f"  Expenses: {cash_flow.monthly_expenses}")
             logger.info(f"  Subscriptions: {cash_flow.monthly_subscriptions}")
             logger.info(f"  Installments: {cash_flow.monthly_installments}")
@@ -1630,7 +1636,6 @@ async def get_net_worth_trend_chart(
 
     # Get current net worth as the baseline (already in display currency)
     current_net_worth_data = await get_net_worth(db, user_id)
-    current_total_assets = Decimal(current_net_worth_data.total_assets)
     current_total_liabilities = Decimal(current_net_worth_data.total_liabilities)
     baseline_liquid_assets = Decimal(current_net_worth_data.portfolio_value) + Decimal(current_net_worth_data.savings_balance)
 

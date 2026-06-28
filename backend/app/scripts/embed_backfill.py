@@ -20,7 +20,6 @@ Run:
     DATABASE_URL=... OPENAI_API_KEY=... python -m app.scripts.embed_backfill
 """
 import asyncio
-from typing import Iterable
 from uuid import UUID
 
 from sqlalchemy import select, delete

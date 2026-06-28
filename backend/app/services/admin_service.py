@@ -11,7 +11,7 @@ from uuid import UUID
 from app.models.user import User, UserRole
 from app.models.tier import Tier, Feature, TierFeature
 from app.models.configuration import AppConfiguration, EmailTemplate
-from app.models.billing import UserSubscription, PaymentHistory
+from app.models.billing import UserSubscription
 from app.core.security import create_access_token
 from app.core.exceptions import NotFoundException, BadRequestException
 

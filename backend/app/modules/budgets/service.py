@@ -427,7 +427,6 @@ async def _get_expenses_for_budget(
     filter_end_date: Optional[datetime] = None
 ) -> list[Expense]:
     """Get expenses that fall within a budget's category and time period."""
-    from sqlalchemy import func
 
     conditions = [
         Expense.user_id == user_id,

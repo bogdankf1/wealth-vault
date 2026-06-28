@@ -7,7 +7,7 @@ Tasks:
 - Clean up tier-specific data on downgrade
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any
 from uuid import UUID
 

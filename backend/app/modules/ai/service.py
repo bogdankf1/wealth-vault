@@ -7,7 +7,6 @@ from sqlalchemy import select
 from uuid import UUID
 from typing import List, Dict
 import os
-import tempfile
 import base64
 import json
 from pathlib import Path
@@ -540,7 +539,6 @@ If no accounts are found in the screenshots, return:
             # Convert to ParsedAccount objects
             accounts = []
             valid_account_types = ["card", "deposit", "cash", "savings", "other"]
-            valid_card_networks = ["VISA", "Mastercard", "Visa", "mastercard", None]
 
             for acc in parsed_data.get("accounts", []):
                 # Validate account_type
@@ -1554,30 +1552,30 @@ Important:
         data_context = []
 
         if expenses_summary.get("categories"):
-            data_context.append(f"EXPENSES (last 3 months):")
+            data_context.append("EXPENSES (last 3 months):")
             for cat, data in expenses_summary["categories"].items():
                 data_context.append(f"  - {cat}: {data['total']} {currency} ({data['count']} transactions, avg: {data['avg']:.2f})")
             data_context.append(f"  Total monthly average: {expenses_summary.get('monthly_avg', 0):.2f} {currency}")
 
         if subscriptions_summary.get("items"):
-            data_context.append(f"\nSUBSCRIPTIONS:")
+            data_context.append("\nSUBSCRIPTIONS:")
             for sub in subscriptions_summary["items"][:10]:  # Limit to top 10
                 data_context.append(f"  - {sub['name']}: {sub['amount']} {sub['currency']} ({sub['frequency']})")
             data_context.append(f"  Total monthly: {subscriptions_summary.get('monthly_total', 0):.2f} {currency}")
 
         if installments_summary.get("items"):
-            data_context.append(f"\nINSTALLMENTS:")
+            data_context.append("\nINSTALLMENTS:")
             for inst in installments_summary["items"][:10]:
                 data_context.append(f"  - {inst['name']}: {inst['monthly_payment']} {inst['currency']}/month")
             data_context.append(f"  Total monthly: {installments_summary.get('monthly_total', 0):.2f} {currency}")
 
         if goals_summary.get("items"):
-            data_context.append(f"\nFINANCIAL GOALS:")
+            data_context.append("\nFINANCIAL GOALS:")
             for goal in goals_summary["items"][:5]:
                 data_context.append(f"  - {goal['name']}: target {goal['target_amount']} {goal['currency']}, monthly contribution: {goal.get('monthly_contribution', 0)}")
 
         if portfolio_summary.get("total_value", 0) > 0:
-            data_context.append(f"\nPORTFOLIO:")
+            data_context.append("\nPORTFOLIO:")
             data_context.append(f"  Total value: {portfolio_summary['total_value']:.2f} {currency}")
             data_context.append(f"  Holdings count: {portfolio_summary.get('holdings_count', 0)}")
 

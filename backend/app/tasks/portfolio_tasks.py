@@ -80,7 +80,7 @@ def process_dividends(self) -> Dict[str, Any]:
                         shares_before=asset.quantity,
                         shares_after=asset.quantity,
                         status="completed",
-                        notes=f"Automatic dividend payment"
+                        notes="Automatic dividend payment"
                     )
                     db.add(transaction)
 
@@ -275,7 +275,6 @@ def calculate_portfolio_performance(self) -> Dict[str, Any]:
         from app.modules.portfolio.models import PortfolioAsset
         from app.models.user_preferences import UserPreferences
         from app.services.currency_service import CurrencyService
-        from sqlalchemy import func
 
         async with get_async_db_session() as db:
             currency_service = CurrencyService(db)
@@ -419,7 +418,7 @@ def send_dividend_reminders(self) -> Dict[str, Any]:
                         user_id=asset.user_id,
                         type="reminder",
                         category="portfolio",
-                        title=f"Dividend Payment Coming",
+                        title="Dividend Payment Coming",
                         message=f"You have a dividend payment of {expected_amount:.2f} {asset.currency} expected from {asset.symbol or asset.asset_name} on {asset.next_dividend_date.strftime('%Y-%m-%d')}.",
                         priority=2,
                         action_url=f"/dashboard/portfolio/{asset.id}",

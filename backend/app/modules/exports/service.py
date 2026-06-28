@@ -6,7 +6,7 @@ import io
 from datetime import datetime
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, extract
+from sqlalchemy import select, and_, or_
 from uuid import UUID
 
 from app.modules.income.models import IncomeSource

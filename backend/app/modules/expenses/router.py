@@ -9,7 +9,7 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.core.permissions import get_current_user, require_feature, check_usage_limit
-from app.core.exceptions import TierLimitException, NotFoundException
+from app.core.exceptions import TierLimitException
 from app.models.user import User
 from app.modules.expenses import service
 from app.modules.expenses.schemas import (
@@ -423,7 +423,7 @@ async def pay_expense(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-    except InsufficientFundsError as e:
+    except InsufficientFundsError:
         # Get expense and account details for detailed error response
         expense_result = await db.execute(
             select(ExpenseModel).where(
@@ -583,7 +583,7 @@ async def process_due_payments_endpoint(
                 await service.pay_expense(db, current_user.id, expense.id, pay_request)
                 auto_paid += 1
                 processed += 1
-            except InsufficientFundsError as e:
+            except InsufficientFundsError:
                 expense.status = ExpenseStatus.PAYMENT_FAILED.value
                 failed_payments.append({
                     "expense_id": str(expense.id),

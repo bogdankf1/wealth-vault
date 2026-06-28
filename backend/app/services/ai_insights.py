@@ -3,11 +3,11 @@ AI Insights Service
 Generate intelligent financial insights using AI
 """
 import logging
-from typing import List, Optional, Dict
+from typing import List, Dict
 from datetime import datetime, timedelta
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, desc
 from openai import OpenAI
 import os
 from uuid import UUID
@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 from app.modules.ai.models import AIInsight
 from app.modules.expenses.models import Expense
-from app.modules.income.models import IncomeSource
 from app.modules.savings.models import SavingsAccount
-from app.modules.subscriptions.models import Subscription
 from app.services.currency_service import CurrencyService
 
 

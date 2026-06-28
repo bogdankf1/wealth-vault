@@ -2,7 +2,7 @@
 Transaction service for savings accounts.
 Handles deposits, withdrawals, transfers, and interest calculations.
 """
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, List, Dict, Any, Tuple
 from uuid import UUID

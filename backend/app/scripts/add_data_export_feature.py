@@ -61,7 +61,7 @@ async def add_data_export_feature():
         db.add(tier_feature)
 
         await db.commit()
-        print(f"✓ Added data_export feature to Wealth tier")
+        print("✓ Added data_export feature to Wealth tier")
 
 
 async def main():

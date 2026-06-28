@@ -40,8 +40,7 @@ from app.schemas.admin import TierDetail
 from app.services.stripe_service import StripeService
 from app.services.paypal_service import PayPalService
 from app.services.paddle_service import PaddleService
-from app.services.trial_service import TrialService
-from app.models.billing import PaymentProvider, SubscriptionStatus
+from app.models.billing import SubscriptionStatus
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
@@ -185,7 +184,7 @@ async def get_subscription_status(
             if period_end:
                 subscription.current_period_end = datetime.fromtimestamp(period_end)
             await db.commit()
-            logger.info(f"Updated subscription period dates in database")
+            logger.info("Updated subscription period dates in database")
         except Exception as e:
             logger.error(f"Failed to fetch subscription dates from Stripe: {e}", exc_info=True)
 

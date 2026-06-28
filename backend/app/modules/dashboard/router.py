@@ -3,7 +3,6 @@ Dashboard API endpoints for aggregating financial data.
 """
 from datetime import datetime
 from typing import Optional
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +17,6 @@ from app.modules.dashboard.schemas import (
     FinancialHealthResponse,
     RecentActivityItem,
     UpcomingPayment,
-    FinancialAlert,
     IncomeVsExpensesChartResponse,
     ExpenseByCategoryChartResponse,
     MonthlySpendingChartResponse,
@@ -30,7 +28,6 @@ from app.modules.dashboard.schemas import (
     GoalProjectionsResponse,
     CreateSnapshotRequest,
     FailedPaymentsResponse,
-    FailedPaymentItem,
 )
 from app.modules.dashboard import service
 from app.modules.dashboard import snapshot_service

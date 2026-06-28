@@ -50,7 +50,6 @@ def process_installment_payments(self) -> Dict[str, Any]:
             from app.modules.savings.transaction_service import InsufficientFundsError
             from app.modules.savings.models import SavingsAccount
             from app.modules.notifications.service import NotificationService
-            from app.modules.installments.models import InstallmentPaymentStatus
 
             now = datetime.now(timezone.utc)
 

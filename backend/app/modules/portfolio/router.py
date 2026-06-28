@@ -350,7 +350,7 @@ async def buy_asset(
                 detail="Portfolio asset not found"
             )
         return transaction
-    except InsufficientFundsError as e:
+    except InsufficientFundsError:
         # Get asset and account details for detailed error response
         asset_result = await db.execute(
             select(PortfolioAsset).where(

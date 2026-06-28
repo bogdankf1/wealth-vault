@@ -1,7 +1,7 @@
 """
 Taxes module Pydantic schemas
 """
-from pydantic import BaseModel, Field, computed_field, field_validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal

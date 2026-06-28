@@ -4,7 +4,7 @@ Paddle service for handling payments and subscriptions.
 import hmac
 import hashlib
 import httpx
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select

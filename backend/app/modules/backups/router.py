@@ -99,7 +99,7 @@ async def restore_backup(
 
         return BackupRestoreResponse(
             success=True,
-            message=f"Successfully restored backup",
+            message="Successfully restored backup",
             restored_count=restored_count
         )
     except ValueError as e:

@@ -2,7 +2,7 @@
 Script to add the backup_tracking feature to the database.
 """
 import asyncio
-from sqlalchemy import select, text
+from sqlalchemy import select
 from app.core.database import AsyncSessionLocal
 from app.models.tier import Tier, Feature, TierFeature
 
@@ -62,7 +62,7 @@ async def add_backup_tracking_feature():
         db.add(tier_feature)
 
         await db.commit()
-        print(f"✓ Added backup_tracking feature to Wealth tier")
+        print("✓ Added backup_tracking feature to Wealth tier")
 
 
 async def main():

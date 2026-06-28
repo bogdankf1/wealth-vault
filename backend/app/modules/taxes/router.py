@@ -21,7 +21,6 @@ from app.modules.taxes.schemas import (
     TaxPaymentCreate,
     TaxPaymentResponse,
     TaxPaymentListResponse,
-    LinkedIncomeSourceInfo,
     PayTaxRequest,
     PayTaxResponse,
     ProcessDuePaymentsResponse,

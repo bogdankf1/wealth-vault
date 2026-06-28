@@ -3,33 +3,13 @@ Base task class with common functionality for all Celery tasks.
 """
 import logging
 from celery import Task
-from typing import Any, Optional
-from datetime import datetime
+from typing import Any
 
-from app.core.celery_app import celery_app
 
-# Import all models to ensure SQLAlchemy mappers are configured
-# This must happen before any database operations in tasks
-from app.models.base import BaseModel
-from app.models.user import User
-from app.models.tier import Tier, Feature, TierFeature
-from app.models.billing import UserSubscription, PaymentHistory
-from app.models.configuration import AppConfiguration, EmailTemplate
-from app.modules.income.models import IncomeSource
-from app.modules.expenses.models import Expense
-from app.modules.savings.models import SavingsAccount, AccountTransaction, BalanceHistory
-from app.modules.subscriptions.models import Subscription, SubscriptionPayment
-from app.modules.installments.models import Installment
-from app.modules.goals.models import Goal
-from app.modules.portfolio.models import PortfolioAsset
-from app.modules.debts.models import Debt
-from app.modules.taxes.models import Tax
-from app.modules.budgets.models import Budget
-from app.modules.notifications.models import Notification
-from app.modules.dashboard_layouts.models import DashboardLayout
-from app.modules.backups.models import Backup
-from app.modules.support.models import SupportTopic, SupportMessage
-from app.modules.dashboard.models import NetWorthSnapshot, CashFlowSnapshot
+# Import the full models package (side effect) so SQLAlchemy mappers are registered in the
+# correct order. Must run before any task module imports an individual module's models, or that
+# triggers a circular import via app.models.__init__.
+import app.models  # noqa: F401
 
 # Import event handlers to register them in Celery worker context
 import app.core.event_handlers  # noqa: F401

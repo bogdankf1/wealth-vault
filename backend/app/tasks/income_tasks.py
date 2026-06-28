@@ -7,10 +7,9 @@ Tasks:
 - Apply distribution rules
 """
 import logging
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 from decimal import Decimal
-from typing import List, Dict, Any, Optional
-from dateutil.relativedelta import relativedelta
+from typing import Dict, Any, Optional
 
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -315,7 +314,7 @@ def deposit_income_to_account(
                     account_id=UUID(account_id),
                     user_id=UUID(user_id),
                     amount=Decimal(str(amount)),
-                    description=description or f"Income deposit",
+                    description=description or "Income deposit",
                     source_type="income",
                     source_id=UUID(income_transaction_id),
                     transaction_date=datetime.utcnow(),

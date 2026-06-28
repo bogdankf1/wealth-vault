@@ -92,7 +92,7 @@ class Notification(BaseModel):
 
     def mark_as_read(self) -> None:
         """Mark notification as read."""
-        from datetime import datetime, timezone
+        from datetime import timezone
         self.is_read = True
         self.read_at = datetime.now(timezone.utc)
 
@@ -100,5 +100,5 @@ class Notification(BaseModel):
         """Check if notification has expired."""
         if self.expires_at is None:
             return False
-        from datetime import datetime, timezone
+        from datetime import timezone
         return datetime.now(timezone.utc) > self.expires_at

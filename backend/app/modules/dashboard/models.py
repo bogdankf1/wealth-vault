@@ -2,10 +2,9 @@
 Dashboard models for historical data tracking.
 """
 from datetime import datetime
-from decimal import Decimal
 from uuid import uuid4
 
-from sqlalchemy import Column, DateTime, ForeignKey, Numeric, String, Index, JSON, Boolean
+from sqlalchemy import Column, DateTime, ForeignKey, Numeric, String, Index, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 

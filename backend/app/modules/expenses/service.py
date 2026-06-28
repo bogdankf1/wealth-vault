@@ -3,7 +3,7 @@ Expenses service layer
 """
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, case, and_
+from sqlalchemy import select, func, and_
 from typing import Optional, List
 from uuid import UUID
 from decimal import Decimal
@@ -151,7 +151,6 @@ async def backfill_expense_payments(
     Returns:
         Number of payments created
     """
-    from dateutil.relativedelta import relativedelta
     from app.modules.savings.transaction_service import TransactionService
     from app.modules.savings.models import AccountTransaction, SavingsAccount
     from app.services.currency_service import CurrencyService
@@ -295,8 +294,6 @@ async def create_expense(
     expense_data: ExpenseCreate
 ) -> Expense:
     """Create a new expense"""
-    from dateutil.relativedelta import relativedelta
-    from app.modules.savings.transaction_service import TransactionService
 
     # Calculate monthly equivalent
     monthly_equiv = calculate_monthly_equivalent(expense_data.amount, expense_data.frequency)

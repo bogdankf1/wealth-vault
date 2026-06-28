@@ -6,7 +6,6 @@ from uuid import UUID
 from typing import Optional, Literal
 from datetime import datetime
 from decimal import Decimal
-import pytz
 
 
 InstallmentFrequency = Literal["weekly", "biweekly", "monthly"]

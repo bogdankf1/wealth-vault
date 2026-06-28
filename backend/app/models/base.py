@@ -4,7 +4,7 @@ Base model with common fields.
 import uuid
 from datetime import datetime, timezone
 from typing import Any
-from sqlalchemy import Column, DateTime, Boolean
+from sqlalchemy import Column, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 

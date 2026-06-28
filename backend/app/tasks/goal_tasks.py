@@ -8,15 +8,14 @@ Tasks:
 - Create progress snapshots
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any
-from decimal import Decimal
 
 from sqlalchemy import select, and_
 
 from app.core.celery_app import celery_app
 from app.tasks.base import BaseTask, get_async_db_session
-from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory
+from app.modules.goals.models import Goal
 from app.modules.goals.service import (
     calculate_progress_percentage,
     calculate_progress_from_accounts,
@@ -182,8 +181,6 @@ def check_goal_deadlines(self) -> Dict[str, Any]:
             notifications_sent = 0
 
             today = datetime.utcnow()
-            seven_days = today + timedelta(days=7)
-            thirty_days = today + timedelta(days=30)
 
             # Get active goals with target dates
             query = select(Goal).where(
