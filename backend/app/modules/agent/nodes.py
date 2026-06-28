@@ -70,8 +70,10 @@ class ToolCall(BaseModel):
 
 class RouteDecision(BaseModel):
     """Structured routing decision returned by the router LLM."""
-    route: Literal["compute", "semantic", "hybrid", "refuse", "capability"]
-    reason: str
+    # Literal constrains the structured-output to valid routes (reliable). On the rare occasion the
+    # LLM violates it (e.g. returns a tool name), route_node catches the error instead of 500ing.
+    route: Literal["compute", "semantic", "hybrid", "refuse", "capability", "action"]
+    reason: str = ""
     tool_calls: List[ToolCall] = Field(default_factory=list)
     search_query: Optional[str] = Field(
         default=None, description="natural-language query for semantic retrieval (semantic/hybrid)"
@@ -120,8 +122,13 @@ the user's question about THEIR OWN financial data. Use the conversation so far 
 references like "it"/"that"/"those" — e.g. a follow-up "how is it distributed?" after a net-worth \
 question means "how is my net worth distributed across my accounts".
 
+FIRST decide intent: if the user is telling you to ADD / CREATE / RECORD / LOG / ENTER a new \
+expense (an imperative command), choose "action" — NOT "compute" — even though it mentions an \
+amount and category. "compute" is only for QUESTIONS about data that already exists.
+
 Choose route:
-- "compute"  : any FACTUAL question answerable from the user's data — totals, balances, counts, \
+- "compute"  : a QUESTION about existing data (never a command to add/record data — that's \
+"action"). Any FACTUAL question answerable from the user's data — totals, balances, counts, \
 breakdowns/distributions (e.g. "how is my net worth split across accounts", "my spending by \
 category"), AND rankings/superlatives ("biggest/most expensive purchase", "top expenses" — \
 find_expenses sorts by amount). net_worth returns the per-account balances, so a net-worth \
@@ -132,9 +139,19 @@ taxes, budgets, goals) and analytics (compare periods, savings rate, "can I affo
 and documents (e.g. "what was that big electronics purchase?"). Provide search_query.
 - "hybrid"   : needs BOTH an exact number AND context. Provide tool_calls AND search_query.
 - "capability": the user asks what you can do / for help → list what you can answer.
+- "action"   : the user asks to ADD / CREATE / RECORD / LOG / ENTER a new expense — imperative \
+requests like "add a $40 groceries expense", "log $12 lunch yesterday", "record a $20 gas expense". \
+An add/create/record/log/enter verb ⇒ "action", never "compute", even when it names an amount and \
+category. This only PROPOSES a change for the user to confirm — it does not write. Only expense \
+creation is supported; any other change (edit/delete, budgets, goals, accounts) is "refuse".
 - "refuse"   : ONLY for things outside the user's tracked data — general knowledge, chit-chat, \
 or ADVICE/RECOMMENDATIONS ("what should I buy/invest/do"). A factual breakdown of existing data \
 is NOT a refusal. Provide a short reason.
+
+The `route` field is EXACTLY one of: compute, semantic, hybrid, capability, action, refuse — \
+NEVER a tool name. To run a tool, set route="compute" and put the tool(s) in tool_calls \
+(e.g. "can I afford X" → route="compute", tool_calls=[affordability]; "what will my balance be \
+in N years" → route="compute", tool_calls=[balance_projection]).
 
 Numbers must come from tools, never guessed. {catalog}
 Today's date is {today}."""
@@ -143,19 +160,21 @@ Today's date is {today}."""
 async def route_node(state: AgentState) -> dict:
     llm = get_route_llm().with_structured_output(RouteDecision)
     system = ROUTE_SYSTEM.format(catalog=ROUTE_TOOL_CATALOG, today=date.today().isoformat())
-    decision: RouteDecision = await llm.ainvoke(
-        [("system", system), *_history_messages(state.get("history")), ("human", state["question"])]
-    )
-    plan = {
-        "tool_calls": [tc.model_dump() for tc in decision.tool_calls],
-        "search_query": decision.search_query,
-        "reason": decision.reason,
-    }
-    return {
-        "route": decision.route,
-        "plan": plan,
-        "steps": _trace(state, "route", f"route={decision.route}: {decision.reason}"),
-    }
+    try:
+        decision: RouteDecision = await llm.ainvoke(
+            [("system", system), *_history_messages(state.get("history")), ("human", state["question"])]
+        )
+        plan = {
+            "tool_calls": [tc.model_dump() for tc in decision.tool_calls],
+            "search_query": decision.search_query,
+            "reason": decision.reason,
+        }
+        return {"route": decision.route, "plan": plan,
+                "steps": _trace(state, "route", f"route={decision.route}: {decision.reason}")}
+    except Exception as exc:  # rare: LLM emits an out-of-enum route -> don't 500, degrade to compute
+        return {"route": "compute",
+                "plan": {"tool_calls": [], "search_query": None, "reason": "router fallback"},
+                "steps": _trace(state, "route", f"router error → compute fallback: {exc}")}
 
 
 def route_decider(state: AgentState) -> str:
@@ -175,6 +194,44 @@ CAPABILITIES = (
 async def capability_node(state: AgentState) -> dict:
     return {"answer": CAPABILITIES, "refused": False,
             "steps": _trace(state, "capability", "described capabilities")}
+
+
+# ----------------------------------------------------------------------- propose_action
+class ExpenseProposal(BaseModel):
+    """Structured extraction for a proposed create_expense action."""
+    enough_info: bool = Field(description="false if amount or a name/merchant is missing")
+    name: Optional[str] = Field(default=None, description="merchant or short label, e.g. 'Groceries'")
+    amount: Optional[float] = Field(default=None, description="positive amount in USD")
+    category: Optional[str] = Field(default=None, description="e.g. Groceries, Dining, Transport")
+    date: Optional[str] = Field(default=None, description="ISO date YYYY-MM-DD; null means today")
+    clarification: Optional[str] = Field(default=None, description="if enough_info is false, what to ask")
+
+
+PROPOSE_SYSTEM = """Extract a single expense the user wants to add, as structured fields. Do NOT \
+invent an amount — if there's no clear amount or no name/merchant, set enough_info=false and put a \
+one-line clarification question. Never write anything; you only propose. Today is {today}."""
+
+
+async def propose_action(state: AgentState) -> dict:
+    llm = get_route_llm().with_structured_output(ExpenseProposal)
+    p: ExpenseProposal = await llm.ainvoke([
+        ("system", PROPOSE_SYSTEM.format(today=date.today().isoformat())),
+        *_history_messages(state.get("history")),
+        ("human", state["question"]),
+    ])
+    if not p.enough_info or p.amount is None or not p.name:
+        msg = p.clarification or "What's the amount and a name for the expense you'd like to add?"
+        return {"answer": msg, "refused": False, "proposed_action": None,
+                "steps": _trace(state, "propose_action", "insufficient info -> clarify")}
+    args = {"name": p.name, "amount": p.amount, "category": p.category, "date": p.date}
+    cat = f" {p.category}" if p.category else ""
+    when = p.date or "today"
+    answer = f"Add a ${float(p.amount):.2f}{cat} expense dated {when}? Confirm to save."
+    return {
+        "answer": answer, "refused": False,
+        "proposed_action": {"action_type": "create_expense", "args": args},
+        "steps": _trace(state, "propose_action", f"proposed create_expense ${p.amount}"),
+    }
 
 
 # ------------------------------------------------------------------------- compute
