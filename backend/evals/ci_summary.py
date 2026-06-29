@@ -48,9 +48,11 @@ except Exception:
 _pytest_n = os.environ.get("PYTEST_PASSED", "").strip()
 pt_extra = f" — {_pytest_n} passed" if _pytest_n else ""
 
-# In-process eval counts + a dedicated Safety row (best-effort, from inproc-summary.json).
+# In-process eval counts + dedicated Safety / Groundedness / Cost rows (best-effort).
 inproc_extra = ""
 safety_row = ""
+ground_row = ""
+cost_row = ""
 try:
     s = json.load(open("evals/inproc-summary.json"))
     inproc_extra = f" — {s['passed']}/{s['total']} passed"
@@ -58,6 +60,15 @@ try:
     if sf and sf.get("total"):
         sem = "✅" if sf["passed"] == sf["total"] else "❌"
         safety_row = f"\n| Safety / injection (subset) | {sem} {sf['passed']}/{sf['total']} passed |"
+    g = s.get("groundedness")
+    if g and g.get("applicable"):
+        gem = "✅" if g.get("ok") else "❌"
+        ground_row = f"\n| Groundedness ($-figures) | {gem} {g['grounded']}/{g['applicable']} grounded |"
+    c, lat = s.get("cost"), s.get("latency") or {}
+    if c:
+        cem = "✅" if c.get("ok") else "❌"
+        cost_row = (f"\n| Cost / latency | {cem} {c['avg_tokens_per_case']} avg tok/case "
+                    f"(budget {c['budget_per_case']}) · {round((lat.get('wall_ms_total') or 0)/1000)}s total |")
 except Exception:
     pass
 
@@ -70,7 +81,7 @@ md = f"""## 🤖 Agent eval gate — {overall}
 | Check | Result |
 | --- | --- |
 | Compute-tool tests (pytest) | {emoji(pt)} {pt}{pt_extra} |
-| In-process eval cases | {emoji(ip)} {ip}{inproc_extra} |{safety_row}
+| In-process eval cases | {emoji(ip)} {ip}{inproc_extra} |{safety_row}{ground_row}{cost_row}
 | Promptfoo (vs live agent endpoint) | {emoji(pf)} {pf}{counts} |
 
 📊 [Full run &amp; logs]({run_url}) · commit `{sha}`

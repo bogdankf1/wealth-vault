@@ -16,8 +16,46 @@ sys.path.insert(0, ".")
 from dotenv import load_dotenv  # load backend/.env (DATABASE_URL/SECRET_KEY/OPENAI_API_KEY)
 load_dotenv()
 
+import time
+from langchain_core.callbacks import BaseCallbackHandler
 from app.modules.agent.graph import run_agent
+from app.modules.agent.nodes import (
+    _extract_nums, _derivable, _numbers_in, _question_numbers, GROUNDING_CONSTANTS,
+)
 from app.scripts.seed_demo_data import DEMO_USER_ID
+
+# Hard ceiling on average tokens per eval case — catches prompt bloat / a model misconfig.
+# Generous (~3x the current ~1.6k/case) so normal LLM variation never trips it. Per-case (not a
+# fixed total) so it auto-scales as eval cases are added.
+TOKEN_BUDGET_PER_CASE = 5000
+
+
+class UsageHandler(BaseCallbackHandler):
+    """Accumulates OpenAI token usage across every LLM call in one graph run."""
+    def __init__(self) -> None:
+        self.prompt = 0
+        self.completion = 0
+
+    def on_llm_end(self, response, **kwargs) -> None:
+        usage = (getattr(response, "llm_output", None) or {}).get("token_usage") or {}
+        self.prompt += usage.get("prompt_tokens", 0)
+        self.completion += usage.get("completion_tokens", 0)
+
+
+def _grounded(question: str, r: dict) -> bool:
+    """Independent re-check of numeric grounding (mirrors validate_node): every $-figure in the
+    answer must be derivable from the tool results + question numbers. Skips cases with no tool
+    results (nothing numeric to ground against). Catches a regression that weakens/bypasses the
+    runtime validator and lets an ungrounded number reach the answer."""
+    results = r.get("computed") or []
+    if not results:
+        return True
+    base: set[float] = set()
+    for res in results:
+        _extract_nums(res, base)
+    base |= _question_numbers(question) | GROUNDING_CONSTANTS
+    base_list = list(base)
+    return all(_derivable(n, base_list) for n in _numbers_in(r.get("answer", "")))
 
 
 def norm(s: str) -> str:
@@ -164,15 +202,29 @@ async def main() -> None:
     categorized = ([("core", q, c) for q, c in CASES]
                    + [("safety", q, c) for q, c in SAFETY_CASES])
     stats = {"core": [0, 0], "safety": [0, 0]}  # category -> [passed, total]
+    prompt_tok = completion_tok = 0
+    wall_times: list[float] = []
+    ground = [0, 0]  # [grounded, applicable]
     for category, question, check in categorized:
+        handler = UsageHandler()
+        t0 = time.perf_counter()
         # A single failing case (incl. one that errors) counts as a fail — never aborts the run.
         try:
-            r = await run_agent(question, DEMO_USER_ID)
+            r = await run_agent(question, DEMO_USER_ID, callbacks=[handler])
             ok = bool(check(r))
             detail = f"route={r['route']} refused={r['refused']} :: {r['answer'][:95]}"
+            if r.get("computed") or []:  # only meaningful where there were tool numbers
+                ground[1] += 1
+                if _grounded(question, r):
+                    ground[0] += 1
+                else:
+                    detail = f"UNGROUNDED :: {detail}"
         except Exception as exc:
             ok = False
             detail = f"ERROR: {exc}"
+        wall_times.append((time.perf_counter() - t0) * 1000)
+        prompt_tok += handler.prompt
+        completion_tok += handler.completion
         stats[category][1] += 1
         stats[category][0] += int(ok)
         print(f"[{'PASS' if ok else 'FAIL'}] ({category}) {question}")
@@ -180,16 +232,32 @@ async def main() -> None:
 
     passed = sum(p for p, _ in stats.values())
     total = sum(t for _, t in stats.values())
+    n = len(wall_times) or 1
+    total_tok = prompt_tok + completion_tok
+    avg_tok = round(total_tok / n, 1)
+    cost_ok = avg_tok <= TOKEN_BUDGET_PER_CASE
+    ground_ok = ground[0] == ground[1]
+
     # Machine-readable summary for the CI sticky comment (read by evals/ci_summary.py).
     json.dump(
         {"passed": passed, "total": total,
-         "by_category": {k: {"passed": p, "total": t} for k, (p, t) in stats.items()}},
+         "by_category": {k: {"passed": p, "total": t} for k, (p, t) in stats.items()},
+         "groundedness": {"grounded": ground[0], "applicable": ground[1], "ok": ground_ok},
+         "cost": {"prompt_tokens": prompt_tok, "completion_tokens": completion_tok,
+                  "total_tokens": total_tok, "avg_tokens_per_case": avg_tok,
+                  "budget_per_case": TOKEN_BUDGET_PER_CASE, "ok": cost_ok},
+         "latency": {"wall_ms_total": round(sum(wall_times), 1),
+                     "wall_ms_max": round(max(wall_times), 1) if wall_times else 0}},
         open("evals/inproc-summary.json", "w"), indent=2,
     )
     for k, (p, t) in stats.items():
         print(f"  {k}: {p}/{t}")
+    print(f"  groundedness: {ground[0]}/{ground[1]} {'OK' if ground_ok else 'FAIL'}")
+    print(f"  cost: {avg_tok} avg tokens/case (budget {TOKEN_BUDGET_PER_CASE}) "
+          f"{'OK' if cost_ok else 'OVER'}  | latency: {round(sum(wall_times))}ms total")
     print(f"\n{passed}/{total} eval cases passed")
-    raise SystemExit(0 if passed == total else 1)
+    # Gate: correctness AND groundedness AND token budget must all hold.
+    raise SystemExit(0 if (passed == total and ground_ok and cost_ok) else 1)
 
 
 if __name__ == "__main__":

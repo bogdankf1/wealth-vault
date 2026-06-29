@@ -102,9 +102,13 @@ def format_result(final: dict) -> dict:
     }
 
 
-async def run_agent(question: str, user_id: UUID, history: list | None = None) -> dict:
-    """Non-streaming run — used by the JSON endpoint and the evals."""
-    final = await get_graph().ainvoke(_initial_state(question, user_id, history))
+async def run_agent(question: str, user_id: UUID, history: list | None = None,
+                    callbacks: list | None = None) -> dict:
+    """Non-streaming run — used by the JSON endpoint and the evals. `callbacks` (optional) are
+    LangChain callback handlers passed to the graph run (the eval harness uses one to meter token
+    usage); when None, behavior is unchanged."""
+    config = {"callbacks": callbacks} if callbacks else None
+    final = await get_graph().ainvoke(_initial_state(question, user_id, history), config=config)
     return format_result(final)
 
 
