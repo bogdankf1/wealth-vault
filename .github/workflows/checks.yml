@@ -53,3 +53,51 @@ jobs:
         run: pip install ruff==0.7.3
       - name: Ruff
         run: ruff check app/
+      - name: Eval coverage (every agent action has a test)
+        # Stdlib-only static check (no deps/DB/key): fails if a Level-D action in ACTION_REGISTRY
+        # isn't referenced by an eval case, so new write actions can't merge untested.
+        run: python evals/check_coverage.py
+
+  migrations:
+    runs-on: ubuntu-latest
+    # Guards the create_all_tables.py ↔ alembic clash that only surfaces on a fresh DB: a table
+    # built by create_all and then re-created by a migration → "relation already exists" (exactly
+    # the bug that broke a PR pipeline). Fast, no API key.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wealth_vault_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/wealth_vault_ci
+      SECRET_KEY: ci-secret-key-not-for-prod-0123456789012345
+      PYTHONPATH: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Migration consistency (create_all + upgrade on a clean DB)
+        # If this fails with "relation already exists", a table is in BOTH Base.metadata (so
+        # create_all builds it) AND a migration's create_table. Make it alembic-owned: drop it
+        # from app/models/__init__.py (keep it imported where used + in alembic/env.py).
+        # (alembic's autogenerate `check` is intentionally NOT used — too many false-positive
+        # "unique constraint on id" diffs against this schema to be a reliable gate.)
+        run: |
+          python create_all_tables.py
+          alembic upgrade head
