@@ -13,6 +13,7 @@ LLMs:
   * validate   — NO LLM. Deterministic numeric-grounding + sufficiency checks make the
                  gate reliable and cheap, and give the evals something exact to assert.
 """
+import inspect
 import os
 import re
 from datetime import date
@@ -144,8 +145,9 @@ and documents (e.g. "what was that big electronics purchase?"). Provide search_q
 subscription, or savings goal — e.g. "add a $40 groceries expense", "log $2000 freelance income", \
 "add a $15/mo Netflix subscription", "set a $10k emergency fund goal". An add/create/record/log/set \
 verb for one of those ⇒ "action", never "compute", even when it names an amount/category. This only \
-PROPOSES a change for the user to confirm — it does not write. Editing or deleting existing items, \
-and creating budgets/accounts, are not yet supported → "refuse".
+PROPOSES a change for the user to confirm — it does not write. You can also EDIT or DELETE an \
+existing expense ("change my Netflix expense to $20", "delete the $4.50 coffee") — also "action". \
+Creating budgets/accounts, and editing income/subscriptions/goals, are not yet supported → "refuse".
 - "refuse"   : ONLY for things outside the user's tracked data — general knowledge, chit-chat, \
 or ADVICE/RECOMMENDATIONS ("what should I buy/invest/do"). A factual breakdown of existing data \
 is NOT a refusal. Provide a short reason.
@@ -202,8 +204,8 @@ async def capability_node(state: AgentState) -> dict:
 class ActionProposal(BaseModel):
     """Single-call extraction for any supported write action; per-action builders use the relevant
     fields. The router already chose route='action'; this picks which action and its fields."""
-    action_type: Literal["create_expense", "create_income", "create_subscription", "create_goal"] = Field(
-        description="which action the user wants")
+    action_type: Literal["create_expense", "create_income", "create_subscription", "create_goal",
+                         "update_expense", "delete_expense"] = Field(description="which action")
     enough_info: bool = Field(description="false if the required fields for the action are missing")
     name: Optional[str] = Field(default=None, description="label/merchant (expense, subscription, goal)")
     amount: Optional[float] = Field(default=None, description="amount for expense/income/subscription")
@@ -212,6 +214,11 @@ class ActionProposal(BaseModel):
     frequency: Optional[str] = Field(default=None, description="subscription: monthly/quarterly/annually/biannually")
     date: Optional[str] = Field(default=None, description="ISO date YYYY-MM-DD; null means today")
     clarification: Optional[str] = Field(default=None, description="if enough_info is false, what to ask")
+    match_text: Optional[str] = Field(default=None, description="for update/delete: name/merchant of the expense to find")
+    match_amount: Optional[float] = Field(default=None, description="for update/delete: amount to help find the expense")
+    new_name: Optional[str] = Field(default=None, description="update: new name")
+    new_amount: Optional[float] = Field(default=None, description="update: new amount")
+    new_category: Optional[str] = Field(default=None, description="update: new category")
 
 
 PROPOSE_SYSTEM = """Decide which single action the user wants and extract its fields:
@@ -219,6 +226,9 @@ PROPOSE_SYSTEM = """Decide which single action the user wants and extract its fi
 - create_income: income received. Needs amount.
 - create_subscription: a recurring subscription. Needs a name + amount (frequency optional, default monthly).
 - create_goal: a savings goal. Needs a name + target_amount.
+- update_expense: change an existing expense's amount/category/name. Put which expense in match_text \
+(+match_amount if given) and the change in new_amount/new_category/new_name.
+- delete_expense: remove an existing expense. Put which expense in match_text (+match_amount).
 Do NOT invent values. If the required fields for the chosen action are missing, set enough_info=false \
 and put a one-line clarification. Never write anything; you only propose. Today is {today}."""
 
@@ -262,6 +272,61 @@ PROPOSAL_BUILDERS = {
 }
 
 
+async def _find_expense_candidates(db, user_id, match_text, match_amount):
+    from app.modules.expenses.models import Expense
+    q = select(Expense).where(Expense.user_id == UUID(user_id), Expense.deleted_at.is_(None))
+    if match_text:
+        q = q.where(Expense.name.ilike(f"%{match_text}%"))
+    if match_amount is not None:
+        q = q.where(Expense.amount == match_amount)
+    q = q.order_by(Expense.date.desc().nullslast()).limit(6)
+    return list((await db.execute(q)).scalars().all())
+
+
+def _clarify(state, msg: str) -> dict:
+    return {"answer": msg, "refused": False, "proposed_action": None,
+            "steps": _trace(state, "propose_action", "clarify")}
+
+
+async def _propose_expense_edit(state: AgentState, p: "ActionProposal") -> dict:
+    if not p.match_text and p.match_amount is None:
+        return _clarify(state, "Which expense? Tell me its name or amount.")
+    async with AsyncSessionLocal() as db:
+        result = _find_expense_candidates(db, state["user_id"], p.match_text, p.match_amount)
+        cands = await result if inspect.isawaitable(result) else result
+    if not cands:
+        return _clarify(state, f"I couldn't find an expense matching '{p.match_text or p.match_amount}'.")
+    if len(cands) > 1:
+        listing = "; ".join(
+            f"{c.name} ${float(c.amount):.2f}"
+            f"{(' on ' + c.date.date().isoformat()) if getattr(c, 'date', None) else ''}"
+            for c in cands)
+        return _clarify(state, f"I found a few matching expenses: {listing}. Which one?")
+    c = cands[0]
+    if p.action_type == "delete_expense":
+        args = {"expense_id": str(c.id)}
+        summary = f"Delete the ${float(c.amount):.2f} {c.name} expense — this can't be undone."
+    else:
+        changes = {}
+        if p.new_name:
+            changes["name"] = p.new_name
+        if p.new_amount is not None:
+            changes["amount"] = p.new_amount
+        if p.new_category:
+            changes["category"] = p.new_category
+        if not changes:
+            return _clarify(state, f"What should I change about the {c.name} expense?")
+        args = {"expense_id": str(c.id), **changes}
+        summary = (f"Update the {c.name} expense: "
+                   + ", ".join(f"{k} → {v}" for k, v in changes.items()) + ".")
+    return {
+        "answer": f"{summary} Confirm to save?", "refused": False,
+        "proposed_action": {"action_type": p.action_type, "args": args,
+                            "idempotency_key": str(uuid4()), "summary": summary},
+        "steps": _trace(state, "propose_action", f"proposed {p.action_type} for {c.name}"),
+    }
+
+
 async def propose_action(state: AgentState) -> dict:
     llm = get_route_llm().with_structured_output(ActionProposal)
     p: ActionProposal = await llm.ainvoke([
@@ -269,6 +334,8 @@ async def propose_action(state: AgentState) -> dict:
         *_history_messages(state.get("history")),
         ("human", state["question"]),
     ])
+    if p.action_type in ("update_expense", "delete_expense"):
+        return await _propose_expense_edit(state, p)
     builder = PROPOSAL_BUILDERS.get(p.action_type)
     built = builder(p) if (builder and p.enough_info) else None
     if built is None:
