@@ -119,6 +119,8 @@ class UpdateExpenseArgs(BaseModel):
 
 async def _commit_update_expense(db: AsyncSession, user_id: UUID, args: UpdateExpenseArgs) -> dict:
     fields = args.model_dump(exclude={"expense_id"}, exclude_none=True)
+    if not fields:  # reject a no-op update (a direct confirm with only expense_id) — no spurious audit row
+        raise ActionError("no fields to update")
     expense = await expense_service.update_expense(
         db, user_id, args.expense_id, ExpenseUpdate(**fields), commit=False)
     if expense is None:
