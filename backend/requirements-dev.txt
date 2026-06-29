@@ -1,0 +1,6 @@
+# Dev-only tooling — NOT installed in production (render.yaml installs requirements.txt only).
+#   pip install -r requirements-dev.txt
+-r requirements.txt
+
+# LangGraph Studio / local dev server: `langgraph dev` from backend/ (see langgraph.json).
+langgraph-cli[inmem]>=0.1.55
