@@ -291,7 +291,8 @@ async def backfill_expense_payments(
 async def create_expense(
     db: AsyncSession,
     user_id: UUID,
-    expense_data: ExpenseCreate
+    expense_data: ExpenseCreate,
+    commit: bool = True,
 ) -> Expense:
     """Create a new expense"""
 
@@ -320,6 +321,16 @@ async def create_expense(
     )
 
     db.add(expense)
+
+    if not commit:
+        # Caller owns the transaction (e.g. the agent action layer commits the entity and its
+        # audit row atomically). Flush to emit the INSERT and populate the row; skip the commit,
+        # the payment backfill, and the budget-alert event — the caller commits, auto_pay isn't
+        # set on this path, and budget_status recomputes spend from the table.
+        await db.flush()
+        await db.refresh(expense)
+        return expense
+
     await db.commit()
     await db.refresh(expense)
 
