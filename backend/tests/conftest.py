@@ -22,7 +22,9 @@ from app.scripts.seed_demo_data import DEMO_USER_ID
 # module so the tests are idempotent across repeated invocations against the same DB.
 _TEST_ACTION_IDEM_KEYS = {"idem-happy-1", "idem-bad-1", "idem-bad-2", "idem-dup", "idem-scope-1",
                          "idem-atomic-1", "idem-race-1",
-                         "idem-income-1", "idem-sub-1", "idem-goal-1", "idem-income-bad"}
+                         "idem-income-1", "idem-sub-1", "idem-goal-1", "idem-income-bad",
+                         "idem-seed-x", "idem-upd-1", "idem-del-1", "idem-upd-missing",
+                         "idem-del-missing"}
 
 
 @pytest_asyncio.fixture

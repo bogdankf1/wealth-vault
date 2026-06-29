@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.agent.models import AgentActionLog
 from app.modules.expenses import service as expense_service
 from app.modules.expenses.models import ExpenseFrequency
-from app.modules.expenses.schemas import ExpenseCreate
+from app.modules.expenses.schemas import ExpenseCreate, ExpenseUpdate
 from app.modules.subscriptions import service as subscription_service
 from app.modules.subscriptions.schemas import SubscriptionCreate
 from app.modules.subscriptions.models import SubscriptionFrequency
@@ -110,12 +110,44 @@ async def _commit_create_goal(db: AsyncSession, user_id: UUID, args: CreateGoalA
             "target_amount": float(goal.target_amount)}
 
 
+class UpdateExpenseArgs(BaseModel):
+    expense_id: UUID
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    amount: Optional[Decimal] = Field(None, gt=0)
+    category: Optional[str] = Field(None, max_length=50)
+
+
+async def _commit_update_expense(db: AsyncSession, user_id: UUID, args: UpdateExpenseArgs) -> dict:
+    fields = args.model_dump(exclude={"expense_id"}, exclude_none=True)
+    if not fields:  # reject a no-op update (a direct confirm with only expense_id) — no spurious audit row
+        raise ActionError("no fields to update")
+    expense = await expense_service.update_expense(
+        db, user_id, args.expense_id, ExpenseUpdate(**fields), commit=False)
+    if expense is None:
+        raise ActionError(f"expense {args.expense_id} not found")
+    return {"entity_type": "expense", "id": str(expense.id), "name": expense.name,
+            "amount": float(expense.amount), "category": expense.category}
+
+
+class DeleteExpenseArgs(BaseModel):
+    expense_id: UUID
+
+
+async def _commit_delete_expense(db: AsyncSession, user_id: UUID, args: DeleteExpenseArgs) -> dict:
+    ok = await expense_service.delete_expense(db, user_id, args.expense_id, commit=False)
+    if not ok:
+        raise ActionError(f"expense {args.expense_id} not found")
+    return {"entity_type": "expense", "id": str(args.expense_id)}
+
+
 # Whitelist: action_type -> (args model, committer). The agent can ONLY do what's listed here.
 ACTION_REGISTRY = {
     "create_expense": (CreateExpenseArgs, _commit_create_expense),
     "create_income": (CreateIncomeArgs, _commit_create_income),
     "create_subscription": (CreateSubscriptionArgs, _commit_create_subscription),
     "create_goal": (CreateGoalArgs, _commit_create_goal),
+    "update_expense": (UpdateExpenseArgs, _commit_update_expense),
+    "delete_expense": (DeleteExpenseArgs, _commit_delete_expense),
 }
 
 
