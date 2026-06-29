@@ -5,10 +5,10 @@ Render the LangGraph agent graph as Mermaid — the single source of truth is th
     # print Mermaid to stdout
     python -m app.scripts.draw_graph
 
-    # rewrite the diagram block inside AI_FEATURES.md in place
+    # rewrite the diagram block in README.md and backend/AI_FEATURES.md in place
     python -m app.scripts.draw_graph --write
 
-    # exit 1 if AI_FEATURES.md is out of date (CI guard)
+    # exit 1 if either doc is out of date (CI guard)
     python -m app.scripts.draw_graph --check
 
 No DB connection or OPENAI_API_KEY is made — building the graph only wires node functions; the
@@ -20,7 +20,8 @@ from pathlib import Path
 
 from app.modules.agent.graph import get_graph
 
-DOC = Path(__file__).resolve().parents[2] / "AI_FEATURES.md"
+ROOT = Path(__file__).resolve().parents[3]
+DOCS = [ROOT / "README.md", ROOT / "backend" / "AI_FEATURES.md"]
 BEGIN = "<!-- BEGIN:agent-graph"
 END = "<!-- END:agent-graph -->"
 
@@ -41,14 +42,15 @@ def _splice(text: str) -> str:
 
 def main() -> None:
     arg = sys.argv[1] if len(sys.argv) > 1 else ""
-    if arg == "--write":
-        DOC.write_text(_splice(DOC.read_text()))
-        print(f"updated {DOC.name}")
-    elif arg == "--check":
-        current = DOC.read_text()
-        if _splice(current) != current:
-            sys.exit(f"{DOC.name} is stale — run: python -m app.scripts.draw_graph --write")
-        print(f"{DOC.name} is up to date")
+    if arg == "--check":
+        stale = [d.name for d in DOCS if _splice(d.read_text()) != d.read_text()]
+        if stale:
+            sys.exit(f"stale: {', '.join(stale)} — run: python -m app.scripts.draw_graph --write")
+        print(f"up to date: {', '.join(d.name for d in DOCS)}")
+    elif arg == "--write":
+        for d in DOCS:
+            d.write_text(_splice(d.read_text()))
+        print(f"updated: {', '.join(d.name for d in DOCS)}")
     else:
         print(mermaid())
 
