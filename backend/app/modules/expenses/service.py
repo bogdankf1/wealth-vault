@@ -324,9 +324,13 @@ async def create_expense(
 
     if not commit:
         # Caller owns the transaction (e.g. the agent action layer commits the entity and its
-        # audit row atomically). Flush to emit the INSERT and populate the row; skip the commit,
-        # the payment backfill, and the budget-alert event — the caller commits, auto_pay isn't
-        # set on this path, and budget_status recomputes spend from the table.
+        # audit row atomically). Flush to emit the INSERT and populate the row, but do NOT commit.
+        # Two side-effects of the committed path are deliberately skipped here:
+        #  - payment backfill: moot — this path never sets auto_pay/payment_account_id.
+        #  - the ExpenseEvents.CREATED dispatch: so the real-time over-budget Celery ALERT is not
+        #    fired for agent-added expenses. Data stays correct (budget_status recomputes spend
+        #    from the table); only the proactive alert is skipped. To restore it, dispatch
+        #    ExpenseEvents.CREATED from the caller AFTER its commit.
         await db.flush()
         await db.refresh(expense)
         return expense
