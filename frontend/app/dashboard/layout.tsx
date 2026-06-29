@@ -456,6 +456,16 @@ export default function DashboardLayout({
         {/* Page content */}
         <main className="flex-1 overflow-y-auto pb-16 xl:pb-0">
           {children}
+          <footer className="px-4 py-6 text-center">
+            <a
+              href="https://built-by-bohdan.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-gray-500 transition-colors hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+            >
+              Built by Bohdan
+            </a>
+          </footer>
         </main>
       </div>
 
