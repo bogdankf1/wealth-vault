@@ -21,7 +21,8 @@ from app.scripts.seed_demo_data import DEMO_USER_ID
 # Idempotency keys hard-coded in test_actions.py — purge them before each run of that
 # module so the tests are idempotent across repeated invocations against the same DB.
 _TEST_ACTION_IDEM_KEYS = {"idem-happy-1", "idem-bad-1", "idem-bad-2", "idem-dup", "idem-scope-1",
-                         "idem-atomic-1", "idem-race-1"}
+                         "idem-atomic-1", "idem-race-1",
+                         "idem-income-1", "idem-sub-1", "idem-goal-1", "idem-income-bad"}
 
 
 @pytest_asyncio.fixture

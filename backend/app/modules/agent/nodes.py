@@ -122,9 +122,10 @@ the user's question about THEIR OWN financial data. Use the conversation so far 
 references like "it"/"that"/"those" — e.g. a follow-up "how is it distributed?" after a net-worth \
 question means "how is my net worth distributed across my accounts".
 
-FIRST decide intent: if the user is telling you to ADD / CREATE / RECORD / LOG / ENTER a new \
-expense (an imperative command), choose "action" — NOT "compute" — even though it mentions an \
-amount and category. "compute" is only for QUESTIONS about data that already exists.
+FIRST decide intent: if the user is telling you to ADD / CREATE / RECORD / LOG / SET a new \
+expense, income, subscription, or savings goal (an imperative command), choose "action" — NOT \
+"compute". "compute" is only for QUESTIONS about data that already exists (e.g. "how's my emergency \
+fund goal?" is compute; "set a $10k emergency fund goal" is action).
 
 Choose route:
 - "compute"  : a QUESTION about existing data (never a command to add/record data — that's \
@@ -139,11 +140,12 @@ taxes, budgets, goals) and analytics (compare periods, savings rate, "can I affo
 and documents (e.g. "what was that big electronics purchase?"). Provide search_query.
 - "hybrid"   : needs BOTH an exact number AND context. Provide tool_calls AND search_query.
 - "capability": the user asks what you can do / for help → list what you can answer.
-- "action"   : the user asks to ADD / CREATE / RECORD / LOG / ENTER a new expense — imperative \
-requests like "add a $40 groceries expense", "log $12 lunch yesterday", "record a $20 gas expense". \
-An add/create/record/log/enter verb ⇒ "action", never "compute", even when it names an amount and \
-category. This only PROPOSES a change for the user to confirm — it does not write. Only expense \
-creation is supported; any other change (edit/delete, budgets, goals, accounts) is "refuse".
+- "action"   : the user asks to ADD / CREATE / RECORD / LOG / SET a new expense, income, \
+subscription, or savings goal — e.g. "add a $40 groceries expense", "log $2000 freelance income", \
+"add a $15/mo Netflix subscription", "set a $10k emergency fund goal". An add/create/record/log/set \
+verb for one of those ⇒ "action", never "compute", even when it names an amount/category. This only \
+PROPOSES a change for the user to confirm — it does not write. Editing or deleting existing items, \
+and creating budgets/accounts, are not yet supported → "refuse".
 - "refuse"   : ONLY for things outside the user's tracked data — general knowledge, chit-chat, \
 or ADVICE/RECOMMENDATIONS ("what should I buy/invest/do"). A factual breakdown of existing data \
 is NOT a refusal. Provide a short reason.
@@ -197,41 +199,88 @@ async def capability_node(state: AgentState) -> dict:
 
 
 # ----------------------------------------------------------------------- propose_action
-class ExpenseProposal(BaseModel):
-    """Structured extraction for a proposed create_expense action."""
-    enough_info: bool = Field(description="false if amount or a name/merchant is missing")
-    name: Optional[str] = Field(default=None, description="merchant or short label, e.g. 'Groceries'")
-    amount: Optional[float] = Field(default=None, description="positive amount in USD")
-    category: Optional[str] = Field(default=None, description="e.g. Groceries, Dining, Transport")
+class ActionProposal(BaseModel):
+    """Single-call extraction for any supported write action; per-action builders use the relevant
+    fields. The router already chose route='action'; this picks which action and its fields."""
+    action_type: Literal["create_expense", "create_income", "create_subscription", "create_goal"] = Field(
+        description="which action the user wants")
+    enough_info: bool = Field(description="false if the required fields for the action are missing")
+    name: Optional[str] = Field(default=None, description="label/merchant (expense, subscription, goal)")
+    amount: Optional[float] = Field(default=None, description="amount for expense/income/subscription")
+    target_amount: Optional[float] = Field(default=None, description="goal target amount")
+    category: Optional[str] = Field(default=None, description="category")
+    frequency: Optional[str] = Field(default=None, description="subscription: monthly/quarterly/annually/biannually")
     date: Optional[str] = Field(default=None, description="ISO date YYYY-MM-DD; null means today")
     clarification: Optional[str] = Field(default=None, description="if enough_info is false, what to ask")
 
 
-PROPOSE_SYSTEM = """Extract a single expense the user wants to add, as structured fields. Do NOT \
-invent an amount — if there's no clear amount or no name/merchant, set enough_info=false and put a \
-one-line clarification question. Never write anything; you only propose. Today is {today}."""
+PROPOSE_SYSTEM = """Decide which single action the user wants and extract its fields:
+- create_expense: an expense to record. Needs amount + a name/merchant.
+- create_income: income received. Needs amount.
+- create_subscription: a recurring subscription. Needs a name + amount (frequency optional, default monthly).
+- create_goal: a savings goal. Needs a name + target_amount.
+Do NOT invent values. If the required fields for the chosen action are missing, set enough_info=false \
+and put a one-line clarification. Never write anything; you only propose. Today is {today}."""
+
+
+def _b_expense(p: "ActionProposal"):
+    if p.amount is None or not p.name:
+        return None
+    args = {"name": p.name, "amount": p.amount, "category": p.category, "date": p.date}
+    cat = f" {p.category}" if p.category else ""
+    return args, f"Add a ${float(p.amount):.2f}{cat} expense dated {p.date or 'today'}."
+
+
+def _b_income(p: "ActionProposal"):
+    if p.amount is None:
+        return None
+    args = {"amount": p.amount, "category": p.category, "date": p.date}
+    cat = f" {p.category}" if p.category else ""
+    return args, f"Record ${float(p.amount):.2f}{cat} income dated {p.date or 'today'}."
+
+
+def _b_subscription(p: "ActionProposal"):
+    if p.amount is None or not p.name:
+        return None
+    args = {"name": p.name, "amount": p.amount, "frequency": p.frequency, "category": p.category}
+    freq = p.frequency or "monthly"
+    return args, f"Add a ${float(p.amount):.2f} {freq} {p.name} subscription."
+
+
+def _b_goal(p: "ActionProposal"):
+    if p.target_amount is None or not p.name:
+        return None
+    args = {"name": p.name, "target_amount": p.target_amount, "category": p.category}
+    return args, f"Create a savings goal '{p.name}' targeting ${float(p.target_amount):.2f}."
+
+
+PROPOSAL_BUILDERS = {
+    "create_expense": _b_expense,
+    "create_income": _b_income,
+    "create_subscription": _b_subscription,
+    "create_goal": _b_goal,
+}
 
 
 async def propose_action(state: AgentState) -> dict:
-    llm = get_route_llm().with_structured_output(ExpenseProposal)
-    p: ExpenseProposal = await llm.ainvoke([
+    llm = get_route_llm().with_structured_output(ActionProposal)
+    p: ActionProposal = await llm.ainvoke([
         ("system", PROPOSE_SYSTEM.format(today=date.today().isoformat())),
         *_history_messages(state.get("history")),
         ("human", state["question"]),
     ])
-    if not p.enough_info or p.amount is None or not p.name:
-        msg = p.clarification or "What's the amount and a name for the expense you'd like to add?"
+    builder = PROPOSAL_BUILDERS.get(p.action_type)
+    built = builder(p) if (builder and p.enough_info) else None
+    if built is None:
+        msg = p.clarification or "I need a bit more detail to add that — what are the key numbers?"
         return {"answer": msg, "refused": False, "proposed_action": None,
                 "steps": _trace(state, "propose_action", "insufficient info -> clarify")}
-    args = {"name": p.name, "amount": p.amount, "category": p.category, "date": p.date}
-    cat = f" {p.category}" if p.category else ""
-    when = p.date or "today"
-    answer = f"Add a ${float(p.amount):.2f}{cat} expense dated {when}? Confirm to save."
+    args, summary = built
     return {
-        "answer": answer, "refused": False,
-        "proposed_action": {"action_type": "create_expense", "args": args,
-                            "idempotency_key": str(uuid4())},
-        "steps": _trace(state, "propose_action", f"proposed create_expense ${p.amount}"),
+        "answer": f"{summary} Confirm to save?", "refused": False,
+        "proposed_action": {"action_type": p.action_type, "args": args,
+                            "idempotency_key": str(uuid4()), "summary": summary},
+        "steps": _trace(state, "propose_action", f"proposed {p.action_type}"),
     }
 
 

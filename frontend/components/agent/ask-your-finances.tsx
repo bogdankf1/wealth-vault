@@ -190,8 +190,8 @@ function AnswerBlock({ view }: { view: AgentStreamState }) {
               {answer}
               {view.isStreaming && <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-foreground/60 align-middle" />}
             </p>
-            {view.result?.proposed_action?.action_type === 'create_expense' && (
-              <ConfirmExpenseCard action={view.result.proposed_action} />
+            {view.result?.proposed_action && (
+              <ConfirmActionCard action={view.result.proposed_action} />
             )}
           </>
         )}
@@ -223,10 +223,9 @@ function AnswerBlock({ view }: { view: AgentStreamState }) {
   );
 }
 
-function ConfirmExpenseCard({ action }: { action: NonNullable<AgentResult['proposed_action']> }) {
+function ConfirmActionCard({ action }: { action: NonNullable<AgentResult['proposed_action']> }) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'cancelled' | 'error'>('idle');
   const [err, setErr] = useState<string | null>(null);
-  const a = action.args;
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   async function confirm() {
@@ -240,9 +239,9 @@ function ConfirmExpenseCard({ action }: { action: NonNullable<AgentResult['propo
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           action_type: action.action_type,
-          args: a,
+          args: action.args,
           // Use the key bound to this proposal so re-clicking Confirm after an error dedupes
-          // (the server is idempotent on it) instead of creating a duplicate expense.
+          // (the server is idempotent on it) instead of creating a duplicate.
           idempotency_key: action.idempotency_key,
         }),
       });
@@ -255,17 +254,15 @@ function ConfirmExpenseCard({ action }: { action: NonNullable<AgentResult['propo
   }
 
   if (status === 'done') {
-    return <div className="mt-2 text-sm text-green-600 dark:text-green-400">✓ Added &quot;{a.name}&quot; (${a.amount.toFixed(2)})</div>;
+    return <div className="mt-2 text-sm text-green-600 dark:text-green-400">✓ Saved.</div>;
   }
   if (status === 'cancelled') {
     return <div className="mt-2 text-sm text-muted-foreground">Cancelled.</div>;
   }
   return (
     <div className="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-sm">
-      <div className="font-medium mb-1">Add this expense?</div>
-      <div className="text-gray-600 dark:text-gray-300">
-        {a.name} · ${a.amount.toFixed(2)}{a.category ? ` · ${a.category}` : ''}{a.date ? ` · ${a.date}` : ''}
-      </div>
+      <div className="font-medium mb-1">Confirm this action?</div>
+      <div className="text-gray-600 dark:text-gray-300">{action.summary}</div>
       {status === 'error' && <div className="text-red-600 dark:text-red-400 mt-1">Couldn&apos;t save {err}</div>}
       <div className="mt-2 flex gap-2">
         <button

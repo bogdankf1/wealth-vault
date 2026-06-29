@@ -92,7 +92,8 @@ def calculate_monthly_equivalent(amount: Decimal, frequency: str) -> Decimal:
 async def create_subscription(
     db: AsyncSession,
     user_id: UUID,
-    subscription_data: SubscriptionCreate
+    subscription_data: SubscriptionCreate,
+    commit: bool = True,
 ) -> Subscription:
     """Create a new subscription"""
     data = subscription_data.model_dump(exclude={'sync_historical'})
@@ -110,10 +111,17 @@ async def create_subscription(
     )
 
     db.add(subscription)
+
+    if not commit:
+        # Caller owns the transaction (agent action layer: atomic entity+audit). Flush only;
+        # skip commit and the historical-payment backfill (agent path links no payment account).
+        await db.flush()
+        await db.refresh(subscription)
+        return subscription
+
     await db.commit()
     await db.refresh(subscription)
 
-    # If sync_historical and payment account is linked, backfill payments
     if sync_historical and subscription.payment_account_id:
         await backfill_subscription_payments(db, subscription)
         await db.commit()

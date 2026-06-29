@@ -9,6 +9,7 @@ async def test_propose_action_includes_idempotency_key(monkeypatch):
 
     class _FakeProposal:
         enough_info = True
+        action_type = "create_expense"
         name = "Groceries"
         amount = 40.0
         category = "Groceries"
