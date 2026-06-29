@@ -17,7 +17,7 @@ import os
 import re
 from datetime import date
 from typing import List, Literal, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import select, func
 
@@ -229,7 +229,8 @@ async def propose_action(state: AgentState) -> dict:
     answer = f"Add a ${float(p.amount):.2f}{cat} expense dated {when}? Confirm to save."
     return {
         "answer": answer, "refused": False,
-        "proposed_action": {"action_type": "create_expense", "args": args},
+        "proposed_action": {"action_type": "create_expense", "args": args,
+                            "idempotency_key": str(uuid4())},
         "steps": _trace(state, "propose_action", f"proposed create_expense ${p.amount}"),
     }
 

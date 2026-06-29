@@ -33,6 +33,7 @@ export interface AgentResult {
   proposed_action?: {
     action_type: string;
     args: { name: string; amount: number; category?: string | null; date?: string | null };
+    idempotency_key: string;
   } | null;
 }
 

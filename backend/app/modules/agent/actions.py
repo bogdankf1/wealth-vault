@@ -10,6 +10,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.agent.models import AgentActionLog
@@ -36,6 +37,7 @@ async def _commit_create_expense(db: AsyncSession, user_id: UUID, args: CreateEx
         db, user_id,
         ExpenseCreate(name=args.name, amount=args.amount, category=args.category,
                       currency="USD", frequency=ExpenseFrequency.ONE_TIME, date=when),
+        commit=False,
     )
     return {"entity_type": "expense", "id": str(expense.id), "name": expense.name,
             "amount": float(expense.amount), "category": expense.category,
@@ -50,34 +52,50 @@ ACTION_REGISTRY = {
 
 async def commit_action(db: AsyncSession, user_id: UUID, action_type: str,
                         args: dict, idempotency_key: str) -> dict:
-    """Validate + commit a proposed action idempotently, with an audit row. Sole write path;
-    user_id comes from the caller (auth), never from `args`."""
+    """Validate + commit a proposed action idempotently and atomically, with an audit row. Sole
+    write path; user_id comes from the caller (auth), never from `args`. The entity and its audit
+    row commit in ONE transaction; the (user_id, idempotency_key) unique constraint is the
+    concurrency guard, so a losing racer's entity rolls back too (no orphan)."""
     spec = ACTION_REGISTRY.get(action_type)
     if spec is None:
         raise ActionError(f"unknown action_type '{action_type}'")
     args_model, committer = spec
+    validated = args_model.model_validate(args)  # pydantic ValidationError -> caller maps to 422
 
+    replay = await _existing_replay(db, user_id, action_type, idempotency_key)
+    if replay is not None:
+        return replay
+
+    try:
+        created = await committer(db, user_id, validated)  # commit=False: entity not yet committed
+        db.add(AgentActionLog(
+            user_id=user_id, action_type=action_type, args=args, status="committed",
+            created_entity_type=created["entity_type"], created_entity_id=UUID(created["id"]),
+            idempotency_key=idempotency_key,
+        ))
+        await db.commit()  # atomic: entity + audit together
+    except IntegrityError:
+        # A concurrent request with the same key won the race. Roll back (drops our just-created
+        # entity AND audit) and return the winner's committed result.
+        await db.rollback()
+        replay = await _existing_replay(db, user_id, action_type, idempotency_key)
+        if replay is not None:
+            return replay
+        raise
+    return {"status": "committed", "action_type": action_type, "created": created,
+            "idempotency_key": idempotency_key}
+
+
+async def _existing_replay(db: AsyncSession, user_id: UUID, action_type: str,
+                           idempotency_key: str) -> Optional[dict]:
+    """Return the idempotent-replay payload for a prior committed action with this key, or None."""
     existing = (await db.execute(select(AgentActionLog).where(
         AgentActionLog.user_id == user_id,
         AgentActionLog.idempotency_key == idempotency_key,
     ))).scalar_one_or_none()
-    if existing:  # only committed rows are ever written -> a hit is an idempotent replay
-        return {"status": "committed", "action_type": action_type,
-                "created": {"entity_type": existing.created_entity_type,
-                            "id": str(existing.created_entity_id)},
-                "idempotency_key": idempotency_key, "idempotent_replay": True}
-
-    validated = args_model.model_validate(args)  # pydantic ValidationError -> caller maps to 422
-    created = await committer(db, user_id, validated)
-    # Audit only committed actions (status is always "committed"; failed attempts aren't logged).
-    # v2 hardening: create_expense already committed above, so this audit row is a SECOND commit
-    # (entity+audit not atomic), and the idempotency check is check-then-insert (the unique
-    # constraint is the concurrency backstop). Acceptable for single-user v1; revisit under load.
-    db.add(AgentActionLog(
-        user_id=user_id, action_type=action_type, args=args, status="committed",
-        created_entity_type=created["entity_type"], created_entity_id=UUID(created["id"]),
-        idempotency_key=idempotency_key,
-    ))
-    await db.commit()
-    return {"status": "committed", "action_type": action_type, "created": created,
-            "idempotency_key": idempotency_key}
+    if existing is None:
+        return None
+    return {"status": "committed", "action_type": action_type,
+            "created": {"entity_type": existing.created_entity_type,
+                        "id": str(existing.created_entity_id)},
+            "idempotency_key": idempotency_key, "idempotent_replay": True}

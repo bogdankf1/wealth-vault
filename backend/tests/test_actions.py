@@ -1,9 +1,13 @@
+import asyncio
 import pytest
 from uuid import UUID
 from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 from app.modules.agent.actions import commit_action, ActionError
 from app.modules.agent.models import AgentActionLog
 from app.modules.expenses.models import Expense
+from app.core.config import settings
 from pydantic import ValidationError
 
 
@@ -69,3 +73,43 @@ async def test_idempotent_same_key_commits_once(db, user_id):
     assert await _expense_count(db, user_id) == before + 1
     assert b.get("idempotent_replay") is True
     assert a["created"]["id"] == b["created"]["id"]
+
+
+@pytest.mark.asyncio
+async def test_happy_path_one_expense_one_audit_atomic(db, user_id):
+    before = await _expense_count(db, user_id)
+    r = await commit_action(db, user_id, "create_expense",
+                            {"name": "Atomic", "amount": 11}, "idem-atomic-1")
+    assert r["status"] == "committed"
+    assert await _expense_count(db, user_id) == before + 1
+    logs = (await db.execute(select(AgentActionLog).where(
+        AgentActionLog.idempotency_key == "idem-atomic-1"))).scalars().all()
+    assert len(logs) == 1
+    exp = (await db.execute(select(Expense).where(
+        Expense.id == logs[0].created_entity_id))).scalar_one()
+    assert float(exp.amount) == 11.0
+
+
+@pytest.mark.asyncio
+async def test_concurrent_same_key_creates_one_expense(db, user_id):
+    """Two concurrent commits with the same key -> exactly one expense + one audit; the loser
+    rolls back (no orphan) and returns the winner's result."""
+    key = "idem-race-1"
+    before = await _expense_count(db, user_id)
+
+    engine = create_async_engine(str(settings.DATABASE_URL), poolclass=NullPool)
+    Session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with Session() as s1, Session() as s2:
+        results = await asyncio.gather(
+            commit_action(s1, user_id, "create_expense", {"name": "Race", "amount": 5}, key),
+            commit_action(s2, user_id, "create_expense", {"name": "Race", "amount": 5}, key),
+            return_exceptions=True,
+        )
+    await engine.dispose()
+
+    assert all(not isinstance(r, Exception) for r in results), results
+    assert results[0]["created"]["id"] == results[1]["created"]["id"]
+    logs = (await db.execute(select(AgentActionLog).where(
+        AgentActionLog.idempotency_key == key))).scalars().all()
+    assert len(logs) == 1
+    assert await _expense_count(db, user_id) == before + 1
