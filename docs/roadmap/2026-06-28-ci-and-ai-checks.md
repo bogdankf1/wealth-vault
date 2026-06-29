@@ -1,6 +1,6 @@
 # Roadmap — CI expansion (general + AI-specific)
 
-**Status:** Roadmap / not scheduled. Captured 2026-06-28 at the user's request. Nothing here is implemented.
+**Status:** Partially implemented. Captured 2026-06-28. **Done:** A1 frontend gate, A2 backend lint (`checks.yml`); B1 safety/injection suite (`agent-evals`); A3 migration-consistency gate, B4 action eval-coverage check, C reseed script (this slice, 2026-06-29). **Still queued:** A4 dep/secret scanning; B2 groundedness, B3 cost/latency budgets, B5 determinism, B6 seed↔ground-truth drift; full runtime tool-coverage for B4.
 
 **Short answer:** Yes, it makes sense. Today CI is a single agent-focused workflow; the highest-value gaps are (a) basic *general* CI (the app's non-AI code has no gate at all) and (b) a few *AI-specific* gates that extend the existing eval harness, especially around safety and drift.
 
