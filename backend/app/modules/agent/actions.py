@@ -17,6 +17,13 @@ from app.modules.agent.models import AgentActionLog
 from app.modules.expenses import service as expense_service
 from app.modules.expenses.models import ExpenseFrequency
 from app.modules.expenses.schemas import ExpenseCreate
+from app.modules.subscriptions import service as subscription_service
+from app.modules.subscriptions.schemas import SubscriptionCreate
+from app.modules.subscriptions.models import SubscriptionFrequency
+from app.modules.goals import service as goal_service
+from app.modules.goals.schemas import GoalCreate
+from app.modules.income import service as income_service
+from app.modules.income.schemas import IncomeTransactionCreate
 
 
 class ActionError(Exception):
@@ -44,9 +51,71 @@ async def _commit_create_expense(db: AsyncSession, user_id: UUID, args: CreateEx
             "date": expense.date.date().isoformat() if expense.date else None}
 
 
+class CreateIncomeArgs(BaseModel):
+    amount: Decimal = Field(..., gt=0)
+    category: Optional[str] = Field(None, max_length=50)
+    date: Optional[date_cls] = None
+
+
+async def _commit_create_income(db: AsyncSession, user_id: UUID, args: CreateIncomeArgs) -> dict:
+    when = datetime.combine(args.date or date_cls.today(), datetime.min.time())
+    txn = await income_service.create_income_transaction(
+        db, user_id,
+        IncomeTransactionCreate(amount=args.amount, currency="USD", date=when,
+                                category=args.category),
+        commit=False,
+    )
+    return {"entity_type": "income", "id": str(txn.id), "amount": float(txn.amount),
+            "category": txn.category, "date": txn.date.date().isoformat() if txn.date else None}
+
+
+class CreateSubscriptionArgs(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    amount: Decimal = Field(..., ge=0)
+    frequency: Optional[str] = Field(None, max_length=20)
+    category: Optional[str] = Field(None, max_length=50)
+
+
+async def _commit_create_subscription(db: AsyncSession, user_id: UUID,
+                                      args: CreateSubscriptionArgs) -> dict:
+    try:
+        freq = SubscriptionFrequency(args.frequency) if args.frequency else SubscriptionFrequency.MONTHLY
+    except ValueError:
+        freq = SubscriptionFrequency.MONTHLY
+    sub = await subscription_service.create_subscription(
+        db, user_id,
+        SubscriptionCreate(name=args.name, amount=args.amount, currency="USD",
+                           frequency=freq, start_date=datetime.utcnow(), category=args.category),
+        commit=False,
+    )
+    return {"entity_type": "subscription", "id": str(sub.id), "name": sub.name,
+            "amount": float(sub.amount), "frequency": sub.frequency.value
+            if hasattr(sub.frequency, "value") else str(sub.frequency)}
+
+
+class CreateGoalArgs(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    target_amount: Decimal = Field(..., gt=0)
+    category: Optional[str] = Field(None, max_length=50)
+
+
+async def _commit_create_goal(db: AsyncSession, user_id: UUID, args: CreateGoalArgs) -> dict:
+    goal = await goal_service.create_goal(
+        db, user_id,
+        GoalCreate(name=args.name, target_amount=args.target_amount,
+                   currency="USD", start_date=datetime.utcnow(), category=args.category),
+        commit=False,
+    )
+    return {"entity_type": "goal", "id": str(goal.id), "name": goal.name,
+            "target_amount": float(goal.target_amount)}
+
+
 # Whitelist: action_type -> (args model, committer). The agent can ONLY do what's listed here.
 ACTION_REGISTRY = {
     "create_expense": (CreateExpenseArgs, _commit_create_expense),
+    "create_income": (CreateIncomeArgs, _commit_create_income),
+    "create_subscription": (CreateSubscriptionArgs, _commit_create_subscription),
+    "create_goal": (CreateGoalArgs, _commit_create_goal),
 }
 
 

@@ -14,6 +14,7 @@ from app.modules.income.schemas import (
     MonthlyIncomeHistory,
     IncomeHistoryResponse,
     IncomeDepositResponse,
+    IncomeTransactionCreate,
 )
 from app.services.currency_service import CurrencyService
 from app.modules.savings.models import SavingsAccount
@@ -238,6 +239,34 @@ async def get_income_history(
         overall_average=overall_average,
         currency=display_currency
     )
+
+
+async def create_income_transaction(
+    db: AsyncSession,
+    user_id: UUID,
+    data: IncomeTransactionCreate,
+    commit: bool = True,
+) -> IncomeTransaction:
+    """Thin create for a single income transaction (no auto-deposit). Mirrors the field-setting
+    of create_income_with_auto_deposit. commit=False -> flush only, for atomic callers."""
+    txn = IncomeTransaction(
+        user_id=user_id,
+        source_id=data.source_id,
+        amount=data.amount,
+        currency=data.currency,
+        date=data.date,
+        description=data.description,
+        category=data.category,
+        notes=data.notes,
+        status=IncomeTransactionStatus.RECEIVED,
+    )
+    db.add(txn)
+    if commit:
+        await db.commit()
+    else:
+        await db.flush()
+    await db.refresh(txn)
+    return txn
 
 
 class IncomeDepositError(Exception):

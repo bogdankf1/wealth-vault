@@ -134,7 +134,8 @@ def calculate_projected_completion_date(
 async def create_goal(
     db: AsyncSession,
     user_id: UUID,
-    goal_data: GoalCreate
+    goal_data: GoalCreate,
+    commit: bool = True,
 ) -> Goal:
     """Create a new goal"""
     # Calculate progress percentage
@@ -155,7 +156,10 @@ async def create_goal(
         **goal_data.model_dump()
     )
     db.add(goal)
-    await db.commit()
+    if commit:
+        await db.commit()
+    else:
+        await db.flush()
     await db.refresh(goal)
     return goal
 
