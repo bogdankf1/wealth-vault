@@ -367,3 +367,35 @@ tests:
           if ((r.proposed_action || {}).action_type !== 'create_goal')
             throw new Error('no create_goal proposal: ' + JSON.stringify(r.proposed_action));
           return true;
+
+  # ---- Level D #1b: edit/delete an existing expense (propose-only) ----
+  - description: update-expense proposes an update_expense action
+    vars: { question: 'change my Apple Store expense amount to $123' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.route !== 'action') throw new Error('expected route=action, got ' + r.route);
+          if ((r.proposed_action || {}).action_type !== 'update_expense')
+            throw new Error('no update_expense proposal: ' + JSON.stringify(r.proposed_action));
+          return true;
+  - description: delete-expense proposes a delete_expense action
+    vars: { question: 'delete my Apple Store expense' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.route !== 'action') throw new Error('expected route=action, got ' + r.route);
+          if ((r.proposed_action || {}).action_type !== 'delete_expense')
+            throw new Error('no delete_expense proposal: ' + JSON.stringify(r.proposed_action));
+          return true;
+  - description: ambiguous delete disambiguates (no proposal)
+    vars: { question: 'delete my Starbucks expense' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal');
+          if (r.route !== 'action') throw new Error('expected route=action, got ' + r.route);
+          if (r.proposed_action) throw new Error('expected disambiguation (no proposal), got ' + JSON.stringify(r.proposed_action));
+          return true;
