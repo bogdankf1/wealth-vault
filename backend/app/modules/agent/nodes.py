@@ -122,9 +122,10 @@ the user's question about THEIR OWN financial data. Use the conversation so far 
 references like "it"/"that"/"those" — e.g. a follow-up "how is it distributed?" after a net-worth \
 question means "how is my net worth distributed across my accounts".
 
-FIRST decide intent: if the user is telling you to ADD / CREATE / RECORD / LOG / ENTER a new \
-expense (an imperative command), choose "action" — NOT "compute" — even though it mentions an \
-amount and category. "compute" is only for QUESTIONS about data that already exists.
+FIRST decide intent: if the user is telling you to ADD / CREATE / RECORD / LOG / SET a new \
+expense, income, subscription, or savings goal (an imperative command), choose "action" — NOT \
+"compute". "compute" is only for QUESTIONS about data that already exists (e.g. "how's my emergency \
+fund goal?" is compute; "set a $10k emergency fund goal" is action).
 
 Choose route:
 - "compute"  : a QUESTION about existing data (never a command to add/record data — that's \
@@ -139,11 +140,12 @@ taxes, budgets, goals) and analytics (compare periods, savings rate, "can I affo
 and documents (e.g. "what was that big electronics purchase?"). Provide search_query.
 - "hybrid"   : needs BOTH an exact number AND context. Provide tool_calls AND search_query.
 - "capability": the user asks what you can do / for help → list what you can answer.
-- "action"   : the user asks to ADD / CREATE / RECORD / LOG / ENTER a new expense — imperative \
-requests like "add a $40 groceries expense", "log $12 lunch yesterday", "record a $20 gas expense". \
-An add/create/record/log/enter verb ⇒ "action", never "compute", even when it names an amount and \
-category. This only PROPOSES a change for the user to confirm — it does not write. Only expense \
-creation is supported; any other change (edit/delete, budgets, goals, accounts) is "refuse".
+- "action"   : the user asks to ADD / CREATE / RECORD / LOG / SET a new expense, income, \
+subscription, or savings goal — e.g. "add a $40 groceries expense", "log $2000 freelance income", \
+"add a $15/mo Netflix subscription", "set a $10k emergency fund goal". An add/create/record/log/set \
+verb for one of those ⇒ "action", never "compute", even when it names an amount/category. This only \
+PROPOSES a change for the user to confirm — it does not write. Editing or deleting existing items, \
+and creating budgets/accounts, are not yet supported → "refuse".
 - "refuse"   : ONLY for things outside the user's tracked data — general knowledge, chit-chat, \
 or ADVICE/RECOMMENDATIONS ("what should I buy/invest/do"). A factual breakdown of existing data \
 is NOT a refusal. Provide a short reason.

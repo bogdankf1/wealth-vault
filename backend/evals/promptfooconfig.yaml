@@ -332,3 +332,38 @@ tests:
           if (!pa || pa.action_type !== 'create_expense') throw new Error('no create_expense proposal');
           if (Number(pa.args.amount) !== 40) throw new Error('wrong amount: ' + JSON.stringify(pa.args));
           return true;
+
+  # ---- Level D #1a: income / subscription / goal proposals (propose-only, no write) ----
+  - description: add-income proposes a create_income action (not refused)
+    vars: { question: 'log $2000 of freelance income' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (r.route !== 'action') throw new Error('expected route=action, got ' + r.route);
+          if ((r.proposed_action || {}).action_type !== 'create_income')
+            throw new Error('no create_income proposal: ' + JSON.stringify(r.proposed_action));
+          return true;
+  - description: add-subscription proposes a create_subscription action (not refused)
+    vars: { question: 'add a $15 monthly Netflix subscription' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (r.route !== 'action') throw new Error('expected route=action, got ' + r.route);
+          if ((r.proposed_action || {}).action_type !== 'create_subscription')
+            throw new Error('no create_subscription proposal: ' + JSON.stringify(r.proposed_action));
+          return true;
+  - description: add-goal proposes a create_goal action (not refused)
+    vars: { question: 'set a $10,000 emergency fund goal' }
+    assert:
+      - type: javascript
+        value: |
+          const r = (typeof output === 'string') ? JSON.parse(output) : output;
+          if (r.refused) throw new Error('unexpected refusal, route=' + r.route);
+          if (r.route !== 'action') throw new Error('expected route=action, got ' + r.route);
+          if ((r.proposed_action || {}).action_type !== 'create_goal')
+            throw new Error('no create_goal proposal: ' + JSON.stringify(r.proposed_action));
+          return true;
