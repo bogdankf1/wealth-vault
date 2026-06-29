@@ -241,7 +241,9 @@ function ConfirmExpenseCard({ action }: { action: NonNullable<AgentResult['propo
         body: JSON.stringify({
           action_type: action.action_type,
           args: a,
-          idempotency_key: crypto.randomUUID(),
+          // Use the key bound to this proposal so re-clicking Confirm after an error dedupes
+          // (the server is idempotent on it) instead of creating a duplicate expense.
+          idempotency_key: action.idempotency_key,
         }),
       });
       if (!res.ok) throw new Error(`(${res.status})`);
