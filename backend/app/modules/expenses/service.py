@@ -420,7 +420,8 @@ async def update_expense(
     db: AsyncSession,
     user_id: UUID,
     expense_id: UUID,
-    expense_data: ExpenseUpdate
+    expense_data: ExpenseUpdate,
+    commit: bool = True,
 ) -> Optional[Expense]:
     """Update an expense"""
     expense = await get_expense(db, user_id, expense_id)
@@ -445,29 +446,29 @@ async def update_expense(
             expense.amount, expense.frequency
         )
 
+    if not commit:
+        # Caller owns the transaction (agent action layer: atomic entity+audit). Flush only;
+        # skip the payment backfill and the budget-tracking event.
+        await db.flush()
+        await db.refresh(expense)
+        return expense
+
     await db.commit()
     await db.refresh(expense)
 
     # Check if auto_pay is now enabled
     is_auto_pay_enabled = expense.auto_pay and expense.payment_account_id
 
-    # If sync_historical is True and auto_pay is enabled, backfill all payments
     if sync_historical and is_auto_pay_enabled:
         await backfill_expense_payments(db, user_id, expense, skip_existing=False)
-    # If auto_pay was just enabled (without sync_historical), backfill missing payments
     elif is_auto_pay_enabled and not was_auto_pay_enabled:
         await backfill_expense_payments(db, user_id, expense, skip_existing=True)
 
-    # Dispatch expense updated event for budget tracking (if amount or category changed)
     if 'amount' in update_data or 'category' in update_data:
         await event_dispatcher.dispatch(
             ExpenseEvents.UPDATED,
-            user_id=user_id,
-            expense_id=str(expense.id),
-            category=expense.category,
-            amount=float(expense.amount),
-            currency=expense.currency,
-            name=expense.name,
+            user_id=user_id, expense_id=str(expense.id), category=expense.category,
+            amount=float(expense.amount), currency=expense.currency, name=expense.name,
         )
 
     return expense
@@ -476,7 +477,8 @@ async def update_expense(
 async def delete_expense(
     db: AsyncSession,
     user_id: UUID,
-    expense_id: UUID
+    expense_id: UUID,
+    commit: bool = True,
 ) -> bool:
     """Delete an expense"""
     expense = await get_expense(db, user_id, expense_id)
@@ -484,7 +486,10 @@ async def delete_expense(
         return False
 
     await db.delete(expense)
-    await db.commit()
+    if commit:
+        await db.commit()
+    else:
+        await db.flush()
     return True
 
 
