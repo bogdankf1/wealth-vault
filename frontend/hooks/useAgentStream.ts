@@ -32,8 +32,9 @@ export interface AgentResult {
   total_ms?: number | null;
   proposed_action?: {
     action_type: string;
-    args: { name: string; amount: number; category?: string | null; date?: string | null };
+    args: Record<string, unknown>;
     idempotency_key: string;
+    summary: string;
   } | null;
 }
 
