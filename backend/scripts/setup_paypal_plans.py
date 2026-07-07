@@ -5,7 +5,7 @@ This script creates a Product and Subscription Plans in PayPal.
 Run this once to set up your PayPal billing configuration.
 
 Usage:
-    python setup_paypal_plans.py
+    python scripts/setup_paypal_plans.py
 """
 
 import os

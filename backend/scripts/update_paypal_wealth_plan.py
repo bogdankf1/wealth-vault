@@ -5,7 +5,7 @@ Creates a new Wealth plan at $19.99/month (since PayPal plans cannot be updated)
 
 Usage:
     cd backend
-    python update_paypal_wealth_plan.py
+    python scripts/update_paypal_wealth_plan.py
 """
 
 import os
