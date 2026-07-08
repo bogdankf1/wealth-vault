@@ -8,6 +8,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature, check_usage_limit
 from app.core.exceptions import TierLimitException
 from app.models.user import User
@@ -139,12 +140,9 @@ async def get_account(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a single savings account by ID"""
-    account = await service.get_account(db, current_user.id, account_id)
-    if not account:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Savings account not found"
-        )
+    account = await get_owned_or_404(
+        service.get_account, db, current_user.id, account_id, detail="Savings account not found"
+    )
 
     # Convert to display currency
     await convert_account_to_display_currency(db, current_user.id, account)

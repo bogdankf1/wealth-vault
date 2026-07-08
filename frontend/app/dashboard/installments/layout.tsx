@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { InstallmentsActionsContext } from './context';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useUIVisibility } from '@/hooks/use-ui-visibility';
 
 export default function InstallmentsLayout({
   children,

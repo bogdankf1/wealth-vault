@@ -10,6 +10,7 @@ from uuid import UUID
 from sqlalchemy import select
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.savings.transaction_service import InsufficientFundsError
@@ -189,12 +190,9 @@ async def get_subscription(
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific subscription"""
-    subscription = await service.get_subscription(db, current_user.id, subscription_id)
-    if not subscription:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Subscription not found"
-        )
+    subscription = await get_owned_or_404(
+        service.get_subscription, db, current_user.id, subscription_id, detail="Subscription not found"
+    )
 
     # Convert to display currency
     await convert_subscription_to_display_currency(db, current_user.id, subscription)
@@ -311,12 +309,9 @@ async def pause_subscription_endpoint(
     current_user: User = Depends(get_current_user)
 ):
     """Pause a subscription, optionally with a resume date"""
-    subscription = await service.get_subscription(db, current_user.id, subscription_id)
-    if not subscription:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Subscription not found"
-        )
+    subscription = await get_owned_or_404(
+        service.get_subscription, db, current_user.id, subscription_id, detail="Subscription not found"
+    )
 
     if subscription.status == "paused":
         raise HTTPException(
@@ -338,12 +333,9 @@ async def resume_subscription_endpoint(
     current_user: User = Depends(get_current_user)
 ):
     """Resume a paused subscription"""
-    subscription = await service.get_subscription(db, current_user.id, subscription_id)
-    if not subscription:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Subscription not found"
-        )
+    subscription = await get_owned_or_404(
+        service.get_subscription, db, current_user.id, subscription_id, detail="Subscription not found"
+    )
 
     if subscription.status != "paused":
         raise HTTPException(
@@ -364,12 +356,9 @@ async def cancel_subscription_endpoint(
     current_user: User = Depends(get_current_user)
 ):
     """Cancel a subscription"""
-    subscription = await service.get_subscription(db, current_user.id, subscription_id)
-    if not subscription:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Subscription not found"
-        )
+    subscription = await get_owned_or_404(
+        service.get_subscription, db, current_user.id, subscription_id, detail="Subscription not found"
+    )
 
     if subscription.status == "cancelled":
         raise HTTPException(
@@ -393,12 +382,9 @@ async def get_subscription_payments_endpoint(
 ):
     """Get payment history for a subscription"""
     # Verify subscription exists and belongs to user
-    subscription = await service.get_subscription(db, current_user.id, subscription_id)
-    if not subscription:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Subscription not found"
-        )
+    subscription = await get_owned_or_404(
+        service.get_subscription, db, current_user.id, subscription_id, detail="Subscription not found"
+    )
 
     skip = (page - 1) * page_size
     payments, total = await get_subscription_payments(
@@ -439,12 +425,9 @@ async def record_subscription_payment(
     current_user: User = Depends(get_current_user)
 ):
     """Manually record a subscription payment"""
-    subscription = await service.get_subscription(db, current_user.id, subscription_id)
-    if not subscription:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Subscription not found"
-        )
+    subscription = await get_owned_or_404(
+        service.get_subscription, db, current_user.id, subscription_id, detail="Subscription not found"
+    )
 
     payment_date = payment_data.payment_date if payment_data and payment_data.payment_date else None
     notes = payment_data.notes if payment_data else None

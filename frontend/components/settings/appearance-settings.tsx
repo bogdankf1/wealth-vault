@@ -13,7 +13,7 @@ import { CurrencySelect } from '@/components/currency';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { localeNames, type Locale } from '@/i18n';
 import { useTranslations } from 'next-intl';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useUIVisibility } from '@/hooks/use-ui-visibility';
 
 export function AppearanceSettings() {
   const t = useTranslations('settings.appearance');

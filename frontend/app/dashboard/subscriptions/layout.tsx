@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import type { ModuleTab } from '@/types/module-layout';
 import { SubscriptionsActionsContext } from './context';
 import { useTranslations } from 'next-intl';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useUIVisibility } from '@/hooks/use-ui-visibility';
 
 export default function SubscriptionsLayout({
   children,

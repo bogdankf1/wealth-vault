@@ -10,6 +10,7 @@ from uuid import UUID
 from sqlalchemy import select
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.savings.transaction_service import InsufficientFundsError
@@ -189,12 +190,9 @@ async def get_installment(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a single installment"""
-    installment = await service.get_installment(db, current_user.id, installment_id)
-    if not installment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Installment not found"
-        )
+    installment = await get_owned_or_404(
+        service.get_installment, db, current_user.id, installment_id, detail="Installment not found"
+    )
 
     # Convert to display currency
     await convert_installment_to_display_currency(db, current_user.id, installment)
@@ -316,12 +314,9 @@ async def complete_installment_endpoint(
     db: AsyncSession = Depends(get_db)
 ):
     """Mark an installment as completed (all payments made)"""
-    installment = await service.get_installment(db, current_user.id, installment_id)
-    if not installment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Installment not found"
-        )
+    installment = await get_owned_or_404(
+        service.get_installment, db, current_user.id, installment_id, detail="Installment not found"
+    )
 
     if getattr(installment, 'status', 'active') == "completed":
         raise HTTPException(
@@ -342,12 +337,9 @@ async def default_installment_endpoint(
     db: AsyncSession = Depends(get_db)
 ):
     """Mark an installment as defaulted"""
-    installment = await service.get_installment(db, current_user.id, installment_id)
-    if not installment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Installment not found"
-        )
+    installment = await get_owned_or_404(
+        service.get_installment, db, current_user.id, installment_id, detail="Installment not found"
+    )
 
     if getattr(installment, 'status', 'active') == "defaulted":
         raise HTTPException(
@@ -368,12 +360,9 @@ async def reactivate_installment_endpoint(
     db: AsyncSession = Depends(get_db)
 ):
     """Reactivate a completed or defaulted installment"""
-    installment = await service.get_installment(db, current_user.id, installment_id)
-    if not installment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Installment not found"
-        )
+    installment = await get_owned_or_404(
+        service.get_installment, db, current_user.id, installment_id, detail="Installment not found"
+    )
 
     if getattr(installment, 'status', 'active') == "active":
         raise HTTPException(
@@ -396,12 +385,9 @@ async def get_installment_payments_endpoint(
 ):
     """Get payment history for an installment"""
     # Verify installment exists and belongs to user
-    installment = await service.get_installment(db, current_user.id, installment_id)
-    if not installment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Installment not found"
-        )
+    installment = await get_owned_or_404(
+        service.get_installment, db, current_user.id, installment_id, detail="Installment not found"
+    )
 
     skip = (page - 1) * page_size
     payments, total = await get_installment_payments(
@@ -447,12 +433,9 @@ async def record_installment_payment(
     db: AsyncSession = Depends(get_db)
 ):
     """Manually record an installment payment"""
-    installment = await service.get_installment(db, current_user.id, installment_id)
-    if not installment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Installment not found"
-        )
+    installment = await get_owned_or_404(
+        service.get_installment, db, current_user.id, installment_id, detail="Installment not found"
+    )
 
     if getattr(installment, 'status', 'active') == "completed":
         raise HTTPException(

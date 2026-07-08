@@ -7,6 +7,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.goals import service
@@ -113,12 +114,9 @@ async def get_goal(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a single goal with linked accounts"""
-    goal = await service.get_goal(db, current_user.id, goal_id)
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Goal not found"
-        )
+    goal = await get_owned_or_404(
+        service.get_goal, db, current_user.id, goal_id, detail="Goal not found"
+    )
 
     # Convert to display currency
     await convert_goal_to_display_currency(db, current_user.id, goal)
@@ -230,12 +228,9 @@ async def get_linked_accounts(
 ):
     """Get all linked accounts for a goal"""
     # Verify goal exists
-    goal = await service.get_goal(db, current_user.id, goal_id, include_links=False)
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Goal not found"
-        )
+    goal = await get_owned_or_404(
+        service.get_goal, db, current_user.id, goal_id, include_links=False, detail="Goal not found"
+    )
 
     links, _ = await service.get_goal_with_linked_accounts_total(db, current_user.id, goal)
     return links
@@ -318,12 +313,9 @@ async def record_manual_progress(
 ):
     """Manually record progress for a goal (for goals without auto-tracking)"""
     # Verify goal exists
-    goal = await service.get_goal(db, current_user.id, goal_id, include_links=False)
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Goal not found"
-        )
+    goal = await get_owned_or_404(
+        service.get_goal, db, current_user.id, goal_id, include_links=False, detail="Goal not found"
+    )
 
     # Update the goal's current amount if not auto-tracking
     if not goal.auto_track_progress:
@@ -355,12 +347,9 @@ async def get_progress_history(
 ):
     """Get progress history for a goal"""
     # Verify goal exists
-    goal = await service.get_goal(db, current_user.id, goal_id, include_links=False)
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Goal not found"
-        )
+    goal = await get_owned_or_404(
+        service.get_goal, db, current_user.id, goal_id, include_links=False, detail="Goal not found"
+    )
 
     history, total = await service.get_progress_history(
         db, current_user.id, goal_id,

@@ -7,6 +7,7 @@ from typing import Optional, List
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.taxes import service
@@ -97,9 +98,9 @@ async def get_tax(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific tax"""
-    tax = await service.get_tax(db, tax_id, current_user.id)
-    if not tax:
-        raise HTTPException(status_code=404, detail="Tax not found")
+    tax = await get_owned_or_404(
+        service.get_tax, db, tax_id, current_user.id, detail="Tax not found"
+    )
 
     # Convert to display currency and calculate amount
     await service.convert_tax_to_display_currency(db, current_user.id, tax)
@@ -328,9 +329,9 @@ async def get_tax_payment(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific tax payment"""
-    payment = await service.get_tax_payment(db, payment_id, current_user.id)
-    if not payment:
-        raise HTTPException(status_code=404, detail="Tax payment not found")
+    payment = await get_owned_or_404(
+        service.get_tax_payment, db, payment_id, current_user.id, detail="Tax payment not found"
+    )
     return payment
 
 
@@ -359,9 +360,9 @@ async def list_payments_for_tax(
 ):
     """Get all payments for a specific tax"""
     # Verify tax exists and belongs to user
-    tax = await service.get_tax(db, tax_id, current_user.id)
-    if not tax:
-        raise HTTPException(status_code=404, detail="Tax not found")
+    tax = await get_owned_or_404(
+        service.get_tax, db, tax_id, current_user.id, detail="Tax not found"
+    )
 
     skip = (page - 1) * page_size
     payments, total = await service.get_tax_payments(

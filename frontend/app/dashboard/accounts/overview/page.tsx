@@ -45,8 +45,8 @@ import {
   type SavingsAccount,
 } from '@/lib/api/savingsApi';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { useColumnVisibility, type ColumnConfig } from '@/hooks/use-column-visibility';
 import { toast } from 'sonner';
 
 export default function SavingsPage() {

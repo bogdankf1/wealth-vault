@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, Filter, Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Archive, ArchiveRestore, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -42,10 +42,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
 import { CurrencyDisplay } from '@/components/currency';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { ListControlsPopover } from '@/components/ui/list-controls-popover';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { TaxesActionsContext } from '../context';
 
 export default function TaxesArchivePage() {
@@ -61,7 +61,7 @@ export default function TaxesArchivePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedTaxIds, setSelectedTaxIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
@@ -118,18 +118,14 @@ export default function TaxesArchivePage() {
     try {
       await updateTax({ id, data: { is_active: true } }).unwrap();
       toast.success(tArchive('unarchiveSuccess'));
-      setSelectedTaxIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error(tArchive('unarchiveError'));
     }
   };
 
   const handleBatchUnarchive = useCallback(async () => {
-    const idsToUnarchive = Array.from(selectedTaxIds);
+    const idsToUnarchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -149,8 +145,8 @@ export default function TaxesArchivePage() {
       toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
-    setSelectedTaxIds(new Set());
-  }, [selectedTaxIds, updateTax, tArchive]);
+    selection.clear();
+  }, [selection, updateTax, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingTaxId(id);
@@ -165,33 +161,9 @@ export default function TaxesArchivePage() {
       toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingTaxId(null);
-      setSelectedTaxIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(deletingTaxId);
-        return newSet;
-      });
+      selection.deselect(deletingTaxId);
     } catch (error) {
       toast.error(tArchive('deleteError'));
-    }
-  };
-
-  const handleToggleSelect = (taxId: string) => {
-    setSelectedTaxIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(taxId)) {
-        newSet.delete(taxId);
-      } else {
-        newSet.add(taxId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedTaxIds.size === filteredTaxes.length && filteredTaxes.length > 0) {
-      setSelectedTaxIds(new Set());
-    } else {
-      setSelectedTaxIds(new Set(filteredTaxes.map((tax) => tax.id)));
     }
   };
 
@@ -200,11 +172,11 @@ export default function TaxesArchivePage() {
   };
 
   const confirmBatchDelete = async () => {
-    if (selectedTaxIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteTaxes({
-        ids: Array.from(selectedTaxIds),
+        ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -214,9 +186,9 @@ export default function TaxesArchivePage() {
       }
 
       setBatchDeleteDialogOpen(false);
-      setSelectedTaxIds(new Set());
+      selection.clear();
     } catch (error) {
-      toast.error(tArchive('batchDeleteError', { count: selectedTaxIds.size }));
+      toast.error(tArchive('batchDeleteError', { count: selection.size }));
     }
   };
 
@@ -224,7 +196,7 @@ export default function TaxesArchivePage() {
   React.useEffect(() => {
     setActions(
       <>
-        {selectedTaxIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             <Button
               onClick={handleBatchUnarchive}
@@ -233,7 +205,7 @@ export default function TaxesArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedTaxIds.size })}</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selection.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -242,7 +214,7 @@ export default function TaxesArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('deleteSelected', { count: selectedTaxIds.size })}</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -250,7 +222,7 @@ export default function TaxesArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedTaxIds.size, setActions, handleBatchUnarchive, tArchive]);
+  }, [selection.size, setActions, handleBatchUnarchive, tArchive]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -289,19 +261,9 @@ export default function TaxesArchivePage() {
           </div>
 
           {/* Filters Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
-                <Filter className="h-4 w-4" />
-                {activeFilterCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="end">
-              {/* Filter section */}
+          <ListControlsPopover
+            activeFilterCount={activeFilterCount}
+            filterSlot={
               <div className="p-2 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
 
@@ -326,68 +288,14 @@ export default function TaxesArchivePage() {
                   </Select>
                 </div>
               </div>
-
-              <Separator />
-
-              {/* Sort section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
-                <div className="flex items-center gap-2">
-                  <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
-                    <SelectTrigger className="h-8 flex-1 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">{tCommon('common.name')}</SelectItem>
-                      <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
-                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="h-8 gap-1.5 flex-shrink-0"
-                  >
-                    {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
-                    <span className="text-sm">
-                      {sortField === 'name'
-                        ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
-                        : sortField === 'amount'
-                          ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
-                          : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
-                      }
-                    </span>
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* View section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
-                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '32px' }}>
-                  <Button
-                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('card')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+            }
+            sortField={sortField}
+            setSortField={setSortField}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+          />
         </div>
       )}
 
@@ -412,12 +320,12 @@ export default function TaxesArchivePage() {
             {filteredTaxes.length > 0 && (
               <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
-                  checked={selectedTaxIds.size === filteredTaxes.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.isAllSelected(filteredTaxes.length)}
+                  onCheckedChange={() => selection.selectAll(filteredTaxes.map((tax) => tax.id))}
                   aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedTaxIds.size === filteredTaxes.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
+                  {selection.isAllSelected(filteredTaxes.length) ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -433,8 +341,8 @@ export default function TaxesArchivePage() {
                     <div className="flex items-start gap-3 flex-1">
                       <div onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          checked={selectedTaxIds.has(tax.id)}
-                          onCheckedChange={() => handleToggleSelect(tax.id)}
+                          checked={selection.selectedIds.has(tax.id)}
+                          onCheckedChange={() => selection.toggle(tax.id)}
                           aria-label={`Select ${tax.name}`}
                           className="mt-1"
                         />
@@ -529,8 +437,8 @@ export default function TaxesArchivePage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedTaxIds.size === filteredTaxes.length && filteredTaxes.length > 0}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.isAllSelected(filteredTaxes.length) && filteredTaxes.length > 0}
+                        onCheckedChange={() => selection.selectAll(filteredTaxes.map((tax) => tax.id))}
                         aria-label={tCommon('common.selectAll')}
                       />
                     </TableHead>
@@ -552,8 +460,8 @@ export default function TaxesArchivePage() {
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          checked={selectedTaxIds.has(tax.id)}
-                          onCheckedChange={() => handleToggleSelect(tax.id)}
+                          checked={selection.selectedIds.has(tax.id)}
+                          onCheckedChange={() => selection.toggle(tax.id)}
                           aria-label={`Select ${tax.name}`}
                         />
                       </TableCell>
@@ -645,7 +553,7 @@ export default function TaxesArchivePage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedTaxIds.size}
+        count={selection.size}
         itemName={tArchive('tax')}
         isDeleting={isBatchDeleting}
       />

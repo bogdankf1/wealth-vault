@@ -8,6 +8,7 @@ from uuid import UUID
 from datetime import datetime
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user
 from app.models.user import User
 from app.modules.budgets.models import BudgetPeriod
@@ -129,16 +130,13 @@ async def get_budget(
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific budget with progress details."""
-    budget_with_progress = await service.get_budget_with_progress(
+    budget_with_progress = await get_owned_or_404(
+        service.get_budget_with_progress,
         db,
         budget_id,
-        current_user.id
+        current_user.id,
+        detail="Budget not found",
     )
-    if not budget_with_progress:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Budget not found"
-        )
     return budget_with_progress
 
 

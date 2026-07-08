@@ -39,7 +39,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { PortfolioActionsContext } from '../context';
 
 export default function PortfolioArchivePage() {
@@ -68,7 +69,7 @@ export default function PortfolioArchivePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
@@ -125,18 +126,14 @@ export default function PortfolioArchivePage() {
     try {
       await updateAsset({ id, data: { is_active: true } }).unwrap();
       toast.success(tArchive('unarchiveSuccess'));
-      setSelectedAssetIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error(tArchive('unarchiveError'));
     }
   };
 
   const handleBatchUnarchive = useCallback(async () => {
-    const idsToUnarchive = Array.from(selectedAssetIds);
+    const idsToUnarchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -156,8 +153,8 @@ export default function PortfolioArchivePage() {
       toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
-    setSelectedAssetIds(new Set());
-  }, [selectedAssetIds, updateAsset, tArchive]);
+    selection.clear();
+  }, [selection, updateAsset, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingAssetId(id);
@@ -172,33 +169,9 @@ export default function PortfolioArchivePage() {
       toast.success(tOverview('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingAssetId(null);
-      setSelectedAssetIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(deletingAssetId);
-        return newSet;
-      });
+      selection.deselect(deletingAssetId);
     } catch (error) {
       toast.error(tOverview('deleteError'));
-    }
-  };
-
-  const handleToggleSelect = (assetId: string) => {
-    setSelectedAssetIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(assetId)) {
-        newSet.delete(assetId);
-      } else {
-        newSet.add(assetId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedAssetIds.size === filteredAssets.length && filteredAssets.length > 0) {
-      setSelectedAssetIds(new Set());
-    } else {
-      setSelectedAssetIds(new Set(filteredAssets.map((asset) => asset.id)));
     }
   };
 
@@ -207,11 +180,11 @@ export default function PortfolioArchivePage() {
   };
 
   const confirmBatchDelete = async () => {
-    if (selectedAssetIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteAssets({
-        ids: Array.from(selectedAssetIds),
+        ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -221,9 +194,9 @@ export default function PortfolioArchivePage() {
       }
 
       setBatchDeleteDialogOpen(false);
-      setSelectedAssetIds(new Set());
+      selection.clear();
     } catch (error) {
-      toast.error(tOverview('batchDeleteError', { count: selectedAssetIds.size }));
+      toast.error(tOverview('batchDeleteError', { count: selection.size }));
     }
   };
 
@@ -237,7 +210,7 @@ export default function PortfolioArchivePage() {
   React.useEffect(() => {
     setActions(
       <>
-        {selectedAssetIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             <Button
               onClick={handleBatchUnarchive}
@@ -246,7 +219,7 @@ export default function PortfolioArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedAssetIds.size })}</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selection.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -255,7 +228,7 @@ export default function PortfolioArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">{tOverview('deleteSelected', { count: selectedAssetIds.size })}</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -263,7 +236,7 @@ export default function PortfolioArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedAssetIds.size, setActions, handleBatchUnarchive, tArchive, tOverview]);
+  }, [selection.size, setActions, handleBatchUnarchive, tArchive, tOverview]);
 
   const activeFilterCount = React.useMemo(() => {
     let count = 0;
@@ -404,12 +377,12 @@ export default function PortfolioArchivePage() {
             {filteredAssets.length > 0 && (
               <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
-                  checked={selectedAssetIds.size === filteredAssets.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.size === filteredAssets.length}
+                  onCheckedChange={() => selection.selectAll(filteredAssets.map((asset) => asset.id))}
                   aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedAssetIds.size === filteredAssets.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
+                  {selection.size === filteredAssets.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -429,8 +402,8 @@ export default function PortfolioArchivePage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <Checkbox
-                          checked={selectedAssetIds.has(asset.id)}
-                          onCheckedChange={() => handleToggleSelect(asset.id)}
+                          checked={selection.selectedIds.has(asset.id)}
+                          onCheckedChange={() => selection.toggle(asset.id)}
                           onClick={(e) => e.stopPropagation()}
                           aria-label={`Select ${asset.asset_name}`}
                           className="mt-1"
@@ -552,8 +525,8 @@ export default function PortfolioArchivePage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedAssetIds.size === filteredAssets.length && filteredAssets.length > 0}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.size === filteredAssets.length && filteredAssets.length > 0}
+                        onCheckedChange={() => selection.selectAll(filteredAssets.map((asset) => asset.id))}
                         aria-label="Select all"
                       />
                     </TableHead>
@@ -580,8 +553,8 @@ export default function PortfolioArchivePage() {
                       <TableRow key={asset.id} className="opacity-75 cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/dashboard/portfolio/${asset.id}`)}>
                         <TableCell>
                           <Checkbox
-                            checked={selectedAssetIds.has(asset.id)}
-                            onCheckedChange={() => handleToggleSelect(asset.id)}
+                            checked={selection.selectedIds.has(asset.id)}
+                            onCheckedChange={() => selection.toggle(asset.id)}
                             onClick={(e) => e.stopPropagation()}
                             aria-label={`Select ${asset.asset_name}`}
                           />
@@ -685,7 +658,7 @@ export default function PortfolioArchivePage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedAssetIds.size}
+        count={selection.size}
         itemName="portfolio asset"
         isDeleting={isBatchDeleting}
         cancelLabel={tActions('cancel')}

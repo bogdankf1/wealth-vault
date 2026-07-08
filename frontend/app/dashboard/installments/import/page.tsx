@@ -42,7 +42,7 @@ import { useCreateInstallmentMutation } from '@/lib/api/installmentsApi';
 import { useListAccountsQuery } from '@/lib/api/savingsApi';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
-import { hasFeatureAccess } from '@/lib/hooks/use-tier-check';
+import { hasFeatureAccess } from '@/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 

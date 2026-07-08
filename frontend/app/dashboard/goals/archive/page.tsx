@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, CheckCircle2, Filter, Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Archive, ArchiveRestore, Trash2, CheckCircle2, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -26,7 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -35,7 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -45,7 +43,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { ListControlsPopover } from '@/components/ui/list-controls-popover';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { GoalsActionsContext } from '../context';
 import { Progress } from '@/components/ui/progress';
 
@@ -64,7 +64,7 @@ export default function GoalsArchivePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedGoalIds, setSelectedGoalIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
@@ -121,18 +121,14 @@ export default function GoalsArchivePage() {
     try {
       await updateGoal({ id, data: { is_active: true } }).unwrap();
       toast.success(tArchive('unarchiveSuccess'));
-      setSelectedGoalIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error(tArchive('unarchiveError'));
     }
   };
 
   const handleBatchUnarchive = useCallback(async () => {
-    const idsToUnarchive = Array.from(selectedGoalIds);
+    const idsToUnarchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -152,8 +148,8 @@ export default function GoalsArchivePage() {
       toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
-    setSelectedGoalIds(new Set());
-  }, [selectedGoalIds, updateGoal, tArchive]);
+    selection.clear();
+  }, [selection, updateGoal, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingGoalId(id);
@@ -168,33 +164,9 @@ export default function GoalsArchivePage() {
       toast.success(tCommon('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingGoalId(null);
-      setSelectedGoalIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(deletingGoalId);
-        return newSet;
-      });
+      selection.deselect(deletingGoalId);
     } catch (error) {
       toast.error(tCommon('deleteError'));
-    }
-  };
-
-  const handleToggleSelect = (goalId: string) => {
-    setSelectedGoalIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(goalId)) {
-        newSet.delete(goalId);
-      } else {
-        newSet.add(goalId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedGoalIds.size === filteredGoals.length && filteredGoals.length > 0) {
-      setSelectedGoalIds(new Set());
-    } else {
-      setSelectedGoalIds(new Set(filteredGoals.map((goal) => goal.id)));
     }
   };
 
@@ -203,11 +175,11 @@ export default function GoalsArchivePage() {
   };
 
   const confirmBatchDelete = async () => {
-    if (selectedGoalIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteGoals({
-        ids: Array.from(selectedGoalIds),
+        ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -217,7 +189,7 @@ export default function GoalsArchivePage() {
       }
 
       setBatchDeleteDialogOpen(false);
-      setSelectedGoalIds(new Set());
+      selection.clear();
     } catch (error) {
       toast.error(tCommon('deleteError'));
     }
@@ -227,7 +199,7 @@ export default function GoalsArchivePage() {
   React.useEffect(() => {
     setActions(
       <>
-        {selectedGoalIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             <Button
               onClick={handleBatchUnarchive}
@@ -236,7 +208,7 @@ export default function GoalsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedGoalIds.size })}</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selection.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -245,7 +217,7 @@ export default function GoalsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('deleteSelected', { count: selectedGoalIds.size })}</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -253,7 +225,7 @@ export default function GoalsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedGoalIds.size, setActions, handleBatchUnarchive, tArchive]);
+  }, [selection.size, setActions, handleBatchUnarchive, tArchive]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -292,19 +264,9 @@ export default function GoalsArchivePage() {
           </div>
 
           {/* Filters Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
-                <Filter className="h-4 w-4" />
-                {activeFilterCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="end">
-              {/* Filter section */}
+          <ListControlsPopover
+            activeFilterCount={activeFilterCount}
+            filterSlot={
               <div className="p-2 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
 
@@ -329,68 +291,14 @@ export default function GoalsArchivePage() {
                   </Select>
                 </div>
               </div>
-
-              <Separator />
-
-              {/* Sort section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
-                <div className="flex items-center gap-2">
-                  <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
-                    <SelectTrigger className="h-8 flex-1 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">{tCommon('common.name')}</SelectItem>
-                      <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
-                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="h-8 gap-1.5 flex-shrink-0"
-                  >
-                    {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
-                    <span className="text-sm">
-                      {sortField === 'name'
-                        ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
-                        : sortField === 'amount'
-                          ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
-                          : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
-                      }
-                    </span>
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* View section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
-                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '32px' }}>
-                  <Button
-                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('card')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+            }
+            sortField={sortField}
+            setSortField={setSortField}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+          />
         </div>
       )}
 
@@ -415,12 +323,12 @@ export default function GoalsArchivePage() {
             {filteredGoals.length > 0 && (
               <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
-                  checked={selectedGoalIds.size === filteredGoals.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.isAllSelected(filteredGoals.length)}
+                  onCheckedChange={() => selection.selectAll(filteredGoals.map((goal) => goal.id))}
                   aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedGoalIds.size === filteredGoals.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
+                  {selection.isAllSelected(filteredGoals.length) ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -443,8 +351,8 @@ export default function GoalsArchivePage() {
                       <div className="flex items-start gap-3 flex-1">
                         <div onClick={(e) => e.stopPropagation()}>
                           <Checkbox
-                            checked={selectedGoalIds.has(goal.id)}
-                            onCheckedChange={() => handleToggleSelect(goal.id)}
+                            checked={selection.selectedIds.has(goal.id)}
+                            onCheckedChange={() => selection.toggle(goal.id)}
                             aria-label={`Select ${goal.name}`}
                             className="mt-1"
                           />
@@ -589,8 +497,8 @@ export default function GoalsArchivePage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedGoalIds.size === filteredGoals.length && filteredGoals.length > 0}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.isAllSelected(filteredGoals.length) && filteredGoals.length > 0}
+                        onCheckedChange={() => selection.selectAll(filteredGoals.map((goal) => goal.id))}
                         aria-label="Select all"
                       />
                     </TableHead>
@@ -621,8 +529,8 @@ export default function GoalsArchivePage() {
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
-                            checked={selectedGoalIds.has(goal.id)}
-                            onCheckedChange={() => handleToggleSelect(goal.id)}
+                            checked={selection.selectedIds.has(goal.id)}
+                            onCheckedChange={() => selection.toggle(goal.id)}
                             aria-label={`Select ${goal.name}`}
                           />
                         </TableCell>
@@ -744,7 +652,7 @@ export default function GoalsArchivePage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedGoalIds.size}
+        count={selection.size}
         itemName="goal"
         isDeleting={isBatchDeleting}
         cancelLabel={tActions('cancel')}

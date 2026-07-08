@@ -2,23 +2,34 @@
 Income service layer with currency conversion and account integration.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func, or_, case
 from typing import Optional, Tuple, List
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 import logging
 
-from app.modules.income.models import IncomeSource, IncomeTransaction, IncomeTransactionStatus
+from app.modules.income.models import IncomeSource, IncomeTransaction, IncomeTransactionStatus, IncomeFrequency
 from app.modules.income.schemas import (
     MonthlyIncomeHistory,
     IncomeHistoryResponse,
     IncomeDepositResponse,
     IncomeTransactionCreate,
+    IncomeSourceCreate,
+    IncomeSourceUpdate,
+    IncomeSourceResponse,
+    IncomeSourceBatchDelete,
+    IncomeSourceBatchDeleteResponse,
+    IncomeStatsResponse,
+    IncomeTransactionResponse,
+    IncomeTransactionListResponse,
 )
 from app.services.currency_service import CurrencyService
 from app.modules.savings.models import SavingsAccount
 from app.modules.savings.transaction_service import TransactionService
+from app.core.exceptions import TierLimitException, NotFoundException
+from app.core.permissions import check_usage_limit
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -466,3 +477,884 @@ class IncomeService:
             ).order_by(IncomeTransaction.date.desc())
         )
         return list(result.scalars().all())
+
+
+# ===========================================================================
+# Income source / transaction / stats operations
+# (moved verbatim out of the income router handlers)
+# ===========================================================================
+
+
+async def list_income_sources(db: AsyncSession, current_user: User, page: int, page_size: int, is_active: Optional[bool]):
+    # Build query
+    query = select(IncomeSource).where(
+        IncomeSource.user_id == current_user.id,
+        IncomeSource.deleted_at.is_(None)
+    )
+
+    # Apply filters
+    if is_active is not None:
+        query = query.where(IncomeSource.is_active == is_active)
+
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar_one()
+
+    # Apply pagination and ordering
+    # Sort by the actual income date (date for one-time, start_date for recurring)
+    query = query.order_by(
+        func.coalesce(IncomeSource.date, IncomeSource.start_date).desc(),
+        IncomeSource.created_at.desc()
+    )
+    query = query.offset((page - 1) * page_size).limit(page_size)
+
+    # Execute query
+    result = await db.execute(query)
+    sources = result.scalars().all()
+
+    # Convert all income sources to display currency and add monthly equivalent
+    response_items = []
+    for source in sources:
+        # Convert to display currency
+        await convert_income_to_display_currency(db, current_user.id, source)
+
+        # Build response dict with all fields
+        source_dict = {
+            "id": str(source.id),
+            "user_id": str(source.user_id),
+            "name": source.name,
+            "description": source.description,
+            "category": source.category,
+            "amount": float(source.amount) if source.amount else 0,
+            "currency": source.currency,
+            "frequency": source.frequency,
+            "is_active": source.is_active,
+            "date": source.date.isoformat() if source.date else None,
+            "start_date": source.start_date.isoformat() if source.start_date else None,
+            "end_date": source.end_date.isoformat() if source.end_date else None,
+            "created_at": source.created_at.isoformat(),
+            "updated_at": source.updated_at.isoformat(),
+            # Account integration fields
+            "target_account_id": str(source.target_account_id) if source.target_account_id else None,
+            "auto_deposit": source.auto_deposit,
+            "monthly_equivalent": float(source.calculate_monthly_amount()) if source.calculate_monthly_amount() else None,
+            "display_amount": float(source.display_amount) if hasattr(source, 'display_amount') and source.display_amount is not None else None,
+            "display_currency": source.display_currency if hasattr(source, 'display_currency') and source.display_currency is not None else None,
+            "display_monthly_equivalent": float(source.display_monthly_equivalent) if hasattr(source, 'display_monthly_equivalent') and source.display_monthly_equivalent is not None else None,
+        }
+        response_items.append(source_dict)
+
+    return {
+        "items": response_items,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
+
+
+async def create_income_source(db: AsyncSession, current_user: User, source_data: IncomeSourceCreate):
+    # Check current count
+    count_query = select(func.count()).select_from(IncomeSource).where(
+        IncomeSource.user_id == current_user.id,
+        IncomeSource.deleted_at.is_(None)
+    )
+    count_result = await db.execute(count_query)
+    current_count = count_result.scalar_one()
+
+    # Check tier limits
+    has_capacity, limit = await check_usage_limit(
+        current_user,
+        "income_tracking",
+        current_count,
+        db
+    )
+
+    if not has_capacity:
+        tier_name = current_user.tier.name if current_user.tier else "free"
+        raise TierLimitException(
+            message=f"Income source limit reached. Your {tier_name} tier allows {limit} sources.",
+            current_tier=tier_name,
+            required_tier="growth" if tier_name == "starter" else "wealth"
+        )
+
+    # Create income source
+    income_source = IncomeSource(
+        user_id=current_user.id,
+        **source_data.model_dump()
+    )
+
+    db.add(income_source)
+    await db.commit()
+    await db.refresh(income_source)
+
+    # Auto-deposit: If auto_deposit is enabled and target account is set, create deposits
+    # For recurring income, backfill all historical deposits from start_date to today
+    if income_source.auto_deposit and income_source.target_account_id:
+        try:
+            from dateutil.relativedelta import relativedelta
+
+            today = datetime.utcnow().date()
+            transaction_service = TransactionService(db)
+            deposits_created = 0
+
+            if income_source.frequency == IncomeFrequency.ONE_TIME:
+                # One-time income: create single deposit if date is today or in the past
+                income_date = income_source.date or datetime.utcnow()
+                if income_date.date() <= today:
+                    income_txn = IncomeTransaction(
+                        user_id=current_user.id,
+                        source_id=income_source.id,
+                        amount=income_source.amount,
+                        currency=income_source.currency,
+                        date=income_date,
+                        description=f"Income: {income_source.name}",
+                        category=income_source.category,
+                        status=IncomeTransactionStatus.RECEIVED,
+                    )
+                    db.add(income_txn)
+                    await db.flush()
+
+                    account_txn = await transaction_service.create_deposit(
+                        account_id=income_source.target_account_id,
+                        user_id=current_user.id,
+                        amount=income_source.amount,
+                        source_type="income",
+                        source_id=income_txn.id,
+                        description=f"Income: {income_source.name}",
+                        transaction_date=income_date,
+                        category=income_source.category or "income",
+                    )
+
+                    income_txn.status = IncomeTransactionStatus.DEPOSITED
+                    income_txn.deposited_to_account_id = income_source.target_account_id
+                    income_txn.account_transaction_id = account_txn.id
+                    deposits_created = 1
+            else:
+                # Recurring income: backfill all past deposits
+                start_date = income_source.start_date
+                if start_date and start_date.date() <= today:
+                    # Calculate all due dates from start_date to today
+                    current_date = start_date
+                    end_date = income_source.end_date.date() if income_source.end_date else None
+
+                    # Determine the interval based on frequency
+                    if income_source.frequency == IncomeFrequency.WEEKLY:
+                        interval = relativedelta(weeks=1)
+                    elif income_source.frequency == IncomeFrequency.BIWEEKLY:
+                        interval = relativedelta(weeks=2)
+                    elif income_source.frequency == IncomeFrequency.MONTHLY:
+                        interval = relativedelta(months=1)
+                    elif income_source.frequency == IncomeFrequency.QUARTERLY:
+                        interval = relativedelta(months=3)
+                    elif income_source.frequency == IncomeFrequency.ANNUALLY:
+                        interval = relativedelta(years=1)
+                    else:
+                        interval = relativedelta(months=1)  # Default to monthly
+
+                    # Create deposits for each due date
+                    while current_date.date() <= today:
+                        # Check end_date if set
+                        if end_date and current_date.date() > end_date:
+                            break
+
+                        # Create income transaction for this date
+                        income_txn = IncomeTransaction(
+                            user_id=current_user.id,
+                            source_id=income_source.id,
+                            amount=income_source.amount,
+                            currency=income_source.currency,
+                            date=current_date,
+                            description=f"Income: {income_source.name}",
+                            category=income_source.category,
+                            status=IncomeTransactionStatus.RECEIVED,
+                        )
+                        db.add(income_txn)
+                        await db.flush()
+
+                        # Create deposit to savings account with the historical date
+                        account_txn = await transaction_service.create_deposit(
+                            account_id=income_source.target_account_id,
+                            user_id=current_user.id,
+                            amount=income_source.amount,
+                            source_type="income",
+                            source_id=income_txn.id,
+                            description=f"Income: {income_source.name}",
+                            transaction_date=current_date,
+                            category=income_source.category or "income",
+                        )
+
+                        # Update income transaction with deposit info
+                        income_txn.status = IncomeTransactionStatus.DEPOSITED
+                        income_txn.deposited_to_account_id = income_source.target_account_id
+                        income_txn.account_transaction_id = account_txn.id
+
+                        deposits_created += 1
+                        current_date = current_date + interval
+
+            if deposits_created > 0:
+                await db.commit()
+                logger.info(f"Auto-deposited {deposits_created} transactions for income source {income_source.id} to account {income_source.target_account_id}")
+        except Exception as e:
+            logger.error(f"Failed to auto-deposit income source {income_source.id}: {e}")
+            await db.rollback()
+            # Don't fail the income source creation, just log the error
+
+    # Prepare response with monthly equivalent
+    response_dict = IncomeSourceResponse.model_validate(income_source).model_dump()
+    response_dict["monthly_equivalent"] = income_source.calculate_monthly_amount()
+
+    return IncomeSourceResponse(**response_dict)
+
+
+async def get_income_source(db: AsyncSession, current_user: User, source_id: UUID):
+    query = select(IncomeSource).where(
+        IncomeSource.id == source_id,
+        IncomeSource.user_id == current_user.id,
+        IncomeSource.deleted_at.is_(None)
+    )
+
+    result = await db.execute(query)
+    source = result.scalar_one_or_none()
+
+    if not source:
+        raise NotFoundException(message="Income source not found")
+
+    # Convert to display currency
+    await convert_income_to_display_currency(db, current_user.id, source)
+
+    # Prepare response with monthly equivalent and display fields
+    response_dict = {
+        "id": str(source.id),
+        "user_id": str(source.user_id),
+        "name": source.name,
+        "description": source.description,
+        "category": source.category,
+        "amount": float(source.amount) if source.amount else 0,
+        "currency": source.currency,
+        "frequency": source.frequency,
+        "is_active": source.is_active,
+        "date": source.date.isoformat() if source.date else None,
+        "start_date": source.start_date.isoformat() if source.start_date else None,
+        "end_date": source.end_date.isoformat() if source.end_date else None,
+        "created_at": source.created_at.isoformat(),
+        "updated_at": source.updated_at.isoformat(),
+        # Account integration fields
+        "target_account_id": str(source.target_account_id) if source.target_account_id else None,
+        "auto_deposit": source.auto_deposit,
+        "monthly_equivalent": float(source.calculate_monthly_amount()) if source.calculate_monthly_amount() else None,
+        "display_amount": float(source.display_amount) if hasattr(source, 'display_amount') and source.display_amount is not None else None,
+        "display_currency": source.display_currency if hasattr(source, 'display_currency') and source.display_currency is not None else None,
+        "display_monthly_equivalent": float(source.display_monthly_equivalent) if hasattr(source, 'display_monthly_equivalent') and source.display_monthly_equivalent is not None else None,
+    }
+
+    return response_dict
+
+
+async def update_income_source(db: AsyncSession, current_user: User, source_id: UUID, source_data: IncomeSourceUpdate):
+    from dateutil.relativedelta import relativedelta
+
+    query = select(IncomeSource).where(
+        IncomeSource.id == source_id,
+        IncomeSource.user_id == current_user.id,
+        IncomeSource.deleted_at.is_(None)
+    )
+
+    result = await db.execute(query)
+    source = result.scalar_one_or_none()
+
+    if not source:
+        raise NotFoundException(message="Income source not found")
+
+    # Track previous auto_deposit state to detect if it's being enabled
+    was_auto_deposit_enabled = source.auto_deposit and source.target_account_id
+
+    # Extract sync_historical before updating fields
+    sync_historical = source_data.sync_historical
+
+    # Update fields (excluding sync_historical which is not a model field)
+    update_data = source_data.model_dump(exclude_unset=True, exclude={'sync_historical'})
+    for field, value in update_data.items():
+        setattr(source, field, value)
+
+    await db.commit()
+    await db.refresh(source)
+
+    # Check if auto_deposit is now enabled
+    is_auto_deposit_enabled = source.auto_deposit and source.target_account_id
+
+    # Helper function to get frequency interval
+    def get_frequency_interval(frequency: IncomeFrequency):
+        if frequency == IncomeFrequency.WEEKLY:
+            return relativedelta(weeks=1)
+        elif frequency == IncomeFrequency.BIWEEKLY:
+            return relativedelta(weeks=2)
+        elif frequency == IncomeFrequency.MONTHLY:
+            return relativedelta(months=1)
+        elif frequency == IncomeFrequency.QUARTERLY:
+            return relativedelta(months=3)
+        elif frequency == IncomeFrequency.ANNUALLY:
+            return relativedelta(years=1)
+        return relativedelta(months=1)
+
+    # Helper function to create deposits for date range
+    async def create_historical_deposits(transaction_service, start_dt, end_dt, interval, existing_dates=None):
+        deposits_created = 0
+        today = datetime.utcnow().date()
+        current_date = start_dt
+
+        while current_date.date() <= today:
+            if end_dt and current_date.date() > end_dt:
+                break
+
+            # Skip if transaction already exists for this date (when not syncing)
+            if existing_dates and current_date.date() in existing_dates:
+                current_date = current_date + interval
+                continue
+
+            income_txn = IncomeTransaction(
+                user_id=current_user.id,
+                source_id=source.id,
+                amount=source.amount,
+                currency=source.currency,
+                date=current_date,
+                description=f"Income: {source.name}",
+                category=source.category,
+                status=IncomeTransactionStatus.RECEIVED,
+            )
+            db.add(income_txn)
+            await db.flush()
+
+            account_txn = await transaction_service.create_deposit(
+                account_id=source.target_account_id,
+                user_id=current_user.id,
+                amount=source.amount,
+                source_type="income",
+                source_id=income_txn.id,
+                description=f"Income: {source.name}",
+                transaction_date=current_date,
+                category=source.category or "income",
+            )
+
+            income_txn.status = IncomeTransactionStatus.DEPOSITED
+            income_txn.deposited_to_account_id = source.target_account_id
+            income_txn.account_transaction_id = account_txn.id
+
+            deposits_created += 1
+            current_date = current_date + interval
+
+        return deposits_created
+
+    # Handle sync_historical - delete existing and recreate
+    if sync_historical and is_auto_deposit_enabled:
+        try:
+            transaction_service = TransactionService(db)
+
+            # Get all existing income transactions for this source
+            existing_txns_query = select(IncomeTransaction).where(
+                IncomeTransaction.source_id == source.id,
+                IncomeTransaction.deleted_at.is_(None)
+            )
+            existing_result = await db.execute(existing_txns_query)
+            existing_txns = existing_result.scalars().all()
+
+            # Reverse the account deposits and delete income transactions
+            reversed_count = 0
+            for income_txn in existing_txns:
+                # Reverse the account transaction if it exists
+                if income_txn.account_transaction_id and income_txn.deposited_to_account_id:
+                    try:
+                        await transaction_service.reverse_transaction(
+                            transaction_id=income_txn.account_transaction_id,
+                            user_id=current_user.id,
+                            reason="Sync historical: Income source updated",
+                        )
+                        reversed_count += 1
+                    except Exception as e:
+                        logger.warning(f"Could not reverse transaction {income_txn.account_transaction_id}: {e}")
+
+                # Soft delete the income transaction
+                income_txn.deleted_at = datetime.utcnow()
+
+            await db.commit()
+            logger.info(f"Reversed {reversed_count} account transactions for income source {source.id}")
+
+            # Recreate all transactions with new values
+            deposits_created = 0
+            today = datetime.utcnow().date()
+
+            if source.frequency == IncomeFrequency.ONE_TIME:
+                income_date = source.date or datetime.utcnow()
+                if income_date.date() <= today:
+                    income_txn = IncomeTransaction(
+                        user_id=current_user.id,
+                        source_id=source.id,
+                        amount=source.amount,
+                        currency=source.currency,
+                        date=income_date,
+                        description=f"Income: {source.name}",
+                        category=source.category,
+                        status=IncomeTransactionStatus.RECEIVED,
+                    )
+                    db.add(income_txn)
+                    await db.flush()
+
+                    account_txn = await transaction_service.create_deposit(
+                        account_id=source.target_account_id,
+                        user_id=current_user.id,
+                        amount=source.amount,
+                        source_type="income",
+                        source_id=income_txn.id,
+                        description=f"Income: {source.name}",
+                        transaction_date=income_date,
+                        category=source.category or "income",
+                    )
+
+                    income_txn.status = IncomeTransactionStatus.DEPOSITED
+                    income_txn.deposited_to_account_id = source.target_account_id
+                    income_txn.account_transaction_id = account_txn.id
+                    deposits_created = 1
+            else:
+                start_date = source.start_date
+                if start_date and start_date.date() <= today:
+                    end_date = source.end_date.date() if source.end_date else None
+                    interval = get_frequency_interval(source.frequency)
+                    deposits_created = await create_historical_deposits(
+                        transaction_service, start_date, end_date, interval
+                    )
+
+            if deposits_created > 0:
+                await db.commit()
+                logger.info(f"Recreated {deposits_created} deposits for income source {source.id}")
+
+        except Exception as e:
+            logger.error(f"Failed to sync historical deposits for income source {source.id}: {e}")
+            await db.rollback()
+
+    # Backfill historical deposits if auto_deposit was just enabled (without sync)
+    elif is_auto_deposit_enabled and not was_auto_deposit_enabled:
+        try:
+            today = datetime.utcnow().date()
+            transaction_service = TransactionService(db)
+
+            # Get existing income transactions for this source to avoid duplicates
+            existing_txns_query = select(IncomeTransaction.date).where(
+                IncomeTransaction.source_id == source.id,
+                IncomeTransaction.deleted_at.is_(None)
+            )
+            existing_result = await db.execute(existing_txns_query)
+            existing_dates = {txn_date.date() for txn_date in existing_result.scalars().all()}
+
+            deposits_created = 0
+
+            if source.frequency == IncomeFrequency.ONE_TIME:
+                income_date = source.date or datetime.utcnow()
+                if income_date.date() <= today and income_date.date() not in existing_dates:
+                    income_txn = IncomeTransaction(
+                        user_id=current_user.id,
+                        source_id=source.id,
+                        amount=source.amount,
+                        currency=source.currency,
+                        date=income_date,
+                        description=f"Income: {source.name}",
+                        category=source.category,
+                        status=IncomeTransactionStatus.RECEIVED,
+                    )
+                    db.add(income_txn)
+                    await db.flush()
+
+                    account_txn = await transaction_service.create_deposit(
+                        account_id=source.target_account_id,
+                        user_id=current_user.id,
+                        amount=source.amount,
+                        source_type="income",
+                        source_id=income_txn.id,
+                        description=f"Income: {source.name}",
+                        transaction_date=income_date,
+                        category=source.category or "income",
+                    )
+
+                    income_txn.status = IncomeTransactionStatus.DEPOSITED
+                    income_txn.deposited_to_account_id = source.target_account_id
+                    income_txn.account_transaction_id = account_txn.id
+                    deposits_created = 1
+            else:
+                start_date = source.start_date
+                if start_date and start_date.date() <= today:
+                    end_date = source.end_date.date() if source.end_date else None
+                    interval = get_frequency_interval(source.frequency)
+                    deposits_created = await create_historical_deposits(
+                        transaction_service, start_date, end_date, interval, existing_dates
+                    )
+
+            if deposits_created > 0:
+                await db.commit()
+                logger.info(f"Backfilled {deposits_created} deposits for income source {source.id}")
+
+        except Exception as e:
+            logger.error(f"Failed to backfill deposits for income source {source.id}: {e}")
+            await db.rollback()
+
+    # Prepare response with monthly equivalent
+    response_dict = IncomeSourceResponse.model_validate(source).model_dump()
+    response_dict["monthly_equivalent"] = source.calculate_monthly_amount()
+
+    return IncomeSourceResponse(**response_dict)
+
+
+async def delete_income_source(db: AsyncSession, current_user: User, source_id: UUID):
+    query = select(IncomeSource).where(
+        IncomeSource.id == source_id,
+        IncomeSource.user_id == current_user.id,
+        IncomeSource.deleted_at.is_(None)
+    )
+
+    result = await db.execute(query)
+    source = result.scalar_one_or_none()
+
+    if not source:
+        raise NotFoundException(message="Income source not found")
+
+    # Soft delete
+    source.soft_delete()
+    await db.commit()
+
+    return None
+
+
+async def batch_delete_income_sources(db: AsyncSession, current_user: User, batch_data: IncomeSourceBatchDelete):
+    deleted_count = 0
+    failed_ids = []
+
+    for source_id in batch_data.source_ids:
+        try:
+            query = select(IncomeSource).where(
+                IncomeSource.id == source_id,
+                IncomeSource.user_id == current_user.id,
+                IncomeSource.deleted_at.is_(None)
+            )
+
+            result = await db.execute(query)
+            source = result.scalar_one_or_none()
+
+            if source:
+                source.soft_delete()
+                deleted_count += 1
+            else:
+                failed_ids.append(source_id)
+        except Exception:
+            failed_ids.append(source_id)
+
+    await db.commit()
+
+    return IncomeSourceBatchDeleteResponse(
+        deleted_count=deleted_count,
+        failed_ids=failed_ids
+    )
+
+
+async def list_income_transactions(db: AsyncSession, current_user: User, page: int, page_size: int, source_id: Optional[UUID], start_date: Optional[datetime], end_date: Optional[datetime]):
+    # Build query
+    query = select(IncomeTransaction).where(
+        IncomeTransaction.user_id == current_user.id,
+        IncomeTransaction.deleted_at.is_(None)
+    )
+
+    # Apply filters
+    if source_id:
+        query = query.where(IncomeTransaction.source_id == source_id)
+    if start_date:
+        query = query.where(IncomeTransaction.date >= start_date)
+    if end_date:
+        query = query.where(IncomeTransaction.date <= end_date)
+
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar_one()
+
+    # Apply pagination
+    query = query.order_by(IncomeTransaction.date.desc())
+    query = query.offset((page - 1) * page_size).limit(page_size)
+
+    # Execute query
+    result = await db.execute(query)
+    transactions = result.scalars().all()
+
+    return IncomeTransactionListResponse(
+        items=[IncomeTransactionResponse.model_validate(t) for t in transactions],
+        total=total,
+        page=page,
+        page_size=page_size
+    )
+
+
+async def get_income_stats(db: AsyncSession, current_user: User, start_date: Optional[datetime], end_date: Optional[datetime]):
+    # Get active sources for monthly/annual calculation
+    # Apply date filtering if date range is provided
+    if start_date and end_date:
+        # Remove timezone info for comparison
+        filter_start = start_date.replace(tzinfo=None)
+        filter_end = end_date.replace(tzinfo=None)
+
+        active_sources_query = select(IncomeSource).where(
+            and_(
+                IncomeSource.user_id == current_user.id,
+                IncomeSource.is_active == True,
+                IncomeSource.deleted_at.is_(None),
+                or_(
+                    # For one-time: date must fall within period
+                    and_(
+                        IncomeSource.frequency == IncomeFrequency.ONE_TIME,
+                        IncomeSource.date.isnot(None),
+                        IncomeSource.date >= filter_start,
+                        IncomeSource.date <= filter_end
+                    ),
+                    # For recurring: start_date <= period_end AND (end_date is NULL OR end_date >= period_start)
+                    and_(
+                        IncomeSource.frequency != IncomeFrequency.ONE_TIME,
+                        IncomeSource.start_date.isnot(None),
+                        IncomeSource.start_date <= filter_end,
+                        or_(
+                            IncomeSource.end_date.is_(None),
+                            IncomeSource.end_date >= filter_start
+                        )
+                    )
+                )
+            )
+        )
+    else:
+        active_sources_query = select(IncomeSource).where(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.is_active == True,
+            IncomeSource.deleted_at.is_(None)
+        )
+
+    active_sources_result = await db.execute(active_sources_query)
+    active_sources = active_sources_result.scalars().all()
+
+    # Calculate source counts based on whether date filtering is applied
+    if start_date and end_date:
+        # When date range is provided, count only active sources in range
+        total_sources_count = len(active_sources)
+        active_sources_count = len(active_sources)
+    else:
+        # When no date range, count all sources and active sources separately
+        all_sources_query = select(
+            func.count(IncomeSource.id).label("total"),
+            func.sum(
+                case((IncomeSource.is_active == True, 1), else_=0)
+            ).label("active")
+        ).where(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.deleted_at.is_(None)
+        )
+        all_sources_result = await db.execute(all_sources_query)
+        all_sources_stats = all_sources_result.one()
+        total_sources_count = all_sources_stats.total or 0
+        active_sources_count = all_sources_stats.active or 0
+
+    # Get user's display currency first
+    display_currency = await get_user_display_currency(db, current_user.id)
+
+    # Convert all sources to display currency and calculate total monthly income
+    from app.services.currency_service import CurrencyService
+    currency_service = CurrencyService(db)
+
+    total_monthly = Decimal("0")
+    for source in active_sources:
+        monthly_amount = source.calculate_monthly_amount()
+        if monthly_amount:
+            # Convert to display currency if needed
+            if source.currency != display_currency:
+                converted_amount = await currency_service.convert_amount(
+                    monthly_amount,
+                    source.currency,
+                    display_currency
+                )
+                if converted_amount:
+                    total_monthly += converted_amount
+                else:
+                    # Fallback to original if conversion fails
+                    total_monthly += monthly_amount
+            else:
+                total_monthly += monthly_amount
+
+    total_annual = total_monthly * 12
+
+    # Calculate all-time transaction stats from all active sources
+    # Get all active sources (not just from the filtered period)
+    all_active_sources_query = select(IncomeSource).where(
+        IncomeSource.user_id == current_user.id,
+        IncomeSource.is_active == True,
+        IncomeSource.deleted_at.is_(None)
+    )
+    all_active_sources_result = await db.execute(all_active_sources_query)
+    all_active_sources = all_active_sources_result.scalars().all()
+
+    # Calculate total amount from all active sources
+    total_transactions_amount = Decimal("0")
+    for source in all_active_sources:
+        if source.frequency == IncomeFrequency.ONE_TIME:
+            # One-time: use full amount
+            source_amount = source.amount
+        else:
+            # Recurring: calculate monthly amount
+            source_amount = source.calculate_monthly_amount() or Decimal("0")
+
+        # Convert to display currency if needed
+        if source.currency != display_currency:
+            converted_amount = await currency_service.convert_amount(
+                source_amount,
+                source.currency,
+                display_currency
+            )
+            if converted_amount:
+                total_transactions_amount += converted_amount
+            else:
+                total_transactions_amount += source_amount
+        else:
+            total_transactions_amount += source_amount
+
+    # Get current month stats (including active sources)
+    now = datetime.utcnow()
+    current_month_start = datetime(now.year, now.month, 1)
+    # Calculate next month start for end boundary
+    if now.month == 12:
+        current_month_end = datetime(now.year + 1, 1, 1)
+    else:
+        current_month_end = datetime(now.year, now.month + 1, 1)
+
+    # Get active sources for current month
+    current_month_sources_query = select(IncomeSource).where(
+        and_(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.is_active == True,
+            IncomeSource.deleted_at.is_(None),
+            or_(
+                # One-time sources that fall in current month
+                and_(
+                    IncomeSource.frequency == IncomeFrequency.ONE_TIME,
+                    IncomeSource.date.isnot(None),
+                    IncomeSource.date >= current_month_start,
+                    IncomeSource.date < current_month_end
+                ),
+                # Recurring sources active during current month
+                and_(
+                    IncomeSource.frequency != IncomeFrequency.ONE_TIME,
+                    IncomeSource.start_date.isnot(None),
+                    IncomeSource.start_date < current_month_end,
+                    or_(
+                        IncomeSource.end_date.is_(None),
+                        IncomeSource.end_date >= current_month_start
+                    )
+                )
+            )
+        )
+    )
+
+    current_month_sources_result = await db.execute(current_month_sources_query)
+    current_month_sources = current_month_sources_result.scalars().all()
+
+    # Calculate total for current month from sources
+    current_month_amount = Decimal("0")
+    for source in current_month_sources:
+        amount = source.amount
+        if source.frequency == IncomeFrequency.ONE_TIME:
+            # One-time: use full amount
+            source_amount = amount
+        else:
+            # Recurring: calculate monthly amount
+            source_amount = source.calculate_monthly_amount() or Decimal("0")
+
+        # Convert to display currency if needed
+        if source.currency != display_currency:
+            converted_amount = await currency_service.convert_amount(
+                source_amount,
+                source.currency,
+                display_currency
+            )
+            if converted_amount:
+                current_month_amount += converted_amount
+            else:
+                current_month_amount += source_amount
+        else:
+            current_month_amount += source_amount
+
+    # Get last month stats
+    if now.month == 1:
+        last_month_start = datetime(now.year - 1, 12, 1)
+        last_month_end = datetime(now.year, 1, 1)
+    else:
+        last_month_start = datetime(now.year, now.month - 1, 1)
+        last_month_end = datetime(now.year, now.month, 1)
+
+    # Get active sources for last month
+    last_month_sources_query = select(IncomeSource).where(
+        and_(
+            IncomeSource.user_id == current_user.id,
+            IncomeSource.is_active == True,
+            IncomeSource.deleted_at.is_(None),
+            or_(
+                # One-time sources that fall in last month
+                and_(
+                    IncomeSource.frequency == IncomeFrequency.ONE_TIME,
+                    IncomeSource.date.isnot(None),
+                    IncomeSource.date >= last_month_start,
+                    IncomeSource.date < last_month_end
+                ),
+                # Recurring sources active during last month
+                and_(
+                    IncomeSource.frequency != IncomeFrequency.ONE_TIME,
+                    IncomeSource.start_date.isnot(None),
+                    IncomeSource.start_date < last_month_end,
+                    or_(
+                        IncomeSource.end_date.is_(None),
+                        IncomeSource.end_date >= last_month_start
+                    )
+                )
+            )
+        )
+    )
+
+    last_month_sources_result = await db.execute(last_month_sources_query)
+    last_month_sources = last_month_sources_result.scalars().all()
+
+    # Calculate total for last month from sources
+    last_month_amount = Decimal("0")
+    for source in last_month_sources:
+        amount = source.amount
+        if source.frequency == IncomeFrequency.ONE_TIME:
+            # One-time: use full amount
+            source_amount = amount
+        else:
+            # Recurring: calculate monthly amount
+            source_amount = source.calculate_monthly_amount() or Decimal("0")
+
+        # Convert to display currency if needed
+        if source.currency != display_currency:
+            converted_amount = await currency_service.convert_amount(
+                source_amount,
+                source.currency,
+                display_currency
+            )
+            if converted_amount:
+                last_month_amount += converted_amount
+            else:
+                last_month_amount += source_amount
+        else:
+            last_month_amount += source_amount
+
+    return IncomeStatsResponse(
+        total_sources=total_sources_count,
+        active_sources=active_sources_count,
+        total_monthly_income=total_monthly,
+        total_annual_income=total_annual,
+        total_transactions=len(all_active_sources),
+        total_transactions_amount=total_transactions_amount,
+        transactions_current_month=len(current_month_sources),
+        transactions_current_month_amount=current_month_amount,
+        transactions_last_month=len(last_month_sources),
+        transactions_last_month_amount=last_month_amount,
+        currency=display_currency
+    )

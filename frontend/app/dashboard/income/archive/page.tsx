@@ -35,7 +35,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { IncomeActionsContext } from '../context';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
@@ -54,7 +55,7 @@ export default function IncomeArchivePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedSourceIds, setSelectedSourceIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
@@ -133,18 +134,14 @@ export default function IncomeArchivePage() {
     try {
       await updateSource({ id, data: { is_active: true } }).unwrap();
       toast.success(tArchive('unarchiveSuccess'));
-      setSelectedSourceIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error(tArchive('unarchiveError'));
     }
   };
 
   const handleBatchUnarchive = useCallback(async () => {
-    const idsToUnarchive = Array.from(selectedSourceIds);
+    const idsToUnarchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -164,8 +161,8 @@ export default function IncomeArchivePage() {
       toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
-    setSelectedSourceIds(new Set());
-  }, [selectedSourceIds, updateSource, tArchive]);
+    selection.clear();
+  }, [selection, updateSource, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingSourceId(id);
@@ -180,33 +177,9 @@ export default function IncomeArchivePage() {
       toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingSourceId(null);
-      setSelectedSourceIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(deletingSourceId);
-        return newSet;
-      });
+      selection.deselect(deletingSourceId);
     } catch (error) {
       toast.error(tArchive('deleteError'));
-    }
-  };
-
-  const handleToggleSelect = (sourceId: string) => {
-    setSelectedSourceIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(sourceId)) {
-        newSet.delete(sourceId);
-      } else {
-        newSet.add(sourceId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedSourceIds.size === filteredSources.length && filteredSources.length > 0) {
-      setSelectedSourceIds(new Set());
-    } else {
-      setSelectedSourceIds(new Set(filteredSources.map((source) => source.id)));
     }
   };
 
@@ -215,11 +188,11 @@ export default function IncomeArchivePage() {
   }, []);
 
   const confirmBatchDelete = async () => {
-    if (selectedSourceIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteSources({
-        source_ids: Array.from(selectedSourceIds),
+        source_ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -229,7 +202,7 @@ export default function IncomeArchivePage() {
       }
 
       setBatchDeleteDialogOpen(false);
-      setSelectedSourceIds(new Set());
+      selection.clear();
     } catch (error) {
       toast.error(tArchive('deleteError'));
     }
@@ -239,7 +212,7 @@ export default function IncomeArchivePage() {
   React.useEffect(() => {
     setActions(
       <>
-        {selectedSourceIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             <Button
               onClick={handleBatchUnarchive}
@@ -248,7 +221,7 @@ export default function IncomeArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedSourceIds.size })}</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selection.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -257,7 +230,7 @@ export default function IncomeArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('deleteSelected', { count: selectedSourceIds.size })}</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -265,7 +238,7 @@ export default function IncomeArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedSourceIds.size, setActions, tArchive]);
+  }, [selection.size, setActions, tArchive]);
 
   const isLoading = isLoadingSources;
   const hasError = sourcesError;
@@ -400,12 +373,12 @@ export default function IncomeArchivePage() {
             {filteredSources.length > 0 && (
               <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
-                  checked={selectedSourceIds.size === filteredSources.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.size === filteredSources.length}
+                  onCheckedChange={() => selection.selectAll(filteredSources.map((source) => source.id))}
                   aria-label="Select all income sources"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedSourceIds.size === filteredSources.length ? tArchive('deselectAll') : tArchive('selectAll')}
+                  {selection.size === filteredSources.length ? tArchive('deselectAll') : tArchive('selectAll')}
                 </span>
               </div>
             )}
@@ -417,8 +390,8 @@ export default function IncomeArchivePage() {
                     <div className="flex items-start gap-3 flex-1">
                       <div onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          checked={selectedSourceIds.has(source.id)}
-                          onCheckedChange={() => handleToggleSelect(source.id)}
+                          checked={selection.selectedIds.has(source.id)}
+                          onCheckedChange={() => selection.toggle(source.id)}
                           aria-label={`Select ${source.name}`}
                           className="mt-1"
                         />
@@ -504,8 +477,8 @@ export default function IncomeArchivePage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedSourceIds.size === filteredSources.length && filteredSources.length > 0}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.size === filteredSources.length && filteredSources.length > 0}
+                        onCheckedChange={() => selection.selectAll(filteredSources.map((source) => source.id))}
                         aria-label="Select all"
                       />
                     </TableHead>
@@ -523,8 +496,8 @@ export default function IncomeArchivePage() {
                     <TableRow key={source.id} className="opacity-75 cursor-pointer" onClick={() => router.push(`/dashboard/income/${source.id}`)}>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          checked={selectedSourceIds.has(source.id)}
-                          onCheckedChange={() => handleToggleSelect(source.id)}
+                          checked={selection.selectedIds.has(source.id)}
+                          onCheckedChange={() => selection.toggle(source.id)}
                           aria-label={`Select ${source.name}`}
                         />
                       </TableCell>
@@ -611,7 +584,7 @@ export default function IncomeArchivePage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedSourceIds.size}
+        count={selection.size}
         itemName="income source"
         isDeleting={isBatchDeleting}
       />

@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { RefreshCw, Archive, LayoutGrid, List, CalendarDays, Upload, Plus, Play, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw, X } from 'lucide-react';
+import { RefreshCw, Archive, Upload, Plus, Play, Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import {
@@ -35,7 +35,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -55,10 +54,11 @@ import {
 } from '@/components/ui/select';
 import { filterByMonth } from '@/components/ui/month-filter';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
-import { Separator } from '@/components/ui/separator';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { useColumnVisibility, type ColumnConfig } from '@/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
+import { ListControlsPopover } from '@/components/ui/list-controls-popover';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { toast } from 'sonner';
 
 export default function SubscriptionsPage() {
@@ -112,7 +112,7 @@ export default function SubscriptionsPage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedSubscriptionIds, setSelectedSubscriptionIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
@@ -205,18 +205,14 @@ export default function SubscriptionsPage() {
     try {
       await updateSubscription({ id, data: { is_active: false } }).unwrap();
       toast.success(tOverview('archiveSuccess'));
-      setSelectedSubscriptionIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error(tOverview('archiveError'));
     }
   };
 
   const handleBatchArchive = React.useCallback(async () => {
-    const idsToArchive = Array.from(selectedSubscriptionIds);
+    const idsToArchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -236,8 +232,8 @@ export default function SubscriptionsPage() {
       toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
-    setSelectedSubscriptionIds(new Set());
-  }, [selectedSubscriptionIds, updateSubscription, tOverview]);
+    selection.clear();
+  }, [selection, updateSubscription, tOverview]);
 
   const confirmDelete = async () => {
     if (!deletingSubscriptionId) return;
@@ -257,37 +253,17 @@ export default function SubscriptionsPage() {
     setEditingSubscriptionId(null);
   };
 
-  const handleToggleSelect = (subscriptionId: string) => {
-    setSelectedSubscriptionIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(subscriptionId)) {
-        newSet.delete(subscriptionId);
-      } else {
-        newSet.add(subscriptionId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedSubscriptionIds.size === filteredSubscriptions.length) {
-      setSelectedSubscriptionIds(new Set());
-    } else {
-      setSelectedSubscriptionIds(new Set(filteredSubscriptions.map((s) => s.id)));
-    }
-  };
-
   const handleBatchDelete = React.useCallback(() => {
-    if (selectedSubscriptionIds.size === 0) return;
+    if (selection.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  }, [selectedSubscriptionIds.size]);
+  }, [selection.size]);
 
   const confirmBatchDelete = async () => {
-    if (selectedSubscriptionIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteSubscriptions({
-        ids: Array.from(selectedSubscriptionIds),
+        ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -297,7 +273,7 @@ export default function SubscriptionsPage() {
       }
 
       setBatchDeleteDialogOpen(false);
-      setSelectedSubscriptionIds(new Set());
+      selection.clear();
     } catch (error) {
       toast.error(tOverview('deleteError'));
     }
@@ -358,7 +334,7 @@ export default function SubscriptionsPage() {
   React.useEffect(() => {
     setActions(
       <>
-        {selectedSubscriptionIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             {/* Archive hidden for now
             <Button
@@ -377,7 +353,7 @@ export default function SubscriptionsPage() {
               size="default"
               className="w-full sm:w-auto"
             >
-              <span className="truncate">{tOverview('deleteSelected', { count: selectedSubscriptionIds.size })}</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -405,7 +381,7 @@ export default function SubscriptionsPage() {
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedSubscriptionIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription, handleImportSubscriptions, handleProcessDuePayments, isProcessingPayments, tOverview, tActions]);
+  }, [selection.size, setActions, handleBatchArchive, handleBatchDelete, handleAddSubscription, handleImportSubscriptions, handleProcessDuePayments, isProcessingPayments, tOverview, tActions]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -435,186 +411,71 @@ export default function SubscriptionsPage() {
             </div>
 
             {/* Filters Popover */}
-            <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
-                <Filter className="h-4 w-4" />
-                {activeFilterCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="end">
-              {/* Filter section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
+            <ListControlsPopover
+              activeFilterCount={activeFilterCount}
+              filterSlot={
+                <div className="p-2 space-y-1.5">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
 
-                {/* Category */}
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{tOverview('category')}</label>
-                  <Select
-                    value={selectedCategory || 'all'}
-                    onValueChange={(value) => setSelectedCategory(value === 'all' ? null : value)}
-                  >
-                    <SelectTrigger className="h-8 w-full text-sm">
-                      <SelectValue placeholder={tOverview('allCategories')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{tOverview('allCategories')}</SelectItem>
-                      {uniqueCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Month */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">{tCommon('common.month')}</label>
-                    {selectedMonth && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedMonth(null)}
-                        className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        <X className="h-3 w-3 mr-1" />
-                        {tCommon('common.clear')}
-                      </Button>
-                    )}
-                  </div>
-                  <input
-                    type="month"
-                    value={selectedMonth || ''}
-                    onChange={(e) => setSelectedMonth(e.target.value || null)}
-                    onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
-                    min="2020-01"
-                    max="2030-12"
-                    className="h-8 w-full rounded-md border border-input bg-background px-3 text-sm cursor-pointer ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Sort section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
-                <div className="flex items-center gap-2">
-                  <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
-                    <SelectTrigger className="h-8 flex-1 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">{tCommon('common.name')}</SelectItem>
-                      <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
-                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="h-8 gap-1.5 flex-shrink-0"
-                  >
-                    {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
-                    <span className="text-sm">
-                      {sortField === 'name'
-                        ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
-                        : sortField === 'amount'
-                          ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
-                          : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
-                      }
-                    </span>
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* View section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
-                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '32px' }}>
-                  <Button
-                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('card')}
-                    className="h-[32px] w-[32px] p-0"
-                    title={tCommon('common.cardView')}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="h-[32px] w-[32px] p-0"
-                    title={tCommon('common.listView')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  {selectedMonth && (
-                    <Button
-                      variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('calendar')}
-                      className="h-[32px] w-[32px] p-0"
-                      title={tCommon('common.calendarView')}
+                  {/* Category */}
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{tOverview('category')}</label>
+                    <Select
+                      value={selectedCategory || 'all'}
+                      onValueChange={(value) => setSelectedCategory(value === 'all' ? null : value)}
                     >
-                      <CalendarDays className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
+                      <SelectTrigger className="h-8 w-full text-sm">
+                        <SelectValue placeholder={tOverview('allCategories')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{tOverview('allCategories')}</SelectItem>
+                        {uniqueCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Columns section (list view only) */}
-              {viewMode === 'list' && (
-                <>
-                  <Separator />
-                  <div className="p-2 space-y-1.5">
+                  {/* Month */}
+                  <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
-                      {Object.values(visibleColumns).filter(Boolean).length < columnConfig.length && (
+                      <label className="text-sm font-medium">{tCommon('common.month')}</label>
+                      {selectedMonth && (
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => setSelectedMonth(null)}
                           className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={showAllColumns}
                         >
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          {tCommon('common.showAll')}
+                          <X className="h-3 w-3 mr-1" />
+                          {tCommon('common.clear')}
                         </Button>
                       )}
                     </div>
-                    <div className="space-y-1">
-                      {columnConfig.map((column) => (
-                        <label
-                          key={column.id}
-                          className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm ${
-                            column.locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-muted'
-                          }`}
-                        >
-                          <Checkbox
-                            checked={visibleColumns[column.id] ?? true}
-                            onCheckedChange={() => toggleColumn(column.id)}
-                            disabled={column.locked}
-                          />
-                          <span className="flex-1">{column.label}</span>
-                          {column.locked && <Lock className="h-3 w-3 text-muted-foreground" />}
-                        </label>
-                      ))}
-                    </div>
+                    <input
+                      type="month"
+                      value={selectedMonth || ''}
+                      onChange={(e) => setSelectedMonth(e.target.value || null)}
+                      onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
+                      min="2020-01"
+                      max="2030-12"
+                      className="h-8 w-full rounded-md border border-input bg-background px-3 text-sm cursor-pointer ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
                   </div>
-                </>
-              )}
-            </PopoverContent>
-          </Popover>
+                </div>
+              }
+              sortField={sortField}
+              setSortField={setSortField}
+              sortDirection={sortDirection}
+              setSortDirection={setSortDirection}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              showCalendar={!!selectedMonth}
+              viewTitles={{ card: tCommon('common.cardView'), list: tCommon('common.listView'), calendar: tCommon('common.calendarView') }}
+              columnControls={{ columns: columnConfig, visibleColumns, toggleColumn, showAllColumns }}
+            />
           </div>
 
           {/* Inline stats */}
@@ -662,8 +523,8 @@ export default function SubscriptionsPage() {
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
             onItemClick={(id) => router.push(`/dashboard/subscriptions/${id}`)}
-            selectedItemIds={selectedSubscriptionIds}
-            onToggleSelect={handleToggleSelect}
+            selectedItemIds={selection.selectedIds}
+            onToggleSelect={selection.toggle}
           />
         ) : !filteredSubscriptions || filteredSubscriptions.length === 0 ? (
           <EmptyState
@@ -681,12 +542,12 @@ export default function SubscriptionsPage() {
             {filteredSubscriptions.length > 0 && (
               <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
-                  checked={selectedSubscriptionIds.size === filteredSubscriptions.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.isAllSelected(filteredSubscriptions.length)}
+                  onCheckedChange={() => selection.selectAll(filteredSubscriptions.map((s) => s.id))}
                   aria-label="Select all subscriptions"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedSubscriptionIds.size === filteredSubscriptions.length ? tOverview('deselectAll') : tOverview('selectAll')}
+                  {selection.isAllSelected(filteredSubscriptions.length) ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -725,8 +586,8 @@ export default function SubscriptionsPage() {
                       <div className="flex items-start gap-3 flex-1">
                         <div onClick={(e) => e.stopPropagation()}>
                           <Checkbox
-                            checked={selectedSubscriptionIds.has(subscription.id)}
-                            onCheckedChange={() => handleToggleSelect(subscription.id)}
+                            checked={selection.selectedIds.has(subscription.id)}
+                            onCheckedChange={() => selection.toggle(subscription.id)}
                             aria-label={`Select ${subscription.name}`}
                             className="mt-1"
                           />
@@ -807,8 +668,8 @@ export default function SubscriptionsPage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedSubscriptionIds.size === filteredSubscriptions.length && filteredSubscriptions.length > 0}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.isAllSelected(filteredSubscriptions.length) && filteredSubscriptions.length > 0}
+                        onCheckedChange={() => selection.selectAll(filteredSubscriptions.map((s) => s.id))}
                         aria-label={tOverview('selectAll')}
                       />
                     </TableHead>
@@ -869,8 +730,8 @@ export default function SubscriptionsPage() {
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
-                            checked={selectedSubscriptionIds.has(subscription.id)}
-                            onCheckedChange={() => handleToggleSelect(subscription.id)}
+                            checked={selection.selectedIds.has(subscription.id)}
+                            onCheckedChange={() => selection.toggle(subscription.id)}
                             aria-label={`Select ${subscription.name}`}
                           />
                         </TableCell>
@@ -995,7 +856,7 @@ export default function SubscriptionsPage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedSubscriptionIds.size}
+        count={selection.size}
         itemName="subscription"
         isDeleting={isBatchDeleting}
         cancelLabel={tActions('cancel')}

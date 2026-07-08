@@ -7,7 +7,7 @@ Provides user notification functionality including:
 - Notification history
 """
 from app.modules.notifications.models import Notification, NotificationType, NotificationCategory
-from app.modules.notifications.api import router
+from app.modules.notifications.router import router
 
 __all__ = [
     "Notification",

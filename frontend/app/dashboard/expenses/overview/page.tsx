@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, Trash2, Archive, LayoutGrid, List, CalendarDays, Layers, Upload, Plus, Play, Filter, Search, ArrowUp, ArrowDown, Lock, RotateCcw, X } from 'lucide-react';
+import { DollarSign, Trash2, Archive, Layers, Upload, Plus, Play, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -29,7 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -38,7 +37,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingCards } from '@/components/ui/loading-state';
 import { ApiErrorState } from '@/components/ui/error-state';
@@ -51,9 +49,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
 import { CurrencyDisplay } from '@/components/currency';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
-import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { useColumnVisibility, type ColumnConfig } from '@/hooks/use-column-visibility';
 import { CalendarView } from '@/components/ui/calendar-view';
+import { ListControlsPopover } from '@/components/ui/list-controls-popover';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { ExpenseActionsContext } from '../context';
 import { CATEGORY_NAME_TO_KEY, EXPENSE_CATEGORY_KEYS } from '@/lib/constants/expense-categories';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
@@ -125,7 +125,7 @@ export default function ExpensesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
 
@@ -205,18 +205,14 @@ export default function ExpensesPage() {
     try {
       await updateExpense({ id, data: { is_active: false } }).unwrap();
       toast.success('Expense archived successfully');
-      setSelectedExpenseIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error('Failed to archive expense');
     }
   };
 
   const handleBatchArchive = React.useCallback(async () => {
-    const idsToArchive = Array.from(selectedExpenseIds);
+    const idsToArchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -236,8 +232,8 @@ export default function ExpensesPage() {
       toast.error(`Failed to archive ${failCount} expense(s)`);
     }
 
-    setSelectedExpenseIds(new Set());
-  }, [selectedExpenseIds, updateExpense]);
+    selection.clear();
+  }, [selection, updateExpense]);
 
   const confirmDelete = async () => {
     if (!deletingExpenseId) return;
@@ -257,37 +253,17 @@ export default function ExpensesPage() {
     setEditingExpenseId(null);
   };
 
-  const handleToggleSelect = (expenseId: string) => {
-    setSelectedExpenseIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(expenseId)) {
-        newSet.delete(expenseId);
-      } else {
-        newSet.add(expenseId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedExpenseIds.size === filteredExpenses.length) {
-      setSelectedExpenseIds(new Set());
-    } else {
-      setSelectedExpenseIds(new Set(filteredExpenses.map((e) => e.id)));
-    }
-  };
-
   const handleBatchDelete = React.useCallback(() => {
-    if (selectedExpenseIds.size === 0) return;
+    if (selection.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  }, [selectedExpenseIds.size]);
+  }, [selection.size]);
 
   const confirmBatchDelete = async () => {
-    if (selectedExpenseIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteExpenses({
-        expense_ids: Array.from(selectedExpenseIds),
+        expense_ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -297,7 +273,7 @@ export default function ExpensesPage() {
       }
 
       setBatchDeleteDialogOpen(false);
-      setSelectedExpenseIds(new Set());
+      selection.clear();
     } catch (error) {
       toast.error('Failed to delete expenses');
     }
@@ -344,7 +320,7 @@ export default function ExpensesPage() {
   React.useEffect(() => {
     setActions(
       <>
-        {selectedExpenseIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             {/* Archive hidden for now
             <Button
@@ -364,7 +340,7 @@ export default function ExpensesPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">{tOverview('deleteSelected', { count: selectedExpenseIds.size })}</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -401,7 +377,7 @@ export default function ExpensesPage() {
 
     // Cleanup on unmount
     return () => setActions(null);
-  }, [selectedExpenseIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleImportExpenses, handleBatchAddExpense, handleProcessDuePayments, isProcessingPayments, hasBatchOperations, tOverview]);
+  }, [selection.size, setActions, handleBatchArchive, handleBatchDelete, handleAddExpense, handleImportExpenses, handleBatchAddExpense, handleProcessDuePayments, isProcessingPayments, hasBatchOperations, tOverview]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -430,19 +406,9 @@ export default function ExpensesPage() {
             </div>
 
           {/* Filters Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
-                <Filter className="h-4 w-4" />
-                {activeFilterCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="end">
-              {/* Filter section */}
+          <ListControlsPopover
+            activeFilterCount={activeFilterCount}
+            filterSlot={
               <div className="p-2 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
 
@@ -494,122 +460,17 @@ export default function ExpensesPage() {
                   />
                 </div>
               </div>
-
-              <Separator />
-
-              {/* Sort section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
-                <div className="flex items-center gap-2">
-                  <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
-                    <SelectTrigger className="h-8 flex-1 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">{tCommon('common.name')}</SelectItem>
-                      <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
-                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="h-8 gap-1.5 flex-shrink-0"
-                  >
-                    {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
-                    <span className="text-sm">
-                      {sortField === 'name'
-                        ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
-                        : sortField === 'amount'
-                          ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
-                          : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
-                      }
-                    </span>
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* View section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
-                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '32px' }}>
-                  <Button
-                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('card')}
-                    className="h-[32px] w-[32px] p-0"
-                    title="Card View"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="h-[32px] w-[32px] p-0"
-                    title="List View"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  {selectedMonth && (
-                    <Button
-                      variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('calendar')}
-                      className="h-[32px] w-[32px] p-0"
-                      title="Calendar View"
-                    >
-                      <CalendarDays className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Columns section (list view only) */}
-              {viewMode === 'list' && (
-                <>
-                  <Separator />
-                  <div className="p-2 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.columns')}</p>
-                      {Object.values(visibleColumns).filter(Boolean).length < columnConfig.length && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={showAllColumns}
-                        >
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          {tCommon('common.showAll')}
-                        </Button>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      {columnConfig.map((column) => (
-                        <label
-                          key={column.id}
-                          className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm ${
-                            column.locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-muted'
-                          }`}
-                        >
-                          <Checkbox
-                            checked={visibleColumns[column.id] ?? true}
-                            onCheckedChange={() => toggleColumn(column.id)}
-                            disabled={column.locked}
-                          />
-                          <span className="flex-1">{column.label}</span>
-                          {column.locked && <Lock className="h-3 w-3 text-muted-foreground" />}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </PopoverContent>
-          </Popover>
+            }
+            sortField={sortField}
+            setSortField={setSortField}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            showCalendar={!!selectedMonth}
+            viewTitles={{ card: 'Card View', list: 'List View', calendar: 'Calendar View' }}
+            columnControls={{ columns: columnConfig, visibleColumns, toggleColumn, showAllColumns }}
+          />
           </div>
 
           {/* Inline stats */}
@@ -657,8 +518,8 @@ export default function ExpensesPage() {
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
             onItemClick={(id) => router.push(`/dashboard/expenses/${id}`)}
-            selectedItemIds={selectedExpenseIds}
-            onToggleSelect={handleToggleSelect}
+            selectedItemIds={selection.selectedIds}
+            onToggleSelect={selection.toggle}
           />
         ) : !filteredExpenses || filteredExpenses.length === 0 ? (
           <EmptyState
@@ -676,12 +537,12 @@ export default function ExpensesPage() {
             {filteredExpenses.length > 0 && (
               <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
-                  checked={selectedExpenseIds.size === filteredExpenses.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.isAllSelected(filteredExpenses.length)}
+                  onCheckedChange={() => selection.selectAll(filteredExpenses.map((e) => e.id))}
                   aria-label="Select all expenses"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedExpenseIds.size === filteredExpenses.length ? tOverview('deselectAll') : tOverview('selectAll')}
+                  {selection.isAllSelected(filteredExpenses.length) ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -697,8 +558,8 @@ export default function ExpensesPage() {
                     <div className="flex items-start gap-3 flex-1">
                       <div onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          checked={selectedExpenseIds.has(expense.id)}
-                          onCheckedChange={() => handleToggleSelect(expense.id)}
+                          checked={selection.selectedIds.has(expense.id)}
+                          onCheckedChange={() => selection.toggle(expense.id)}
                           aria-label={`Select ${expense.name}`}
                           className="mt-1"
                         />
@@ -797,8 +658,8 @@ export default function ExpensesPage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedExpenseIds.size === filteredExpenses.length && filteredExpenses.length > 0}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.isAllSelected(filteredExpenses.length) && filteredExpenses.length > 0}
+                        onCheckedChange={() => selection.selectAll(filteredExpenses.map((e) => e.id))}
                         aria-label="Select all"
                       />
                     </TableHead>
@@ -840,8 +701,8 @@ export default function ExpensesPage() {
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          checked={selectedExpenseIds.has(expense.id)}
-                          onCheckedChange={() => handleToggleSelect(expense.id)}
+                          checked={selection.selectedIds.has(expense.id)}
+                          onCheckedChange={() => selection.toggle(expense.id)}
                           aria-label={`Select ${expense.name}`}
                         />
                       </TableCell>
@@ -984,7 +845,7 @@ export default function ExpensesPage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedExpenseIds.size}
+        count={selection.size}
         itemName="expense"
         isDeleting={isBatchDeleting}
       />

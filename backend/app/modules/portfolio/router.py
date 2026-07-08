@@ -8,6 +8,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.savings.transaction_service import InsufficientFundsError
@@ -207,12 +208,9 @@ async def get_asset(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a single portfolio asset"""
-    asset = await service.get_asset(db, current_user.id, asset_id)
-    if not asset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Portfolio asset not found"
-        )
+    asset = await get_owned_or_404(
+        service.get_asset, db, current_user.id, asset_id, detail="Portfolio asset not found"
+    )
 
     # Convert to display currency
     await convert_asset_to_display_currency(db, current_user.id, asset)
@@ -304,12 +302,9 @@ async def get_asset_transactions(
 ):
     """Get transaction history for an asset"""
     # Verify asset exists and belongs to user
-    asset = await service.get_asset(db, current_user.id, asset_id)
-    if not asset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Portfolio asset not found"
-        )
+    asset = await get_owned_or_404(
+        service.get_asset, db, current_user.id, asset_id, detail="Portfolio asset not found"
+    )
 
     transactions, total = await service.get_transactions(
         db,

@@ -46,7 +46,7 @@ import {
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { CurrencyDisplay } from '@/components/currency';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
 import { SavingsActionsContext } from '../context';
 
 export default function SavingsArchivePage() {

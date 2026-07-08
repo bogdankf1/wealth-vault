@@ -8,6 +8,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature, check_usage_limit
 from app.core.exceptions import TierLimitException
 from app.models.user import User
@@ -189,12 +190,9 @@ async def get_expense(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a single expense by ID"""
-    expense = await service.get_expense(db, current_user.id, expense_id)
-    if not expense:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Expense not found"
-        )
+    expense = await get_owned_or_404(
+        service.get_expense, db, current_user.id, expense_id, detail="Expense not found"
+    )
     return expense
 
 

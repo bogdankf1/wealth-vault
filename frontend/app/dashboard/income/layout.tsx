@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 import type { ModuleTab } from '@/types/module-layout';
 import { IncomeActionsContext } from './context';
-import { useUIVisibility } from '@/lib/hooks/use-ui-visibility';
+import { useUIVisibility } from '@/hooks/use-ui-visibility';
 
 export default function IncomeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

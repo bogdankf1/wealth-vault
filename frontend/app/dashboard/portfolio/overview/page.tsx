@@ -42,8 +42,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { filterBySearchAndCategory } from '@/components/ui/search-filter';
 import { CurrencyDisplay } from '@/components/currency/currency-display';
 import { sortItems, type SortField, type SortDirection } from '@/components/ui/sort-filter';
-import { useColumnVisibility, type ColumnConfig } from '@/lib/hooks/use-column-visibility';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useColumnVisibility, type ColumnConfig } from '@/hooks/use-column-visibility';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { toast } from 'sonner';
 
 export default function PortfolioPage() {
@@ -84,7 +85,7 @@ export default function PortfolioPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
-  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
@@ -145,11 +146,7 @@ export default function PortfolioPage() {
     try {
       await updateAsset({ id, data: { is_active: false } }).unwrap();
       toast.success(tOverview('archiveSuccess'));
-      setSelectedAssetIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error(tOverview('archiveError'));
     }
@@ -160,7 +157,7 @@ export default function PortfolioPage() {
   };
 
   const handleBatchArchive = useCallback(async () => {
-    const idsToArchive = Array.from(selectedAssetIds);
+    const idsToArchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -180,8 +177,8 @@ export default function PortfolioPage() {
       toast.error(tOverview('batchArchiveError', { count: failCount }));
     }
 
-    setSelectedAssetIds(new Set());
-  }, [selectedAssetIds, updateAsset, tOverview]);
+    selection.clear();
+  }, [selection, updateAsset, tOverview]);
 
   const confirmDelete = async () => {
     if (!deletingAssetId) return;
@@ -201,34 +198,16 @@ export default function PortfolioPage() {
     setEditingAssetId(null);
   };
 
-  const handleToggleSelect = (assetId: string) => {
-    const newSelected = new Set(selectedAssetIds);
-    if (newSelected.has(assetId)) {
-      newSelected.delete(assetId);
-    } else {
-      newSelected.add(assetId);
-    }
-    setSelectedAssetIds(newSelected);
-  };
-
-  const handleSelectAll = () => {
-    if (selectedAssetIds.size === filteredAssets.length) {
-      setSelectedAssetIds(new Set());
-    } else {
-      setSelectedAssetIds(new Set(filteredAssets.map(asset => asset.id)));
-    }
-  };
-
   const handleBatchDelete = useCallback(() => {
-    if (selectedAssetIds.size === 0) return;
+    if (selection.size === 0) return;
     setBatchDeleteDialogOpen(true);
-  }, [selectedAssetIds]);
+  }, [selection.size]);
 
   // Set action buttons in layout
   React.useEffect(() => {
     setActions(
       <>
-        {selectedAssetIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             {/* Archive hidden for now
             <Button
@@ -248,7 +227,7 @@ export default function PortfolioPage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">{tOverview('deleteSelected', { count: selectedAssetIds.size })}</span>
+              <span className="truncate">{tOverview('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -269,14 +248,14 @@ export default function PortfolioPage() {
     );
 
     return () => setActions(null);
-  }, [selectedAssetIds.size, setActions, handleBatchArchive, handleBatchDelete, handleAddAsset, handleImportAssets, tOverview]);
+  }, [selection.size, setActions, handleBatchArchive, handleBatchDelete, handleAddAsset, handleImportAssets, tOverview]);
 
   const confirmBatchDelete = async () => {
-    if (selectedAssetIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteAssets({
-        ids: Array.from(selectedAssetIds),
+        ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -285,9 +264,9 @@ export default function PortfolioPage() {
         toast.success(tOverview('batchDeleteSuccess', { count: result.deleted_count }));
       }
       setBatchDeleteDialogOpen(false);
-      setSelectedAssetIds(new Set());
+      selection.clear();
     } catch (error) {
-      toast.error(tOverview('batchDeleteError', { count: selectedAssetIds.size }));
+      toast.error(tOverview('batchDeleteError', { count: selection.size }));
     }
   };
 
@@ -502,12 +481,12 @@ export default function PortfolioPage() {
             {filteredAssets.length > 0 && (
               <div className="flex items-center gap-2 px-1">
                 <Checkbox
-                  checked={selectedAssetIds.size === filteredAssets.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.size === filteredAssets.length}
+                  onCheckedChange={() => selection.selectAll(filteredAssets.map(asset => asset.id))}
                   aria-label="Select all assets"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedAssetIds.size === filteredAssets.length ? tOverview('deselectAll') : tOverview('selectAll')}
+                  {selection.size === filteredAssets.length ? tOverview('deselectAll') : tOverview('selectAll')}
                 </span>
               </div>
             )}
@@ -528,8 +507,8 @@ export default function PortfolioPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <Checkbox
-                          checked={selectedAssetIds.has(asset.id)}
-                          onCheckedChange={() => handleToggleSelect(asset.id)}
+                          checked={selection.selectedIds.has(asset.id)}
+                          onCheckedChange={() => selection.toggle(asset.id)}
                           onClick={(e) => e.stopPropagation()}
                           aria-label={`Select ${asset.asset_name}`}
                           className="mt-1"
@@ -693,8 +672,8 @@ export default function PortfolioPage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedAssetIds.size === filteredAssets.length}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.size === filteredAssets.length}
+                        onCheckedChange={() => selection.selectAll(filteredAssets.map(asset => asset.id))}
                         aria-label="Select all assets"
                       />
                     </TableHead>
@@ -737,8 +716,8 @@ export default function PortfolioPage() {
                       <TableRow key={asset.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewAsset(asset.id)}>
                         <TableCell>
                           <Checkbox
-                            checked={selectedAssetIds.has(asset.id)}
-                            onCheckedChange={() => handleToggleSelect(asset.id)}
+                            checked={selection.selectedIds.has(asset.id)}
+                            onCheckedChange={() => selection.toggle(asset.id)}
                             onClick={(e) => e.stopPropagation()}
                             aria-label={`Select ${asset.asset_name}`}
                           />
@@ -870,7 +849,7 @@ export default function PortfolioPage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedAssetIds.size}
+        count={selection.size}
         itemName="asset"
         isDeleting={isBatchDeleting}
         cancelLabel={tActions('cancel')}

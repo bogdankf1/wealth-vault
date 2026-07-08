@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { ColumnConfig, ColumnVisibilityState } from '@/lib/hooks/use-column-visibility';
+import type { ColumnConfig, ColumnVisibilityState } from '@/hooks/use-column-visibility';
 
 export interface ColumnSelectorProps {
   columns: ColumnConfig[];

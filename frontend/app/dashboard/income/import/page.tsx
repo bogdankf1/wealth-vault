@@ -44,7 +44,7 @@ import { useListAccountsQuery, type SavingsAccount } from '@/lib/api/savingsApi'
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { useConvertCurrencyMutation } from '@/lib/api/currenciesApi';
-import { hasFeatureAccess } from '@/lib/hooks/use-tier-check';
+import { hasFeatureAccess } from '@/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 import { INCOME_CATEGORY_KEYS, INCOME_CATEGORY_NAME_TO_KEY } from '@/lib/constants/income-categories';

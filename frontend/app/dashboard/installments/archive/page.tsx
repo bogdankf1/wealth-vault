@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Archive, ArchiveRestore, Trash2, LayoutGrid, List, Filter, Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Archive, ArchiveRestore, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
@@ -42,10 +42,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
 import { CurrencyDisplay } from '@/components/currency';
-import { useViewPreferences } from '@/lib/hooks/use-view-preferences';
+import { useViewPreferences } from '@/hooks/use-view-preferences';
+import { ListControlsPopover } from '@/components/ui/list-controls-popover';
+import { useRowSelection } from '@/hooks/use-row-selection';
 import { InstallmentsActionsContext } from '../context';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -87,7 +87,7 @@ export default function InstallmentsArchivePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedInstallmentIds, setSelectedInstallmentIds] = useState<Set<string>>(new Set());
+  const selection = useRowSelection();
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
 
   // Use default view preferences from user settings
@@ -144,18 +144,14 @@ export default function InstallmentsArchivePage() {
     try {
       await updateInstallment({ id, data: { is_active: true } }).unwrap();
       toast.success(tArchive('unarchiveSuccess'));
-      setSelectedInstallmentIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
+      selection.deselect(id);
     } catch (error) {
       toast.error(tArchive('unarchiveError'));
     }
   };
 
   const handleBatchUnarchive = useCallback(async () => {
-    const idsToUnarchive = Array.from(selectedInstallmentIds);
+    const idsToUnarchive = Array.from(selection.selectedIds);
     let successCount = 0;
     let failCount = 0;
 
@@ -175,8 +171,8 @@ export default function InstallmentsArchivePage() {
       toast.error(tArchive('batchUnarchiveError', { count: failCount }));
     }
 
-    setSelectedInstallmentIds(new Set());
-  }, [selectedInstallmentIds, updateInstallment, tArchive]);
+    selection.clear();
+  }, [selection, updateInstallment, tArchive]);
 
   const handleDelete = (id: string) => {
     setDeletingInstallmentId(id);
@@ -191,33 +187,9 @@ export default function InstallmentsArchivePage() {
       toast.success(tArchive('deleteSuccess'));
       setDeleteDialogOpen(false);
       setDeletingInstallmentId(null);
-      setSelectedInstallmentIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(deletingInstallmentId);
-        return newSet;
-      });
+      selection.deselect(deletingInstallmentId);
     } catch (error) {
       toast.error(tArchive('deleteError'));
-    }
-  };
-
-  const handleToggleSelect = (installmentId: string) => {
-    setSelectedInstallmentIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(installmentId)) {
-        newSet.delete(installmentId);
-      } else {
-        newSet.add(installmentId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedInstallmentIds.size === filteredInstallments.length && filteredInstallments.length > 0) {
-      setSelectedInstallmentIds(new Set());
-    } else {
-      setSelectedInstallmentIds(new Set(filteredInstallments.map((installment) => installment.id)));
     }
   };
 
@@ -226,11 +198,11 @@ export default function InstallmentsArchivePage() {
   };
 
   const confirmBatchDelete = async () => {
-    if (selectedInstallmentIds.size === 0) return;
+    if (selection.size === 0) return;
 
     try {
       const result = await batchDeleteInstallments({
-        ids: Array.from(selectedInstallmentIds),
+        ids: Array.from(selection.selectedIds),
       }).unwrap();
 
       if (result.failed_ids.length > 0) {
@@ -240,7 +212,7 @@ export default function InstallmentsArchivePage() {
       }
 
       setBatchDeleteDialogOpen(false);
-      setSelectedInstallmentIds(new Set());
+      selection.clear();
     } catch (error) {
       toast.error(tArchive('batchDeleteError'));
     }
@@ -250,7 +222,7 @@ export default function InstallmentsArchivePage() {
   React.useEffect(() => {
     setActions(
       <>
-        {selectedInstallmentIds.size > 0 && (
+        {selection.size > 0 && (
           <>
             <Button
               onClick={handleBatchUnarchive}
@@ -259,7 +231,7 @@ export default function InstallmentsArchivePage() {
               className="w-full sm:w-auto"
             >
               <ArchiveRestore className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('unarchiveSelected', { count: selectedInstallmentIds.size })}</span>
+              <span className="truncate">{tArchive('unarchiveSelected', { count: selection.size })}</span>
             </Button>
             <Button
               onClick={handleBatchDelete}
@@ -268,7 +240,7 @@ export default function InstallmentsArchivePage() {
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span className="truncate">{tArchive('deleteSelected', { count: selectedInstallmentIds.size })}</span>
+              <span className="truncate">{tArchive('deleteSelected', { count: selection.size })}</span>
             </Button>
           </>
         )}
@@ -276,7 +248,7 @@ export default function InstallmentsArchivePage() {
     );
 
     return () => setActions(null);
-  }, [selectedInstallmentIds.size, setActions, handleBatchUnarchive, tArchive]);
+  }, [selection.size, setActions, handleBatchUnarchive, tArchive]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -315,19 +287,9 @@ export default function InstallmentsArchivePage() {
           </div>
 
           {/* Filters Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
-                <Filter className="h-4 w-4" />
-                {activeFilterCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="end">
-              {/* Filter section */}
+          <ListControlsPopover
+            activeFilterCount={activeFilterCount}
+            filterSlot={
               <div className="p-2 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.filter')}</p>
 
@@ -352,68 +314,14 @@ export default function InstallmentsArchivePage() {
                   </Select>
                 </div>
               </div>
-
-              <Separator />
-
-              {/* Sort section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.sort')}</p>
-                <div className="flex items-center gap-2">
-                  <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
-                    <SelectTrigger className="h-8 flex-1 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">{tCommon('common.name')}</SelectItem>
-                      <SelectItem value="amount">{tCommon('common.amount')}</SelectItem>
-                      <SelectItem value="date">{tCommon('common.date')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="h-8 gap-1.5 flex-shrink-0"
-                  >
-                    {sortDirection === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
-                    <span className="text-sm">
-                      {sortField === 'name'
-                        ? (sortDirection === 'asc' ? tCommon('common.sortAZ') : tCommon('common.sortZA'))
-                        : sortField === 'amount'
-                          ? (sortDirection === 'asc' ? tCommon('common.sortLowToHigh') : tCommon('common.sortHighToLow'))
-                          : (sortDirection === 'asc' ? tCommon('common.sortOldestFirst') : tCommon('common.sortNewestFirst'))
-                      }
-                    </span>
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* View section */}
-              <div className="p-2 space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tCommon('common.view')}</p>
-                <div className="inline-flex items-center gap-1 border rounded-md p-0.5" style={{ height: '32px' }}>
-                  <Button
-                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('card')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="h-[32px] w-[32px] p-0"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+            }
+            sortField={sortField}
+            setSortField={setSortField}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+          />
         </div>
       )}
 
@@ -438,12 +346,12 @@ export default function InstallmentsArchivePage() {
             {filteredInstallments.length > 0 && (
               <div className="flex items-center gap-2 px-1 mb-4">
                 <Checkbox
-                  checked={selectedInstallmentIds.size === filteredInstallments.length}
-                  onCheckedChange={handleSelectAll}
+                  checked={selection.isAllSelected(filteredInstallments.length)}
+                  onCheckedChange={() => selection.selectAll(filteredInstallments.map((installment) => installment.id))}
                   aria-label={tCommon('common.selectAll')}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedInstallmentIds.size === filteredInstallments.length ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
+                  {selection.isAllSelected(filteredInstallments.length) ? tCommon('common.deselectAll') : tCommon('common.selectAll')}
                 </span>
               </div>
             )}
@@ -489,8 +397,8 @@ export default function InstallmentsArchivePage() {
                       <div className="flex items-start gap-3 flex-1">
                         <div onClick={(e) => e.stopPropagation()}>
                           <Checkbox
-                            checked={selectedInstallmentIds.has(installment.id)}
-                            onCheckedChange={() => handleToggleSelect(installment.id)}
+                            checked={selection.selectedIds.has(installment.id)}
+                            onCheckedChange={() => selection.toggle(installment.id)}
                             aria-label={`Select ${installment.name}`}
                             className="mt-1"
                           />
@@ -618,8 +526,8 @@ export default function InstallmentsArchivePage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedInstallmentIds.size === filteredInstallments.length && filteredInstallments.length > 0}
-                        onCheckedChange={handleSelectAll}
+                        checked={selection.isAllSelected(filteredInstallments.length) && filteredInstallments.length > 0}
+                        onCheckedChange={() => selection.selectAll(filteredInstallments.map((installment) => installment.id))}
                         aria-label={tCommon('common.selectAll')}
                       />
                     </TableHead>
@@ -647,8 +555,8 @@ export default function InstallmentsArchivePage() {
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
-                            checked={selectedInstallmentIds.has(installment.id)}
-                            onCheckedChange={() => handleToggleSelect(installment.id)}
+                            checked={selection.selectedIds.has(installment.id)}
+                            onCheckedChange={() => selection.toggle(installment.id)}
                             aria-label={`Select ${installment.name}`}
                           />
                         </TableCell>
@@ -739,9 +647,9 @@ export default function InstallmentsArchivePage() {
         open={batchDeleteDialogOpen}
         onOpenChange={setBatchDeleteDialogOpen}
         onConfirm={confirmBatchDelete}
-        count={selectedInstallmentIds.size}
-        title={tArchive('batchDeleteTitle', { count: selectedInstallmentIds.size })}
-        description={tArchive('batchDeleteDescription', { count: selectedInstallmentIds.size })}
+        count={selection.size}
+        title={tArchive('batchDeleteTitle', { count: selection.size })}
+        description={tArchive('batchDeleteDescription', { count: selection.size })}
         cancelLabel={tCommon('actions.cancel')}
         deleteLabel={tCommon('actions.delete')}
         deletingLabel={tCommon('actions.deleting')}

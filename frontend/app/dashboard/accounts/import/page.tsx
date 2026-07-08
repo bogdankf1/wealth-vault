@@ -41,7 +41,7 @@ import { useCreateAccountMutation, useListAccountsQuery, type AccountType } from
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useGetMyPreferencesQuery } from '@/lib/api/preferencesApi';
 import { useConvertCurrencyMutation } from '@/lib/api/currenciesApi';
-import { hasFeatureAccess } from '@/lib/hooks/use-tier-check';
+import { hasFeatureAccess } from '@/hooks/use-tier-check';
 import { UpgradePromptDialog } from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 

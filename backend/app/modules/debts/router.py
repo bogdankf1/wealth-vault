@@ -7,6 +7,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.ownership import get_owned_or_404
 from app.core.permissions import get_current_user, require_feature
 from app.models.user import User
 from app.modules.debts import service
@@ -93,9 +94,9 @@ async def get_debt(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific debt"""
-    debt = await service.get_debt(db, debt_id, current_user.id)
-    if not debt:
-        raise HTTPException(status_code=404, detail="Debt not found")
+    debt = await get_owned_or_404(
+        service.get_debt, db, debt_id, current_user.id, detail="Debt not found"
+    )
 
     # Convert to display currency
     await service.convert_debt_to_display_currency(db, current_user.id, debt)
@@ -179,9 +180,9 @@ async def record_payment(
     db: AsyncSession = Depends(get_db)
 ):
     """Record a payment received for a debt"""
-    debt = await service.get_debt(db, debt_id, current_user.id)
-    if not debt:
-        raise HTTPException(status_code=404, detail="Debt not found")
+    debt = await get_owned_or_404(
+        service.get_debt, db, debt_id, current_user.id, detail="Debt not found"
+    )
 
     payment = await service.record_debt_payment(db, debt, payment_data)
     await db.commit()
@@ -198,9 +199,9 @@ async def get_payments(
     db: AsyncSession = Depends(get_db)
 ):
     """Get all payments for a debt"""
-    debt = await service.get_debt(db, debt_id, current_user.id)
-    if not debt:
-        raise HTTPException(status_code=404, detail="Debt not found")
+    debt = await get_owned_or_404(
+        service.get_debt, db, debt_id, current_user.id, detail="Debt not found"
+    )
 
     payments = await service.get_debt_payments(db, debt_id, current_user.id)
 

@@ -19,7 +19,7 @@ from app.core.logging_config import setup_logging, get_logger
 from app.core.exceptions import WealthVaultException
 from app.core.redis import close_redis
 from app.api.v1.auth import router as auth_router
-from app.modules.income.api import router as income_router
+from app.modules.income.router import router as income_router
 from app.modules.expenses.router import router as expenses_router
 from app.modules.savings.router import router as savings_router
 from app.modules.subscriptions.router import router as subscriptions_router
@@ -32,7 +32,7 @@ from app.modules.agent.router import router as agent_router
 from app.modules.budgets.router import router as budgets_router
 from app.modules.debts.router import router as debts_router
 from app.modules.taxes.router import router as taxes_router
-from app.modules.dashboard_layouts.api import router as dashboard_layouts_router
+from app.modules.dashboard_layouts.router import router as dashboard_layouts_router
 from app.modules.exports.router import router as exports_router
 from app.modules.backups.router import router as backups_router
 from app.modules.support.router import router as support_router
@@ -43,7 +43,7 @@ from app.api.v1.admin.tiers import router as admin_tiers_router
 from app.api.v1.admin.config import router as admin_config_router
 from app.api.v1.admin.analytics import router as admin_analytics_router
 from app.modules.currency.router import router as currency_router
-from app.modules.notifications.api import router as notifications_router
+from app.modules.notifications.router import router as notifications_router
 
 # Setup logging
 setup_logging(debug=settings.DEBUG)
