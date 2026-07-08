@@ -66,7 +66,7 @@ CASES = [
     # ---- pre-existing cases (must keep passing) ----
     ("How much did I spend on dining in May 2026?",
      lambda r: "76.5" in norm(r["answer"]) and not r["refused"]),
-    ("What did I spend on groceries last month?",
+    ("What did I spend on groceries in May 2026?",
      lambda r: "140.95" in norm(r["answer"])),
     ("What's my net worth right now?",
      lambda r: "23820.5" in norm(r["answer"])),

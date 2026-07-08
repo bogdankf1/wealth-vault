@@ -49,7 +49,7 @@ tests:
           return true;
 
   - description: groceries spend in May 2026 = 140.95
-    vars: { question: 'What did I spend on groceries last month?' }
+    vars: { question: 'What did I spend on groceries in May 2026?' }
     assert:
       - type: javascript
         value: |
