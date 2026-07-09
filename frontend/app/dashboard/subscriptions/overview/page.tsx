@@ -107,9 +107,8 @@ export default function SubscriptionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Default to current month in YYYY-MM format
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(currentMonth);
+  // Default to no month filter so all subscriptions are shown
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const selection = useRowSelection();
