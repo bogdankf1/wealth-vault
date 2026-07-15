@@ -45,6 +45,7 @@ import { NAVIGATION_FEATURES } from '@/lib/constants/feature-map';
 import { useGetUserFeaturesQuery } from '@/lib/api/authApi';
 import { AuthErrorHandler } from '@/components/auth/auth-error-handler';
 import { AgentSheet } from '@/components/agent/agent-sheet';
+import { DemoBanner } from '@/components/demo/demo-banner';
 // import { SessionDebug } from '@/components/debug/session-debug';
 
 export default function DashboardLayout({
@@ -406,6 +407,7 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        <DemoBanner />
         {/* Mobile header with quick actions */}
         <div className="xl:hidden flex items-center justify-between h-10 px-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           {/* Logo */}
