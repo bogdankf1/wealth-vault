@@ -8,7 +8,7 @@ from typing import Optional
 import stripe
 
 from app.core.database import get_db
-from app.core.permissions import get_current_user
+from app.core.permissions import get_current_user, forbid_demo_users
 from app.core.config import settings
 from app.core.logging_config import get_logger
 
@@ -66,7 +66,7 @@ async def list_tiers(
 @router.post("/create-checkout", response_model=CreateCheckoutSessionResponse)
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(forbid_demo_users),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -414,7 +414,7 @@ async def get_payment_history(
 @router.post("/paypal/activate", response_model=PayPalActivateSubscriptionResponse)
 async def activate_paypal_subscription(
     request: PayPalActivateSubscriptionRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(forbid_demo_users),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -568,7 +568,7 @@ async def paypal_webhook(
 @router.post("/paddle/activate", response_model=PaddleActivateSubscriptionResponse)
 async def activate_paddle_subscription(
     request: PaddleActivateSubscriptionRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(forbid_demo_users),
     db: AsyncSession = Depends(get_db),
 ):
     """
