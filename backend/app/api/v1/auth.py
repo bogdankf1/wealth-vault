@@ -169,7 +169,7 @@ async def create_demo_session(
             User.is_demo.is_(True), User.demo_expires_at > now
         )
     )
-    if live is not None and live >= settings.MAX_LIVE_DEMOS:
+    if live >= settings.MAX_LIVE_DEMOS:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Demo is at capacity, please try again shortly.",
