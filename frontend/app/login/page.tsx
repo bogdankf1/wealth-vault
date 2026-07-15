@@ -42,6 +42,10 @@ function LoginForm() {
     await signIn('google', { callbackUrl });
   };
 
+  const handleDemoSignIn = async () => {
+    await signIn('demo', { callbackUrl: '/dashboard' });
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="w-full max-w-md p-4 lg:p-8 space-y-4 lg:space-y-6 bg-white rounded-lg shadow-xl dark:bg-gray-800">
@@ -90,6 +94,19 @@ function LoginForm() {
               />
             </svg>
             {t('button.google')}
+          </button>
+
+          <div className="relative flex items-center py-1">
+            <div className="flex-grow border-t border-gray-200 dark:border-gray-700" />
+            <span className="mx-2 text-xs text-gray-400">{t('button.or')}</span>
+            <div className="flex-grow border-t border-gray-200 dark:border-gray-700" />
+          </div>
+
+          <button
+            onClick={handleDemoSignIn}
+            className="flex items-center justify-center w-full px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            ✨ {t('button.demo')}
           </button>
 
           <div className="text-xs text-center text-gray-500 dark:text-gray-400">

@@ -2,7 +2,9 @@
   "title": "Wealth Vault",
   "tagline": "Ultimative persönliche Finanzverwaltung",
   "button": {
-    "google": "Mit Google fortfahren"
+    "google": "Mit Google fortfahren",
+    "demo": "Live-Demo erkunden",
+    "or": "oder"
   },
   "legal": "Durch Fortfahren stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu",
   "loading": "Wird geladen..."

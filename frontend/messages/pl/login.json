@@ -2,7 +2,9 @@
   "title": "Wealth Vault",
   "tagline": "Najlepsze narzędzie do zarządzania finansami osobistymi",
   "button": {
-    "google": "Kontynuuj z Google"
+    "google": "Kontynuuj z Google",
+    "demo": "Wypróbuj demo na żywo",
+    "or": "lub"
   },
   "legal": "Kontynuując, akceptujesz nasze Warunki korzystania z usługi i Politykę prywatności",
   "loading": "Ładowanie..."
