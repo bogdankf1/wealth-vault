@@ -1,17 +1,19 @@
 """Celery task: purge expired demo users and all their data."""
-import asyncio
+import logging
 from datetime import datetime, timezone
 
 from sqlalchemy import select, delete, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.celery_app import celery_app
 from app.tasks.base import BaseTask, get_async_db_session
 from app.models.user import User
 
-# user_id FKs WITHOUT ON DELETE CASCADE (verified via pg_constraint) — clear before deleting
-# the user. Children are listed before their non-cascade parents so per-table FK constraints
-# (e.g. income_transactions.source_id -> income_sources, support_messages.topic_id ->
-# support_topics) don't block the parent row's delete.
+logger = logging.getLogger(__name__)
+
+# user_id FKs WITHOUT ON DELETE CASCADE — must be deleted before the user (children before
+# parents). If a future migration adds a new user-owned table without ON DELETE CASCADE, add it
+# here or the nightly purge will fail with an FK violation.
 NON_CASCADE_TABLES = (
     "income_transactions",
     "income_sources",
@@ -22,7 +24,7 @@ NON_CASCADE_TABLES = (
 )
 
 
-async def _purge_expired(db) -> int:
+async def _purge_expired(db: AsyncSession) -> int:
     now = datetime.now(timezone.utc)
     result = await db.execute(
         select(User.id).where(
@@ -46,7 +48,12 @@ async def _purge_expired(db) -> int:
 
 @celery_app.task(base=BaseTask, bind=True, name="tasks.demo.purge_expired_demo_users")
 def purge_expired_demo_users(self):
+    import asyncio
+
     async def _run():
         async with get_async_db_session() as db:
             return await _purge_expired(db)
-    return asyncio.get_event_loop().run_until_complete(_run())
+
+    count = asyncio.get_event_loop().run_until_complete(_run())
+    logger.info("Purged %d expired demo users", count)
+    return {"purged": count}
