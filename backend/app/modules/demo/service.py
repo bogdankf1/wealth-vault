@@ -19,6 +19,8 @@ CLONE_TABLES: list[tuple[str, dict[str, str]]] = [
     ("debts", {"deposit_account_id": "savings_accounts"}),
     ("taxes", {"payment_account_id": "savings_accounts", "income_source_id": "income_sources"}),
     ("subscriptions", {"payment_account_id": "savings_accounts"}),
+    # account_transactions.source_id is a POLYMORPHIC soft-pointer (keyed by source_type), not a real
+    # FK — deliberately NOT remapped. It is NULL in the template today; revisit if that ever changes.
     ("account_transactions", {"account_id": "savings_accounts"}),
     ("expenses", {"payment_account_id": "savings_accounts", "account_transaction_id": "account_transactions"}),
     ("income_transactions", {"source_id": "income_sources", "deposited_to_account_id": "savings_accounts", "account_transaction_id": "account_transactions"}),
@@ -57,6 +59,8 @@ async def clone_user_data(db: AsyncSession, template_user_id: UUID, new_user_id:
             else:
                 exprs.append(f'"{c}"')
         col_list = ", ".join(f'"{c}"' for c in cols)
-        sql = (f'INSERT INTO "{table}" ({col_list}) '
-               f'SELECT {", ".join(exprs)} FROM "{table}" WHERE user_id = CAST(:template AS uuid)')
+        where = "user_id = CAST(:template AS uuid)"
+        if "deleted_at" in cols:
+            where += " AND deleted_at IS NULL"  # never clone soft-deleted rows
+        sql = f'INSERT INTO "{table}" ({col_list}) SELECT {", ".join(exprs)} FROM "{table}" WHERE {where}'
         await db.execute(text(sql), params)
