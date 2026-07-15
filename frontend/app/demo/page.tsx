@@ -4,13 +4,19 @@
  */
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { signIn } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 
 export default function DemoPage() {
+  const hasSignedInRef = useRef(false);
+
   useEffect(() => {
-    signIn('demo', { callbackUrl: '/dashboard' });
+    if (hasSignedInRef.current) return;
+    hasSignedInRef.current = true;
+    signIn('demo', { callbackUrl: '/dashboard' }).catch(() => {
+      window.location.href = '/login?error=CredentialsSignin';
+    });
   }, []);
 
   return (
