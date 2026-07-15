@@ -37,6 +37,11 @@ async def _purge_expired(db: AsyncSession) -> int:
     if not ids:
         return 0
     for table in NON_CASCADE_TABLES:
+        # Schemas can differ across environments (e.g. a table cascades on prod but
+        # is absent on a dev DB). Skip any listed table that doesn't exist here so one
+        # environment's schema can't break the purge.
+        if await db.scalar(text("SELECT to_regclass(:t)"), {"t": f"public.{table}"}) is None:
+            continue
         await db.execute(
             text(f'DELETE FROM "{table}" WHERE user_id = ANY(CAST(:ids AS uuid[]))'),
             {"ids": ids},
