@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useIsDemo } from '@/hooks/use-is-demo';
 
 interface UpgradePromptProps {
   feature: string;
@@ -16,6 +17,7 @@ interface UpgradePromptProps {
 export function UpgradePrompt({ feature, currentTier, requiredTier, onDismiss }: UpgradePromptProps) {
   const router = useRouter();
   const [isDismissed, setIsDismissed] = useState(false);
+  const isDemo = useIsDemo();
 
   const handleUpgrade = () => {
     router.push('/dashboard/pricing');
@@ -27,6 +29,7 @@ export function UpgradePrompt({ feature, currentTier, requiredTier, onDismiss }:
   };
 
   if (isDismissed) return null;
+  if (isDemo) return null;
 
   return (
     <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
@@ -78,6 +81,9 @@ export function InlineUpgradePrompt({
   compact = false,
 }: InlineUpgradePromptProps) {
   const router = useRouter();
+  const isDemo = useIsDemo();
+
+  if (isDemo) return null;
 
   if (compact) {
     return (
@@ -133,7 +139,9 @@ export function UpgradePromptDialog({
   currentLimit,
 }: UpgradePromptDialogProps) {
   const router = useRouter();
+  const isDemo = useIsDemo();
 
+  if (isDemo) return null;
   if (!isOpen) return null;
 
   return (
