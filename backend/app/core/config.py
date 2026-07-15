@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Demo mode
+    DEMO_TEMPLATE_USER_ID: str = "00000000-0000-0000-0000-0000000000d2"
+    DEMO_TTL_HOURS: int = 24
+    MAX_LIVE_DEMOS: int = 100
+
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]
 
