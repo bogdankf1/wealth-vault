@@ -1,12 +1,12 @@
 """Shared helpers: currency conversion, asset metrics, account transaction helpers."""
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Optional, Dict, Any
+from typing import Optional
 from uuid import UUID
 import logging
-from sqlalchemy import and_, func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.modules.portfolio.models import PortfolioAsset, PortfolioTransaction, TransactionType
+from app.modules.portfolio.models import PortfolioAsset
 from app.services.currency_service import CurrencyService
 
 logger = logging.getLogger("app.modules.portfolio.service")

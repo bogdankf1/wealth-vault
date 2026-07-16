@@ -1,17 +1,11 @@
 """Goal statistics."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select
 from uuid import UUID
 from decimal import Decimal
-from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory
+from app.modules.goals.models import Goal
 from app.modules.goals.schemas import (
-    GoalCreate,
-    GoalUpdate,
-    GoalStats,
-    GoalAccountLinkCreate,
-    GoalAccountLinkUpdate,
-    GoalAccountLinkResponse,
-    LinkedAccountInfo
+    GoalStats
 )
 from app.services.currency_service import CurrencyService
 from .common import calculate_projected_completion_date, get_user_display_currency

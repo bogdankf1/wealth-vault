@@ -1,14 +1,13 @@
 """Subscription CRUD and lifecycle (pause/resume/cancel)."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_
 from typing import Optional, Tuple, List
 from uuid import UUID
 from datetime import datetime
-from app.modules.subscriptions.models import Subscription, SubscriptionPayment
+from app.modules.subscriptions.models import Subscription
 from app.modules.subscriptions.schemas import (
     SubscriptionCreate,
-    SubscriptionUpdate,
-    SubscriptionStats
+    SubscriptionUpdate
 )
 from .common import calculate_next_payment_date, logger
 from .payments import backfill_subscription_payments, reverse_subscription_payments

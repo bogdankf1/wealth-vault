@@ -1,15 +1,13 @@
 """Asset CRUD operations."""
-from datetime import datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
-from typing import Optional, Dict, Any
+from typing import Optional
 from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.portfolio.models import PortfolioAsset, PortfolioTransaction, TransactionType
 from app.modules.portfolio.schemas import (
-    PortfolioAssetCreate, PortfolioAssetUpdate, PortfolioStats,
-    BuyAssetRequest, SellAssetRequest,
-    RecordDividendRequest, PriceUpdateResponse
+    PortfolioAssetCreate, PortfolioAssetUpdate
 )
 from app.modules.savings.transaction_service import InsufficientFundsError
 from .common import _calculate_next_dividend_date, _create_account_withdrawal, calculate_asset_metrics, logger

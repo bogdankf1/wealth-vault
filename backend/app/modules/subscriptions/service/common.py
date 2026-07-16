@@ -1,13 +1,13 @@
 """Shared helpers: currency conversion and subscription date math."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
-from typing import Optional, Tuple, List
+from sqlalchemy import select
+from typing import Tuple
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import logging
-from app.modules.subscriptions.models import Subscription, SubscriptionPayment
+from app.modules.subscriptions.models import Subscription
 from app.services.currency_service import CurrencyService
 
 logger = logging.getLogger("app.modules.subscriptions.service")

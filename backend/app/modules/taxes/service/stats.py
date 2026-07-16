@@ -1,13 +1,12 @@
 """Tax statistics and income-tax summaries."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 from decimal import Decimal
-from app.modules.taxes.models import Tax, TaxPayment
+from app.modules.taxes.models import Tax
 from app.modules.taxes.schemas import (
-    TaxCreate, TaxUpdate, TaxStats,
-    TaxPaymentCreate, PayTaxRequest
+    TaxStats
 )
 from app.services.currency_service import CurrencyService
 from .common import get_total_monthly_income, get_user_display_currency

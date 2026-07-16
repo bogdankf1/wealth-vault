@@ -1,15 +1,13 @@
 """Installment statistics and history."""
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
-from typing import Optional, Tuple
+from typing import Optional
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from app.modules.installments.models import Installment, InstallmentPayment
+from app.modules.installments.models import Installment
 from app.modules.installments.schemas import (
-    InstallmentCreate,
-    InstallmentUpdate,
     InstallmentStats
 )
 from app.services.currency_service import CurrencyService
@@ -185,7 +183,6 @@ async def get_installment_history(
 ) -> dict:
     """Get installment payment history grouped by month."""
     from collections import defaultdict
-    from dateutil.relativedelta import relativedelta
     from app.modules.installments.models import Installment
     from app.modules.installments.schemas import MonthlyInstallmentHistory, InstallmentHistoryResponse
     

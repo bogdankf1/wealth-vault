@@ -302,7 +302,7 @@ async def get_asset_transactions(
 ):
     """Get transaction history for an asset"""
     # Verify asset exists and belongs to user
-    asset = await get_owned_or_404(
+    await get_owned_or_404(
         service.get_asset, db, current_user.id, asset_id, detail="Portfolio asset not found"
     )
 

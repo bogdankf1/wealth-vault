@@ -5,10 +5,9 @@ from sqlalchemy.orm import selectinload
 from typing import Optional, Tuple
 from uuid import UUID
 from datetime import datetime
-from app.modules.taxes.models import Tax, TaxPayment
+from app.modules.taxes.models import Tax
 from app.modules.taxes.schemas import (
-    TaxCreate, TaxUpdate, TaxStats,
-    TaxPaymentCreate, PayTaxRequest
+    TaxCreate, TaxUpdate
 )
 from .common import calculate_next_payment_date
 

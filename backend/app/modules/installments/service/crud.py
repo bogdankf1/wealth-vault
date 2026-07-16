@@ -1,15 +1,14 @@
 """Installment CRUD and status transitions."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_
 from typing import Optional, Tuple
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
-from app.modules.installments.models import Installment, InstallmentPayment
+from app.modules.installments.models import Installment
 from app.modules.installments.schemas import (
     InstallmentCreate,
-    InstallmentUpdate,
-    InstallmentStats
+    InstallmentUpdate
 )
 from .common import calculate_end_date, calculate_next_installment_payment_date, calculate_payments_made, calculate_remaining_balance, logger
 from .payments import backfill_installment_payments, reverse_installment_payments

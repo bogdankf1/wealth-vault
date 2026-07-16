@@ -347,7 +347,7 @@ async def get_progress_history(
 ):
     """Get progress history for a goal"""
     # Verify goal exists
-    goal = await get_owned_or_404(
+    await get_owned_or_404(
         service.get_goal, db, current_user.id, goal_id, include_links=False, detail="Goal not found"
     )
 

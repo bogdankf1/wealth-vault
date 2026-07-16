@@ -2,21 +2,14 @@
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
-from typing import Optional, List
+from typing import List
 from uuid import UUID
 from decimal import Decimal
-from app.modules.expenses.models import Expense, ExpenseFrequency, ExpenseStatus
+from app.modules.expenses.models import Expense, ExpenseStatus
 from app.modules.expenses.schemas import (
-    ExpenseCreate,
-    ExpenseUpdate,
-    ExpenseStats,
-    ExpenseHistoryResponse,
-    MonthlyExpenseHistory,
     PayExpenseRequest,
-    PayExpenseResponse,
-    ExpensePaymentSummary
+    PayExpenseResponse
 )
-from app.services.currency_service import CurrencyService
 from .common import convert_expense_to_display_currency, logger
 
 async def pay_expense(

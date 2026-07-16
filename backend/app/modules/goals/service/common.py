@@ -1,13 +1,13 @@
 """Shared helpers: currency conversion and progress math."""
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
-from typing import Optional, Tuple
+from sqlalchemy import select
+from typing import Optional
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory
+from app.modules.goals.models import Goal
 from app.services.currency_service import CurrencyService
 
 logger = logging.getLogger("app.modules.goals.service")

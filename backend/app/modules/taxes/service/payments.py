@@ -8,7 +8,6 @@ from decimal import Decimal
 from datetime import datetime
 from app.modules.taxes.models import Tax, TaxPayment
 from app.modules.taxes.schemas import (
-    TaxCreate, TaxUpdate, TaxStats,
     TaxPaymentCreate, PayTaxRequest
 )
 from app.services.currency_service import CurrencyService
