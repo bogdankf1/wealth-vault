@@ -34,7 +34,7 @@ BEGIN
   VALUES (a_fop_uah,u,'FOP Monobank Гривня','personal','Monobank','7788',512000.00,'UAH',true,'FOP account','monthly','compound',0,now(),now());
   a_sense_uah := gen_random_uuid();
   INSERT INTO savings_accounts (id,user_id,name,account_type,institution,account_number_last4,current_balance,currency,is_active,notes,interest_rate,interest_frequency,interest_accrual_method,accrued_interest,created_at,updated_at)
-  VALUES (a_sense_uah,u,'Sense Bank Депозит','savings','Sense Bank','3390',96400.25,'UAH',true,'Term deposit 12%',0.1250,'monthly','compound',0,now(),now());
+  VALUES (a_sense_uah,u,'Sense Bank Депозит','fixed_deposit','Sense Bank','3390',96400.25,'UAH',true,'Term deposit 12%',0.1250,'monthly','compound',0,now(),now());
   a_osch_uah := gen_random_uuid();
   INSERT INTO savings_accounts (id,user_id,name,account_type,institution,account_number_last4,current_balance,currency,is_active,notes,interest_frequency,interest_accrual_method,accrued_interest,created_at,updated_at)
   VALUES (a_osch_uah,u,'Oschadbank Картка','personal','Oschadbank','5567',42880.10,'UAH',true,'VISA','monthly','compound',0,now(),now());
@@ -59,7 +59,7 @@ BEGIN
   VALUES (a_wise_usd,u,'Wise USD','personal','Wise','2201',21600.00,'USD',true,'Multi-currency','monthly','compound',0,now(),now());
   a_ibkr_usd := gen_random_uuid();
   INSERT INTO savings_accounts (id,user_id,name,account_type,institution,account_number_last4,current_balance,currency,is_active,notes,interest_frequency,interest_accrual_method,accrued_interest,created_at,updated_at)
-  VALUES (a_ibkr_usd,u,'Interactive Brokers Cash','investment','Interactive Brokers','3388',28900.00,'USD',true,'Brokerage cash','monthly','compound',0,now(),now());
+  VALUES (a_ibkr_usd,u,'Interactive Brokers Cash','business','Interactive Brokers','3388',28900.00,'USD',true,'Brokerage cash','monthly','compound',0,now(),now());
   a_cash_usd := gen_random_uuid();
   INSERT INTO savings_accounts (id,user_id,name,account_type,current_balance,currency,is_active,notes,interest_frequency,interest_accrual_method,accrued_interest,created_at,updated_at)
   VALUES (a_cash_usd,u,'Cash USD','cash',9000.00,'USD',true,'Cash','monthly','compound',0,now(),now());
@@ -349,7 +349,7 @@ BEGIN
   -- 14) BUDGETS (6)
   -------------------------------------------------------------------
   INSERT INTO budgets (id,user_id,name,category,description,amount,currency,period,start_date,is_active,rollover_unused,rollover_amount,alert_threshold,current_period_start,created_at,updated_at)
-  SELECT gen_random_uuid(), u, x.nm, x.cat, x.descr, x.amt, x.cur, 'monthly', DATE '2026-07-01', true, false, 0, 80, TIMESTAMP '2026-07-01', now(), now()
+  SELECT gen_random_uuid(), u, x.nm, x.cat, x.descr, x.amt, x.cur, 'MONTHLY', DATE '2026-07-01', true, false, 0, 80, TIMESTAMP '2026-07-01', now(), now()
   FROM (VALUES
     ('Groceries','groceries','Monthly food budget',15000.00::numeric,'UAH'),
     ('Dining Out','diningOut','Restaurants and cafes',8000.00,'UAH'),

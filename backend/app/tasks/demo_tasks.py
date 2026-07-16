@@ -21,6 +21,9 @@ NON_CASCADE_TABLES = (
     "support_topics",
     "budgets",
     "backups",
+    # notifications: user_id FK is non-cascade in the model; it exists (and cascades) on prod but
+    # is absent on some dev DBs. Listed defensively — _purge_expired skips any table absent here.
+    "notifications",
 )
 
 
