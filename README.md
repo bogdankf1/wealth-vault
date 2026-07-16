@@ -156,6 +156,10 @@ wealth-vault/
 7. **Seed initial data (tiers, features)**:
    ```bash
    python -m app.scripts.seed_data
+   # Required (once per environment, after seed_data) for public Demo Mode:
+   # provisions the frozen demo-template user that /api/v1/auth/demo clones from.
+   # Without it, /demo still works but hands out EMPTY demo accounts.
+   python -m app.scripts.seed_demo_template
    ```
 
 8. **Start development server**:
@@ -245,6 +249,8 @@ alembic revision --autogenerate -m "description"
 
 # Seed database
 python -m app.scripts.seed_data
+# Seed the demo-mode template (once per env; required for /demo to clone real data)
+python -m app.scripts.seed_demo_template
 
 # Run tests (Phase 1+)
 pytest

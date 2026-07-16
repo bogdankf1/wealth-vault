@@ -3,7 +3,7 @@
  */
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -40,6 +40,18 @@ function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     await signIn('google', { callbackUrl });
+  };
+
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
+
+  const handleDemoSignIn = async () => {
+    if (isDemoLoading) return;
+    setIsDemoLoading(true);
+    try {
+      await signIn('demo', { callbackUrl: '/dashboard' });
+    } catch {
+      window.location.href = '/login?error=CredentialsSignin';
+    }
   };
 
   return (
@@ -90,6 +102,20 @@ function LoginForm() {
               />
             </svg>
             {t('button.google')}
+          </button>
+
+          <div className="relative flex items-center py-1">
+            <div className="flex-grow border-t border-gray-200 dark:border-gray-700" />
+            <span className="mx-2 text-xs text-gray-400">{t('button.or')}</span>
+            <div className="flex-grow border-t border-gray-200 dark:border-gray-700" />
+          </div>
+
+          <button
+            onClick={handleDemoSignIn}
+            disabled={isDemoLoading}
+            className="flex items-center justify-center w-full px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span aria-hidden="true">✨</span> {t('button.demo')}
           </button>
 
           <div className="text-xs text-center text-gray-500 dark:text-gray-400">

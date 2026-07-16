@@ -1,19 +1,15 @@
 """Expense statistics, history, and payment summaries."""
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
-from typing import Optional, List
+from sqlalchemy import select, and_
+from typing import Optional
 from uuid import UUID
 from decimal import Decimal
 from app.modules.expenses.models import Expense, ExpenseFrequency, ExpenseStatus
 from app.modules.expenses.schemas import (
-    ExpenseCreate,
-    ExpenseUpdate,
     ExpenseStats,
     ExpenseHistoryResponse,
     MonthlyExpenseHistory,
-    PayExpenseRequest,
-    PayExpenseResponse,
     ExpensePaymentSummary
 )
 from app.services.currency_service import CurrencyService

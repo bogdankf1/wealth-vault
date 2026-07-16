@@ -1,10 +1,10 @@
 """Shared helpers: currency conversion, frequency math."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select
 from uuid import UUID
 from decimal import Decimal
 import logging
-from app.modules.expenses.models import Expense, ExpenseFrequency, ExpenseStatus
+from app.modules.expenses.models import Expense, ExpenseFrequency
 from app.services.currency_service import CurrencyService
 
 logger = logging.getLogger("app.modules.expenses.service")

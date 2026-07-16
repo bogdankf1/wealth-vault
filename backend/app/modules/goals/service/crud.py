@@ -5,15 +5,10 @@ from sqlalchemy.orm import selectinload
 from typing import Optional, Tuple
 from uuid import UUID
 from datetime import datetime
-from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory
+from app.modules.goals.models import Goal, GoalAccountLink
 from app.modules.goals.schemas import (
     GoalCreate,
-    GoalUpdate,
-    GoalStats,
-    GoalAccountLinkCreate,
-    GoalAccountLinkUpdate,
-    GoalAccountLinkResponse,
-    LinkedAccountInfo
+    GoalUpdate
 )
 from .common import calculate_progress_percentage
 

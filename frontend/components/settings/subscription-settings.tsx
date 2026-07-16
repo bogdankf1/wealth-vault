@@ -26,6 +26,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useGetCurrentUserQuery } from '@/lib/api/authApi';
 import { useTranslations } from 'next-intl';
+import { useIsDemo } from '@/hooks/use-is-demo';
 
 // Feature list that will be lost when downgrading to Starter
 const FEATURES_LOST_ON_DOWNGRADE = [
@@ -101,6 +102,7 @@ export function SubscriptionSettings() {
   const { data: subscriptionStatus, isLoading } = useGetSubscriptionStatusQuery();
   const { data: paymentHistory } = useGetPaymentHistoryQuery({ limit: 10, offset: 0 });
   const [cancelSubscription] = useCancelSubscriptionMutation();
+  const isDemo = useIsDemo();
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
@@ -207,13 +209,15 @@ export function SubscriptionSettings() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 mt-4">
-                  <Link href="/dashboard/pricing">
-                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                      {t('trial.subscribeNow')}
-                    </Button>
-                  </Link>
-                </div>
+                {!isDemo && (
+                  <div className="flex gap-2 mt-4">
+                    <Link href="/dashboard/pricing">
+                      <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                        {t('trial.subscribeNow')}
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -277,11 +281,13 @@ export function SubscriptionSettings() {
 
                 {/* Actions */}
                 <div className="flex gap-2 mt-4">
-                  <Link href="/dashboard/pricing">
-                    <Button size="sm" className={countdown?.isUrgent ? 'bg-red-600 hover:bg-red-700' : ''}>
-                      {t('expiration.renewNow')}
-                    </Button>
-                  </Link>
+                  {!isDemo && (
+                    <Link href="/dashboard/pricing">
+                      <Button size="sm" className={countdown?.isUrgent ? 'bg-red-600 hover:bg-red-700' : ''}>
+                        {t('expiration.renewNow')}
+                      </Button>
+                    </Link>
+                  )}
                   <Button variant="outline" size="sm" onClick={() => setShowDowngradeWarning(true)}>
                     {t('expiration.viewLostFeatures')}
                   </Button>
@@ -362,11 +368,13 @@ export function SubscriptionSettings() {
 
           {/* Action buttons */}
           <div className="flex gap-2 pt-2">
-            <Link href="/dashboard/pricing">
-              <Button variant="outline">
-                {t('viewPricingPlans')}
-              </Button>
-            </Link>
+            {!isDemo && (
+              <Link href="/dashboard/pricing">
+                <Button variant="outline">
+                  {t('viewPricingPlans')}
+                </Button>
+              </Link>
+            )}
             {subscription && !subscription.cancel_at_period_end && (
               <Button
                 onClick={() => setShowCancelDialog(true)}
@@ -482,11 +490,13 @@ export function SubscriptionSettings() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('downgradeWarning.close')}</AlertDialogCancel>
-            <Link href="/dashboard/pricing">
-              <AlertDialogAction className="bg-green-600 hover:bg-green-700">
-                {t('downgradeWarning.renewNow')}
-              </AlertDialogAction>
-            </Link>
+            {!isDemo && (
+              <Link href="/dashboard/pricing">
+                <AlertDialogAction className="bg-green-600 hover:bg-green-700">
+                  {t('downgradeWarning.renewNow')}
+                </AlertDialogAction>
+              </Link>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

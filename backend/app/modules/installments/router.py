@@ -385,7 +385,7 @@ async def get_installment_payments_endpoint(
 ):
     """Get payment history for an installment"""
     # Verify installment exists and belongs to user
-    installment = await get_owned_or_404(
+    await get_owned_or_404(
         service.get_installment, db, current_user.id, installment_id, detail="Installment not found"
     )
 

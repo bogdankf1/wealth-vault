@@ -28,6 +28,7 @@ celery_app = Celery(
         "app.tasks.dashboard_tasks",
         "app.tasks.notification_tasks",
         "app.tasks.tax_tasks",
+        "app.tasks.demo_tasks",
     ]
 )
 
@@ -211,6 +212,11 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=1, minute=9),
         "options": {"queue": "low_priority"},
         "kwargs": {"days_old": 90},
+    },
+    "purge-expired-demo-users": {
+        "task": "tasks.demo.purge_expired_demo_users",
+        "schedule": crontab(hour=1, minute=12),
+        "options": {"queue": "low_priority"},
     },
 
     # =========================================================================

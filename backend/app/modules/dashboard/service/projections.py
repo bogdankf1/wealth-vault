@@ -133,7 +133,8 @@ async def get_goal_projections(
         # Check if on track (has target date and will meet it)
         on_track = True
         if goal.target_date and completion_date:
-            on_track = completion_date <= goal.target_date
+            target_date = goal.target_date.date() if isinstance(goal.target_date, datetime) else goal.target_date
+            on_track = completion_date <= target_date
 
         goal_projections.append(GoalProjectionItem(
             goal_id=goal.id,

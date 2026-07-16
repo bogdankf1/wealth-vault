@@ -382,7 +382,7 @@ async def get_subscription_payments_endpoint(
 ):
     """Get payment history for a subscription"""
     # Verify subscription exists and belongs to user
-    subscription = await get_owned_or_404(
+    await get_owned_or_404(
         service.get_subscription, db, current_user.id, subscription_id, detail="Subscription not found"
     )
 

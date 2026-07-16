@@ -1,13 +1,12 @@
 """Subscription payment processing, backfill, reversal and due queries."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_
 from typing import Optional, Tuple, List
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from app.modules.subscriptions.models import Subscription, SubscriptionPayment
-from app.services.currency_service import CurrencyService
 from .common import calculate_next_payment_date, calculate_period_dates, logger
 
 async def process_subscription_payment(

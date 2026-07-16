@@ -21,6 +21,7 @@ from app.tasks import (
     dashboard_tasks,
     notification_tasks,
     tax_tasks,
+    demo_tasks,
 )
 
 __all__ = [
@@ -38,4 +39,5 @@ __all__ = [
     "dashboard_tasks",
     "notification_tasks",
     "tax_tasks",
+    "demo_tasks",
 ]

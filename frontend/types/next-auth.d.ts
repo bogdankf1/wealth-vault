@@ -15,6 +15,7 @@ declare module 'next-auth' {
       id?: string;
       role?: string;
       tier?: string;
+      isDemo?: boolean;
     } & DefaultSession['user'];
   }
 
@@ -28,6 +29,7 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     accessToken?: string;
+    isDemo?: boolean;
     error?: {
       type: string;
       message: string;

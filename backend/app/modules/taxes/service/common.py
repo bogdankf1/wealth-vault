@@ -1,6 +1,6 @@
 """Shared helpers: currency conversion, period ranges, income and payment-status calculations."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, and_
 from typing import Optional, Tuple
 from uuid import UUID
 from decimal import Decimal

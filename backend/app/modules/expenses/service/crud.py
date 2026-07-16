@@ -1,20 +1,14 @@
 """Expense CRUD operations and payment backfill."""
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func
 from typing import Optional, List
 from uuid import UUID
 from decimal import Decimal
 from app.modules.expenses.models import Expense, ExpenseFrequency, ExpenseStatus
 from app.modules.expenses.schemas import (
     ExpenseCreate,
-    ExpenseUpdate,
-    ExpenseStats,
-    ExpenseHistoryResponse,
-    MonthlyExpenseHistory,
-    PayExpenseRequest,
-    PayExpenseResponse,
-    ExpensePaymentSummary
+    ExpenseUpdate
 )
 from app.services.currency_service import CurrencyService
 from app.core.events import event_dispatcher, ExpenseEvents
@@ -43,7 +37,6 @@ async def backfill_expense_payments(
     """
     from app.modules.savings.transaction_service import TransactionService
     from app.modules.savings.models import AccountTransaction, SavingsAccount
-    from app.services.currency_service import CurrencyService
 
     if not expense.payment_account_id:
         return 0

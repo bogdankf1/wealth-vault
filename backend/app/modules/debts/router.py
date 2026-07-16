@@ -199,7 +199,7 @@ async def get_payments(
     db: AsyncSession = Depends(get_db)
 ):
     """Get all payments for a debt"""
-    debt = await get_owned_or_404(
+    await get_owned_or_404(
         service.get_debt, db, debt_id, current_user.id, detail="Debt not found"
     )
 

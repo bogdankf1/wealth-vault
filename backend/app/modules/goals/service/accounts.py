@@ -8,9 +8,6 @@ from decimal import Decimal
 from datetime import datetime
 from app.modules.goals.models import Goal, GoalAccountLink, GoalProgressHistory
 from app.modules.goals.schemas import (
-    GoalCreate,
-    GoalUpdate,
-    GoalStats,
     GoalAccountLinkCreate,
     GoalAccountLinkUpdate,
     GoalAccountLinkResponse,

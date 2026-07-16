@@ -2,7 +2,9 @@
   "title": "Wealth Vault",
   "tagline": "Gestão financeira pessoal definitiva",
   "button": {
-    "google": "Continuar com Google"
+    "google": "Continuar com Google",
+    "demo": "Explorar a demo ao vivo",
+    "or": "ou"
   },
   "legal": "Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade",
   "loading": "Carregando..."

@@ -123,6 +123,16 @@ async def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
+def forbid_demo_users(current_user: User = Depends(get_current_user)) -> User:
+    """Block demo accounts from actions that touch real money."""
+    if current_user.is_demo:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Demo accounts cannot make real purchases.",
+        )
+    return current_user
+
+
 async def check_feature_access(
     user: User,
     feature_key: str,

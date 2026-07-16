@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { PaymentMethodModal, type PaymentMethod } from '@/components/pricing/payment-method-modal';
 import { PayPalCheckoutModal } from '@/components/pricing/paypal-checkout-modal';
+import { useIsDemo } from '@/hooks/use-is-demo';
 
 interface TierFeature {
   name: string;
@@ -242,6 +243,14 @@ export default function PricingPage() {
 
   // PayPal checkout modal state
   const [showPayPalModal, setShowPayPalModal] = useState(false);
+
+  // Demo users must not reach real payment providers — redirect away.
+  const isDemo = useIsDemo();
+  useEffect(() => {
+    if (isDemo) router.replace('/dashboard');
+  }, [isDemo, router]);
+
+  if (isDemo) return null;
 
   const displayCurrency = preferences?.display_currency || preferences?.currency || 'USD';
 

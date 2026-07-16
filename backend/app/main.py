@@ -7,14 +7,14 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 # Load environment variables from .env file
 load_dotenv()
 
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.core.logging_config import setup_logging, get_logger
 from app.core.exceptions import WealthVaultException
 from app.core.redis import close_redis
@@ -48,9 +48,6 @@ from app.modules.notifications.router import router as notifications_router
 # Setup logging
 setup_logging(debug=settings.DEBUG)
 logger = get_logger(__name__)
-
-# Rate limiter
-limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

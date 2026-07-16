@@ -1,7 +1,7 @@
 """
 User model with role and tier support.
 """
-from sqlalchemy import Column, String, Enum, ForeignKey
+from sqlalchemy import Column, String, Enum, ForeignKey, Boolean, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import enum
@@ -45,6 +45,10 @@ class User(BaseModel):
     # Paddle integration
     paddle_subscription_id = Column(String(255), unique=True, nullable=True)
     paddle_customer_id = Column(String(255), unique=True, nullable=True)
+
+    # Demo mode
+    is_demo = Column(Boolean, default=False, nullable=False)
+    demo_expires_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     tier = relationship("Tier", back_populates="users")

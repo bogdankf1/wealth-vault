@@ -360,7 +360,7 @@ async def list_payments_for_tax(
 ):
     """Get all payments for a specific tax"""
     # Verify tax exists and belongs to user
-    tax = await get_owned_or_404(
+    await get_owned_or_404(
         service.get_tax, db, tax_id, current_user.id, detail="Tax not found"
     )
 

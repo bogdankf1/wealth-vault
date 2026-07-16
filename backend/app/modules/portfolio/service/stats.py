@@ -1,13 +1,11 @@
 """Portfolio statistics."""
 from decimal import Decimal
 from uuid import UUID
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.modules.portfolio.models import PortfolioAsset, PortfolioTransaction, TransactionType
+from app.modules.portfolio.models import PortfolioAsset
 from app.modules.portfolio.schemas import (
-    PortfolioAssetCreate, PortfolioAssetUpdate, PortfolioStats,
-    BuyAssetRequest, SellAssetRequest,
-    RecordDividendRequest, PriceUpdateResponse
+    PortfolioStats
 )
 from app.services.currency_service import CurrencyService
 from .common import get_user_display_currency

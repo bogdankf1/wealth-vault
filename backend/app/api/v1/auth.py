@@ -1,18 +1,21 @@
 """
 Authentication endpoints.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from datetime import timedelta
+from sqlalchemy import select, func
+from datetime import timedelta, datetime, timezone
+from uuid import UUID, uuid4
 import httpx
 
 from app.core.database import get_db
 from app.core.security import create_access_token
 from app.core.config import settings
 from app.core.permissions import get_current_user
-from app.models.user import User
+from app.core.limiter import limiter
+from app.models.user import User, UserRole
 from app.models.tier import Tier
+from app.modules.demo.service import clone_user_data
 from app.schemas.user import GoogleAuthRequest, TokenResponse, UserResponse, OAuthUserInfo
 from app.services.trial_service import TrialService
 
@@ -150,6 +153,55 @@ async def google_oauth(
         access_token=access_token,
         user=user_response
     )
+
+
+@router.post("/demo", response_model=TokenResponse)
+@limiter.limit("5/hour")
+async def create_demo_session(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> TokenResponse:
+    """Provision a throwaway demo user cloned from the frozen template and return a JWT."""
+    now = datetime.now(timezone.utc)
+
+    live = await db.scalar(
+        select(func.count()).select_from(User).where(
+            User.is_demo.is_(True), User.demo_expires_at > now
+        )
+    )
+    if live >= settings.MAX_LIVE_DEMOS:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Demo is at capacity, please try again shortly.",
+        )
+
+    tier = await get_default_tier(db)
+    demo_user = User(
+        email=f"demo+{uuid4().hex}@wealthvault.app",
+        name="Demo User",
+        role=UserRole.USER,
+        tier_id=tier.id,
+        is_demo=True,
+        demo_expires_at=now + timedelta(hours=settings.DEMO_TTL_HOURS),
+    )
+    db.add(demo_user)
+    await db.flush()  # assign demo_user.id before cloning
+
+    template_id = UUID(settings.DEMO_TEMPLATE_USER_ID)
+    await clone_user_data(db, template_id, demo_user.id)
+    await db.commit()
+    await db.refresh(demo_user, ["tier"])
+
+    access_token = create_access_token(
+        data={
+            "sub": str(demo_user.id),
+            "email": demo_user.email,
+            "role": demo_user.role.value,
+            "tier": tier.name,
+        },
+        expires_delta=timedelta(hours=settings.DEMO_TTL_HOURS),
+    )
+    return TokenResponse(access_token=access_token, user=UserResponse.model_validate(demo_user))
 
 
 @router.get("/me", response_model=UserResponse)

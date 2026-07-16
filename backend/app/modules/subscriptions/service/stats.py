@@ -1,15 +1,13 @@
 """Subscription statistics and history."""
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
-from typing import Optional, Tuple, List
+from typing import Optional
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from app.modules.subscriptions.models import Subscription, SubscriptionPayment
+from app.modules.subscriptions.models import Subscription
 from app.modules.subscriptions.schemas import (
-    SubscriptionCreate,
-    SubscriptionUpdate,
     SubscriptionStats
 )
 from app.services.currency_service import CurrencyService
@@ -141,7 +139,6 @@ async def get_subscription_history(
 ) -> dict:
     """Get subscription cost history grouped by month."""
     from collections import defaultdict
-    from dateutil.relativedelta import relativedelta
     from app.modules.subscriptions.models import Subscription
     from app.modules.subscriptions.schemas import MonthlySubscriptionHistory, SubscriptionHistoryResponse
     

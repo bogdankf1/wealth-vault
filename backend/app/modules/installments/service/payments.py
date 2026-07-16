@@ -1,13 +1,12 @@
 """Installment payment processing, backfill, reversal and due queries."""
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_
 from typing import Optional, Tuple
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from app.modules.installments.models import Installment, InstallmentPayment
-from app.services.currency_service import CurrencyService
 from .common import calculate_next_installment_payment_date, calculate_remaining_balance, logger
 
 async def process_installment_payment(
