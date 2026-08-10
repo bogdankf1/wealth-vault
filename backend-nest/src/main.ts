@@ -25,6 +25,10 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, swaggerConfig),
   );
 
+  // Without this, RedisModule.onApplicationShutdown and TypeORM's own shutdown hook only run
+  // when tests call app.close() explicitly — a real SIGTERM would leave connections dangling.
+  app.enableShutdownHooks();
+
   await app.listen(config.get<number>('PORT') ?? 8001);
 }
 bootstrap();

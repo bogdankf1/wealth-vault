@@ -155,6 +155,34 @@ billing events) are skipped until those modules are ported.
   list against `:8000` and `:8001`, and diffs JSON responses. This is the
   acceptance oracle for every ported module.
 
+## Conventions established in Phase 0 (apply to every Phase 1+ module)
+
+1. **Numeric columns stay strings, end to end.** Verified empirically on both sides: pydantic v2
+   serializes `Decimal` as a JSON string preserving the column's scale (`Decimal('0.0450')` →
+   `"0.0450"`), and node-postgres returns `numeric` (OID 1700) as a string which TypeORM passes
+   through untouched. The two stacks therefore already agree byte-for-byte across all ~88 numeric
+   columns — **as long as nobody attaches a `transformer: { from: parseFloat }`**, which is the
+   usual "fix" for TypeORM's string-numeric surprise and would silently reintroduce float rounding
+   and break parity. Never add one. `portfolio_assets.quantity` is `numeric(18,8)` — more
+   significant digits than a JS `number` holds exactly — so money DTOs must validate numeric
+   strings rather than coerce with `@Type(() => Number)`.
+2. **FK writes go through the relation, never the scalar** (see the plan's FK write-path rule).
+3. **Auth-path user lookups pass `withDeleted: true`**; nested tier/feature filtering is re-applied
+   in code (see the plan's soft-delete parity rule).
+4. **Decide pagination, ownership scoping, and transaction boundaries once, in Phase 1**, and reuse
+   them. FastAPI's shape is `{items, total, page, page_size}` with per-query
+   `.where(Model.user_id == current_user.id)`. Phase 1 (income) is the template the other 18 modules
+   copy — divergence there multiplies by 19.
+
+## Known deviation: rate limiting is stricter than FastAPI
+
+FastAPI sets `default_limits=["120/minute"]` on its slowapi `Limiter`, but `main.py` never registers
+`SlowAPIMiddleware` — so those defaults are dead config and **FastAPI currently enforces no rate
+limit at all** except the explicit `@limiter.limit("5/hour")` on `/auth/demo`. Nest's global
+`ThrottlerGuard` does enforce 120/min on every route. This is a deliberate, documented divergence:
+the Nest behavior is what the FastAPI config intends. Revisit if a Phase 1+ client (e.g. a dashboard
+polling several widgets) starts hitting 429s that never occur on :8000.
+
 ## Risks
 
 - **Serialization drift:** Python `Decimal`/date formatting vs JS — caught by the
