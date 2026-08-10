@@ -43,6 +43,18 @@ describe('RolesGuard', () => {
       new RolesGuard(reflector).canActivate(ctxWithUser({ role: 'USER' })),
     ).toThrow('Admin access required');
   });
+
+  // Guards it against a decorator conflict (@Public + @Roles on the same route), which would
+  // otherwise let a request with no request.user reach `user.role` and crash with an unhandled
+  // TypeError -> GlobalExceptionFilter's generic 500 branch instead of a sensible auth error.
+  it('treats an absent user as unauthenticated (401), not a crash', () => {
+    const reflector = {
+      getAllAndOverride: jest.fn().mockReturnValue([UserRole.ADMIN]),
+    } as unknown as Reflector;
+    expect(() =>
+      new RolesGuard(reflector).canActivate(ctxWithUser(undefined)),
+    ).toThrow('Could not validate credentials');
+  });
 });
 
 describe('DemoGuard', () => {
@@ -169,5 +181,20 @@ describe('FeatureGuard', () => {
     await expect(
       new FeatureGuard(reflector, dataSource).canActivate(ctxWithUser(user)),
     ).resolves.toBe(true);
+  });
+
+  // Same decorator-conflict scenario as RolesGuard above: without a guard, an absent
+  // request.user would crash on `user.isAdmin()` with an unhandled TypeError instead of a
+  // sensible auth error.
+  it('treats an absent user as unauthenticated (401), not a crash', async () => {
+    const reflector = {
+      getAllAndOverride: jest.fn().mockReturnValue('ai_insights'),
+    } as unknown as Reflector;
+    const dataSource = { getRepository: jest.fn() } as unknown as DataSource;
+    await expect(
+      new FeatureGuard(reflector, dataSource).canActivate(
+        ctxWithUser(undefined),
+      ),
+    ).rejects.toThrow('Could not validate credentials');
   });
 });

@@ -4,7 +4,10 @@ import { DataSource } from 'typeorm';
 import { TierFeature } from '../../modules/tiers/entities/tier-feature.entity';
 import { User } from '../../modules/users/entities/user.entity';
 import { FEATURE_KEY } from '../decorators/require-feature.decorator';
-import { TierLimitException } from '../exceptions/app.exception';
+import {
+  DetailException,
+  TierLimitException,
+} from '../exceptions/app.exception';
 
 @Injectable()
 export class FeatureGuard implements CanActivate {
@@ -20,9 +23,19 @@ export class FeatureGuard implements CanActivate {
     );
     if (!featureKey) return true;
 
-    const { user } = context.switchToHttp().getRequest<{ user: User }>();
+    // request.user is only absent here if a route conflicts @Public() with @RequireFeature() —
+    // global JwtAuthGuard runs first and either populates it or already threw a 401. Treat that
+    // as unauthenticated (401), not a crash: see RolesGuard's identical handling for the same
+    // decorator-conflict scenario.
+    const { user } = context.switchToHttp().getRequest<{ user?: User }>();
+    if (!user) throw new DetailException(401, 'Could not validate credentials');
     if (user.isAdmin()) return true;
 
+    // No withDeleted here, so TypeORM auto-filters soft-deleted TierFeature/Feature rows.
+    // Deliberate divergence from FastAPI: permissions.py's check_feature_access has no such
+    // filter and would still grant access on a soft-deleted grant. Nest is intentionally
+    // stricter (denies where FastAPI allows) — do not "fix" this back to match, and expect
+    // Task 10's parity script to flag it.
     const tierFeature = user.tierId
       ? await this.dataSource.getRepository(TierFeature).findOne({
           where: {
