@@ -1,4 +1,8 @@
-import { plainToInstance, Transform } from 'class-transformer';
+import {
+  plainToInstance,
+  Transform,
+  TransformFnParams,
+} from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -9,11 +13,12 @@ import {
 
 export class EnvironmentVariables {
   @IsString()
-  @Transform(({ value }) =>
-    typeof value === 'string'
+  @Transform((params: TransformFnParams): unknown => {
+    const value: unknown = params.value;
+    return typeof value === 'string'
       ? value.replace('postgresql+asyncpg://', 'postgresql://')
-      : value,
-  )
+      : value;
+  })
   DATABASE_URL!: string;
 
   @IsString()
@@ -64,17 +69,21 @@ export function validateEnv(
     whitelist: true,
   });
   if (errors.length > 0) {
-    throw new Error(
-      `Invalid environment: ${errors.map((e) => e.property).join(', ')} — ${errors}`,
-    );
+    const properties = errors.map((e) => e.property).join(', ');
+    const details = errors
+      .map((e) => Object.values(e.constraints ?? {}).join(', '))
+      .join('; ');
+    throw new Error(`Invalid environment: ${properties} — ${details}`);
   }
   return validated;
 }
 
 export function parseCorsOrigins(raw: string): string[] {
   try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed;
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return (parsed as unknown[]).map((entry) => String(entry));
+    }
   } catch {
     // fall through to comma-separated parsing
   }
