@@ -16,6 +16,15 @@
 - `backend/app/schemas/user.py` — response shapes
 - `backend/app/main.py` — middleware, CORS, health, root
 
+**Lint reality check (learned in Task 2):** the CLI scaffold's `eslint.config.mjs` uses
+`tseslint.configs.recommendedTypeChecked`. Several code blocks in this plan are illustrative and
+will trip `no-unsafe-assignment` / `no-unsafe-return` / `no-unsafe-argument` wherever a library hands
+back `any` (`class-transformer`'s `TransformFnParams.value`, `JSON.parse`, `exception.getResponse()`,
+`request.user`, `error` in a `catch`). Fix these by laundering the value through an explicit `unknown`
+local and narrowing — never with `eslint-disable`, `@ts-ignore`, or by relaxing the ESLint config.
+`npm run lint` must exit 0 at the end of every task. The one acceptable pre-existing warning is
+`no-floating-promises` on `bootstrap();` in the scaffold's `main.ts`.
+
 **Required tsconfig setting (added during Task 1 review):** `backend-nest/tsconfig.json` must set
 `"useDefineForClassFields": false`. The CLI scaffold targets ES2023, where TypeScript defaults that
 flag to `true` and emits uninitialized class properties (the `id!: string` pattern all entities use)
