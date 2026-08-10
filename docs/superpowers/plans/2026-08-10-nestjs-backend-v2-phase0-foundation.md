@@ -16,6 +16,14 @@
 - `backend/app/schemas/user.py` — response shapes
 - `backend/app/main.py` — middleware, CORS, health, root
 
+**Soft-delete parity rule (found in Task 3 review):** `@DeleteDateColumn` makes TypeORM silently append
+`deleted_at IS NULL` to every find. FastAPI is inconsistent here on purpose-by-accident: `get_current_user`
+(`backend/app/core/permissions.py`) does NOT filter `deleted_at`, so a soft-deleted user keeps
+authenticating there until their token expires, while `admin_service.py` list/count queries DO filter.
+To match, **user lookups on the auth path must pass `withDeleted: true`** — otherwise Nest 401s where
+FastAPI returns 200. Tier/feature lookups should keep the automatic filtering, because FastAPI filters
+those explicitly (`TierFeature.deleted_at.is_(None)`).
+
 **Lint reality check (learned in Task 2):** the CLI scaffold's `eslint.config.mjs` uses
 `tseslint.configs.recommendedTypeChecked`. Several code blocks in this plan are illustrative and
 will trip `no-unsafe-assignment` / `no-unsafe-return` / `no-unsafe-argument` wherever a library hands
@@ -1370,18 +1378,28 @@ import { User, UserRole } from './entities/user.entity';
 export class UsersService {
   constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
 
+  // withDeleted: true mirrors FastAPI's get_current_user, which does not filter deleted_at.
+  // Without it @DeleteDateColumn would auto-append `deleted_at IS NULL` and 401 a soft-deleted
+  // user that FastAPI still authenticates. See the soft-delete parity rule at the top of this plan.
   findByIdWithTier(id: string): Promise<User | null> {
-    return this.usersRepo.findOne({ where: { id }, relations: { tier: true } });
+    return this.usersRepo.findOne({ where: { id }, relations: { tier: true }, withDeleted: true });
   }
 
   findByGoogleId(googleId: string): Promise<User | null> {
-    return this.usersRepo.findOne({ where: { googleId }, relations: { tier: true } });
+    return this.usersRepo.findOne({
+      where: { googleId },
+      relations: { tier: true },
+      withDeleted: true,
+    });
   }
 
+  // The user row uses withDeleted for the same reason; the tier_features/features relations keep
+  // TypeORM's automatic filtering because FastAPI filters those explicitly.
   findByIdWithFeatures(id: string): Promise<User | null> {
     return this.usersRepo.findOne({
       where: { id },
       relations: { tier: { tierFeatures: { feature: true } } },
+      withDeleted: true,
     });
   }
 
