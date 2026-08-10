@@ -4,6 +4,8 @@ import { User } from './user.entity';
 
 @Entity('user_preferences')
 export class UserPreferences extends BaseModel {
+  // userId/user is dual-mapped to the same user_id column — see user.entity.ts's `tier` for
+  // the full mechanism and live-verified evidence. Only ever set one side per save().
   @Column({ type: 'uuid', unique: true })
   userId!: string;
 
@@ -58,9 +60,7 @@ export class UserPreferences extends BaseModel {
   @Column({ type: 'json', nullable: true })
   dashboardLayout!: Record<string, unknown> | null;
 
-  // persistence: false — userId is the write path; setting .user on save() would silently
-  // override userId with a different value if the two ever disagreed.
-  @OneToOne(() => User, { persistence: false })
+  @OneToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user!: User;
 }

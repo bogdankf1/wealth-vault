@@ -20,8 +20,16 @@ import {
  * hooks make generation deterministic and mirror how `generateId()` already handles `id`.
  *
  * IMPORTANT: these hooks only run via `repository.save()`. Bulk `insert()`/`update()`/
- * `delete()` (including their QueryBuilder equivalents) skip entity listeners entirely and
- * will leave id/created_at/updated_at null — always write through `save()`.
+ * `delete()`/`upsert()` (including their QueryBuilder equivalents) skip entity listeners
+ * entirely and will leave id/created_at/updated_at null — always write through `save()`.
+ * (`upsert()` is worth calling out explicitly: it's the natural-looking choice for syncing
+ * a user from an OAuth provider, and it fails the same way `insert()` does.)
+ *
+ * `softRemove()`/`recover()` are a save()-adjacent exception: they fire dedicated
+ * soft-remove/recover events rather than before-update, so they write `deleted_at` directly
+ * without bumping `updatedAt` — unlike a manual `user.deletedAt = new Date(); save(user)`,
+ * which does bump it. Harmless here since it happens to match FastAPI's own `soft_delete()`
+ * (which also only touches `deleted_at`), but it's accidental, not designed.
  */
 export abstract class BaseModel {
   @PrimaryColumn('uuid')
