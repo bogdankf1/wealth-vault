@@ -12,9 +12,11 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { HealthController } from './health/health.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { TiersModule } from './modules/tiers/tiers.module';
 import { UsersModule } from './modules/users/users.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -22,11 +24,12 @@ import { UsersModule } from './modules/users/users.module';
     // Mirrors backend/app/core/limiter.py's slowapi defaults: 120/minute, in-memory storage.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     DatabaseModule,
+    RedisModule,
     TiersModule,
     UsersModule,
     AuthModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [
     {
       provide: APP_FILTER,
