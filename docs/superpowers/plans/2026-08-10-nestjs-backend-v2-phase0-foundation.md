@@ -2406,7 +2406,7 @@ git add backend-nest && git commit -m "feat(nest): redis custom provider + healt
 - Create: `backend-nest/scripts/requests/core.json`
 - Modify: `backend-nest/package.json` (add `parity` script)
 
-- [ ] **Step 1: Create the request list**
+- [x] **Step 1: Create the request list**
 
 `backend-nest/scripts/requests/core.json`:
 
@@ -2419,7 +2419,7 @@ git add backend-nest && git commit -m "feat(nest): redis custom provider + healt
 ]
 ```
 
-- [ ] **Step 2: Implement the script**
+- [x] **Step 2: Implement the script**
 
 `backend-nest/scripts/parity-diff.ts`:
 
@@ -2516,7 +2516,7 @@ Add to `backend-nest/package.json` scripts:
 "parity": "ts-node scripts/parity-diff.ts"
 ```
 
-- [ ] **Step 3: Verify manually**
+- [x] **Step 3: Verify manually**
 
 With both backends running (FastAPI :8000, Nest :8001):
 
@@ -2528,7 +2528,7 @@ TOKEN=<jwt from /auth/google> npm run parity   # full list
 
 Expected: `PASS` for `/` and `/health` requires known acceptable diffs to be absent; `/health` `version` differs only if APP_VERSION mismatches — align `.env` if so. Auth rows PASS with a token valid on both backends. Note in output any legitimate diffs discovered — they become fix-tasks, not things to hide.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): parity-diff script — replay requests against both backends"
@@ -2542,7 +2542,7 @@ git add backend-nest && git commit -m "feat(nest): parity-diff script — replay
 - Create: `backend-nest/README.md`
 - Modify: `docs/superpowers/plans/2026-08-10-nestjs-backend-v2-phase0-foundation.md` (check off completed tasks)
 
-- [ ] **Step 1: Write the README**
+- [x] **Step 1: Write the README**
 
 `backend-nest/README.md`:
 
@@ -2569,7 +2569,7 @@ same routes under `/api/v1` — a drop-in twin for the core API. See
 - `npm run parity` — diff responses against FastAPI (both servers running; `TOKEN=<jwt>` for authed routes)
 ```
 
-- [ ] **Step 2: Full verification run**
+- [x] **Step 2: Full verification run**
 
 ```bash
 cd backend-nest
@@ -2578,7 +2578,7 @@ npm run lint && npm test && npm run test:e2e
 
 Expected: lint clean, all unit + e2e suites PASS. Fix anything that fails before proceeding.
 
-- [ ] **Step 3: Boot both backends and run parity one final time**
+- [x] **Step 3: Boot both backends and run parity one final time**
 
 ```bash
 npm run parity   # plus TOKEN=<jwt> variant
@@ -2586,7 +2586,7 @@ npm run parity   # plus TOKEN=<jwt> variant
 
 Expected: all rows PASS (or every DIFF is understood and captured as a follow-up task).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add backend-nest docs && git commit -m "docs(nest): README + Phase 0 wrap-up"
