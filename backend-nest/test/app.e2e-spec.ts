@@ -11,7 +11,9 @@ describe('App bootstrap (e2e)', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-    app = moduleRef.createNestApplication();
+    // bodyParser: false — configureApp() mounts json()/urlencoded() itself (see the comment
+    // in app.setup.ts), so main.ts and this test must share the same opt-out to stay identical.
+    app = moduleRef.createNestApplication({ bodyParser: false });
     configureApp(app);
     await app.init();
   });
@@ -42,15 +44,10 @@ describe('App bootstrap (e2e)', () => {
     );
   });
 
-  it('unknown route renders {detail} shape', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/api/v1/nope')
-      .expect(404);
-    expect(res.body).toHaveProperty('detail');
-  });
-
   // Parity gap routed from the Task 4 review: Starlette's default 404 has no detail text,
   // so FastAPI renders {"detail":"Not Found"}; Express/Nest default to "Cannot GET /path".
+  // Handled in GlobalExceptionFilter (not a catch-all route — see the Task 5 review fix,
+  // which found the route-based approach silently swallows real routes added by later tasks).
   it('unknown route matches FastAPI\'s exact {"detail":"Not Found"} body', async () => {
     const res = await request(app.getHttpServer())
       .get('/api/v1/nope')
@@ -68,5 +65,17 @@ describe('App bootstrap (e2e)', () => {
       .expect(422);
     const body = res.body as { detail?: unknown };
     expect(Array.isArray(body.detail)).toBe(true);
+  });
+
+  // A valid JSON body must parse cleanly through the manually-mounted json() middleware
+  // (added when we opted out of Nest's automatic body parser) and never touch the
+  // parse-error handler — proven here by falling through to the ordinary 404, not a 422.
+  it('a well-formed JSON body parses without tripping the parse-error handler', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/api/v1/nope')
+      .set('Content-Type', 'application/json')
+      .send({ ok: true })
+      .expect(404);
+    expect(res.body).toEqual({ detail: 'Not Found' });
   });
 });

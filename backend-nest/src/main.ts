@@ -5,7 +5,9 @@ import { AppModule } from './app.module';
 import { configureApp } from './app.setup';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // bodyParser: false — configureApp() mounts json()/urlencoded() itself so its JSON
+  // parse-error handler can sit right after them; see the comment there for why.
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
   const config = app.get(ConfigService);
   configureApp(app);
 

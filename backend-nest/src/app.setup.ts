@@ -37,13 +37,19 @@ const handleJsonParseError: ErrorRequestHandler = (
 export function configureApp(app: INestApplication): void {
   const config = app.get(ConfigService);
 
-  // Registered manually (instead of relying on Nest's automatic body parser) so our JSON
-  // parse-error handler can sit right after it in the Express middleware stack — Nest only
-  // wires its own body parser up inside app.init(), which runs after configureApp(), so a
-  // handler added here via app.use() would otherwise land before the parser and never see its
-  // errors. Nest's registerParserMiddleware() (called later, inside app.init()) detects these
-  // by function name (body-parser's parsers are literally named jsonParser/urlencodedParser)
-  // and skips re-adding them, so this stays a single parser, not a duplicate.
+  // Registered manually so our JSON parse-error handler can sit right after the parser in the
+  // Express middleware stack — Nest only wires its own body parser up inside app.init(), which
+  // runs after configureApp(), so a handler added here via app.use() would otherwise land before
+  // the parser and never see its errors. This requires opting out of Nest's automatic parser
+  // (NestFactory.create(AppModule, { bodyParser: false }) in main.ts, the equivalent option to
+  // createNestApplication() in the e2e test) — without that opt-out, Nest's own
+  // registerParserMiddleware() would silently skip re-adding these because it detects a parser
+  // already present by function name, which is a coincidence of body-parser's internals we
+  // shouldn't rely on. Opting out also matters for a currently-hypothetical but real future case:
+  // NestFactory.create(AppModule, { rawBody: true }) only populates req.rawBody via a `verify`
+  // callback on the parser Nest constructs itself, so with these manually-mounted parsers in
+  // place `rawBody` would stay silently empty. A future raw-body route (Stripe/Paddle webhooks)
+  // must mount its own express.raw() on that specific path ahead of these global parsers.
   app.use(json());
   app.use(urlencoded({ extended: true }));
   app.use(handleJsonParseError);

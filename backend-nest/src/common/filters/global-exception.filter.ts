@@ -45,7 +45,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if (typeof body === 'object' && body !== null && 'message' in body) {
         detail = (body as Record<string, unknown>).message;
       }
-      res.status(exception.getStatus()).json({ detail });
+      const status = exception.getStatus();
+      // Parity gap: Nest's router converts an unmatched request into its own
+      // NotFoundException("Cannot GET /x") before it ever reaches application code, while
+      // FastAPI/Starlette's equivalent carries no detail text ({"detail":"Not Found"}). We
+      // can't distinguish "the router's 404" from "an application-thrown 404" by `instanceof`
+      // — importing NotFoundException from @nestjs/common to check for it is banned project-wide
+      // (no-restricted-imports in eslint.config.mjs), precisely because intentional 404s in this
+      // codebase must go through the app's own NotFoundException/DetailException instead, which
+      // are handled by the branches above and never reach here. So in practice any HttpException
+      // that both (a) is not one of those app types and (b) carries status 404 has no other
+      // legitimate source in this codebase than the router's unmatched-route handler, making a
+      // plain status check the narrowest rule available. Residual gap: a future `throw new
+      // HttpException(msg, 404)` (the base class stays importable) would also get overwritten —
+      // avoid that by always throwing the app's DetailException(404, msg) for intentional 404s.
+      if (status === 404) {
+        detail = 'Not Found';
+      }
+      res.status(status).json({ detail });
       return;
     }
 

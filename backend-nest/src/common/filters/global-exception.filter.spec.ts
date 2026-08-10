@@ -96,8 +96,10 @@ describe('GlobalExceptionFilter', () => {
   // Constructed via the base HttpException (not @nestjs/common's NotFoundException,
   // which the no-restricted-imports rule blocks) with the exact object shape Nest's
   // own convenience exceptions produce via HttpException.createBody() — this is what
-  // an unmatched route actually throws, matching the manually-verified 404 response.
-  it('renders a Nest built-in HttpException as {detail} (unmatched-route 404 shape)', () => {
+  // an unmatched route actually throws. FastAPI/Starlette's default 404 carries no
+  // detail text, so the filter rewrites the message to match rather than leaking
+  // Nest's "Cannot GET /x" wording.
+  it('rewrites an unmatched-route 404 to FastAPI\'s exact {"detail":"Not Found"}', () => {
     const { host, res } = mockHost();
     filter.catch(
       new HttpException(
@@ -107,7 +109,7 @@ describe('GlobalExceptionFilter', () => {
       host,
     );
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ detail: 'Cannot GET /x' });
+    expect(res.json).toHaveBeenCalledWith({ detail: 'Not Found' });
   });
 
   it('renders a Nest HttpException with an array message body sensibly', () => {
