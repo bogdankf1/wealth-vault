@@ -30,6 +30,25 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       "prettier/prettier": ["error", { endOfLine: "auto" }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@nestjs/common',
+              importNames: [
+                'NotFoundException',
+                'UnauthorizedException',
+                'ForbiddenException',
+                'BadRequestException',
+                'ConflictException',
+              ],
+              message:
+                "This name collides with an app exception of the same name in src/common/exceptions/app.exception.ts. Nest's built-in renders as {detail} via GlobalExceptionFilter; the app one renders as {error, details, status_code}. Import from src/common/exceptions/app.exception.ts instead.",
+            },
+          ],
+        },
+      ],
     },
   },
 );

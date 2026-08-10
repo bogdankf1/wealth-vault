@@ -1,4 +1,4 @@
-import { ArgumentsHost } from '@nestjs/common';
+import { ArgumentsHost, HttpException } from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 import {
   DetailException,
@@ -90,6 +90,66 @@ describe('GlobalExceptionFilter', () => {
       error: 'Internal server error',
       details: { message: 'boom' },
       status_code: 500,
+    });
+  });
+
+  // Constructed via the base HttpException (not @nestjs/common's NotFoundException,
+  // which the no-restricted-imports rule blocks) with the exact object shape Nest's
+  // own convenience exceptions produce via HttpException.createBody() — this is what
+  // an unmatched route actually throws, matching the manually-verified 404 response.
+  it('renders a Nest built-in HttpException as {detail} (unmatched-route 404 shape)', () => {
+    const { host, res } = mockHost();
+    filter.catch(
+      new HttpException(
+        { statusCode: 404, message: 'Cannot GET /x', error: 'Not Found' },
+        404,
+      ),
+      host,
+    );
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ detail: 'Cannot GET /x' });
+  });
+
+  it('renders a Nest HttpException with an array message body sensibly', () => {
+    const { host, res } = mockHost();
+    filter.catch(
+      new HttpException(
+        {
+          statusCode: 400,
+          message: ['name should not be empty', 'email must be an email'],
+          error: 'Bad Request',
+        },
+        400,
+      ),
+      host,
+    );
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      detail: ['name should not be empty', 'email must be an email'],
+    });
+  });
+
+  it('renders DetailException with an array detail as a real array (422 validation shape)', () => {
+    const { host, res } = mockHost();
+    filter.catch(
+      new DetailException(422, [
+        {
+          loc: ['body', 'token'],
+          msg: 'field required',
+          type: 'value_error.missing',
+        },
+      ]),
+      host,
+    );
+    expect(res.status).toHaveBeenCalledWith(422);
+    expect(res.json).toHaveBeenCalledWith({
+      detail: [
+        {
+          loc: ['body', 'token'],
+          msg: 'field required',
+          type: 'value_error.missing',
+        },
+      ],
     });
   });
 });
