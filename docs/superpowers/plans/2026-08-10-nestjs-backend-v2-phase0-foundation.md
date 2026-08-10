@@ -1014,6 +1014,18 @@ git add backend-nest && git commit -m "feat(nest): AppException hierarchy + glob
 - Delete: `backend-nest/src/app.service.ts` (and its spec) — root endpoint doesn't need a service
 - Test: `backend-nest/test/app.e2e-spec.ts` (replace CLI-generated)
 
+**Two parity gaps routed here from the Task 4 review — fix both in this task:**
+
+1. **Unknown-route 404 message.** Starlette raises `HTTPException(404)` with no detail, which defaults to
+   the status phrase, so FastAPI returns `{"detail":"Not Found"}`. Nest/Express carries its own wording and
+   produces `{"detail":"Cannot GET /path"}`. Same shape, different string — Task 10's parity-diff script
+   would flag it. Fix at the routing layer, not in the filter (the filter renders correctly given what it
+   receives): add a catch-all that throws `DetailException(404, 'Not Found')`. Make sure it is registered
+   last so it cannot shadow real routes, and mark it `@Public()` once guards exist in Task 6.
+2. **Malformed JSON bodies.** Express's body-parser throws a raw `SyntaxError` before Nest routing; it is
+   not an `HttpException`, so it lands in the catch-all 500 branch, while FastAPI returns 422. Handle it so
+   the response is a 422 `{"detail": [...]}` matching FastAPI's validation-error shape.
+
 - [ ] **Step 1: Write the failing e2e test**
 
 `backend-nest/test/app.e2e-spec.ts` (replace existing):
