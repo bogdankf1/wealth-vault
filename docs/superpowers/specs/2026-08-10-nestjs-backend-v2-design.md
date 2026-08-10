@@ -79,8 +79,14 @@ become multiple providers in the module rather than one giant service class.
 - **Responses:** identical JSON shapes; error shape `{error, details, status_code}`
   matches the FastAPI exception handler byte-for-byte where practical.
 - **Auth:** same `SECRET_KEY` + HS256, so tokens are interchangeable between
-  backends. Node bcrypt verifies existing passlib `$2b$` password hashes, so
-  existing users can log in.
+  backends. There is **no password auth** in FastAPI — real endpoints are
+  `POST /auth/google` (Google OAuth id_token), `POST /auth/demo` (demo clone,
+  deferred with the demo module), `GET /auth/me`, `GET /auth/me/features`.
+  Nest ports google/me/me/features; trial-subscription creation inside
+  `/auth/google` is skipped (deferred with billing).
+- **Error shapes:** FastAPI actually has two — `{error, details, status_code}`
+  from `WealthVaultException` and `{detail}` from `HTTPException` (plus 422
+  `{detail: [...]}` validation errors). Nest replicates both via a global filter.
 - **DB:** entities mirror existing tables/columns/enums exactly. Known quirks to
   respect: `interest_rate` stored as a fraction, existing Postgres enum types,
   money columns as `Numeric` (serialize like FastAPI does — verify with parity
@@ -107,7 +113,8 @@ Each phase gets its own implementation plan (separate spec→plan cycle not need
 this spec covers all phases, but plans are written per phase).
 
 - **Phase 0 — Foundation:** skeleton, config with env validation, TypeORM wiring +
-  User/UserPreferences entities, auth endpoints (register/login/me), all guards/
+  User/UserPreferences/Tier/Feature/TierFeature entities, auth endpoints
+  (`/auth/google`, `/auth/me`, `/auth/me/features`), all guards/
   pipes/filters/interceptors/middleware, throttler, health check (DB + Redis),
   parity-diff script scaffold.
 - **Phase 1 — Template module:** `income` (18 endpoints incl. distribution
