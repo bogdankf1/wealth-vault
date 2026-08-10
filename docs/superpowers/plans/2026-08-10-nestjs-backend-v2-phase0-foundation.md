@@ -16,6 +16,22 @@
 - `backend/app/schemas/user.py` — response shapes
 - `backend/app/main.py` — middleware, CORS, health, root
 
+**FK write-path rule (found in Task 3 review, verified empirically over three rounds):** every entity here
+maps its foreign key twice — a scalar (`tierId`) and a relation (`tier`) over the same column. TypeORM merges
+the `@Column` and the `@JoinColumn` into a **single** `ColumnMetadata` object, and `getEntityValue()` reads the
+relation property first, falling back to the scalar only when the relation is falsy. So whenever both are set
+the relation silently wins — including when the relation was merely hydrated by an earlier
+`find({ relations: ... })` and the code then assigns the scalar, which is a silent no-op rather than an error.
+
+There is **no entity-level fix**. `persistence: false` is only consulted for inverse-side/collection relations,
+never owning-side `@ManyToOne` (verified). `{ insert: false, update: false }` on the scalar disables writes from
+*both* sides and drops the column from INSERTs entirely, because scalar and relation are the same object
+(verified). This is a TypeORM design characteristic, not a bug we introduced.
+
+The rule is therefore enforced by convention, documented on the entities themselves:
+**write FKs by assigning the relation entity, never the scalar, and never set both on one `save()`.**
+Reading `user.tierId` is always safe — the scalar populates correctly on load.
+
 **Soft-delete parity rule (found in Task 3 review):** `@DeleteDateColumn` makes TypeORM silently append
 `deleted_at IS NULL` to every find. FastAPI is inconsistent here on purpose-by-accident: `get_current_user`
 (`backend/app/core/permissions.py`) does NOT filter `deleted_at`, so a soft-deleted user keeps
@@ -1403,12 +1419,15 @@ export class UsersService {
     });
   }
 
+  // Takes the Tier entity, not a tierId string: the FK scalars are mapped
+  // { insert: false, update: false } so the relation is the single write path
+  // (see the FK write-path rule at the top of this plan).
   async createFromGoogle(input: {
     email: string;
     name: string | null;
     avatarUrl: string | null;
     googleId: string;
-    tierId: string;
+    tier: Tier;
   }): Promise<User> {
     const user = this.usersRepo.create({
       ...input,
@@ -1774,7 +1793,7 @@ describe('AuthService.googleLogin', () => {
       name: 'New',
       avatarUrl: null,
       googleId: 'g-123',
-      tierId: 't-1',
+      tier: { id: 't-1', name: 'wealth', displayName: 'Wealth' },
     });
   });
 
@@ -1928,7 +1947,7 @@ export class AuthService {
         name: info.name,
         avatarUrl: info.picture,
         googleId: info.sub,
-        tierId: wealthTier.id,
+        tier: wealthTier,
       });
       user = (await this.usersService.findByIdWithTier(created.id))!;
     }
