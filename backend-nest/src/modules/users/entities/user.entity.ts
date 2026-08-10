@@ -52,7 +52,9 @@ export class User extends BaseModel {
   @Column({ type: 'timestamptz', nullable: true })
   demoExpiresAt!: Date | null;
 
-  @ManyToOne(() => Tier, { nullable: true })
+  // persistence: false — tierId is the write path; setting .tier on save() would silently
+  // override tierId with a different value if the two ever disagreed (see tier-feature.entity.ts).
+  @ManyToOne(() => Tier, { nullable: true, persistence: false })
   @JoinColumn({ name: 'tier_id' })
   tier!: Tier | null;
 

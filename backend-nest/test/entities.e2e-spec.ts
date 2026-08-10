@@ -25,9 +25,11 @@ describe('Entity mappings against the live dev DB', () => {
 
   // A find() selects every mapped column — it throws if any column doesn't exist in the DB.
   it('User maps onto users', async () => {
-    await expect(
-      dataSource.getRepository(User).find({ take: 1, withDeleted: true }),
-    ).resolves.toBeDefined();
+    const users = await dataSource
+      .getRepository(User)
+      .find({ take: 1, withDeleted: true });
+    expect(users.length).toBeGreaterThan(0);
+    expect(typeof users[0].isDemo).toBe('boolean');
   });
 
   it('Tier maps and the wealth tier exists (with features relation)', async () => {
@@ -40,10 +42,13 @@ describe('Entity mappings against the live dev DB', () => {
   });
 
   it('UserPreferences maps onto user_preferences', async () => {
-    await expect(
-      dataSource
-        .getRepository(UserPreferences)
-        .find({ take: 1, withDeleted: true }),
-    ).resolves.toBeDefined();
+    const prefs = await dataSource
+      .getRepository(UserPreferences)
+      .find({ take: 1, withDeleted: true });
+    expect(prefs.length).toBeGreaterThan(0);
+    const emailNotifications = prefs[0].emailNotifications;
+    expect(
+      emailNotifications === null || typeof emailNotifications === 'object',
+    ).toBe(true);
   });
 });

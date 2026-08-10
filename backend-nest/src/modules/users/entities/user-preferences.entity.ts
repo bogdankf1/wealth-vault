@@ -58,7 +58,9 @@ export class UserPreferences extends BaseModel {
   @Column({ type: 'json', nullable: true })
   dashboardLayout!: Record<string, unknown> | null;
 
-  @OneToOne(() => User)
+  // persistence: false — userId is the write path; setting .user on save() would silently
+  // override userId with a different value if the two ever disagreed.
+  @OneToOne(() => User, { persistence: false })
   @JoinColumn({ name: 'user_id' })
   user!: User;
 }
