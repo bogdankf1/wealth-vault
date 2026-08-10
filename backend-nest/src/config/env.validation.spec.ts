@@ -34,6 +34,25 @@ describe('validateEnv', () => {
     expect(env.PORT).toBe(8001);
     expect(env.DEBUG).toBe(true);
   });
+
+  it('ignores unknown env keys instead of throwing', () => {
+    const env = validateEnv({ ...base, MONOBANK_TEST_TOKEN: 'xyz' });
+    expect(env).not.toHaveProperty('MONOBANK_TEST_TOKEN');
+  });
+
+  it('throws when DATABASE_URL is missing', () => {
+    expect(() => validateEnv({ SECRET_KEY: base.SECRET_KEY })).toThrow(
+      /DATABASE_URL/,
+    );
+  });
+
+  it('throws when PORT is not numeric', () => {
+    expect(() => validateEnv({ ...base, PORT: 'abc' })).toThrow(/PORT/);
+  });
+
+  it('throws when DEBUG has an unrecognized value', () => {
+    expect(() => validateEnv({ ...base, DEBUG: 'banana' })).toThrow(/DEBUG/);
+  });
 });
 
 describe('parseCorsOrigins', () => {

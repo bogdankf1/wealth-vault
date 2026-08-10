@@ -6,13 +6,24 @@ import {
 import {
   IsBoolean,
   IsInt,
+  IsNotEmpty,
   IsString,
+  Matches,
+  Max,
+  Min,
   MinLength,
   validateSync,
 } from 'class-validator';
 
 export class EnvironmentVariables {
   @IsString()
+  @IsNotEmpty({ message: 'DATABASE_URL must not be empty' })
+  @Matches(/^postgresql:\/\//, {
+    message: 'DATABASE_URL must start with postgresql://',
+  })
+  // backend/.env's DATABASE_URL carries SQLAlchemy's `+asyncpg` driver suffix, and
+  // this backend shares that same .env value, so strip it to a plain libpq URL for
+  // TypeORM.
   @Transform((params: TransformFnParams): unknown => {
     const value: unknown = params.value;
     return typeof value === 'string'
@@ -29,13 +40,27 @@ export class EnvironmentVariables {
   REDIS_URL: string = 'redis://localhost:6379/0';
 
   @IsInt()
+  @Min(1)
+  @Max(65535)
   @Transform(({ value }) =>
     value === undefined ? 8001 : parseInt(String(value), 10),
   )
   PORT: number = 8001;
 
   @IsBoolean()
-  @Transform(({ value }) => value === true || value === 'true' || value === '1')
+  @Transform((params: TransformFnParams): unknown => {
+    const value: unknown = params.value;
+    if (value === undefined) return undefined;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      const normalized = value.toLowerCase();
+      if (['true', '1', 'yes', 'on', 'y', 't'].includes(normalized))
+        return true;
+      if (['false', '0', 'no', 'off', 'n', 'f'].includes(normalized))
+        return false;
+    }
+    return value;
+  })
   DEBUG: boolean = false;
 
   @IsInt()
