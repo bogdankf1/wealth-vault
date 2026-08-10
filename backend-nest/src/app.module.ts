@@ -1,12 +1,17 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { SecurityHeadersMiddleware } from './common/middleware/security-headers.middleware';
+import { DemoGuard } from './common/guards/demo.guard';
+import { FeatureGuard } from './common/guards/feature.guard';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { TiersModule } from './modules/tiers/tiers.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -16,6 +21,7 @@ import { UsersModule } from './modules/users/users.module';
     DatabaseModule,
     TiersModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -26,6 +32,11 @@ import { UsersModule } from './modules/users/users.module';
         new GlobalExceptionFilter(config.get('DEBUG') === true),
     },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    // Order matters: JwtAuthGuard populates request.user; Roles/Feature/DemoGuard read it.
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: FeatureGuard },
+    { provide: APP_GUARD, useClass: DemoGuard },
   ],
 })
 export class AppModule implements NestModule {
