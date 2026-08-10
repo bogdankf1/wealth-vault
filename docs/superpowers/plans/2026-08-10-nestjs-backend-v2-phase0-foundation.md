@@ -37,8 +37,14 @@ Reading `user.tierId` is always safe — the scalar populates correctly on load.
 (`backend/app/core/permissions.py`) does NOT filter `deleted_at`, so a soft-deleted user keeps
 authenticating there until their token expires, while `admin_service.py` list/count queries DO filter.
 To match, **user lookups on the auth path must pass `withDeleted: true`** — otherwise Nest 401s where
-FastAPI returns 200. Tier/feature lookups should keep the automatic filtering, because FastAPI filters
-those explicitly (`TierFeature.deleted_at.is_(None)`).
+FastAPI returns 200.
+
+Caveat proven in the Task 6 review: `withDeleted` is a single flag on the query's `expressionMap`,
+applied to the root WHERE **and every join** — it is not scoped to the root entity. So it also disables
+`deleted_at IS NULL` on the joined `tier`, `tierFeatures`, and `feature` rows, which FastAPI's
+`/auth/me/features` filters explicitly. `relations: {...}` cannot express "root unfiltered, joins
+filtered", so the service layer restores parity in code: `getFeatures` skips any row where
+`tf.deletedAt` or `tf.feature.deletedAt` is set. Do not remove those checks believing the ORM handles it.
 
 **Lint reality check (learned in Task 2):** the CLI scaffold's `eslint.config.mjs` uses
 `tseslint.configs.recommendedTypeChecked`. Several code blocks in this plan are illustrative and
@@ -1431,9 +1437,10 @@ export class UsersService {
     });
   }
 
-  // Takes the Tier entity, not a tierId string: the FK scalars are mapped
-  // { insert: false, update: false } so the relation is the single write path
-  // (see the FK write-path rule at the top of this plan).
+  // Takes the Tier entity, not a tierId string. TypeORM merges the scalar @Column and the
+  // @JoinColumn into one column and the relation always wins over the scalar when both are
+  // set, so the relation is the only reliable write path (see the FK write-path rule at the
+  // top of this plan — no entity-level flag fixes this; it is enforced by convention).
   async createFromGoogle(input: {
     email: string;
     name: string | null;
