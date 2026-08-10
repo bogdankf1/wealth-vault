@@ -16,6 +16,12 @@
 - `backend/app/schemas/user.py` — response shapes
 - `backend/app/main.py` — middleware, CORS, health, root
 
+**Required tsconfig setting (added during Task 1 review):** `backend-nest/tsconfig.json` must set
+`"useDefineForClassFields": false`. The CLI scaffold targets ES2023, where TypeScript defaults that
+flag to `true` and emits uninitialized class properties (the `id!: string` pattern all entities use)
+as real fields set to `undefined`. TypeORM's `Repository.create()` then carries those keys into the
+INSERT, turning omitted columns into explicit NULLs against the shared schema. Do not remove it.
+
 **Known deliberate deviations (do NOT "fix" these):**
 1. `/auth/demo` is NOT ported (demo module deferred).
 2. Trial-subscription creation inside `/auth/google` new-user flow is NOT ported (billing deferred).
