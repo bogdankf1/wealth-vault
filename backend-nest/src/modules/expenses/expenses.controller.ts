@@ -41,6 +41,10 @@ import {
   ExpenseStatsService,
 } from './services/expense-stats.service';
 import { ExpenseDateRangeQueryDto } from './dto/expense.dto';
+import {
+  ExpenseDueService,
+  ProcessDuePaymentsResponse,
+} from './services/expense-due.service';
 import { PayExpenseDto } from './dto/expense.dto';
 import { DetailException } from '../../common/exceptions/app.exception';
 
@@ -57,6 +61,7 @@ export class ExpensesController {
     private readonly crud: ExpensesCrudService,
     private readonly payments: ExpensePaymentsService,
     private readonly statsService: ExpenseStatsService,
+    private readonly due: ExpenseDueService,
   ) {}
 
   @Get()
@@ -94,6 +99,14 @@ export class ExpensesController {
     @Body() dto: BatchDeleteExpensesDto,
   ): Promise<{ deleted_count: number; failed_ids: string[] }> {
     return this.crud.batchDelete(user.id, dto.expense_ids);
+  }
+
+  @Post('process-due-payments')
+  @HttpCode(200)
+  processDuePayments(
+    @CurrentUser() user: User,
+  ): Promise<ProcessDuePaymentsResponse> {
+    return this.due.processDuePayments(user.id);
   }
 
   @Get('stats')

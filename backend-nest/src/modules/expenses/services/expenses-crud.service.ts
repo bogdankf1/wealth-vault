@@ -18,6 +18,7 @@ import { naiveUtcNow } from '../../../common/entities/naive-timestamp.entity';
 import { SavingsAccount } from '../../savings/entities/savings-account.entity';
 import { User } from '../../users/entities/user.entity';
 import { UsageLimitService } from '../../income/services/usage-limit.service';
+import { ExpenseDueService } from './expense-due.service';
 import {
   BatchCreateExpensesDto,
   CreateExpenseDto,
@@ -48,6 +49,7 @@ export class ExpensesCrudService {
     private readonly expenses: OwnedRepository<Expense>,
     private readonly display: DisplayCurrencyService,
     private readonly usageLimits: UsageLimitService,
+    private readonly due: ExpenseDueService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
@@ -141,6 +143,7 @@ export class ExpensesCrudService {
     await this.assertAccountOwned(user.id, dto.payment_account_id);
 
     const expense = await this.insert(user.id, dto);
+    if (dto.sync_historical) await this.due.backfill(expense);
     // display_* are never computed on create — the 201 answers null for all three.
     return { expense, response: toExpenseModel(expense) };
   }
@@ -230,6 +233,7 @@ export class ExpensesCrudService {
     }
     expense.updatedAt = naiveUtcNow();
     await this.expenses.raw.save(expense);
+    if (dto.sync_historical) await this.due.backfill(expense);
 
     return { expense, response: toExpenseModel(expense, staleDisplay) };
   }

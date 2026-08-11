@@ -11,6 +11,7 @@ import { ExpensesController } from './expenses.controller';
 import { ExpensesCrudService } from './services/expenses-crud.service';
 import { ExpensePaymentsService } from './services/expense-payments.service';
 import { ExpenseStatsService } from './services/expense-stats.service';
+import { ExpenseDueService } from './services/expense-due.service';
 import { CurrencyModule } from '../currency/currency.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { CurrencyModule } from '../currency/currency.module';
     ExpensesCrudService,
     ExpensePaymentsService,
     ExpenseStatsService,
+    ExpenseDueService,
   ],
 })
 export class ExpensesModule {}
