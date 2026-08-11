@@ -144,6 +144,15 @@ export function decMin(a: string, b: string): string {
   return decCmp(a, b) <= 0 ? a : b;
 }
 
+/**
+ * Returns whichever operand is larger, with its original scale intact. Python's max() only replaces
+ * the running maximum on a STRICTLY greater item, so a tie keeps `a` — which is what makes
+ * max(Decimal('0.00'), Decimal('0')) answer '0.00' rather than '0'.
+ */
+export function decMax(a: string, b: string): string {
+  return decCmp(a, b) >= 0 ? a : b;
+}
+
 /** Quantize to N places, half-even — mirrors CurrencyService's `converted.quantize(...)`. */
 export function decQuantize(value: string, places: number): string {
   return new Decimal(value).toFixed(places, Decimal.ROUND_HALF_EVEN);

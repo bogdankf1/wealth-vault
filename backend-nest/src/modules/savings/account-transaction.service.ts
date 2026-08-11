@@ -63,6 +63,99 @@ export class AccountTransactionService {
     return this.move(manager, input, 'withdrawal');
   }
 
+  /**
+   * Port of TransactionService.reverse_transaction. It does NOT delete anything: an offsetting
+   * transaction is written, the original is marked 'reversed', and a balance-history row records
+   * the swing. Only completed deposits and withdrawals can be reversed.
+   *
+   * Landed with slice 3 because debts' sync_historical path re-points a deposit account and has to
+   * undo the deposits it made. There is no overdraft check — a reversal can drive a balance
+   * negative, matching FastAPI.
+   */
+  async reverse(
+    manager: EntityManager,
+    transactionId: string,
+    userId: string,
+    reason?: string,
+  ): Promise<AccountTransaction> {
+    const original = await manager.findOne(AccountTransaction, {
+      where: { id: transactionId, userId, status: 'completed' },
+    });
+    if (!original) {
+      throw new InvalidTransactionError(
+        'Transaction not found or cannot be reversed',
+      );
+    }
+
+    const reversalType =
+      original.transactionType === 'deposit'
+        ? 'withdrawal'
+        : original.transactionType === 'withdrawal'
+          ? 'deposit'
+          : null;
+    if (!reversalType) {
+      throw new InvalidTransactionError(
+        `Cannot reverse transaction type: ${original.transactionType}`,
+      );
+    }
+
+    const account = await manager.findOne(SavingsAccount, {
+      where: { id: original.accountId, userId, isActive: true },
+    });
+    if (!account) {
+      throw new AccountNotFoundError(`Account ${original.accountId} not found`);
+    }
+
+    const now = new Date();
+    const balanceBefore = account.currentBalance;
+    const balanceAfter =
+      reversalType === 'withdrawal'
+        ? decSub(balanceBefore, original.amount)
+        : decAdd(balanceBefore, original.amount);
+
+    const reversal = manager.create(AccountTransaction, {
+      accountId: original.accountId,
+      userId,
+      transactionType: reversalType,
+      amount: original.amount,
+      currency: original.currency,
+      balanceBefore,
+      balanceAfter,
+      sourceType: 'reversal',
+      sourceId: original.id,
+      description: `Reversal of transaction ${transactionId}`,
+      category: null,
+      referenceNumber: null,
+      transactionDate: now,
+      postedDate: now,
+      status: 'completed',
+      createdAt: now,
+      updatedAt: now,
+    });
+    await manager.save(reversal);
+
+    original.status = 'reversed';
+    await manager.save(original);
+
+    account.currentBalance = balanceAfter;
+    account.updatedAt = naiveNow(now);
+    await manager.save(account);
+
+    await manager.save(
+      manager.create(BalanceHistory, {
+        accountId: account.id,
+        balance: balanceAfter,
+        date: naiveNow(now),
+        changeAmount:
+          reversalType === 'deposit' ? original.amount : `-${original.amount}`,
+        changeReason: `Reversal: ${reason ?? 'No reason provided'}`,
+        createdAt: naiveNow(now),
+      }),
+    );
+
+    return reversal;
+  }
+
   private async move(
     manager: EntityManager,
     input: MoneyMovementInput,

@@ -163,11 +163,7 @@ export class ExpensesController {
       if (ExpensePaymentsService.isInsufficientFunds(error)) {
         throw new DetailException(
           400,
-          (await this.payments.insufficientFundsBody(
-            user.id,
-            expenseId,
-            dto,
-          )) as never,
+          await this.payments.insufficientFundsBody(user.id, expenseId, dto),
         );
       }
       throw error;

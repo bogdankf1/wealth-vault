@@ -3,6 +3,7 @@ import {
   decCmp,
   decDiv,
   decIsZero,
+  decMax,
   decMin,
   decMul,
   decQuantize,
@@ -83,6 +84,21 @@ describe('decCmp / decIsZero / decMin', () => {
   it('returns the smaller operand unchanged (scale preserved)', () => {
     expect(decMin('100.00', '250')).toBe('100.00');
     expect(decMin('250', '100.00')).toBe('100.00');
+  });
+});
+
+describe('decMax — Python max(), where a tie keeps the first operand', () => {
+  it('returns the first operand when the two compare equal, preserving its scale', () => {
+    // Debts rely on this: max(amount - amount_paid, Decimal('0')) on a fully paid debt must answer
+    // "0.00" (the subtraction's scale), not "0".
+    expect(decMax('0.00', '0')).toBe('0.00');
+    expect(decMax('0', '0.00')).toBe('0');
+  });
+
+  it('returns the larger operand otherwise', () => {
+    expect(decMax('-5.00', '0')).toBe('0');
+    expect(decMax('12.50', '0')).toBe('12.50');
+    expect(decMax('9', '10.5')).toBe('10.5');
   });
 });
 
