@@ -19,6 +19,27 @@ export interface IncomeTestContext {
   /** A second user, for the ownership assertions. */
   otherUserId: string;
   otherToken: string;
+  /** Every user this context created, in creation order, for teardown. */
+  userIds: string[];
+  jwt: JwtService;
+}
+
+/**
+ * A clean-slate user inside the SAME app. Do not stand up a second Nest app to get isolation:
+ * two apps in one Jest process end up sharing the postgres driver, so closing one leaves the
+ * other throwing "Driver not Connected" on its next query.
+ */
+export async function createExtraUser(
+  ctx: IncomeTestContext,
+  label: string,
+): Promise<{ userId: string; token: string; auth: { Authorization: string } }> {
+  const user = await createUser(ctx.dataSource, ctx.jwt, label);
+  ctx.userIds.push(user.id);
+  return {
+    userId: user.id,
+    token: user.token,
+    auth: { Authorization: `Bearer ${user.token}` },
+  };
 }
 
 /** dataSource.query() is typed `any`; launder it through unknown rather than spreading `any`. */
@@ -86,6 +107,8 @@ export async function setupIncomeContext(
     token: primary.token,
     otherUserId: other.id,
     otherToken: other.token,
+    userIds: [primary.id, other.id],
+    jwt,
   };
 }
 
@@ -98,7 +121,7 @@ export async function teardownIncomeContext(
 ): Promise<void> {
   if (!ctx) return;
   try {
-    const ids = [ctx.userId, ctx.otherUserId];
+    const ids = ctx.userIds;
     await ctx.dataSource.query(
       'DELETE FROM balance_history WHERE account_id IN (SELECT id FROM savings_accounts WHERE user_id = ANY($1))',
       [ids],

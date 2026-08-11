@@ -28,7 +28,14 @@ import {
   DateRangeQueryDto,
   ListIncomeTransactionsQueryDto,
 } from './dto/income-query.dto';
-import { CreateIncomeTransactionDto } from './dto/income-transaction.dto';
+import {
+  CreateIncomeTransactionDto,
+  DepositIncomeDto,
+} from './dto/income-transaction.dto';
+import {
+  IncomeDepositResponse,
+  IncomeDepositService,
+} from './services/income-deposit.service';
 import {
   IncomeHistoryResponse,
   IncomeHistoryService,
@@ -55,6 +62,7 @@ export class IncomeController {
     private readonly transactions: IncomeTransactionsService,
     private readonly statsService: IncomeStatsService,
     private readonly historyService: IncomeHistoryService,
+    private readonly depositService: IncomeDepositService,
   ) {}
 
   @Get('sources')
@@ -114,6 +122,16 @@ export class IncomeController {
     @Body() dto: CreateIncomeTransactionDto,
   ): Promise<IncomeTransactionResponse> {
     return this.transactions.create(user.id, dto);
+  }
+
+  @Post('transactions/:transactionId/deposit')
+  @HttpCode(200)
+  depositTransaction(
+    @CurrentUser() user: User,
+    @Param('transactionId', uuidParam('transaction_id')) transactionId: string,
+    @Body() dto: DepositIncomeDto,
+  ): Promise<IncomeDepositResponse> {
+    return this.depositService.deposit(user.id, transactionId, dto);
   }
 
   @Get('stats')

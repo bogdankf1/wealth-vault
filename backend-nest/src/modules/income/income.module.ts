@@ -9,7 +9,10 @@ import { UsersModule } from '../users/users.module';
 import { IncomeDistributionRule } from './entities/income-distribution-rule.entity';
 import { IncomeSource } from './entities/income-source.entity';
 import { IncomeTransaction } from './entities/income-transaction.entity';
+import { DistributionController } from './distribution.controller';
 import { IncomeController } from './income.controller';
+import { DistributionService } from './services/distribution.service';
+import { IncomeDepositService } from './services/income-deposit.service';
 import { DisplayCurrencyService } from './services/display-currency.service';
 import { IncomeSourcesService } from './services/income-sources.service';
 import { IncomeHistoryService } from './services/income-history.service';
@@ -30,7 +33,7 @@ import { UsageLimitService } from './services/usage-limit.service';
     GoalsModule,
     CurrencyModule,
   ],
-  controllers: [IncomeController],
+  controllers: [IncomeController, DistributionController],
   providers: [
     // Services receive these, never a bare Repository — user scoping is structural.
     provideOwnedRepository(IncomeSource),
@@ -42,6 +45,8 @@ import { UsageLimitService } from './services/usage-limit.service';
     IncomeTransactionsService,
     IncomeStatsService,
     IncomeHistoryService,
+    IncomeDepositService,
+    DistributionService,
   ],
 })
 export class IncomeModule {}
