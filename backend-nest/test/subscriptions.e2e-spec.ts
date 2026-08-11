@@ -420,4 +420,46 @@ describe('Subscriptions (e2e)', () => {
       expect(body.overall_average).toBe('10.00');
     });
   });
+
+  describe('process-due-payments', () => {
+    it('answers the hand-built dict shape and pays what is due', async () => {
+      const user = await createExtraUser(ctx, 'sub-due');
+      // start_date in the past makes next_payment_date land in the past too once we back-date it.
+      const created = await request(ctx.app.getHttpServer())
+        .post('/api/v1/subscriptions')
+        .set(user.auth)
+        .send({
+          name: 'ZZ Due',
+          amount: '5.00',
+          frequency: 'monthly',
+          start_date: '2026-01-01T00:00:00',
+        })
+        .expect(201);
+      await ctx.dataSource.query(
+        "UPDATE subscriptions SET next_payment_date = '2026-01-01 00:00:00' WHERE id = $1",
+        [(created.body as { id: string }).id],
+      );
+
+      const res = await request(ctx.app.getHttpServer())
+        .post('/api/v1/subscriptions/process-due-payments')
+        .set(user.auth)
+        .expect(200);
+      const body = res.body as Record<string, unknown>;
+      expect(Object.keys(body).sort()).toEqual([
+        'auto_paid',
+        'due_count',
+        'errors',
+        'failed_payments',
+        'processed',
+        'status',
+        'timestamp',
+      ]);
+      expect(body.due_count).toBe(1);
+      expect(body.processed).toBe(1);
+      // No account linked, so nothing was auto-paid.
+      expect(body.auto_paid).toBe(0);
+      // The module's only tz-aware timestamp.
+      expect(body.timestamp).toMatch(/\+00:00$/);
+    });
+  });
 });

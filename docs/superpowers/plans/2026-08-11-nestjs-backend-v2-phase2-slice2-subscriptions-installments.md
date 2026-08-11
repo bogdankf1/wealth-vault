@@ -2,6 +2,15 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Status: complete.** All 28 endpoints ported and verified on 2026-08-11: 121 unit tests, 160 e2e
+tests, lint clean, build clean, and all 13 parity rows byte-identical to the live FastAPI on the
+first run. Route inventories match FastAPI exactly for both modules (14 + 14).
+
+Two bugs the work surfaced, both in code this port already owned: the shared `advance()` helper
+split timestamps on `'T'` alone and turned a Postgres-style `'YYYY-MM-DD HH:MM:SS'` into `NaN`, and
+the installments tier table maps `wealth` to an explicit `null` meaning unlimited — which `?? 2`
+silently turned into the starter cap.
+
 **Goal:** Port the FastAPI `subscriptions` (14 endpoints) and `installments` (14 endpoints) modules,
 and formalise the **mirror-expense contract** — both modules write rows into `expenses`, which slice 1
 now owns.
@@ -207,16 +216,16 @@ installments then reuses.
 `src/modules/installments/entities/{installment,installment-payment}.entity.ts`;
 test `test/mirror-expense.e2e-spec.ts`.
 
-- [ ] **Step 1:** `MirrorExpenseService.create(manager, input)` writing exactly the fields in the S3
+- [x] **Step 1:** `MirrorExpenseService.create(manager, input)` writing exactly the fields in the S3
   table, and `.softDelete(manager, expenseId)` setting `deleted_at` + `is_active = false` and
   touching nothing else.
-- [ ] **Step 2:** Entities. All four extend `NaiveTimestampModel`; none has `deletedAt`.
+- [x] **Step 2:** Entities. All four extend `NaiveTimestampModel`; none has `deletedAt`.
   `subscription_payments` and `installment_payments` have **`created_at` but no `updated_at`** —
   override the base or declare them explicitly.
   `frequency`/`status` are plain lowercase varchars — **no enum mapping**.
-- [ ] **Step 3:** e2e proving the mirror expense round-trips and that its `frequency` is stored as
+- [x] **Step 3:** e2e proving the mirror expense round-trips and that its `frequency` is stored as
   `ONE_TIME` while the wire form is `one_time`.
-- [ ] **Step 4:** commit.
+- [x] **Step 4:** commit.
 
 ### Task 2: Subscriptions — DTOs, mapper, CRUD
 

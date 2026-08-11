@@ -90,6 +90,12 @@ export class InstallmentsController {
     return this.installments.batchDelete(user.id, dto.ids);
   }
 
+  @Post('process-due-payments')
+  @HttpCode(200)
+  processDuePayments(@CurrentUser() user: User) {
+    return this.installments.processDuePayments(user.id);
+  }
+
   @Get(':installmentId')
   get(
     @CurrentUser() user: User,

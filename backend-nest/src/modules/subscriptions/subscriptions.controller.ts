@@ -93,6 +93,12 @@ export class SubscriptionsController {
     return this.subscriptions.batchDelete(user.id, dto.ids);
   }
 
+  @Post('process-due-payments')
+  @HttpCode(200)
+  processDuePayments(@CurrentUser() user: User) {
+    return this.subscriptions.processDuePayments(user.id);
+  }
+
   @Get(':subscriptionId')
   get(
     @CurrentUser() user: User,

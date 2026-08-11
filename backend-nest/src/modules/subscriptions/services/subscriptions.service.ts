@@ -380,6 +380,80 @@ export class SubscriptionsService {
     });
   }
 
+  /**
+   * POST /process-due-payments. A hand-built dict with no response_model, so its money fields are
+   * JSON NUMBERS and its timestamp is the module's only tz-aware one.
+   *
+   * FastAPI selects every tenant's due rows and filters in Python; the predicate is pushed into
+   * SQL here. Each payment is its own transaction, so one failure cannot strand another's rows.
+   */
+  async processDuePayments(userId: string): Promise<{
+    status: string;
+    due_count: number;
+    processed: number;
+    auto_paid: number;
+    failed_payments: Array<{
+      subscription_id: string;
+      subscription_name: string;
+      reason: string;
+      amount: number;
+      currency: string;
+    }>;
+    errors: Array<{ subscription_id: string; error: string }>;
+    timestamp: string;
+  }> {
+    const now = new Date();
+    const due = await this.subscriptions
+      .qb(userId, 's')
+      .andWhere('s.is_active = true')
+      .andWhere("s.status = 'active'")
+      .andWhere('s.next_payment_date IS NOT NULL')
+      .andWhere('s.next_payment_date <= :now', { now: naiveUtcNow(now) })
+      .getMany();
+
+    const failed: Array<{
+      subscription_id: string;
+      subscription_name: string;
+      reason: string;
+      amount: number;
+      currency: string;
+    }> = [];
+    const errors: Array<{ subscription_id: string; error: string }> = [];
+    let processed = 0;
+    let autoPaid = 0;
+
+    for (const row of due) {
+      try {
+        const payment = await this.pay(userId, row.id, {});
+        processed += 1;
+        if (payment.account_transaction_id) autoPaid += 1;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (message.startsWith('Insufficient funds')) {
+          failed.push({
+            subscription_id: row.id,
+            subscription_name: row.name,
+            reason: 'insufficient_funds',
+            amount: Number(row.amount),
+            currency: row.currency,
+          });
+        } else {
+          errors.push({ subscription_id: row.id, error: message });
+        }
+      }
+    }
+
+    return {
+      status: 'success',
+      due_count: due.length,
+      processed,
+      auto_paid: autoPaid,
+      failed_payments: failed,
+      errors,
+      timestamp: `${now.toISOString().replace('Z', '')}+00:00`,
+    };
+  }
+
   private async displayFor(
     userId: string,
     row: Subscription,

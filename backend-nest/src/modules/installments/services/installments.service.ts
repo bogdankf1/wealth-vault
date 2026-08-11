@@ -463,6 +463,82 @@ export class InstallmentsService {
     });
   }
 
+  /**
+   * POST /process-due-payments. Hand-built dict, JSON-number amounts, tz-aware timestamp, and one
+   * extra counter over the subscriptions version: `completed`.
+   */
+  async processDuePayments(userId: string): Promise<{
+    status: string;
+    due_count: number;
+    processed: number;
+    auto_paid: number;
+    completed: number;
+    failed_payments: Array<{
+      installment_id: string;
+      installment_name: string;
+      reason: string;
+      amount: number;
+      currency: string;
+    }>;
+    errors: Array<{ installment_id: string; error: string }>;
+    timestamp: string;
+  }> {
+    const now = new Date();
+    const due = await this.installments
+      .qb(userId, 'i')
+      .andWhere('i.is_active = true')
+      .andWhere("i.status = 'active'")
+      .andWhere('i.next_payment_date IS NOT NULL')
+      .andWhere('i.next_payment_date <= :now', { now: naiveUtcNow(now) })
+      .getMany();
+
+    const failed: Array<{
+      installment_id: string;
+      installment_name: string;
+      reason: string;
+      amount: number;
+      currency: string;
+    }> = [];
+    const errors: Array<{ installment_id: string; error: string }> = [];
+    let processed = 0;
+    let autoPaid = 0;
+    let completed = 0;
+
+    for (const row of due) {
+      try {
+        const payment = await this.pay(userId, row.id, {});
+        processed += 1;
+        if (payment.account_transaction_id) autoPaid += 1;
+        const after = await this.installments.findOne(userId, { id: row.id });
+        if (after?.status === 'completed') completed += 1;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (message.startsWith('Insufficient funds')) {
+          failed.push({
+            installment_id: row.id,
+            installment_name: row.name,
+            reason: 'insufficient_funds',
+            amount: Number(row.amountPerPayment),
+            currency: row.currency,
+          });
+        } else {
+          errors.push({ installment_id: row.id, error: message });
+        }
+      }
+    }
+
+    return {
+      status: 'success',
+      due_count: due.length,
+      processed,
+      auto_paid: autoPaid,
+      completed,
+      failed_payments: failed,
+      errors,
+      timestamp: `${now.toISOString().replace('Z', '')}+00:00`,
+    };
+  }
+
   /** display_* is only ever populated on the float-cast endpoints. */
   private displayFor(row: Installment) {
     return {

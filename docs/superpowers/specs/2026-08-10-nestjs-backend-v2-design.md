@@ -1,7 +1,7 @@
 # NestJS Backend v2 — Design
 
 **Date:** 2026-08-10
-**Status:** Phases 0 and 1 complete. Phase 2 in progress — slice 1 (expenses) done.
+**Status:** Phases 0 and 1 complete. Phase 2 slices 1 and 2 done (expenses, subscriptions, installments); slice 3 (taxes, debts) remains.
 Spec last reconciled against `backend-nest/` on 2026-08-11.
 See [Progress](#progress) for what is done, what remains, and the conventions Phase 1 settled.
 
@@ -154,13 +154,13 @@ Update this section at the end of each phase.
 
 **Scope arithmetic:** 267 endpoints exist in FastAPI. 59 are deliberately deferred and stay on
 FastAPI — billing (16), AI (14), the LangGraph agent (3), admin (25), and `/auth/demo` (1). That
-leaves **208 in scope**, of which **36 are done** and **172 remain**.
+leaves **208 in scope**, of which **64 are done** and **144 remain**.
 
 | Phase | Modules | Endpoints | Python LOC | Status |
 |---|---|---:|---:|---|
 | 0 — Foundation | auth (`/auth/google`, `/auth/me`, `/auth/me/features`) + all cross-cutting infrastructure | 3 | — | **Done**, merged in PR #20 |
 | 1 — Template module | income | 18 | 2,900 | **Done** (2026-08-11) |
-| 2 — Payment-pattern family | expenses **(done)**, subscriptions, installments, taxes, debts | 69 (15 done) | 9,500 | **Slice 1 done** (2026-08-11) |
+| 2 — Payment-pattern family | expenses, subscriptions, installments **(done)**, taxes, debts | 69 (43 done) | 9,500 | **Slices 1-2 done** (2026-08-11) |
 | 3 — Money & assets | savings, portfolio, goals, budgets, currency, preferences | 66 | 7,500 | Not started |
 | 4 — Aggregation & extras | dashboard, dashboard_layouts, notifications, exports, backups, support | 52 | 7,000 | Not started |
 | 5 — Jobs | BullMQ + cron ports of the Celery tasks belonging to ported modules | — | 116 task fns | Not started |
@@ -243,6 +243,38 @@ Four measurement-only findings, each of which would otherwise have been a silent
 Also closed here: `payment_account_id` was never validated as the caller's, and the list endpoint
 joined `savings_accounts` with no owner predicate, so a user could store a foreign account id and
 read that account's name back.
+
+### What Phase 2 slice 2 delivered
+
+All 28 subscription and installment endpoints, and the **mirror-expense contract** both modules
+share. 121 unit tests and 160 e2e tests; all 13 parity rows byte-identical on the first run, and
+all four parity lists (core, income, expenses, slice 2) green together.
+
+These two modules are the first that write into another ported module's table: each payment INSERTs
+a row into `expenses`, and their reversal path soft-deletes it — the only writer of
+`expenses.deleted_at`, which slice 1 deliberately left inert. That row now has one provider,
+`MirrorExpenseService`, ready for slice 3.
+
+**A third enum storage convention.** Three modules, three answers for the same idea:
+
+| | Column | DB holds | Wire |
+|---|---|---|---|
+| income | varchar | `MONTHLY` | `monthly` |
+| expenses | native PG enum | `MONTHLY` | `monthly` |
+| subscriptions, installments | varchar | **`monthly`** | `monthly` |
+
+Mapping the last pair the way the first two are mapped would corrupt every row. Neither has a
+`deleted_at` column at all, and both store their next due date rather than deriving it.
+
+**Five multiplier tables across two modules**, all disagreeing. The subscriptions `/stats` set is
+built from binary float division in Python, so a quarterly subscription's `monthly_cost` is
+`"9.999999999999999000"` — the constants are hardcoded as exact strings because
+`new Decimal(1/3)` would be a different number.
+
+Two bugs the tests caught, both ours rather than FastAPI's: the shared `advance()` helper split
+timestamps on `'T'` only, so a Postgres-style `'YYYY-MM-DD HH:MM:SS'` argument produced `NaN`; and
+the installments tier table maps `wealth` to an explicit `null` for *unlimited*, which `?? 2` turned
+into the starter cap of 2.
 
 ### Revised effort estimate
 

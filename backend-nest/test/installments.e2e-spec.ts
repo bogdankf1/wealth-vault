@@ -368,4 +368,37 @@ describe('Installments (e2e)', () => {
       expect(body.total_months).toBe(3);
     });
   });
+
+  describe('process-due-payments', () => {
+    it('answers the hand-built dict shape, with its extra completed counter', async () => {
+      const user = await createExtraUser(ctx, 'inst-due');
+      const created = await create(
+        { number_of_payments: 12, first_payment_date: '2026-01-01T00:00:00' },
+        user.auth,
+      );
+      await ctx.dataSource.query(
+        "UPDATE installments SET next_payment_date = '2026-01-01 00:00:00', status = 'active', is_active = true WHERE id = $1",
+        [created.id as string],
+      );
+
+      const res = await request(ctx.app.getHttpServer())
+        .post('/api/v1/installments/process-due-payments')
+        .set(user.auth)
+        .expect(200);
+      const body = res.body as Record<string, unknown>;
+      expect(Object.keys(body).sort()).toEqual([
+        'auto_paid',
+        'completed',
+        'due_count',
+        'errors',
+        'failed_payments',
+        'processed',
+        'status',
+        'timestamp',
+      ]);
+      expect(body.due_count).toBe(1);
+      expect(body.processed).toBe(1);
+      expect(body.timestamp).toMatch(/\+00:00$/);
+    });
+  });
 });

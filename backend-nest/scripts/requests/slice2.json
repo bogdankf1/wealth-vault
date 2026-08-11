@@ -1,0 +1,15 @@
+[
+  { "method": "GET", "path": "/api/v1/subscriptions", "auth": true },
+  { "method": "GET", "path": "/api/v1/subscriptions?page=1&page_size=2", "auth": true },
+  { "method": "GET", "path": "/api/v1/subscriptions?frequency=monthly", "auth": true },
+  { "method": "GET", "path": "/api/v1/subscriptions?is_active=true", "auth": true },
+  { "method": "GET", "path": "/api/v1/subscriptions/00000000-0000-0000-0000-000000000999", "auth": true },
+  { "method": "GET", "path": "/api/v1/subscriptions/stats", "auth": true },
+  { "method": "GET", "path": "/api/v1/subscriptions/history", "auth": true },
+  { "method": "GET", "path": "/api/v1/subscriptions/history?start_date=2026-01-01T00:00:00&end_date=2026-06-30T00:00:00", "auth": true },
+  { "method": "GET", "path": "/api/v1/installments", "auth": true },
+  { "method": "GET", "path": "/api/v1/installments?page=1&page_size=2", "auth": true },
+  { "method": "GET", "path": "/api/v1/installments/00000000-0000-0000-0000-000000000999", "auth": true },
+  { "method": "GET", "path": "/api/v1/installments/stats", "auth": true },
+  { "method": "GET", "path": "/api/v1/installments/history", "auth": true }
+]
