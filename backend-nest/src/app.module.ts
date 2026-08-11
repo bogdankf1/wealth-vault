@@ -16,6 +16,8 @@ import { HealthController } from './health/health.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { CurrencyModule } from './modules/currency/currency.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
+import { InstallmentsModule } from './modules/installments/installments.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { IncomeModule } from './modules/income/income.module';
 import { SavingsModule } from './modules/savings/savings.module';
@@ -38,6 +40,8 @@ import { RedisModule } from './redis/redis.module';
     CurrencyModule,
     IncomeModule,
     ExpensesModule,
+    SubscriptionsModule,
+    InstallmentsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

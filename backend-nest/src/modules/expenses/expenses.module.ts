@@ -12,6 +12,7 @@ import { ExpensesCrudService } from './services/expenses-crud.service';
 import { ExpensePaymentsService } from './services/expense-payments.service';
 import { ExpenseStatsService } from './services/expense-stats.service';
 import { ExpenseDueService } from './services/expense-due.service';
+import { MirrorExpenseService } from './services/mirror-expense.service';
 import { CurrencyModule } from '../currency/currency.module';
 
 @Module({
@@ -32,6 +33,8 @@ import { CurrencyModule } from '../currency/currency.module';
     ExpensePaymentsService,
     ExpenseStatsService,
     ExpenseDueService,
+    MirrorExpenseService,
   ],
+  exports: [MirrorExpenseService],
 })
 export class ExpensesModule {}
