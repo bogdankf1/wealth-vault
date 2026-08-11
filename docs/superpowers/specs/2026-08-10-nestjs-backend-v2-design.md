@@ -1,7 +1,8 @@
 # NestJS Backend v2 — Design
 
 **Date:** 2026-08-10
-**Status:** Approved (pending spec review)
+**Status:** Phase 0 complete and merged to `main` (PR #20, 2026-08-10). Phase 1 not started.
+See [Progress](#progress) for what is done, what remains, and the decisions Phase 1 must make.
 
 ## Context
 
@@ -130,7 +131,75 @@ this spec covers all phases, but plans are written per phase).
   **jobs run disabled by default** in dev to avoid double-processing against the
   shared DB while FastAPI's Celery beat is also running.
 
-Estimated effort: ~12–15 working sessions for phases 0–5.
+## Progress
+
+Counts below are of FastAPI endpoints to port, measured from `backend/app/` on 2026-08-11.
+Update this section at the end of each phase.
+
+**Scope arithmetic:** 267 endpoints exist in FastAPI. 59 are deliberately deferred and stay on
+FastAPI — billing (16), AI (14), the LangGraph agent (3), admin (25), and `/auth/demo` (1). That
+leaves **208 in scope**, of which **3 are done** and **205 remain**.
+
+| Phase | Modules | Endpoints | Python LOC | Status |
+|---|---|---:|---:|---|
+| 0 — Foundation | auth (`/auth/google`, `/auth/me`, `/auth/me/features`) + all cross-cutting infrastructure | 3 | — | **Done**, merged in PR #20 |
+| 1 — Template module | income | 18 | 2,900 | Not started |
+| 2 — Payment-pattern family | expenses, subscriptions, installments, taxes, debts | 69 | 9,500 | Not started |
+| 3 — Money & assets | savings, portfolio, goals, budgets, currency, preferences | 66 | 7,500 | Not started |
+| 4 — Aggregation & extras | dashboard, dashboard_layouts, notifications, exports, backups, support | 52 | 7,000 | Not started |
+| 5 — Jobs | BullMQ + cron ports of the Celery tasks belonging to ported modules | — | 116 task fns | Not started |
+
+### What Phase 0 delivered
+
+~1,500 lines of source across 37 files plus ~650 lines of tests (42 unit, 17 e2e), all passing,
+lint clean. Three endpoints is 1.4% of the surface, which undersells it: Phase 0 is the part that
+does not repeat. Every NestJS mechanism the project set out to practise is built and exercised —
+DI with custom providers and injection tokens, five ordered global guards, decorators driving them
+through `Reflector`, pipes, interceptors, middleware, exception filters, and module composition.
+Phases 1–5 mostly apply those patterns rather than invent them.
+
+Also delivered: the parity-diff script (`npm run parity`), which replays a request list against
+both backends and diffs normalised JSON. It passes on all four current rows. Extend its request
+list as each module lands — it is the acceptance oracle for every port.
+
+Verified working: a JWT minted by FastAPI authenticates against Nest and vice versa, live, in both
+directions.
+
+### Revised effort estimate
+
+The original estimate of ~12–15 sessions for phases 0–5 was optimistic. Phase 0 alone took a full
+session, largely absorbed by foundational discovery — three non-obvious defects (TypeORM not
+generating timestamps client-side, a catch-all route swallowing feature-module routes, FK
+precedence between scalar and relation) that are now solved once and documented in this spec and
+the Phase 0 plan.
+
+Current estimate: **10–14 further sessions**, front-loaded in difficulty. Phase 1 is the expensive
+one — a single module, but it fixes the conventions the other 17 copy, so budget a full session for
+income alone. Phases 2–4 should move faster once the template exists, roughly a session per two or
+three modules.
+
+### Decisions Phase 1 must make (currently open)
+
+Phase 1 is not really "port income" — it is "decide the conventions and demonstrate them on
+income". Getting these right once is worth more than porting three modules quickly, because each
+one multiplies by the 17 modules that follow. The conventions already settled are below under
+[Conventions established in Phase 0](#conventions-established-in-phase-0-apply-to-every-phase-1-module);
+these four are not yet decided:
+
+1. **Pagination envelope.** FastAPI returns `{items, total, page, page_size}` (see
+   `backend/app/modules/income/schemas.py`). Port as-is for parity, and decide where it lives — a
+   shared DTO/generic rather than redeclared per module.
+2. **Ownership scoping.** FastAPI repeats `.where(Model.user_id == current_user.id)` by hand in
+   every service method. Repeating that across 205 handlers invites exactly one omission, which is
+   a data-leak bug. Decide whether Nest enforces it structurally (a base service, a repository
+   wrapper, or an interceptor) instead of by discipline.
+3. **Transaction boundaries.** Nothing in Phase 0 needed one — auth writes a single row. Savings
+   transfers, goal allocations, and income distribution write multiple rows and will need a
+   `dataSource.transaction()` convention that does not exist yet.
+4. **Money DTO shape.** Numeric columns stay strings end to end (see the conventions section).
+   Inbound DTOs must therefore validate numeric *strings* and must not coerce through
+   `@Type(() => Number)` — `portfolio_assets.quantity` is `numeric(18,8)`, more significant digits
+   than a JS `number` holds exactly. Decide the validator/decorator combination once.
 
 ## Error handling
 
