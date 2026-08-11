@@ -10,6 +10,7 @@ import { Expense } from './entities/expense.entity';
 import { ExpensesController } from './expenses.controller';
 import { ExpensesCrudService } from './services/expenses-crud.service';
 import { ExpensePaymentsService } from './services/expense-payments.service';
+import { ExpenseStatsService } from './services/expense-stats.service';
 import { CurrencyModule } from '../currency/currency.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { CurrencyModule } from '../currency/currency.module';
     provideOwnedRepository(Expense),
     ExpensesCrudService,
     ExpensePaymentsService,
+    ExpenseStatsService,
   ],
 })
 export class ExpensesModule {}

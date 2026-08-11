@@ -35,6 +35,12 @@ import {
   PaymentSummary,
 } from './services/expense-payments.service';
 import { PageQueryDto } from '../../common/dto/page-query.dto';
+import {
+  ExpenseHistoryResponse,
+  ExpenseStatsResponse,
+  ExpenseStatsService,
+} from './services/expense-stats.service';
+import { ExpenseDateRangeQueryDto } from './dto/expense.dto';
 import { PayExpenseDto } from './dto/expense.dto';
 import { DetailException } from '../../common/exceptions/app.exception';
 
@@ -50,6 +56,7 @@ export class ExpensesController {
   constructor(
     private readonly crud: ExpensesCrudService,
     private readonly payments: ExpensePaymentsService,
+    private readonly statsService: ExpenseStatsService,
   ) {}
 
   @Get()
@@ -87,6 +94,22 @@ export class ExpensesController {
     @Body() dto: BatchDeleteExpensesDto,
   ): Promise<{ deleted_count: number; failed_ids: string[] }> {
     return this.crud.batchDelete(user.id, dto.expense_ids);
+  }
+
+  @Get('stats')
+  stats(
+    @CurrentUser() user: User,
+    @Query() query: ExpenseDateRangeQueryDto,
+  ): Promise<ExpenseStatsResponse> {
+    return this.statsService.stats(user.id, query);
+  }
+
+  @Get('history')
+  history(
+    @CurrentUser() user: User,
+    @Query() query: ExpenseDateRangeQueryDto,
+  ): Promise<ExpenseHistoryResponse> {
+    return this.statsService.history(user.id, query);
   }
 
   // These three are the routes FastAPI shadows behind :expense_id. Declared first here so they

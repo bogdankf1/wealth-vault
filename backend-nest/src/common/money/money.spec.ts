@@ -7,6 +7,7 @@ import {
   decMul,
   decQuantize,
   decSub,
+  pyDecimalString,
   pyFloatMoney,
   rawMoney,
   scaleOf,
@@ -110,5 +111,25 @@ describe('pyFloatMoney — reproduces Python str(float(Decimal))', () => {
 describe('rawMoney', () => {
   it('passes the DB string through untouched', () => {
     expect(rawMoney('1000.00')).toBe('1000.00');
+  });
+});
+
+describe('pyDecimalString — Python str(Decimal) notation', () => {
+  it.each([
+    ['0.00', '0.00'],
+    ['0', '0'],
+    ['123.45', '123.45'],
+    ['0.000001', '0.000001'],
+    ['433.0000000000000071054273576', '433.0000000000000071054273576'],
+    ['-0.00', '-0.00'],
+  ])('keeps %s in plain notation', (input, expected) => {
+    expect(pyDecimalString(input)).toBe(expected);
+  });
+
+  it('switches to scientific past an adjusted exponent of -6, as Python does', () => {
+    // Zero with a large scale is the case that shows up live: /expenses/stats answers "0E-49"
+    // for a user with no expenses.
+    expect(pyDecimalString(`0.${'0'.repeat(49)}`)).toBe('0E-49');
+    expect(pyDecimalString('0.0000001')).toBe('1E-7');
   });
 });

@@ -11,6 +11,33 @@ Decimal.set({
   toExpPos: 9e15,
 });
 
+/**
+ * Renders a plain decimal string the way Python's `str(Decimal)` would.
+ *
+ * Python switches to scientific notation once the ADJUSTED exponent (exponent + digits - 1) falls
+ * below -6, so Decimal('0.0000001') prints as '1E-7'. The case that actually bites here is zero
+ * with a large scale: Decimal(0) * Decimal(4.33) carries exponent -49 and prints as '0E-49', which
+ * is literally what /expenses/stats returns for a user with no expenses.
+ */
+export function pyDecimalString(plain: string): string {
+  const negative = plain.startsWith('-');
+  const unsigned = negative ? plain.slice(1) : plain;
+  const [intPart, fracPart = ''] = unsigned.split('.');
+  const exponent = -fracPart.length;
+  const digits = `${intPart}${fracPart}`.replace(/^0+/, '');
+  const sign = negative ? '-' : '';
+
+  // Python models zero as a single 0 digit, so its adjusted exponent is just the exponent.
+  const adjusted =
+    digits.length === 0 ? exponent : exponent + digits.length - 1;
+  if (exponent <= 0 && adjusted >= -6) return plain;
+
+  if (digits.length === 0) return `${sign}0E${adjusted}`;
+  const mantissa =
+    digits.length === 1 ? digits : `${digits[0]}.${digits.slice(1)}`;
+  return `${sign}${mantissa}E${adjusted >= 0 ? '+' : ''}${adjusted}`;
+}
+
 /** Digits after the decimal point — what Python's Decimal exponent reports. */
 export function scaleOf(value: string): number {
   const dot = value.indexOf('.');
@@ -39,7 +66,7 @@ const ExactDecimal = Decimal.clone({
 export function decMul(a: string, b: string): string {
   const exact = new ExactDecimal(a).times(b);
   if (exact.precision() <= 28) {
-    return exact.toFixed(scaleOf(a) + scaleOf(b));
+    return pyDecimalString(exact.toFixed(scaleOf(a) + scaleOf(b)));
   }
   // Beyond the context precision Python rounds to 28 significant digits and keeps what it gets.
   // The rounding has to be explicit: decimal.js applies its precision to operations, not to
@@ -54,7 +81,7 @@ export function decMul(a: string, b: string): string {
 export function decAdd(a: string, b: string): string {
   const exact = new ExactDecimal(a).plus(b);
   return exact.precision() <= 28
-    ? exact.toFixed(Math.max(scaleOf(a), scaleOf(b)))
+    ? pyDecimalString(exact.toFixed(Math.max(scaleOf(a), scaleOf(b))))
     : exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN).toString();
 }
 
@@ -62,8 +89,8 @@ export function decAdd(a: string, b: string): string {
 export function decSub(a: string, b: string): string {
   const exact = new ExactDecimal(a).minus(b);
   return exact.precision() <= 28
-    ? exact.toFixed(Math.max(scaleOf(a), scaleOf(b)))
-    : new Decimal(exact.toString()).toString();
+    ? pyDecimalString(exact.toFixed(Math.max(scaleOf(a), scaleOf(b))))
+    : exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN).toString();
 }
 
 /**
@@ -81,7 +108,9 @@ export function decDiv(a: string, b: string): string {
   const isExact = quotient.times(b).equals(new Decimal(a));
   if (!isExact) return quotient.toString();
   const idealScale = Math.max(0, scaleOf(a) - scaleOf(b));
-  return quotient.toFixed(Math.max(idealScale, quotient.decimalPlaces()));
+  return pyDecimalString(
+    quotient.toFixed(Math.max(idealScale, quotient.decimalPlaces())),
+  );
 }
 
 export function decIsZero(value: string): boolean {
