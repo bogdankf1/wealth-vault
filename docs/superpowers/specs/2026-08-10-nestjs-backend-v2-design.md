@@ -1,7 +1,7 @@
 # NestJS Backend v2 — Design
 
 **Date:** 2026-08-10
-**Status:** Phases 0 and 1 complete. Phase 2 slices 1 and 2 done (expenses, subscriptions, installments); slice 3 (taxes, debts) remains.
+**Status:** Phases 0, 1 and 2 complete — all 69 payment-pattern endpoints ported. Phase 3 (savings, portfolio, goals, budgets, currency, preferences) is next.
 Spec last reconciled against `backend-nest/` on 2026-08-11.
 See [Progress](#progress) for what is done, what remains, and the conventions Phase 1 settled.
 
@@ -137,8 +137,8 @@ this spec covers all phases, but plans are written per phase).
 - **Phase 1 — Template module:** `income` (18 endpoints incl. distribution
   service), done carefully as the pattern for all other modules. **Done 2026-08-11.**
 - **Phase 2 — Payment-pattern family:** expenses, subscriptions, installments,
-  taxes, debts. **Slices 1-2 done 2026-08-11** (expenses; subscriptions +
-  installments, 43 of 69 endpoints); slice 3 (taxes, debts) remains.
+  taxes, debts. **Done 2026-08-11** across three slices — expenses (15);
+  subscriptions + installments (28); taxes + debts (26).
 - **Phase 3 — Money & assets:** savings (incl. transaction/interest engine),
   portfolio, goals, budgets, currency, preferences.
 - **Phase 4 — Aggregation & extras:** dashboard, dashboard_layouts, notifications,
@@ -155,13 +155,13 @@ Update this section at the end of each phase.
 
 **Scope arithmetic:** 267 endpoints exist in FastAPI. 59 are deliberately deferred and stay on
 FastAPI — billing (16), AI (14), the LangGraph agent (3), admin (25), and `/auth/demo` (1). That
-leaves **208 in scope**, of which **64 are done** and **144 remain**.
+leaves **208 in scope**, of which **90 are done** and **118 remain**.
 
 | Phase | Modules | Endpoints | Python LOC | Status |
 |---|---|---:|---:|---|
 | 0 — Foundation | auth (`/auth/google`, `/auth/me`, `/auth/me/features`) + all cross-cutting infrastructure | 3 | — | **Done**, merged in PR #20 |
 | 1 — Template module | income | 18 | 2,900 | **Done** (2026-08-11) |
-| 2 — Payment-pattern family | expenses, subscriptions, installments **(done)**, taxes, debts | 69 (43 done) | 9,500 | **Slices 1-2 done** (2026-08-11) |
+| 2 — Payment-pattern family | expenses, subscriptions, installments, taxes, debts | 69 | 9,500 | **Done** (2026-08-11) |
 | 3 — Money & assets | savings, portfolio, goals, budgets, currency, preferences | 66 | 7,500 | Not started |
 | 4 — Aggregation & extras | dashboard, dashboard_layouts, notifications, exports, backups, support | 52 | 7,000 | Not started |
 | 5 — Jobs | BullMQ + cron ports of the Celery tasks belonging to ported modules | — | 116 task fns | Not started |
@@ -276,6 +276,76 @@ Two bugs the tests caught, both ours rather than FastAPI's: the shared `advance(
 timestamps on `'T'` only, so a Postgres-style `'YYYY-MM-DD HH:MM:SS'` argument produced `NaN`; and
 the installments tier table maps `wealth` to an explicit `null` for *unlimited*, which `?? 2` turned
 into the starter cap of 2.
+
+### What Phase 2 slice 3 delivered
+
+All 26 tax and debt endpoints, completing Phase 2. 153 unit tests and 202 e2e tests; every slice-3
+parity row matched on the first run, and all five parity lists (core, income, expenses, slice 2,
+slice 3) are green together. Route inventories match FastAPI exactly at 90 endpoints.
+
+**The two modules share nothing with each other.** Taxes withdraw money; debts are receivables and
+deposit it. They touch the savings engine from opposite ends and agree on almost nothing else, so no
+abstraction spans them — unlike slice 2, where a single mirror-expense contract served both.
+
+**Taxes bypass the savings transaction engine entirely.** `pay_tax` builds its `AccountTransaction`
+inline instead of calling `TransactionService`, and the difference is visible in the database: no
+`balance_history` row, `source_type`/`source_id`/`posted_date` left NULL, no `is_active` filter on
+the account, and an overdraft test of `balance < amount` rather than `balance - amount < 0`. Ported
+as `TaxWithdrawalService` rather than reusing `AccountTransactionService`, because reusing it would
+start writing history rows FastAPI never wrote. An e2e test asserts the absence of that row.
+
+**Two more shadowed endpoints.** `GET /taxes/income-summary` and `GET /taxes/payments` are declared
+after `GET /{tax_id}` (router.py:265 and 297 vs 93), so FastAPI answers both with 422 uuid_parsing
+and neither has ever run in production. Same Option B as slice 1: reachable in Nest, annotated in
+the controller, marked KNOWN in the parity list.
+
+**A fourth monthly-income multiplier table**, and it disagrees with the other three:
+
+| | weekly | biweekly | quarterly | annually |
+|---|---|---|---|---|
+| income `/stats` (MONTHLY_MULTIPLIER) | ×4.33 | ×2.17 | ×0.33 | ×0.083 |
+| income `/history` (HISTORY_MULTIPLIER) | ×4.33333 | ×2.16667 | ×0.333333 | ×0.083333 |
+| taxes `get_total_monthly_income` | ×4.33 | ×2.17 | **÷3** | **÷12** |
+| taxes `/income-summary` | *(delegates to income's MONTHLY_MULTIPLIER)* | | | |
+
+So an annual income source is worth 996.000 a month to `/income/stats` and 1000.00 to a percentage
+tax — and `/income-summary`, two functions away in the same file, uses the income table rather than
+its own module's. One-time sources have no branch at all in the taxes table and contribute nothing.
+
+**`batch-delete` is ungated in both modules.** Every other handler carries `require_feature`, but
+`POST /taxes/batch-delete` and `POST /debts/batch-delete` carry none — so on a Free tier those two
+work while everything else 403s (both features are Wealth-only). Replicated via a new
+`@NoFeatureRequired()` decorator that cancels the controller-level gate, and pinned by a test.
+
+**Scale is decided by the column, not the request.** Every FastAPI write path here calls
+`db.refresh()` or re-selects before serializing, so `Decimal('0')` written into a `numeric(12,2)`
+column answers `"0.00"`, and an amount posted as `"5"` answers `"5.00"`. Two e2e failures traced
+back to returning the in-memory value instead; the fix is a shared `reload()` after every write.
+
+**Debt progress percentages exercise the money layer harder than anything so far.**
+`min((amount_paid / amount) * 100, 100)` runs through exact division with ideal-exponent padding, so
+a debt of 40000.00 paid 15000.00 answers `"37.500"`, one paid in full answers `"100"` (not
+`"100.00"` — the exact quotient collapses the scale first), and an overpaid one answers `"100"` from
+the literal. `amount_remaining` needed a new `decMax` with Python's first-argument-wins tie rule, so
+a settled debt answers `"0.00"` while an overpaid one answers `"0"`. All verified against CPython
+before being written down, then confirmed byte-for-byte against live FastAPI.
+
+**FastAPI bugs replicated rather than fixed:** `process-due-payments` never increments `auto_paid`
+and always returns 0; `/stats` counts an already-filtered list twice so `total_taxes` and
+`active_taxes` can never differ; `/forgive` marks a debt paid without touching `amount_paid`, so a
+forgiven debt still reports a non-zero `amount_remaining`; a failed deposit is swallowed and the
+debt payment is still recorded with a NULL transaction id; `pay_tax` leaves `period_start`/
+`period_end` NULL even though the period is known.
+
+**Cross-tenant leak closed, same class as slice 1's.** Nothing in FastAPI validates that a tax's
+`income_source_id` or `payment_account_id` belongs to the caller, and the enrichment then echoes the
+linked row's name, amount and balance. Writes are validated here and the reads are user-scoped, with
+a test that writes a foreign link straight to the DB to prove the read side is scoped too.
+
+**A parity trap worth remembering:** the first slice-3 parity run passed while comparing empty
+lists, because the token belonged to a user with no taxes or debts. The data lives under
+`demo-template@wealthvault.app`. A green parity run against an empty result set proves nothing —
+check the row counts before believing it.
 
 ### Revised effort estimate
 
