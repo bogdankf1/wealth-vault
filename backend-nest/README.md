@@ -13,8 +13,25 @@ same routes under `/api/v1` — a drop-in twin for the core API. See
 2. `npm install`
 3. Dev DB + Redis must be running (same ones FastAPI dev uses).
 
+## What is ported
+- **Phase 0:** `/auth/google`, `/auth/me`, `/auth/me/features` + all cross-cutting infrastructure.
+- **Phase 1:** the whole `income` module (18 endpoints), plus partial `savings`, `goals` and
+  `currency` modules — only the deposit, goal-progress and rate-lookup paths income needs. Those
+  three get built out properly in Phase 3.
+
+## Conventions that are not optional
+Money and naive timestamps are **strings** end to end; the helpers in `src/common/money` and
+`src/common/time` reproduce Python's `Decimal` and naive-datetime semantics exactly, and the parity
+diff will catch you if you bypass them. Feature services take an `OwnedRepository`, never a bare
+`Repository`. See the Phase 1 plan for the reasoning behind each.
+
 ## Commands
 - `npm run start:dev` — dev server on :8001 (swagger at /docs)
 - `npm test` — unit tests
 - `npm run test:e2e` — e2e (needs live dev DB + Redis)
-- `npm run parity` — diff responses against FastAPI (both servers running; `TOKEN=<jwt>` for authed routes)
+- `npm run parity scripts/requests/core.json` — Phase 0 rows
+- `npm run parity scripts/requests/income.json` — Phase 1 rows
+
+Parity needs both servers up and `TOKEN=<jwt valid on both>`. The income list ends with one
+deliberate write (it demonstrates an endpoint FastAPI 500s on); clean it up with
+`DELETE FROM income_transactions WHERE description = 'parity probe';`.

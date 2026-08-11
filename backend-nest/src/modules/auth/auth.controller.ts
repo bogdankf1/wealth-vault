@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { User } from '../users/entities/user.entity';
@@ -16,6 +16,9 @@ export class AuthController {
 
   @Public()
   @Post('google')
+  // FastAPI's @router.post declares no status_code, so it answers 200. Nest would default a POST
+  // to 201; the parity script only compared status classes until Phase 1, which hid the gap.
+  @HttpCode(200)
   googleAuth(@Body() dto: GoogleAuthDto): Promise<TokenResponse> {
     return this.authService.googleLogin(dto.token);
   }
