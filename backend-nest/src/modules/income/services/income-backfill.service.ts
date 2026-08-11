@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 import { toNaiveIso } from '../../../common/time/naive-timestamp';
-import { DepositService } from '../../savings/deposit.service';
+import { AccountTransactionService } from '../../savings/account-transaction.service';
 import { IncomeSource } from '../entities/income-source.entity';
 import { IncomeTransaction } from '../entities/income-transaction.entity';
 import { IncomeFrequencyName } from '../enums';
@@ -68,7 +68,7 @@ export class IncomeBackfillService {
   private readonly logger = new Logger(IncomeBackfillService.name);
 
   constructor(
-    private readonly deposits: DepositService,
+    private readonly deposits: AccountTransactionService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 

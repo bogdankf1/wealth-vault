@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountTransaction } from './entities/account-transaction.entity';
 import { BalanceHistory } from './entities/balance-history.entity';
 import { SavingsAccount } from './entities/savings-account.entity';
-import { DepositService } from './deposit.service';
+import { AccountTransactionService } from './account-transaction.service';
 
 /**
  * PARTIAL module — Phase 1 lands only the deposit path, which income's deposit and distribute
@@ -17,7 +17,7 @@ import { DepositService } from './deposit.service';
       BalanceHistory,
     ]),
   ],
-  providers: [DepositService],
-  exports: [DepositService, TypeOrmModule],
+  providers: [AccountTransactionService],
+  exports: [AccountTransactionService, TypeOrmModule],
 })
 export class SavingsModule {}

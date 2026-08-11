@@ -20,7 +20,7 @@ import {
 } from '../../../common/repository/owned.repository';
 import { Goal } from '../../goals/entities/goal.entity';
 import { GoalProgressService } from '../../goals/goal-progress.service';
-import { DepositService } from '../../savings/deposit.service';
+import { AccountTransactionService } from '../../savings/account-transaction.service';
 import { SavingsAccount } from '../../savings/entities/savings-account.entity';
 import {
   CreateDistributionRuleDto,
@@ -64,7 +64,7 @@ export class DistributionService {
     private readonly sources: OwnedRepository<IncomeSource>,
     @Inject(ownedRepositoryToken(IncomeTransaction))
     private readonly transactions: OwnedRepository<IncomeTransaction>,
-    private readonly deposits: DepositService,
+    private readonly deposits: AccountTransactionService,
     private readonly goalProgress: GoalProgressService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}

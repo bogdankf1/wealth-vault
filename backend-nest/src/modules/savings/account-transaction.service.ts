@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { decAdd, decCmp } from '../../common/money/money';
+import { decAdd, decCmp, decMul, decSub } from '../../common/money/money';
 import { AccountTransaction } from './entities/account-transaction.entity';
 import { BalanceHistory } from './entities/balance-history.entity';
 import { SavingsAccount } from './entities/savings-account.entity';
+import {
+  AccountNotFoundError,
+  InsufficientFundsError,
+  InvalidTransactionError,
+} from './errors';
 
-export class AccountNotFoundError extends Error {}
-export class InvalidTransactionError extends Error {}
-
-export interface CreateDepositInput {
+export interface MoneyMovementInput {
   accountId: string;
   userId: string;
   amount: string;
@@ -17,6 +19,9 @@ export interface CreateDepositInput {
   sourceId?: string | null;
   category?: string | null;
   transactionDate?: Date | null;
+  /** Set when the caller's amount is in a different currency than the account. */
+  sourceCurrency?: string | null;
+  exchangeRate?: string | null;
 }
 
 /** Naive-timestamp columns take a string; format 'now' the way Postgres prints it. */
@@ -37,13 +42,35 @@ function naiveNow(now: Date): string {
  * endpoints observes either.
  */
 @Injectable()
-export class DepositService {
-  async createDeposit(
+export class AccountTransactionService {
+  createDeposit(
     manager: EntityManager,
-    input: CreateDepositInput,
+    input: MoneyMovementInput,
   ): Promise<AccountTransaction> {
+    return this.move(manager, input, 'deposit');
+  }
+
+  /**
+   * Port of TransactionService.create_withdrawal. Mirror of the deposit apart from four things:
+   * the balance goes down, a negative result throws (FastAPI never passes allow_negative, so an
+   * expense payment can never overdraw), balance_history records a NEGATIVE change_amount with
+   * reason 'Withdrawal', and the amount may be FX-converted before the balance check.
+   */
+  createWithdrawal(
+    manager: EntityManager,
+    input: MoneyMovementInput,
+  ): Promise<AccountTransaction> {
+    return this.move(manager, input, 'withdrawal');
+  }
+
+  private async move(
+    manager: EntityManager,
+    input: MoneyMovementInput,
+    kind: 'deposit' | 'withdrawal',
+  ): Promise<AccountTransaction> {
+    const verb = kind === 'deposit' ? 'Deposit' : 'Withdrawal';
     if (decCmp(input.amount, '0') <= 0) {
-      throw new InvalidTransactionError('Deposit amount must be positive');
+      throw new InvalidTransactionError(`${verb} amount must be positive`);
     }
 
     const account = await manager.findOne(SavingsAccount, {
@@ -57,22 +84,47 @@ export class DepositService {
       throw new AccountNotFoundError(`Account ${input.accountId} not found`);
     }
 
+    // FX happens before the balance check, exactly as FastAPI orders it, so an overdraft is
+    // judged on the converted amount.
+    let amount = input.amount;
+    let description = input.description ?? null;
+    if (input.sourceCurrency && input.sourceCurrency !== account.currency) {
+      if (!input.exchangeRate) {
+        throw new InvalidTransactionError(
+          `Exchange rate required to convert ${input.sourceCurrency} to ${account.currency}`,
+        );
+      }
+      const note = `(Converted from ${input.sourceCurrency} ${input.amount} @ ${input.exchangeRate})`;
+      amount = decMul(input.amount, input.exchangeRate);
+      description = description ? `${description} ${note}` : note;
+    }
+
     const balanceBefore = account.currentBalance;
-    const balanceAfter = decAdd(balanceBefore, input.amount);
+    const balanceAfter =
+      kind === 'deposit'
+        ? decAdd(balanceBefore, amount)
+        : decSub(balanceBefore, amount);
+
+    if (kind === 'withdrawal' && decCmp(balanceAfter, '0') < 0) {
+      throw new InsufficientFundsError(
+        `Insufficient funds. Available: ${balanceBefore}, Requested: ${amount}`,
+      );
+    }
+
     const now = new Date();
 
     const transaction = manager.create(AccountTransaction, {
       accountId: account.id,
       userId: input.userId,
-      transactionType: 'deposit',
-      amount: input.amount,
+      transactionType: kind,
+      amount,
       // The account's currency, not the income row's — FastAPI does the same.
       currency: account.currency,
       balanceBefore,
       balanceAfter,
       sourceType: input.sourceType ?? 'manual',
       sourceId: input.sourceId ?? null,
-      description: input.description ?? null,
+      description,
       category: input.category ?? null,
       referenceNumber: null,
       transactionDate: input.transactionDate ?? now,
@@ -92,8 +144,10 @@ export class DepositService {
         accountId: account.id,
         balance: balanceAfter,
         date: naiveNow(now),
-        changeAmount: input.amount,
-        changeReason: 'Deposit',
+        // Withdrawals record the change as negative — the sign is what tells the two apart in
+        // balance history.
+        changeAmount: kind === 'deposit' ? amount : `-${amount}`,
+        changeReason: verb,
         createdAt: naiveNow(now),
       }),
     );

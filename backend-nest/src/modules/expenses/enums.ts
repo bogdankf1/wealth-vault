@@ -37,7 +37,8 @@ export const EXPENSE_STATUS = {
   PAYMENT_FAILED: 'payment_failed',
 } as const;
 
-export type ExpenseStatus = (typeof EXPENSE_STATUS)[keyof typeof EXPENSE_STATUS];
+export type ExpenseStatus =
+  (typeof EXPENSE_STATUS)[keyof typeof EXPENSE_STATUS];
 
 /**
  * Python's `Decimal(4.33)` is built FROM A FLOAT, so it is not 4.33 — it is the exact binary

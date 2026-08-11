@@ -2,6 +2,10 @@ import { decIsZero, decMul, pyFloatMoney } from '../../../common/money/money';
 import { toNaiveIso } from '../../../common/time/naive-timestamp';
 import { IncomeDistributionRule } from '../entities/income-distribution-rule.entity';
 import { IncomeSource } from '../entities/income-source.entity';
+import type {
+  ConvertibleRow,
+  DisplayValues,
+} from '../../../common/currency/display-currency.service';
 import { IncomeTransaction } from '../entities/income-transaction.entity';
 import {
   DISTRIBUTION_TYPE_TO_WIRE,
@@ -15,10 +19,13 @@ export function monthlyEquivalent(source: IncomeSource): string {
   return decMul(source.amount, MONTHLY_MULTIPLIER[source.frequency]);
 }
 
-export interface DisplayValues {
-  displayAmount: string | null;
-  displayCurrency: string | null;
-  displayMonthlyEquivalent: string | null;
+/** Adapts a source row for the shared display-currency service, which is module-agnostic. */
+export function toConvertible(source: IncomeSource): ConvertibleRow {
+  return {
+    amount: source.amount,
+    currency: source.currency,
+    monthlyEquivalent: monthlyEquivalent(source),
+  };
 }
 
 /** The verb-independent half of IncomeSourceResponse. */
