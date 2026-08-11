@@ -38,10 +38,37 @@ export function pyDecimalString(plain: string): string {
   return `${sign}${mantissa}E${adjusted >= 0 ? '+' : ''}${adjusted}`;
 }
 
-/** Digits after the decimal point — what Python's Decimal exponent reports. */
+/**
+ * Digits after the decimal point — what Python's Decimal exponent reports, negated.
+ *
+ * Handles exponent notation, which matters because our own helpers emit it: `0E-49` carries scale
+ * 49, and treating it as scale 0 silently collapses every sum it takes part in.
+ */
 export function scaleOf(value: string): number {
-  const dot = value.indexOf('.');
-  return dot === -1 ? 0 : value.length - dot - 1;
+  const [mantissa, exponentPart] = value.split(/[eE]/);
+  const dot = mantissa.indexOf('.');
+  const mantissaScale = dot === -1 ? 0 : mantissa.length - dot - 1;
+  return exponentPart ? mantissaScale - Number(exponentPart) : mantissaScale;
+}
+
+/**
+ * Applies Python's context to a computed result.
+ *
+ * Python pads an exact result out to its ideal exponent, then rounds the coefficient to 28
+ * significant digits if that padding overflowed the context — and the rounded result KEEPS 28
+ * digits, trailing zeros included. That is why /expenses/stats answers
+ * "17300.40000000000000000000000" (5 + 23 digits) rather than "17300.40": one operand was a
+ * scale-49 zero, so the sum inherited scale 49 and was then rounded back to 28 digits.
+ */
+function withPythonContext(exact: Decimal, idealScale: number): string {
+  const padded = exact.toFixed(Math.max(idealScale, 0));
+  const significant = padded.replace(/[-.]/g, '').replace(/^0+/, '').length;
+  if (significant <= 28) return pyDecimalString(padded);
+
+  const rounded = exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN);
+  // decimal.js exposes the power-of-ten exponent of the leading digit as `e`.
+  const scale = 28 - rounded.e - 1;
+  return pyDecimalString(rounded.toFixed(Math.max(scale, 0)));
 }
 
 /**
@@ -65,13 +92,7 @@ const ExactDecimal = Decimal.clone({
  */
 export function decMul(a: string, b: string): string {
   const exact = new ExactDecimal(a).times(b);
-  if (exact.precision() <= 28) {
-    return pyDecimalString(exact.toFixed(scaleOf(a) + scaleOf(b)));
-  }
-  // Beyond the context precision Python rounds to 28 significant digits and keeps what it gets.
-  // The rounding has to be explicit: decimal.js applies its precision to operations, not to
-  // construction, so `new Decimal(exact.toString())` would carry all 50 digits through.
-  return exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN).toString();
+  return withPythonContext(exact, scaleOf(a) + scaleOf(b));
 }
 
 /**
@@ -80,17 +101,13 @@ export function decMul(a: string, b: string): string {
  */
 export function decAdd(a: string, b: string): string {
   const exact = new ExactDecimal(a).plus(b);
-  return exact.precision() <= 28
-    ? pyDecimalString(exact.toFixed(Math.max(scaleOf(a), scaleOf(b))))
-    : exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN).toString();
+  return withPythonContext(exact, Math.max(scaleOf(a), scaleOf(b)));
 }
 
 /** Same rule as addition. */
 export function decSub(a: string, b: string): string {
   const exact = new ExactDecimal(a).minus(b);
-  return exact.precision() <= 28
-    ? pyDecimalString(exact.toFixed(Math.max(scaleOf(a), scaleOf(b))))
-    : exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN).toString();
+  return withPythonContext(exact, Math.max(scaleOf(a), scaleOf(b)));
 }
 
 /**

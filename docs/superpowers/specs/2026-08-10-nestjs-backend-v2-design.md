@@ -1,7 +1,7 @@
 # NestJS Backend v2 — Design
 
 **Date:** 2026-08-10
-**Status:** Phases 0 and 1 complete. Phase 2 not started.
+**Status:** Phases 0 and 1 complete. Phase 2 in progress — slice 1 (expenses) done.
 Spec last reconciled against `backend-nest/` on 2026-08-11.
 See [Progress](#progress) for what is done, what remains, and the conventions Phase 1 settled.
 
@@ -154,13 +154,13 @@ Update this section at the end of each phase.
 
 **Scope arithmetic:** 267 endpoints exist in FastAPI. 59 are deliberately deferred and stay on
 FastAPI — billing (16), AI (14), the LangGraph agent (3), admin (25), and `/auth/demo` (1). That
-leaves **208 in scope**, of which **21 are done** and **187 remain**.
+leaves **208 in scope**, of which **36 are done** and **172 remain**.
 
 | Phase | Modules | Endpoints | Python LOC | Status |
 |---|---|---:|---:|---|
 | 0 — Foundation | auth (`/auth/google`, `/auth/me`, `/auth/me/features`) + all cross-cutting infrastructure | 3 | — | **Done**, merged in PR #20 |
 | 1 — Template module | income | 18 | 2,900 | **Done** (2026-08-11) |
-| 2 — Payment-pattern family | expenses, subscriptions, installments, taxes, debts | 69 | 9,500 | Not started |
+| 2 — Payment-pattern family | expenses **(done)**, subscriptions, installments, taxes, debts | 69 (15 done) | 9,500 | **Slice 1 done** (2026-08-11) |
 | 3 — Money & assets | savings, portfolio, goals, budgets, currency, preferences | 66 | 7,500 | Not started |
 | 4 — Aggregation & extras | dashboard, dashboard_layouts, notifications, exports, backups, support | 52 | 7,000 | Not started |
 | 5 — Jobs | BullMQ + cron ports of the Celery tasks belonging to ported modules | — | 116 task fns | Not started |
@@ -205,6 +205,44 @@ were only discoverable by measurement, and each would have been a silent data bu
    diff caught it.
 4. **class-validator's `@IsUUID()` is stricter than pydantic** — it demands a version nibble, so it
    would 422 the seeded demo user ids (`00000000-...-0000000000d1`) that this database contains.
+
+### What Phase 2 slice 1 delivered
+
+All 15 expense endpoints, plus the withdrawal half of the savings engine that subscriptions,
+installments and debts will also need. 121 unit tests and 120 e2e tests; 12 of 15 parity rows
+byte-identical to the live FastAPI, the other 3 being endpoints FastAPI cannot serve at all.
+
+The headline lesson is that **conventions are per-module, not global**. Expenses shares the
+database and the framework with income and still differs on nearly every axis:
+
+| | Income | Expenses |
+|---|---|---|
+| Money on the wire | strings everywhere | **numbers** on the 2 endpoints without a `response_model`, strings on the other 13 |
+| `frequency` | varchar, name stored | **native PG enum** (rejects a wrong label) with an extra `DAILY` member |
+| `created_at` | timestamptz → `…Z` | **naive** → no suffix |
+| `DELETE` | soft | **hard** |
+| Savings direction | deposit | **withdrawal**, with an overdraft guard |
+
+**Three endpoints are unreachable in FastAPI.** `GET /expenses/{expense_id}` is declared before
+`/pending`, `/overdue` and `/payment-summary`, so all three 422 on UUID parsing and their handlers
+have never run in production. Nest declares literals first — approved divergence, annotated in the
+parity list.
+
+Four measurement-only findings, each of which would otherwise have been a silent wrong number:
+
+1. **Python's 28-digit context applies to arithmetic**, so `Decimal('100.00') * Decimal(4.33)` is
+   `433.0000000000000071054273576`, not the exact 50-digit product.
+2. **`Decimal(4.33)` is built from a float** and its binary expansion reaches the response.
+   `new Decimal(4.33)` in decimal.js is plain 4.33 and will not reproduce it.
+3. **A scale-49 zero propagates.** An empty weekly bucket makes `/stats` answer `"0E-49"` — Python
+   renders zero in scientific notation once the adjusted exponent drops below -6, and the same zero
+   forces every sum it joins to 28-digit rounding (`"17300.40000000000000000000000"`).
+4. **Postgres strips trailing zeros from fractional seconds; Python's `isoformat()` pads to six.**
+   `.92364` vs `.923640` — the parity diff caught it on every row of the expenses list.
+
+Also closed here: `payment_account_id` was never validated as the caller's, and the list endpoint
+joined `savings_accounts` with no owner predicate, so a user could store a foreign account id and
+read that account's name back.
 
 ### Revised effort estimate
 

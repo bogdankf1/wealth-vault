@@ -1,0 +1,26 @@
+[
+  { "method": "GET", "path": "/api/v1/expenses", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses?page=1&page_size=3", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses?page=2&page_size=3", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses?category=Groceries", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses?is_active=true", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses?status=paid", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses/00000000-0000-0000-0000-000000000999", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses/stats", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses/stats?start_date=2026-01-01T00:00:00&end_date=2026-12-31T00:00:00", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses/history", "auth": true },
+  { "method": "GET", "path": "/api/v1/expenses/history?start_date=2026-01-01T00:00:00&end_date=2026-06-30T00:00:00", "auth": true },
+  { "method": "POST", "path": "/api/v1/expenses/process-due-payments", "auth": true },
+  {
+    "method": "GET", "path": "/api/v1/expenses/pending", "auth": true,
+    "expectDiff": "FastAPI 422s: GET /{expense_id} is declared before /pending, so the literal path fails UUID parsing and the handler has never run. Nest declares literals first (approved divergence)."
+  },
+  {
+    "method": "GET", "path": "/api/v1/expenses/overdue", "auth": true,
+    "expectDiff": "Shadowed in FastAPI, same cause as /pending."
+  },
+  {
+    "method": "GET", "path": "/api/v1/expenses/payment-summary", "auth": true,
+    "expectDiff": "Shadowed in FastAPI, same cause as /pending."
+  }
+]

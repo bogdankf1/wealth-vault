@@ -170,13 +170,16 @@ describe('Expense stats and history (e2e)', () => {
       .get('/api/v1/expenses/stats')
       .set(user.auth)
       .expect(200);
+    // '0E-49', not '0'. The roll-up multiplies the empty weekly bucket by the float-derived
+    // Decimal(4.33), producing a zero with exponent -49, and Python's str() renders that in
+    // scientific notation. Confirmed against the live FastAPI with a freshly created user.
     expect(res.body).toEqual({
       total_expenses: 0,
       active_expenses: 0,
-      total_daily_expense: '0',
-      total_weekly_expense: '0',
-      total_monthly_expense: '0',
-      total_annual_expense: '0',
+      total_daily_expense: '0E-49',
+      total_weekly_expense: '0E-49',
+      total_monthly_expense: '0E-49',
+      total_annual_expense: '0E-49',
       expenses_by_category: {},
       currency: 'USD',
     });

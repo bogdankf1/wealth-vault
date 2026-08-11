@@ -2,8 +2,27 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Status: awaiting approval. No code written yet.** One scope decision needs the user's answer before
-Task 5 — see [The decision that needs you](#the-decision-that-needs-you).
+**Status: complete.** Option B chosen — the three shadowed endpoints are reachable in Nest. Verified
+2026-08-11: 121 unit tests, 120 e2e tests, lint clean, build clean, and 12 of 15 parity rows
+byte-identical to the live FastAPI (the other 3 are the shadowed endpoints, annotated in the
+request list).
+
+**Four corrections the implementation made to this plan:**
+
+1. **`decMul` needed Python's context, not just its scale rule.** Python rounds arithmetic to 28
+   significant digits, so `Decimal('100.00') * Decimal(4.33)` is `433.0000000000000071054273576` —
+   not the exact 50-digit product this plan implied.
+2. **A scale-49 zero propagates through sums.** With no weekly expenses the roll-up's
+   `total_weekly * Decimal(4.33)` term is `0E-49`, which forces every sum it joins to 28-digit
+   rounding and makes an empty user's stats answer `"0E-49"` rather than `"0"`. Required
+   `pyDecimalString` and an exponent-aware `scaleOf`.
+3. **Fractional seconds needed padding.** Postgres prints `.92364`, Python's `isoformat()` prints
+   `.923640`. Caught by the parity diff on every row of the expenses list.
+4. **batch-create is dead for every user.** It gates on `batch_operations`, which no tier in this
+   database grants — not even `wealth`. Both backends 403; the e2e asserts it.
+
+Also worth knowing: stop the Nest dev server before running the e2e suite. Both write to the same
+database, and a rebuild mid-run produced three spurious failures that did not reproduce.
 
 **Goal:** Port the FastAPI `expenses` module — 15 endpoints under `/api/v1/expenses` — to
 `backend-nest/`, and extend the partial savings engine with the withdrawal path that expenses,
@@ -311,7 +330,7 @@ Nine tasks. Each ends green (lint + tests) and commits. Estimated one session.
 **Files:** create `src/modules/expenses/enums.ts`, `entities/expense.entity.ts`,
 `src/common/entities/naive-base.entity.ts`; test `test/expenses-entities.e2e-spec.ts`.
 
-- [ ] **Step 1: The naive-timestamp base class**
+- [x] **Step 1: The naive-timestamp base class**
 
 Four tables already mapped (savings_accounts, goals, balance_history, goal_progress_history) declare
 naive `created_at`/`updated_at` inline; expenses adds a fifth with a `deleted_at` too. Extract it:
@@ -357,12 +376,12 @@ column, **not** `@DeleteDateColumn`, because this module hard-deletes and filter
 inconsistently per query (see the constants matrix). Automatic filtering would be wrong on 8 of 15
 endpoints.
 
-- [ ] **Step 2: enums.ts** — `EXPENSE_FREQUENCY_TO_WIRE` / `_TO_NAME` (7 members incl. `DAILY`),
+- [x] **Step 2: enums.ts** — `EXPENSE_FREQUENCY_TO_WIRE` / `_TO_NAME` (7 members incl. `DAILY`),
   `EXPENSE_STATUS` values as plain lowercase strings, and the three multiplier tables from E6 named
   `STORED_MULTIPLIER`, `STATS_MULTIPLIER`, plus `DECIMAL_FROM_FLOAT_4_33` / `_2_17` with a comment
   explaining why they are long literals.
 
-- [ ] **Step 3: expense.entity.ts** — `@Entity('expenses')` extending `NaiveTimestampModel`:
+- [x] **Step 3: expense.entity.ts** — `@Entity('expenses')` extending `NaiveTimestampModel`:
   `userId`, `name`, `description`, `category`, `amount numeric(12,2)→string`, `currency`,
   `frequency` (varchar-declared, holding the enum NAME — the column is a native PG enum but TypeORM
   binds it as text and Postgres casts, which the round-trip test proves), `date`/`startDate`/`endDate`
@@ -371,7 +390,7 @@ endpoints.
   `paidAmount numeric(12,2)→string|null`, `accountTransactionId`, `receiptUrl`, `paymentMethod`,
   `autoPay`, `deletedAt`.
 
-- [ ] **Step 4: e2e mapping test** — `find({ take: 1 })` proves every column name, plus three
+- [x] **Step 4: e2e mapping test** — `find({ take: 1 })` proves every column name, plus three
   assertions that are the actual risk here:
 
 ```typescript
@@ -382,8 +401,8 @@ it('stores created_at as UTC-naive, matching utcnow()', async () => {
 });
 ```
 
-- [ ] **Step 5: run** → `npx jest --config test/jest-e2e.json test/expenses-entities.e2e-spec.ts`
-- [ ] **Step 6: commit** — `feat(nest): expense entity + naive-timestamp base`
+- [x] **Step 5: run** → `npx jest --config test/jest-e2e.json test/expenses-entities.e2e-spec.ts`
+- [x] **Step 6: commit** — `feat(nest): expense entity + naive-timestamp base`
 
 ---
 
@@ -394,16 +413,16 @@ it('stores created_at as UTC-naive, matching utcnow()', async () => {
 `common/currency/display-currency.service.ts`; update income imports.
 Test: `src/modules/savings/account-transaction.service.spec.ts`.
 
-- [ ] **Step 1: failing unit tests** for `createWithdrawal` — balance goes down, `balance_before`/
+- [x] **Step 1: failing unit tests** for `createWithdrawal` — balance goes down, `balance_before`/
   `balance_after` recorded, `transaction_type='withdrawal'`, `change_amount` negative in
   balance_history, and `InsufficientFundsError` thrown (message
   `Insufficient funds. Available: {before}, Requested: {amount}`) when the result would be negative.
-- [ ] **Step 2–3: implement**, mirroring `createDeposit`. Keep both methods on one service and share
+- [x] **Step 2–3: implement**, mirroring `createDeposit`. Keep both methods on one service and share
   the account lookup (`id + userId + isActive`, throwing `AccountNotFoundError`).
-- [ ] **Step 4: move DisplayCurrencyService** to `common/currency/`, parameterised by
+- [x] **Step 4: move DisplayCurrencyService** to `common/currency/`, parameterised by
   `{ amount, currency }` rather than by an `IncomeSource`, and re-point income's imports. Income's
   tests must stay green — run them.
-- [ ] **Step 5: run all tests, commit** — `refactor(nest): withdrawal path + shared display currency`
+- [x] **Step 5: run all tests, commit** — `refactor(nest): withdrawal path + shared display currency`
 
 ---
 
@@ -423,7 +442,7 @@ Differences to encode:
 - Query DTOs: list takes `page`, `page_size`, `category`, `is_active`, `status`; stats and history
   take `start_date`/`end_date`.
 
-- [ ] **Step 1: write them. Step 2: commit** — `feat(nest): expense DTOs`
+- [x] **Step 1: write them. Step 2: commit** — `feat(nest): expense DTOs`
 
 ---
 
@@ -433,7 +452,7 @@ Differences to encode:
 
 This is the parity layer and the place this module differs most from income.
 
-- [ ] **Step 1: failing unit tests** built from the captured bytes:
+- [x] **Step 1: failing unit tests** built from the captured bytes:
 
 ```typescript
 it('toExpenseModel — the response_model shape (POST/GET-by-id/PUT/cancel/batch)', () => {
@@ -468,7 +487,7 @@ it('list falsy guards match FastAPI exactly', () => {
 });
 ```
 
-- [ ] **Steps 2–4:** implement `toExpenseModel`, `toExpenseListItem`, and the small constructed-model
+- [x] **Steps 2–4:** implement `toExpenseModel`, `toExpenseListItem`, and the small constructed-model
   mappers (`toPayResponse`, `toStats`, `toHistory`, `toPaymentSummary`); run; commit
   `feat(nest): expense response mappers`
 
@@ -573,15 +592,15 @@ increments. `auto_pay` is deliberately **not** required on this endpoint.
 
 ### Task 9: Parity, docs, wrap-up
 
-- [ ] **Step 1:** `scripts/requests/expenses.json` — list (paged, filtered by category/is_active/
+- [x] **Step 1:** `scripts/requests/expenses.json` — list (paged, filtered by category/is_active/
   status), detail, stats (bare + ranged), history (bare + ranged), a 404, a 422 path UUID, and
   `process-due-payments` (safe: no `auto_pay` rows exist in dev). Under Option B, add three
   `expectDiff` rows for pending/overdue/payment-summary naming the reason.
-- [ ] **Step 2:** seed a couple of expenses through FastAPI, run
+- [x] **Step 2:** seed a couple of expenses through FastAPI, run
   `TOKEN=<jwt> npm run parity scripts/requests/expenses.json`, clean up. Every row PASS or annotated.
-- [ ] **Step 3:** update `backend-nest/README.md`, the spec's Progress table (21 → 36 done,
+- [x] **Step 3:** update `backend-nest/README.md`, the spec's Progress table (21 → 36 done,
   187 → 172 remaining) and its conventions section with E1–E7; check off this plan.
-- [ ] **Step 4:** commit `docs(nest): Phase 2 slice 1 wrap-up`
+- [x] **Step 4:** commit `docs(nest): Phase 2 slice 1 wrap-up`
 
 ---
 
