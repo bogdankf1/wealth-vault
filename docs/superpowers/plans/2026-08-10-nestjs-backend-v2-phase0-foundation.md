@@ -1,5 +1,15 @@
 # NestJS Backend v2 — Phase 0 (Foundation) Implementation Plan
 
+**Status: complete.** All 11 tasks executed and merged to `main` in PR #20 (2026-08-10). Verified at
+merge: 42 unit tests, 17 e2e tests, lint clean, parity green on all four rows. Nothing here is left
+to do — the plan is kept as the record of *why* Phase 0 looks the way it does, and the
+non-obvious rules below (FK write path, soft-delete parity, lint, `useDefineForClassFields`) still
+bind every later phase.
+
+> **Reading this after the fact:** the code blocks are the plan *as written before implementation*.
+> Where the shipped code deliberately diverges, an **As shipped** note sits next to the block. The
+> repository is the source of truth; the snippets are not.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stand up `backend-nest/` — a NestJS 11 app on port 8001 sharing the FastAPI backend's Postgres DB and JWTs, with auth (`/auth/google`, `/auth/me`, `/auth/me/features`), the full guards/pipes/filters/interceptors/middleware toolbox, rate limiting, health check, and a parity-diff script.
@@ -66,6 +76,13 @@ INSERT, turning omitted columns into explicit NULLs against the shared schema. D
 2. Trial-subscription creation inside `/auth/google` new-user flow is NOT ported (billing deferred).
 3. JWT from Nest includes `iat` (FastAPI's doesn't) — harmless, both backends validate fine.
 4. 422 validation-error `msg` texts differ from pydantic's — shape matches, wording doesn't.
+5. (Added during Task 6.) `FeatureGuard` runs its `tier_features` lookup without `withDeleted`, so
+   TypeORM auto-filters soft-deleted grants and features. FastAPI's `check_feature_access` has no
+   such filter and would still grant access on a soft-deleted grant. Nest is intentionally stricter
+   — it denies where FastAPI allows. The rule is commented on the guard itself.
+6. (Added during Task 8.) Rate limiting is enforced globally at 120/min; FastAPI configures the same
+   number but never registers the middleware, so it enforces nothing. See the spec's
+   "Known deviation: rate limiting is stricter than FastAPI".
 
 **Prerequisites:** local dev Postgres (FastAPI's docker dev DB, with `wealth` tier seeded) and Redis running; `backend/.env` exists to copy values from. All commands run from repo root unless stated. Work happens on branch `feature/nestjs-backend-v2`.
 
@@ -83,7 +100,9 @@ backend-nest/
     parity-diff.ts          # replay requests against :8000 and :8001, diff JSON
     requests/core.json      # starter request list
   src/
-    main.ts                 # bootstrap: prefix, CORS, pipe, swagger, port 8001
+    main.ts                 # bootstrap: swagger, shutdown hooks, port 8001
+    app.setup.ts            # configureApp(): body parsers, prefix, CORS, validation pipe
+                            #   — shared by main.ts and every e2e suite
     app.module.ts           # wires everything; global guards/filter/interceptor
     app.controller.ts       # GET /  (root message)
     health/health.controller.ts  # GET /health (DB + Redis checks)
@@ -118,7 +137,7 @@ backend-nest/
 - Modify: `backend-nest/src/main.ts`
 - Create: `backend-nest/.env.example`, `backend-nest/.env`
 
-- [ ] **Step 1: Generate project**
+- [x] **Step 1: Generate project**
 
 ```bash
 cd /Users/bohdanburukhin/Projects/personal/wealth-vault
@@ -127,7 +146,7 @@ npx @nestjs/cli@latest new backend-nest --package-manager npm --strict --skip-gi
 
 Expected: CLI scaffolds `backend-nest/` with `src/{main.ts,app.module.ts,app.controller.ts,app.service.ts}`, Jest configs, eslint/prettier. Verify `@nestjs/core` in `backend-nest/package.json` is `^11`.
 
-- [ ] **Step 2: Confirm it boots**
+- [x] **Step 2: Confirm it boots**
 
 ```bash
 cd backend-nest && npm run start:dev
@@ -135,7 +154,7 @@ cd backend-nest && npm run start:dev
 
 Expected: `Nest application successfully started` on port 3000; `curl localhost:3000` → `Hello World!`. Stop the server.
 
-- [ ] **Step 3: Create env files**
+- [x] **Step 3: Create env files**
 
 `backend-nest/.env.example`:
 
@@ -153,7 +172,7 @@ CORS_ORIGINS=["http://localhost:3000"]
 
 Create `backend-nest/.env` by copying `DATABASE_URL`, `SECRET_KEY`, `REDIS_URL`, `GOOGLE_CLIENT_ID` values from `backend/.env` (strip any `+asyncpg` from DATABASE_URL — the validator also does this defensively). Append `.env` to `backend-nest/.gitignore`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/bohdanburukhin/Projects/personal/wealth-vault
@@ -169,7 +188,7 @@ git add backend-nest && git commit -m "chore(nest): scaffold NestJS 11 app for b
 - Modify: `backend-nest/src/app.module.ts`
 - Test: `backend-nest/src/config/env.validation.spec.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `backend-nest/src/config/env.validation.spec.ts`:
 
@@ -221,12 +240,12 @@ describe('parseCorsOrigins', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd backend-nest && npx jest src/config --verbose`
 Expected: FAIL — `Cannot find module './env.validation'`
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `backend-nest/src/config/env.validation.ts`:
 
@@ -315,12 +334,12 @@ export class AppModule {}
 
 Install: `npm i @nestjs/config class-validator class-transformer`
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx jest src/config --verbose`
 Expected: PASS (6 tests)
 
-- [ ] **Step 5: Use PORT in main.ts and verify boot on 8001**
+- [x] **Step 5: Use PORT in main.ts and verify boot on 8001**
 
 In `backend-nest/src/main.ts`:
 
@@ -340,7 +359,7 @@ bootstrap();
 
 Run: `npm run start:dev` → Expected: listening on 8001 (`curl localhost:8001` → `Hello World!`). Stop it.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): typed env validation via ConfigModule"
@@ -360,13 +379,13 @@ git add backend-nest && git commit -m "feat(nest): typed env validation via Conf
 
 **Critical constraints:** `synchronize: false` always (Alembic owns the schema). UUIDs, `created_at`, `updated_at` are generated **client-side** in the FastAPI models — the DB columns have no server defaults — so entities must generate them client-side too (`@BeforeInsert` + `@CreateDateColumn`).
 
-- [ ] **Step 1: Install**
+- [x] **Step 1: Install**
 
 ```bash
 cd backend-nest && npm i @nestjs/typeorm typeorm pg typeorm-naming-strategies
 ```
 
-- [ ] **Step 2: Base entity**
+- [x] **Step 2: Base entity**
 
 `backend-nest/src/common/entities/base.entity.ts`:
 
@@ -401,7 +420,7 @@ export abstract class BaseModel {
 }
 ```
 
-- [ ] **Step 3: Tier entities**
+- [x] **Step 3: Tier entities**
 
 `backend-nest/src/modules/tiers/entities/tier.entity.ts`:
 
@@ -505,7 +524,7 @@ import { TierFeature } from './entities/tier-feature.entity';
 export class TiersModule {}
 ```
 
-- [ ] **Step 4: User entities**
+- [x] **Step 4: User entities**
 
 `backend-nest/src/modules/users/entities/user.entity.ts`:
 
@@ -658,7 +677,7 @@ import { UserPreferences } from './entities/user-preferences.entity';
 export class UsersModule {}
 ```
 
-- [ ] **Step 5: Database module and wiring**
+- [x] **Step 5: Database module and wiring**
 
 `backend-nest/src/database/database.module.ts`:
 
@@ -689,7 +708,7 @@ export class DatabaseModule {}
 
 In `app.module.ts`, add `DatabaseModule`, `TiersModule`, `UsersModule` to `imports`.
 
-- [ ] **Step 6: Write the mapping smoke test (e2e)**
+- [x] **Step 6: Write the mapping smoke test (e2e)**
 
 `backend-nest/test/entities.e2e-spec.ts`:
 
@@ -741,12 +760,12 @@ describe('Entity mappings against the live dev DB', () => {
 });
 ```
 
-- [ ] **Step 7: Run the e2e test**
+- [x] **Step 7: Run the e2e test**
 
 Run: `npx jest --config test/jest-e2e.json test/entities.e2e-spec.ts --verbose`
 Expected: PASS (3 tests). If a column-mismatch error appears (e.g. `column User.xyz does not exist`), fix the entity — the DB is the source of truth; inspect it with `\d users` via psql.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): TypeORM wiring + User/Tier/Feature/UserPreferences entities on shared schema"
@@ -766,7 +785,7 @@ FastAPI emits **two** error shapes; both must be reproduced:
 - `WealthVaultException` → `{"error": msg, "details": {...}, "status_code": n}`
 - `HTTPException` → `{"detail": msg}` (and 422 validation → `{"detail": [...]}`)
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `backend-nest/src/common/filters/global-exception.filter.spec.ts`:
 
@@ -853,12 +872,12 @@ describe('GlobalExceptionFilter', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npm i @nestjs/throttler && npx jest src/common/filters --verbose`
 Expected: FAIL — modules not found.
 
-- [ ] **Step 3: Implement exceptions**
+- [x] **Step 3: Implement exceptions**
 
 `backend-nest/src/common/exceptions/app.exception.ts`:
 
@@ -926,7 +945,7 @@ export class DetailException extends Error {
 }
 ```
 
-- [ ] **Step 4: Implement the filter**
+- [x] **Step 4: Implement the filter**
 
 `backend-nest/src/common/filters/global-exception.filter.ts`:
 
@@ -998,12 +1017,12 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 },
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `npx jest src/common/filters --verbose`
 Expected: PASS (6 tests)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): AppException hierarchy + global filter matching FastAPI error shapes"
@@ -1028,11 +1047,32 @@ git add backend-nest && git commit -m "feat(nest): AppException hierarchy + glob
    would flag it. Fix at the routing layer, not in the filter (the filter renders correctly given what it
    receives): add a catch-all that throws `DetailException(404, 'Not Found')`. Make sure it is registered
    last so it cannot shadow real routes, and mark it `@Public()` once guards exist in Task 6.
+
+   **As shipped (the catch-all route was abandoned — do not reintroduce it):** a catch-all `@Controller('*')`
+   cannot be made to lose reliably to the feature modules. Registration order across modules is not a
+   guarantee you can lean on, and the wildcard swallowed real routes (`/api/v1/auth/*` among them) as soon as
+   Task 7 landed. The fix moved into `GlobalExceptionFilter`: any `HttpException` that reaches the built-in
+   branch carrying status 404 has its detail overwritten with `'Not Found'`. That is safe *only* because
+   intentional 404s in this codebase never reach that branch — they are thrown as the app's own
+   `NotFoundException`/`DetailException`, which are handled earlier — and that invariant is enforced by an
+   eslint `no-restricted-imports` rule banning `NotFoundException` (and its four siblings) from
+   `@nestjs/common`, added in Task 4. Residual gap, documented on the filter: a raw
+   `new HttpException(msg, 404)` would also be overwritten. Throw `DetailException(404, msg)` instead.
 2. **Malformed JSON bodies.** Express's body-parser throws a raw `SyntaxError` before Nest routing; it is
    not an `HttpException`, so it lands in the catch-all 500 branch, while FastAPI returns 422. Handle it so
    the response is a 422 `{"detail": [...]}` matching FastAPI's validation-error shape.
 
-- [ ] **Step 1: Write the failing e2e test**
+   **As shipped:** an error handler has to sit *after* the body parser in Express's middleware stack, but
+   Nest only mounts its own parser inside `app.init()` — i.e. after `configureApp()` runs — so anything
+   `app.use()`d here would land ahead of it and never see the error. So `configureApp()` mounts `json()` and
+   `urlencoded()` itself, followed by the handler, and both entry points opt out of Nest's parser
+   (`NestFactory.create(AppModule, { bodyParser: false })` in `main.ts`, the same option on
+   `createNestApplication()` in the e2e suites). Consequence worth knowing before webhooks arrive: with
+   manual parsers in place, `{ rawBody: true }` would stay silently empty — a future Stripe/Paddle webhook
+   must mount its own `express.raw()` on that path ahead of these. Full reasoning is in the comment on
+   `app.setup.ts`.
+
+- [x] **Step 1: Write the failing e2e test**
 
 `backend-nest/test/app.e2e-spec.ts` (replace existing):
 
@@ -1084,12 +1124,12 @@ describe('App bootstrap (e2e)', () => {
 
 Note the import of `configureApp` from `../src/app.setup` — global pipe/prefix/CORS live there so e2e tests and `main.ts` share identical bootstrap (a Nest testing gotcha: `main.ts` is NOT executed by `Test.createTestingModule`).
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm i -D supertest @types/supertest && npx jest --config test/jest-e2e.json test/app.e2e-spec.ts`
 Expected: FAIL — `app.setup` not found.
 
-- [ ] **Step 3: Implement middleware + interceptor**
+- [x] **Step 3: Implement middleware + interceptor**
 
 `backend-nest/src/common/middleware/security-headers.middleware.ts`:
 
@@ -1141,7 +1181,7 @@ export class LoggingInterceptor implements NestInterceptor {
 }
 ```
 
-- [ ] **Step 4: Shared bootstrap (`app.setup.ts`), root controller, wiring**
+- [x] **Step 4: Shared bootstrap (`app.setup.ts`), root controller, wiring**
 
 `backend-nest/src/app.setup.ts`:
 
@@ -1257,14 +1297,20 @@ async function bootstrap() {
 bootstrap();
 ```
 
+**As shipped**, `main.ts` picked up two more lines:
+- `NestFactory.create(AppModule, { bodyParser: false })` — required by the malformed-JSON fix above.
+- `app.enableShutdownHooks()` before `listen()`. Without it, `RedisModule.onApplicationShutdown` and
+  TypeORM's own shutdown hook only run when something calls `app.close()` explicitly (which the e2e
+  suites do, which is why tests never caught it) — a real SIGTERM would leave connections dangling.
+
 Install: `npm i @nestjs/swagger`
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `npx jest --config test/jest-e2e.json test/app.e2e-spec.ts --verbose`
 Expected: PASS (3 tests). Also boot `npm run start:dev` and open `http://localhost:8001/docs` — swagger UI renders. Stop it.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): security headers middleware, logging interceptor, validation pipe, CORS, swagger"
@@ -1284,13 +1330,13 @@ git add backend-nest && git commit -m "feat(nest): security headers middleware, 
 
 Exact FastAPI behaviors to mirror (from `permissions.py`): missing/malformed header → 401 `{"detail": "Invalid authorization header format. Expected: Bearer <token>"}`; bad token → 401 `{"detail": "Could not validate credentials"}`; unknown user → 401 `{"detail": "User not found"}`; non-admin on admin route → 403 `{"error": "Admin access required", ...}` (AppException shape); demo user on forbidden route → 403 `{"detail": "Demo accounts cannot make real purchases."}`; missing feature → 403 TierLimit shape with `required_tier: "growth"`.
 
-- [ ] **Step 1: Install**
+- [x] **Step 1: Install**
 
 ```bash
 npm i @nestjs/jwt @nestjs/passport passport passport-jwt && npm i -D @types/passport-jwt
 ```
 
-- [ ] **Step 2: Write the failing guard tests**
+- [x] **Step 2: Write the failing guard tests**
 
 `backend-nest/src/common/guards/guards.spec.ts`:
 
@@ -1343,12 +1389,12 @@ describe('DemoGuard', () => {
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `npx jest src/common/guards --verbose`
 Expected: FAIL — modules not found.
 
-- [ ] **Step 4: Implement decorators**
+- [x] **Step 4: Implement decorators**
 
 `backend-nest/src/common/decorators/public.decorator.ts`:
 
@@ -1398,7 +1444,7 @@ export const FORBID_DEMO_KEY = 'forbidDemo';
 export const ForbidDemo = () => SetMetadata(FORBID_DEMO_KEY, true);
 ```
 
-- [ ] **Step 5: Implement UsersService**
+- [x] **Step 5: Implement UsersService**
 
 `backend-nest/src/modules/users/users.service.ts`:
 
@@ -1460,7 +1506,7 @@ export class UsersService {
 
 Add `UsersService` to `users.module.ts` `providers` and `exports` (keep the `TypeOrmModule` export).
 
-- [ ] **Step 6: Implement JWT strategy and guards**
+- [x] **Step 6: Implement JWT strategy and guards**
 
 `backend-nest/src/modules/auth/jwt.strategy.ts`:
 
@@ -1648,7 +1694,16 @@ export class FeatureGuard implements CanActivate {
 }
 ```
 
-- [ ] **Step 7: Auth module + global guard registration**
+**As shipped**, two corrections to the three guard snippets above:
+- `RolesGuard` and `FeatureGuard` read `request.user` as optional and throw
+  `DetailException(401, 'Could not validate credentials')` when it is absent, instead of dereferencing it.
+  It can only be absent if a route pairs `@Public()` with `@Roles()`/`@RequireFeature()` — a
+  decorator conflict, not a real request — but a crash there would surface as a 500 rather than the 401
+  the situation actually means.
+- `FeatureGuard`'s `tier_features` lookup keeps TypeORM's automatic soft-delete filtering, which makes it
+  stricter than FastAPI. That is deliberate — see deviation 5 at the top of this plan.
+
+- [x] **Step 7: Auth module + global guard registration**
 
 `backend-nest/src/modules/auth/auth.module.ts`:
 
@@ -1698,12 +1753,12 @@ import { DemoGuard } from './common/guards/demo.guard';
 
 Mark `AppController.root` with `@Public()` so `GET /` stays open (add the decorator import).
 
-- [ ] **Step 8: Run tests to verify they pass**
+- [x] **Step 8: Run tests to verify they pass**
 
 Run: `npx jest src/common/guards --verbose` → Expected: PASS (5 tests).
 Then re-run Task 5's e2e (root must still work because of `@Public`): `npx jest --config test/jest-e2e.json test/app.e2e-spec.ts` → Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): passport-jwt strategy + global auth/roles/feature/demo guards"
@@ -1718,7 +1773,7 @@ git add backend-nest && git commit -m "feat(nest): passport-jwt strategy + globa
 - Modify: `backend-nest/src/modules/auth/auth.module.ts`
 - Test: `backend-nest/src/modules/auth/auth.service.spec.ts`, `backend-nest/test/auth.e2e-spec.ts`
 
-- [ ] **Step 1: Write the failing unit test for AuthService**
+- [x] **Step 1: Write the failing unit test for AuthService**
 
 `backend-nest/src/modules/auth/auth.service.spec.ts`:
 
@@ -1826,12 +1881,12 @@ describe('AuthService.googleLogin', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest src/modules/auth --verbose`
 Expected: FAIL — modules not found.
 
-- [ ] **Step 3: Implement mapper, DTO, services, controller**
+- [x] **Step 3: Implement mapper, DTO, services, controller**
 
 `backend-nest/src/modules/auth/mappers/user-response.mapper.ts`:
 
@@ -2040,12 +2095,12 @@ export class AuthController {
 
 Update `auth.module.ts`: add `TiersModule` to imports, `AuthController` to `controllers`, and `AuthService`, `GoogleOAuthService` to `providers`.
 
-- [ ] **Step 4: Run unit tests to verify they pass**
+- [x] **Step 4: Run unit tests to verify they pass**
 
 Run: `npx jest src/modules/auth --verbose`
 Expected: PASS (3 tests)
 
-- [ ] **Step 5: Write the auth e2e test**
+- [x] **Step 5: Write the auth e2e test**
 
 `backend-nest/test/auth.e2e-spec.ts`:
 
@@ -2142,12 +2197,12 @@ describe('Auth (e2e, against live dev DB)', () => {
 
 Note: FastAPI returns 200 for POST endpoints unless specified; Nest defaults POST to 201. The frontend treats 2xx alike, so 201 is accepted here — if parity diffing later flags it, add `@HttpCode(200)`.
 
-- [ ] **Step 6: Run the e2e test**
+- [x] **Step 6: Run the e2e test**
 
 Run: `npx jest --config test/jest-e2e.json test/auth.e2e-spec.ts --verbose`
 Expected: PASS (6 tests). Requires dev DB with seeded `wealth` tier.
 
-- [ ] **Step 7: Cross-backend token check (manual, the whole point of shared JWTs)**
+- [x] **Step 7: Cross-backend token check (manual, the whole point of shared JWTs)**
 
 With FastAPI running on :8000 and Nest on :8001 (`npm run start:dev`):
 
@@ -2163,7 +2218,7 @@ Expected: both backends accept the same token and return the same user JSON. (Re
 seeded demo user from `app/scripts/seed_demo_data.py` to exist in the dev DB; if it doesn't,
 use a token from the auth e2e run instead.)
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): auth endpoints — google login, me, me/features with FastAPI-parity shapes"
@@ -2179,7 +2234,13 @@ git add backend-nest && git commit -m "feat(nest): auth endpoints — google log
 
 FastAPI uses slowapi with in-memory storage, default `120/minute` per client IP. Mirror that (in-memory is fine — parity, and Redis-backed throttling arrives with BullMQ later if needed).
 
-- [ ] **Step 1: Write the failing e2e test**
+**Correction found after this task shipped:** FastAPI *configures* `default_limits=["120/minute"]` but
+`main.py` never registers `SlowAPIMiddleware`, so it enforces no global limit at all — only the explicit
+`@limiter.limit("5/hour")` on `/auth/demo`. Nest's `ThrottlerGuard` really does enforce 120/min on every
+route, so this is a deliberate divergence rather than parity (deviation 6 above), kept because it is what
+the FastAPI config intends. Revisit if a Phase 1+ client starts seeing 429s that never occur on :8000.
+
+- [x] **Step 1: Write the failing e2e test**
 
 `backend-nest/test/throttling.e2e-spec.ts`:
 
@@ -2215,12 +2276,12 @@ describe('Throttling (e2e)', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest --config test/jest-e2e.json test/throttling.e2e-spec.ts --verbose`
 Expected: FAIL — the 121st request returns 200 (no throttler yet).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `app.module.ts` imports add (package was installed in Task 4):
 
@@ -2240,12 +2301,12 @@ And register the guard FIRST in the `APP_GUARD` list (before `JwtAuthGuard`), so
 
 The 429 body shape is already handled by `GlobalExceptionFilter` (Task 4).
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx jest --config test/jest-e2e.json test/throttling.e2e-spec.ts --verbose`
 Expected: PASS. Then re-run auth e2e to confirm it doesn't trip the limit: `npx jest --config test/jest-e2e.json test/auth.e2e-spec.ts` → PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): global rate limiting matching slowapi defaults"
@@ -2261,7 +2322,7 @@ git add backend-nest && git commit -m "feat(nest): global rate limiting matching
 - Modify: `backend-nest/src/app.module.ts`
 - Test: `backend-nest/test/health.e2e-spec.ts`
 
-- [ ] **Step 1: Write the failing e2e test**
+- [x] **Step 1: Write the failing e2e test**
 
 `backend-nest/test/health.e2e-spec.ts`:
 
@@ -2295,12 +2356,12 @@ describe('Health (e2e)', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm i ioredis && npx jest --config test/jest-e2e.json test/health.e2e-spec.ts`
 Expected: FAIL — 404 on /health.
 
-- [ ] **Step 3: Implement the Redis custom provider**
+- [x] **Step 3: Implement the Redis custom provider**
 
 `backend-nest/src/redis/redis.module.ts`:
 
@@ -2333,7 +2394,12 @@ export class RedisModule implements OnApplicationShutdown {
 }
 ```
 
-- [ ] **Step 4: Implement the health controller**
+**As shipped:** `quit()` is wrapped in a try/catch that swallows the failure. It rejects when the
+connection never opened or was already closed by a prior shutdown, and the e2e suites call
+`app.close()` repeatedly across files sharing one process — unswallowed, that blows up teardown.
+The `REDIS_URL` lookup also carries a `?? 'redis://localhost:6379/0'` fallback rather than `!`.
+
+- [x] **Step 4: Implement the health controller**
 
 `backend-nest/src/health/health.controller.ts`:
 
@@ -2386,12 +2452,12 @@ export class HealthController {
 
 Add `RedisModule` to `app.module.ts` imports and `HealthController` to `controllers`.
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `npx jest --config test/jest-e2e.json test/health.e2e-spec.ts --verbose`
 Expected: PASS (requires local Postgres + Redis up).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): redis custom provider + health endpoint matching FastAPI shape"

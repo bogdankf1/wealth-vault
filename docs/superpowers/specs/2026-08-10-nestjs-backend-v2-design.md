@@ -2,6 +2,7 @@
 
 **Date:** 2026-08-10
 **Status:** Phase 0 complete and merged to `main` (PR #20, 2026-08-10). Phase 1 not started.
+Spec and Phase 0 plan last reconciled against `backend-nest/` on 2026-08-11.
 See [Progress](#progress) for what is done, what remains, and the decisions Phase 1 must make.
 
 ## Context
@@ -45,7 +46,9 @@ production backend.
 
 - NestJS 11, TypeScript strict, Node 22, npm (matches frontend), Jest + supertest.
 - Postgres via TypeORM (`synchronize: false`, snake_case naming strategy).
-- Redis for rate limiting (`@nestjs/throttler`) and BullMQ.
+- Rate limiting via `@nestjs/throttler`, **in-memory storage** — matching slowapi's own default on
+  the FastAPI side. Redis-backed throttler storage arrives with BullMQ in Phase 5 if it's needed
+  then; today Redis is a dependency only for the health check.
 - `@nestjs/event-emitter` for the in-process event bus.
 - `@nestjs/schedule` + BullMQ for cron/background jobs.
 - Port **8001**.
@@ -54,7 +57,10 @@ production backend.
 
 ```
 backend-nest/src/
-  main.ts                 # bootstrap: global pipes/filters/interceptors, CORS, helmet
+  main.ts                 # bootstrap: swagger, shutdown hooks, listen
+  app.setup.ts            # configureApp(): body parsers, route prefix, CORS, validation pipe.
+                          #   Shared by main.ts and every e2e suite — main.ts does NOT run under
+                          #   Test.createTestingModule, so bootstrap must live somewhere both call.
   app.module.ts
   config/                 # ConfigModule + env validation (reads same .env values)
   database/               # TypeORM setup, naming strategy
@@ -105,7 +111,7 @@ become multiple providers in the module rather than one giant service class.
 | Services + `Depends()` | Providers + Nest DI |
 | Event bus (`EventDispatcher`, 32 handlers) | `@nestjs/event-emitter`, same event names |
 | Celery tasks + beat | BullMQ processors + `@nestjs/schedule` cron |
-| slowapi rate limiting | `@nestjs/throttler` + Redis storage |
+| slowapi rate limiting | `@nestjs/throttler` (in-memory, like slowapi's default) |
 | SSE (agent/exports) | `@Sse()` (exports in scope; agent deferred) |
 
 ## Phases
@@ -151,9 +157,9 @@ leaves **208 in scope**, of which **3 are done** and **205 remain**.
 
 ### What Phase 0 delivered
 
-~1,500 lines of source across 37 files plus ~650 lines of tests (42 unit, 17 e2e), all passing,
-lint clean. Three endpoints is 1.4% of the surface, which undersells it: Phase 0 is the part that
-does not repeat. Every NestJS mechanism the project set out to practise is built and exercised —
+~1,480 lines of source across 37 files plus ~1,000 lines of tests (644 in 6 unit specs, 352 in 5 e2e
+specs — 42 unit tests and 17 e2e tests), all passing, lint clean. Three endpoints is 1.4% of the
+surface, which undersells it: Phase 0 is the part that does not repeat. Every NestJS mechanism the project set out to practise is built and exercised —
 DI with custom providers and injection tokens, five ordered global guards, decorators driving them
 through `Reflector`, pipes, interceptors, middleware, exception filters, and module composition.
 Phases 1–5 mostly apply those patterns rather than invent them.
@@ -238,10 +244,33 @@ billing events) are skipped until those modules are ported.
 2. **FK writes go through the relation, never the scalar** (see the plan's FK write-path rule).
 3. **Auth-path user lookups pass `withDeleted: true`**; nested tier/feature filtering is re-applied
    in code (see the plan's soft-delete parity rule).
-4. **Decide pagination, ownership scoping, and transaction boundaries once, in Phase 1**, and reuse
+4. **Throw the app's own exceptions, never Nest's built-ins.** `NotFoundException`,
+   `UnauthorizedException`, `ForbiddenException`, `BadRequestException` and `ConflictException` exist
+   in both `@nestjs/common` and `src/common/exceptions/app.exception.ts` with the same names and
+   different response shapes, so an eslint `no-restricted-imports` rule blocks the `@nestjs/common`
+   ones. This matters more than it looks: `GlobalExceptionFilter` rewrites the detail of any *other*
+   404 to `"Not Found"` (that is how the unmatched-route parity gap is closed), so a 404 raised the
+   wrong way loses its message silently. Phase 1 modules raise 404s constantly — use
+   `NotFoundException` from `app.exception.ts`, or `DetailException(404, msg)` for the `{detail}` shape.
+5. **Every e2e suite that issues HTTP requests calls `configureApp(app)` and opts out of Nest's body
+   parser** (`createNestApplication({ bodyParser: false })`), exactly as `main.ts` does. `main.ts`
+   never runs under `Test.createTestingModule`, so a suite that skips this tests an app with no route
+   prefix, no validation pipe, and no CORS — i.e. not the app that ships. (`entities.e2e-spec.ts` is
+   the one exception: it only resolves the `DataSource` and never makes a request.)
+6. **Decide pagination, ownership scoping, and transaction boundaries once, in Phase 1**, and reuse
    them. FastAPI's shape is `{items, total, page, page_size}` with per-query
    `.where(Model.user_id == current_user.id)`. Phase 1 (income) is the template the other 18 modules
    copy — divergence there multiplies by 19.
+
+## Known deviation: feature checks are stricter than FastAPI
+
+`FeatureGuard` looks up `tier_features` without `withDeleted`, so TypeORM appends `deleted_at IS NULL`
+to the grant and the feature row. FastAPI's `check_feature_access` (`backend/app/core/permissions.py`)
+has no such filter and would still grant access on a soft-deleted grant. Nest denies where FastAPI
+allows. Kept deliberately — a revoked grant should not keep working — but it means a parity diff on a
+soft-deleted grant is expected, not a bug. `/auth/me/features` is the opposite case: it must return the
+same list FastAPI does, so `AuthService.getFeatures` re-applies the `deletedAt` checks in code
+(`withDeleted: true` on the user lookup disables them on the joins — see the conventions above).
 
 ## Known deviation: rate limiting is stricter than FastAPI
 
