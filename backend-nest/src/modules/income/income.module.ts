@@ -12,6 +12,7 @@ import { IncomeTransaction } from './entities/income-transaction.entity';
 import { DistributionController } from './distribution.controller';
 import { IncomeController } from './income.controller';
 import { DistributionService } from './services/distribution.service';
+import { IncomeBackfillService } from './services/income-backfill.service';
 import { IncomeDepositService } from './services/income-deposit.service';
 import { DisplayCurrencyService } from './services/display-currency.service';
 import { IncomeSourcesService } from './services/income-sources.service';
@@ -47,6 +48,7 @@ import { UsageLimitService } from './services/usage-limit.service';
     IncomeHistoryService,
     IncomeDepositService,
     DistributionService,
+    IncomeBackfillService,
   ],
 })
 export class IncomeModule {}

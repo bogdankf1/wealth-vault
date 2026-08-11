@@ -1,0 +1,119 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/income/sources",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/sources?page=1&page_size=1",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/sources?page=2&page_size=1",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/sources?is_active=true",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/sources?is_active=false",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/sources/00000000-0000-0000-0000-000000000999",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/transactions",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/transactions?page=1&page_size=3",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/transactions?start_date=2026-01-01T00:00:00&end_date=2026-12-31T00:00:00",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/stats",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/stats?start_date=2026-01-01T00:00:00&end_date=2026-12-31T00:00:00",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/history",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/history?start_date=2026-01-01T00:00:00&end_date=2026-06-30T00:00:00",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/distribution-rules",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/distribution-rules?is_active=true",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/distribution-rules/00000000-0000-0000-0000-000000000999",
+    "auth": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/income/distribution-preview?income_amount=1000&currency=USD",
+    "auth": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/income/distribution-preview?income_amount=1234.56&currency=EUR",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/income/distribution-rules?income_source_id=232071fb-75f6-49d2-ae50-2298d94f67af",
+    "auth": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/income/distribution-preview?income_amount=1000.00&currency=USD",
+    "auth": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/income/distribution-preview?income_amount=3333.33&currency=USD&income_source_id=232071fb-75f6-49d2-ae50-2298d94f67af",
+    "auth": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/income/transactions",
+    "auth": true,
+    "body": {
+      "amount": "1.00",
+      "currency": "USD",
+      "date": "2026-08-01T00:00:00",
+      "description": "parity probe"
+    },
+    "expectDiff": "FastAPI 500s on every call to this endpoint (deposit_to_account_id is not a column and its router splats the schema into the model constructor). Nest implements the endpoint. See Phase 1 Deviation 1."
+  }
+]

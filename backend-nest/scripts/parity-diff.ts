@@ -13,6 +13,12 @@ interface Req {
   path: string;
   auth?: boolean;
   body?: unknown;
+  /**
+   * Set when the two backends are KNOWN to differ and the difference is intentional. The row still
+   * runs and still prints both bodies, but it does not fail the check. Every use must name the
+   * reason — an unexplained diff is a defect, not a note.
+   */
+  expectDiff?: string;
 }
 
 const FASTAPI_URL = process.env.FASTAPI_URL ?? 'http://localhost:8000';
@@ -75,10 +81,20 @@ async function main(): Promise<void> {
       call(FASTAPI_URL, req),
       call(NEST_URL, req),
     ]);
-    const bothOk = Math.floor(a.status / 100) === Math.floor(b.status / 100);
+    // Exact status, not just its class. Comparing Math.floor(status / 100) treated Nest's 201 on
+    // POST /auth/google as matching FastAPI's 200 all through Phase 0.
+    const sameStatus = a.status === b.status;
     const same =
       JSON.stringify(normalize(a.body)) === JSON.stringify(normalize(b.body));
-    if (bothOk && same) {
+    if (req.expectDiff) {
+      console.log(`KNOWN ${req.method} ${req.path} — ${req.expectDiff}`);
+      console.log(
+        `  fastapi(${a.status}): ${JSON.stringify(normalize(a.body)).slice(0, 200)}`,
+      );
+      console.log(
+        `  nest(${b.status}):    ${JSON.stringify(normalize(b.body)).slice(0, 200)}`,
+      );
+    } else if (sameStatus && same) {
       console.log(`PASS  ${req.method} ${req.path}`);
     } else {
       failures += 1;

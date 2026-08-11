@@ -53,7 +53,7 @@ describe('Auth (e2e, against live dev DB)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/v1/auth/google')
       .send({ token: 'mocked' })
-      .expect(201);
+      .expect(200);
     const body = res.body as {
       token_type: string;
       access_token: string;
@@ -83,7 +83,7 @@ describe('Auth (e2e, against live dev DB)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/v1/auth/google')
       .send({ token: 'mocked' })
-      .expect(201);
+      .expect(200);
     const body = res.body as {
       user: { id: string; email: string; tier: { name: string } | null };
     };

@@ -37,9 +37,22 @@ export function decSub(a: string, b: string): string {
   return new Decimal(a).minus(b).toFixed(Math.max(scaleOf(a), scaleOf(b)));
 }
 
-/** Division is the one operation Python does NOT pad — the context precision decides the digits. */
+/**
+ * Division follows Python's "ideal exponent" rule, which is subtler than the other operations:
+ *   - an INEXACT quotient is carried to the context precision (28 significant digits) and printed
+ *     as-is — Decimal('10.00') / 3 is 3.333333333333333333333333333;
+ *   - an EXACT quotient is padded back out to scale(a) - scale(b) — Decimal('45000.00') / 6 is
+ *     Decimal('7500.00'), NOT 7500, and that trailing scale is visible in /income/history's
+ *     overall_average.
+ * decimal.js normalizes exact results, so the padding has to be reapplied. Verified against
+ * CPython's decimal module, and caught by the parity diff when it wasn't.
+ */
 export function decDiv(a: string, b: string): string {
-  return new Decimal(a).div(b).toString();
+  const quotient = new Decimal(a).div(b);
+  const isExact = quotient.times(b).equals(new Decimal(a));
+  if (!isExact) return quotient.toString();
+  const idealScale = Math.max(0, scaleOf(a) - scaleOf(b));
+  return quotient.toFixed(Math.max(idealScale, quotient.decimalPlaces()));
 }
 
 export function decIsZero(value: string): boolean {

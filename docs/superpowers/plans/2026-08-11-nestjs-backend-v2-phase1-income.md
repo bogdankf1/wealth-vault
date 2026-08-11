@@ -1,5 +1,29 @@
 # NestJS Backend v2 — Phase 1 (Income) Implementation Plan
 
+**Status: complete.** All 18 endpoints ported and verified on 2026-08-11: 93 unit tests, 73 e2e
+tests, lint clean, and 21 of 22 parity rows byte-identical to the live FastAPI (the 22nd is the
+documented `POST /transactions` deviation).
+
+**Three corrections the implementation made to this plan** — the plan was wrong, the code is right:
+
+1. **Task 9 said one-time income contributes nothing to `/history`.** It contributes its FULL
+   amount to the month of its `date`; the `0` multiplier is never applied to it
+   (`service.py:186-196`). Implemented from the source.
+2. **Task 1's `decDiv` was wrong** and its unit test enshrined the error. Python pads an *exact*
+   quotient to `scale(a) - scale(b)` — `Decimal('45000.00') / 6` is `Decimal('7500.00')`, not
+   `7500` — and only an inexact quotient runs to 28 significant digits. The parity diff caught it
+   on `/history`'s `overall_average`; the rule was then verified against CPython directly.
+3. **Task 2 needed more than the pg type parser.** TypeORM re-hydrates any column it considers a
+   date through `new Date(value)` regardless of what the driver returned, so naive columns also had
+   to be declared `varchar`. Both halves are covered by an e2e round-trip.
+
+Two things worth knowing before running any of this again:
+- `npm run parity scripts/requests/income.json` **writes one income transaction per run** (the
+  deviation row is a POST). Clean up with
+  `DELETE FROM income_transactions WHERE description = 'parity probe';`.
+- Do not stand up two Nest apps in one Jest process. They share the postgres driver, so closing one
+  leaves the other throwing "Driver not Connected" — use `createExtraUser` for isolation instead.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Port the FastAPI `income` module — 18 endpoints under `/api/v1/income` — to `backend-nest/`,
@@ -260,13 +284,13 @@ error vocabulary) is independently testable; splitting by responsibility, not by
 
 This task is D1/D2/D4/D5 in code. Nothing else in Phase 1 works without it.
 
-- [ ] **Step 1: Install decimal.js**
+- [x] **Step 1: Install decimal.js**
 
 ```bash
 cd backend-nest && npm i decimal.js
 ```
 
-- [ ] **Step 2: Write the failing money tests**
+- [x] **Step 2: Write the failing money tests**
 
 `src/common/money/money.spec.ts`:
 
@@ -325,11 +349,11 @@ describe('rawMoney', () => {
 });
 ```
 
-- [ ] **Step 3: Run to verify failure**
+- [x] **Step 3: Run to verify failure**
 
 Run: `npx jest src/common/money --verbose` → FAIL, `Cannot find module './money'`.
 
-- [ ] **Step 4: Implement money.ts**
+- [x] **Step 4: Implement money.ts**
 
 ```typescript
 import Decimal from 'decimal.js';
@@ -409,11 +433,11 @@ export function pyFloatMoney(value: string): string {
 }
 ```
 
-- [ ] **Step 5: Run to verify the money tests pass**
+- [x] **Step 5: Run to verify the money tests pass**
 
 Run: `npx jest src/common/money --verbose` → PASS (five suites).
 
-- [ ] **Step 6: Money validation decorator**
+- [x] **Step 6: Money validation decorator**
 
 `src/common/money/is-money-string.decorator.ts`:
 
@@ -440,7 +464,7 @@ export function IsDecimalString(): PropertyDecorator {
 }
 ```
 
-- [ ] **Step 7: Write the failing naive-timestamp tests**
+- [x] **Step 7: Write the failing naive-timestamp tests**
 
 `src/common/time/naive-timestamp.spec.ts`:
 
@@ -475,7 +499,7 @@ describe('toNaiveTimestamp — inbound value → what we store', () => {
 });
 ```
 
-- [ ] **Step 8: Run to verify failure, then implement**
+- [x] **Step 8: Run to verify failure, then implement**
 
 Run: `npx jest src/common/time --verbose` → FAIL.
 
@@ -521,9 +545,9 @@ Call `registerNaiveTimestampParser()` at the top of `configureApp()` in `src/app
 suites get it too) **and** before `NestFactory.create` in `main.ts`. It must run before the first
 query, and registering twice is harmless.
 
-- [ ] **Step 9: Run the time tests** → `npx jest src/common/time --verbose` → PASS.
+- [x] **Step 9: Run the time tests** → `npx jest src/common/time --verbose` → PASS.
 
-- [ ] **Step 10: Pagination DTO**
+- [x] **Step 10: Pagination DTO**
 
 `src/common/dto/page-query.dto.ts`:
 
@@ -558,7 +582,7 @@ export function listed<T>(items: T[]) {
 }
 ```
 
-- [ ] **Step 11: Write the failing OwnedRepository tests**
+- [x] **Step 11: Write the failing OwnedRepository tests**
 
 `src/common/repository/owned.repository.spec.ts`:
 
@@ -620,7 +644,7 @@ describe('OwnedRepository', () => {
 });
 ```
 
-- [ ] **Step 12: Run to verify failure, then implement**
+- [x] **Step 12: Run to verify failure, then implement**
 
 Run: `npx jest src/common/repository --verbose` → FAIL.
 
@@ -708,11 +732,11 @@ export function provideOwnedRepository(entity: EntityTarget<ObjectLiteral>): Pro
 }
 ```
 
-- [ ] **Step 13: Run tests + lint**
+- [x] **Step 13: Run tests + lint**
 
 Run: `npx jest src/common --verbose && npm run lint` → PASS, lint exit 0.
 
-- [ ] **Step 14: Commit**
+- [x] **Step 14: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): phase 1 conventions kit — money, naive timestamps, pagination, owned repository"
@@ -739,7 +763,7 @@ git add backend-nest && git commit -m "feat(nest): phase 1 conventions kit — m
 2. All money columns are `numeric` → strings (never add a transformer). All naive date columns are
    typed `string` in the entity, which only works because Task 1 registered the OID 1114 parser.
 
-- [ ] **Step 1: Enums**
+- [x] **Step 1: Enums**
 
 `src/modules/income/enums.ts`:
 
@@ -810,7 +834,7 @@ export const HISTORY_MULTIPLIER: Record<IncomeFrequencyName, string> = {
 };
 ```
 
-- [ ] **Step 2: Income entities**
+- [x] **Step 2: Income entities**
 
 `src/modules/income/entities/income-source.entity.ts`:
 
@@ -878,7 +902,7 @@ export class IncomeSource extends BaseModel {
 `amount numeric(12,2) nullable → string|null`, `percentage numeric(5,2) nullable → string|null`,
 `priority int`, `name varchar(100) nullable`, `isActive boolean`.
 
-- [ ] **Step 3: Savings / goals / currency entities (partial, Phase 3 owns them later)**
+- [x] **Step 3: Savings / goals / currency entities (partial, Phase 3 owns them later)**
 
 `src/modules/savings/entities/savings-account.entity.ts` — **no `BaseModel`**:
 
@@ -948,7 +972,7 @@ only through an already-scoped account.
 `fromCurrency varchar(3)`, `toCurrency varchar(3)`, `rate numeric(20,10) → string`,
 `source varchar(100)`, `fetchedAt timestamp → string`, `isManualOverride boolean`.
 
-- [ ] **Step 4: Write the mapping e2e test**
+- [x] **Step 4: Write the mapping e2e test**
 
 `test/income-entities.e2e-spec.ts` — same shape as Phase 0's `entities.e2e-spec.ts` (a `find()`
 selects every mapped column, so it throws if a column name is wrong). Cover all ten entities, and
@@ -966,13 +990,13 @@ it('reads naive timestamps as raw strings, not shifted Dates', async () => {
 });
 ```
 
-- [ ] **Step 5: Run it**
+- [x] **Step 5: Run it**
 
 Run: `npx jest --config test/jest-e2e.json test/income-entities.e2e-spec.ts --verbose` → PASS.
 A `column X does not exist` failure means the entity is wrong — the DB is the source of truth; check
 with `psql "$DATABASE_URL" -c "\d <table>"`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend-nest && git commit -m "feat(nest): income entities + partial savings/goals/currency entities"
@@ -993,7 +1017,7 @@ Rules that apply to every DTO here:
 - update DTOs carry **no defaults** — `exclude_unset=True` semantics mean "absent" and "null" differ,
   so the service must apply only keys actually present (`Object.keys(dto)`).
 
-- [ ] **Step 1: `create-income-source.dto.ts`**
+- [x] **Step 1: `create-income-source.dto.ts`**
 
 ```typescript
 import { Transform } from 'class-transformer';
@@ -1061,7 +1085,7 @@ export class CreateIncomeSourceDto {
 }
 ```
 
-- [ ] **Step 2: the remaining DTOs**
+- [x] **Step 2: the remaining DTOs**
 
 - `update-income-source.dto.ts` — every field optional with **no default**; same validators; adds
   `sync_historical?: boolean`; **has no `date` field** (FastAPI's `IncomeSourceUpdate` omits it, so a
@@ -1087,7 +1111,7 @@ export class CreateIncomeSourceDto {
   `currency` default `'USD'` (no length constraint in FastAPI — do not add one),
   `income_source_id?` UUID.
 
-- [ ] **Step 3: commit** — `git commit -m "feat(nest): income request DTOs"`
+- [x] **Step 3: commit** — `git commit -m "feat(nest): income request DTOs"`
 
 ---
 
@@ -1100,7 +1124,7 @@ export class CreateIncomeSourceDto {
 
 This is the parity layer. Every byte the module emits is decided here.
 
-- [ ] **Step 1: Write the failing mapper tests, using captured FastAPI bytes**
+- [x] **Step 1: Write the failing mapper tests, using captured FastAPI bytes**
 
 `src/modules/income/mappers/income-response.mapper.spec.ts`:
 
@@ -1199,9 +1223,9 @@ describe('toSourceResponseFloat — GET list/detail shape', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure** → `npx jest src/modules/income/mappers --verbose` → FAIL.
+- [x] **Step 2: Run to verify failure** → `npx jest src/modules/income/mappers --verbose` → FAIL.
 
-- [ ] **Step 3: Implement the currency converter**
+- [x] **Step 3: Implement the currency converter**
 
 `src/modules/currency/currency-converter.service.ts`:
 
@@ -1247,7 +1271,7 @@ export class CurrencyConverterService {
 }
 ```
 
-- [ ] **Step 4: Implement the mapper**
+- [x] **Step 4: Implement the mapper**
 
 `src/modules/income/mappers/income-response.mapper.ts` — the important parts:
 
@@ -1335,9 +1359,9 @@ Add in the same file, following the same pattern (all raw money, no float collap
   distribution_type, amount, percentage, priority, name, is_active, id, user_id, created_at,
   updated_at, income_source_name, target_account_name, target_goal_name`.
 
-- [ ] **Step 5: Run the mapper tests** → PASS. Then `npm run lint` → exit 0.
+- [x] **Step 5: Run the mapper tests** → PASS. Then `npm run lint` → exit 0.
 
-- [ ] **Step 6: Commit** — `git commit -m "feat(nest): income response mappers + read-only currency converter"`
+- [x] **Step 6: Commit** — `git commit -m "feat(nest): income response mappers + read-only currency converter"`
 
 ---
 
@@ -1346,7 +1370,7 @@ Add in the same file, following the same pattern (all raw money, no float collap
 **Files:** `income.module.ts`, `income.controller.ts`, `services/income-sources.service.ts`,
 `services/display-currency.service.ts`; test `test/income-sources.e2e-spec.ts`.
 
-- [ ] **Step 1: Write the failing e2e test**
+- [x] **Step 1: Write the failing e2e test**
 
 `test/income-sources.e2e-spec.ts` — bootstrap exactly like Phase 0's `auth.e2e-spec.ts`
 (`createNestApplication({ bodyParser: false })` + `configureApp(app)`), then create a dedicated user
@@ -1379,9 +1403,9 @@ it('GET /api/v1/income/sources/{id} 404s for another user\'s row', async () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure** (404 on the route — module not wired yet).
+- [x] **Step 2: Run to verify failure** (404 on the route — module not wired yet).
 
-- [ ] **Step 3: Implement `DisplayCurrencyService`**
+- [x] **Step 3: Implement `DisplayCurrencyService`**
 
 Reads `UserPreferences.display_currency` (default `'USD'`) and computes the display trio for a
 source, mirroring `convert_income_to_display_currency` exactly, including its fallbacks:
@@ -1389,7 +1413,7 @@ same currency → `displayAmount = amount`, `displayCurrency = display`,
 `displayMonthlyEquivalent = monthlyEquivalent(source)`; conversion returns null → fall back to the
 **source's own** currency and unconverted amounts.
 
-- [ ] **Step 4: Implement `IncomeSourcesService.list()` and `.get()`**
+- [x] **Step 4: Implement `IncomeSourcesService.list()` and `.get()`**
 
 ```typescript
 async list(userId: string, query: ListIncomeSourcesQuery) {
@@ -1415,7 +1439,7 @@ async list(userId: string, query: ListIncomeSourcesQuery) {
 which the Phase 0 filter renders as `{error, details, status_code}`. Import it from
 `src/common/exceptions/app.exception.ts`, never from `@nestjs/common` (eslint blocks that).
 
-- [ ] **Step 5: Controller + module wiring**
+- [x] **Step 5: Controller + module wiring**
 
 ```typescript
 @Controller('income')
@@ -1436,9 +1460,9 @@ wording differs — that is Phase 0's accepted deviation 4).
 Register `IncomeModule` in `app.module.ts` imports. **Declare `sources/batch-delete` before any
 `:sourceId` route** in the controller — Nest matches in declaration order.
 
-- [ ] **Step 6: Run the e2e test** → PASS. Then `npm run lint`.
+- [x] **Step 6: Run the e2e test** → PASS. Then `npm run lint`.
 
-- [ ] **Step 7: Commit** — `git commit -m "feat(nest): income source list/detail endpoints"`
+- [x] **Step 7: Commit** — `git commit -m "feat(nest): income source list/detail endpoints"`
 
 ---
 
@@ -1446,7 +1470,7 @@ Register `IncomeModule` in `app.module.ts` imports. **Declare `sources/batch-del
 
 **Files:** extend `income-sources.service.ts`, `income.controller.ts`; extend `test/income-sources.e2e-spec.ts`.
 
-- [ ] **Step 1: Write failing e2e assertions**
+- [x] **Step 1: Write failing e2e assertions**
 
 ```typescript
 it('POST /api/v1/income/sources returns 201 and DB-precision decimals', async () => {
@@ -1486,9 +1510,9 @@ it('POST /sources/batch-delete reports deleted_count and failed_ids', async () =
 it('POST /sources/batch-delete with [] → 422', async () => { /* … */ });
 ```
 
-- [ ] **Step 2: Run to verify failure.**
+- [x] **Step 2: Run to verify failure.**
 
-- [ ] **Step 3: Implement create/update/delete/batchDelete**
+- [x] **Step 3: Implement create/update/delete/batchDelete**
 
 - `create`: count the user's live sources, call the tier check (Task 6a below), insert with
   `frequency: INCOME_FREQUENCY_TO_NAME[dto.frequency]`, `userId`, defaults from the DTO; return
@@ -1501,7 +1525,7 @@ it('POST /sources/batch-delete with [] → 422', async () => { /* … */ });
   `failed_ids`; return `{ deleted_count, failed_ids }`. One transaction (D3) — FastAPI uses one
   commit here too, so this is parity *and* correctness.
 
-- [ ] **Step 4: Tier limit check**
+- [x] **Step 4: Tier limit check**
 
 Port `check_usage_limit`: read the user's tier feature row for `income_tracking`; if
 `limit_value` is not null and `currentCount >= limit_value`, throw
@@ -1514,7 +1538,7 @@ new TierLimitException(
 );
 ```
 
-- [ ] **Step 5: Run e2e** → PASS. **Step 6: Commit** — `git commit -m "feat(nest): income source create/update/delete/batch-delete"`
+- [x] **Step 5: Run e2e** → PASS. **Step 6: Commit** — `git commit -m "feat(nest): income source create/update/delete/batch-delete"`
 
 ---
 
@@ -1522,7 +1546,7 @@ new TierLimitException(
 
 **Files:** `services/income-transactions.service.ts`, controller routes, `test/income-transactions.e2e-spec.ts`.
 
-- [ ] **Step 1: Failing e2e**
+- [x] **Step 1: Failing e2e**
 
 ```typescript
 it('GET /api/v1/income/transactions paginates, filters and orders by date DESC', async () => {
@@ -1552,11 +1576,11 @@ it('POST /api/v1/income/transactions creates the row and ignores deposit_to_acco
 it('POST with a source_id owned by someone else → 404 income-source shape', async () => { /* … */ });
 ```
 
-- [ ] **Step 2–4: run/implement/run.** List filters: `source_id`, `date >= start_date`,
+- [x] **Step 2–4: run/implement/run.** List filters: `source_id`, `date >= start_date`,
 `date <= end_date`; `ORDER BY date DESC`; count before pagination. Create validates `source_id`
 ownership (404 `Income source not found`) and inserts `status: 'RECEIVED'`.
 
-- [ ] **Step 5: Commit** — `git commit -m "feat(nest): income transaction list/create"`
+- [x] **Step 5: Commit** — `git commit -m "feat(nest): income transaction list/create"`
 
 ---
 
@@ -1595,7 +1619,7 @@ is never read by this endpoint. Replicate that; it is observable.
 
 All six Decimal fields serialize with `rawMoney`.
 
-- [ ] **Step 1: failing e2e** — seed one MONTHLY 6500.00 and one MONTHLY 1000.00 source for the test
+- [x] **Step 1: failing e2e** — seed one MONTHLY 6500.00 and one MONTHLY 1000.00 source for the test
   user, then assert the captured FastAPI shape:
 
 ```typescript
@@ -1609,8 +1633,8 @@ expect(res.body).toEqual({
 });
 ```
 
-- [ ] **Steps 2–4:** run (fail) → implement → run (pass).
-- [ ] **Step 5: Commit** — `git commit -m "feat(nest): income stats endpoint"`
+- [x] **Steps 2–4:** run (fail) → implement → run (pass).
+- [x] **Step 5: Commit** — `git commit -m "feat(nest): income stats endpoint"`
 
 ---
 
@@ -1639,8 +1663,8 @@ Sample captured from FastAPI (two monthly sources, 6500.00 + 1000.00):
 {"month": "2026-01", "total": "7500.00", "count": 2, "currency": "USD"}
 ```
 
-- [ ] **Steps 1–4:** failing e2e (assert the first bucket and that `total` keeps scale 2) → implement → pass.
-- [ ] **Step 5: Commit** — `git commit -m "feat(nest): income history endpoint"`
+- [x] **Steps 1–4:** failing e2e (assert the first bucket and that `total` keeps scale 2) → implement → pass.
+- [x] **Step 5: Commit** — `git commit -m "feat(nest): income history endpoint"`
 
 ---
 
@@ -1699,7 +1723,7 @@ Behaviour to match exactly:
 
 Route: `@Post('transactions/:transactionId/deposit')` with **`@HttpCode(200)`** (Nest would say 201).
 
-- [ ] **Steps 1–5:** failing e2e (create account + income txn, deposit, assert the response, the new
+- [x] **Steps 1–5:** failing e2e (create account + income txn, deposit, assert the response, the new
   balance, the `account_transactions` row, the `balance_history` row, and that a second deposit
   returns the "already been deposited" 400) → implement → pass → commit
   `git commit -m "feat(nest): savings deposit engine + income deposit endpoint"`
@@ -1730,7 +1754,7 @@ Route: `@Post('transactions/:transactionId/deposit')` with **`@HttpCode(200)`** 
 
 Declare `distribution-preview` **before** `distribution-rules/:ruleId` in the controller.
 
-- [ ] **Steps 1–5:** failing e2e covering the six 400 messages and the 404 → implement → pass → commit
+- [x] **Steps 1–5:** failing e2e covering the six 400 messages and the 404 → implement → pass → commit
   `git commit -m "feat(nest): income distribution rules CRUD"`
 
 ---
@@ -1777,7 +1801,7 @@ echoing the query param:
 {"income_amount":"1000","currency":"USD","distributions":[],"remaining_amount":"1000","total_distributed":"0"}
 ```
 
-- [ ] **Steps 1–5:** failing e2e (no rules → the exact body above; then a percentage rule and a
+- [x] **Steps 1–5:** failing e2e (no rules → the exact body above; then a percentage rule and a
   remainder rule) → implement → pass → commit `git commit -m "feat(nest): distribution preview"`
 
 ---
@@ -1811,7 +1835,7 @@ distribution).
 Emit it as `Number(amount)`. `1500.00` → `1500` in JSON, which is what Python's `float(Decimal('1500.00'))`
 serializes to as well.
 
-- [ ] **Steps 1–5:** failing e2e (account rule + goal rule; assert balances, goal progress, the income
+- [x] **Steps 1–5:** failing e2e (account rule + goal rule; assert balances, goal progress, the income
   txn status, and the response) → implement → pass → commit
   `git commit -m "feat(nest): apply distribution rules to an income transaction"`
 
@@ -1842,7 +1866,7 @@ the source is created either way. Nest keeps that outer behaviour (the response 
 the backfill itself is atomic inside its own transaction (D3): all deposits or none, rather than
 FastAPI's per-deposit commits.
 
-- [ ] **Steps 1–5:** failing e2e (create a source with `auto_deposit` + an account, `start_date` three
+- [x] **Steps 1–5:** failing e2e (create a source with `auto_deposit` + an account, `start_date` three
   months back; assert three transactions, three deposits, and the account balance) → implement →
   pass → commit `git commit -m "feat(nest): auto-deposit historical backfill"`
 
@@ -1853,19 +1877,19 @@ FastAPI's per-deposit commits.
 **Files:** `scripts/requests/income.json`, `scripts/parity-diff.ts`, `src/modules/auth/auth.controller.ts`,
 `backend-nest/README.md`, the spec, this plan.
 
-- [ ] **Step 1: Tighten the parity script to compare exact status codes**
+- [x] **Step 1: Tighten the parity script to compare exact status codes**
 
 It currently compares only the status *class* (`Math.floor(status / 100)`), which hides real
 differences. Replace with `a.status === b.status`, and add an optional `"expectDiff": "<reason>"`
 field per request that turns a diff into an annotated PASS (needed for Deviation 1's row).
 
-- [ ] **Step 2: Fix the 201-vs-200 gap the tightened script exposes**
+- [x] **Step 2: Fix the 201-vs-200 gap the tightened script exposes**
 
 `POST /api/v1/auth/google` returns **201** in Nest and **200** in FastAPI (`@router.post` with no
 `status_code`). Phase 0 missed it because the old comparison ignored it. Add `@HttpCode(200)` to
 `AuthController.googleAuth` and update the Phase 0 e2e expectation from 201 to 200.
 
-- [ ] **Step 3: Write `scripts/requests/income.json`**
+- [x] **Step 3: Write `scripts/requests/income.json`**
 
 Rows: `GET /sources` (paged and `is_active` filtered), `GET /sources/{id}`, `GET /transactions`
 (paged, filtered by `source_id` and by date range), `GET /stats` (bare and with a date range),
@@ -1874,7 +1898,7 @@ Rows: `GET /sources` (paged and `is_active` filtered), `GET /sources/{id}`, `GET
 `POST /transactions` row (`expectDiff: "FastAPI 500s — see Phase 1 Deviation 1"`). Use ids seeded for
 the parity user; keep every row read-only or idempotent.
 
-- [ ] **Step 4: Full verification run**
+- [x] **Step 4: Full verification run**
 
 ```bash
 cd backend-nest && npm run lint && npm test && npm run test:e2e
@@ -1884,7 +1908,7 @@ TOKEN=<jwt valid on both> npm run parity scripts/requests/income.json
 
 Every row must PASS or carry an `expectDiff` reason. A bare DIFF is a defect, not a note.
 
-- [ ] **Step 5: Update the docs**
+- [x] **Step 5: Update the docs**
 
 - `backend-nest/README.md`: add the income module and the two parity request lists.
 - Spec (`docs/superpowers/specs/2026-08-10-nestjs-backend-v2-design.md`): mark Phase 1 done in the
@@ -1893,7 +1917,7 @@ Every row must PASS or carry an `expectDiff` reason. A bare DIFF is a defect, no
   known-deviation sections.
 - This plan: check off every step.
 
-- [ ] **Step 6: Commit** — `git commit -m "docs(nest): Phase 1 wrap-up — conventions, parity rows, spec update"`
+- [x] **Step 6: Commit** — `git commit -m "docs(nest): Phase 1 wrap-up — conventions, parity rows, spec update"`
 
 ---
 

@@ -27,6 +27,7 @@ import {
   toSourceResponseRaw,
 } from '../mappers/income-response.mapper';
 import { DisplayCurrencyService } from './display-currency.service';
+import { IncomeBackfillService } from './income-backfill.service';
 import { UsageLimitService } from './usage-limit.service';
 
 @Injectable()
@@ -36,6 +37,7 @@ export class IncomeSourcesService {
     private readonly sources: OwnedRepository<IncomeSource>,
     private readonly display: DisplayCurrencyService,
     private readonly usageLimits: UsageLimitService,
+    private readonly backfill: IncomeBackfillService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
@@ -129,6 +131,10 @@ export class IncomeSourcesService {
     });
     await this.sources.raw.save(source);
 
+    // Backfills historical deposits when the source is auto-depositing. It never throws — a
+    // failure there must not fail the creation, exactly as FastAPI's try/except arranges.
+    await this.backfill.backfill(source);
+
     // Create and update answer with DB-precision decimals and no display_* enrichment.
     return toSourceResponseRaw(source);
   }
@@ -168,6 +174,11 @@ export class IncomeSourcesService {
 
     Object.assign(source, patch);
     await this.sources.raw.save(source);
+
+    // Enabling auto_deposit on an existing source backfills the deposits it should already have
+    // made; the dedup on existing transaction days keeps this idempotent.
+    await this.backfill.backfill(source);
+
     return toSourceResponseRaw(source);
   }
 

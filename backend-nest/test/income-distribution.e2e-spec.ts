@@ -14,13 +14,11 @@ import {
 describe('Income deposit and distribution (e2e)', () => {
   let ctx: IncomeTestContext;
   let accountId: string;
-  let goalId: string;
   let otherUsersAccountId: string;
 
   beforeAll(async () => {
     ctx = await setupIncomeContext('dist');
     accountId = await insertAccount(ctx, { balance: '100.00' });
-    goalId = await insertGoal(ctx, { target: '1000.00', current: '0.00' });
     otherUsersAccountId = await insertAccount(ctx, { userId: ctx.otherUserId });
   });
 
@@ -436,6 +434,95 @@ describe('Income deposit and distribution (e2e)', () => {
         .set(auth())
         .expect(400);
       expect(res.body).toEqual({ detail: 'Income transaction not found' });
+    });
+  });
+
+  describe('auto-deposit backfill', () => {
+    it('creates one deposit per due date from start_date to today', async () => {
+      const user = await createExtraUser(ctx, 'backfill');
+      const account = await insertAccount(ctx, {
+        userId: user.userId,
+        balance: '0.00',
+      });
+
+      // Three monthly due dates in the past: today, one month back, two months back.
+      const start = new Date();
+      start.setUTCMonth(start.getUTCMonth() - 2);
+      const startDate = `${start.toISOString().slice(0, 10)}T00:00:00`;
+
+      const res = await request(ctx.app.getHttpServer())
+        .post('/api/v1/income/sources')
+        .set(user.auth)
+        .send({
+          name: 'Auto Salary',
+          amount: '1000.00',
+          frequency: 'monthly',
+          start_date: startDate,
+          target_account_id: account,
+          auto_deposit: true,
+        })
+        .expect(201);
+
+      // The response is unaffected by the backfill — it reports the source, nothing else.
+      expect((res.body as Record<string, unknown>).auto_deposit).toBe(true);
+
+      const txns = await queryRows<{ status: string; date: string }>(
+        ctx.dataSource,
+        `SELECT status, date::text AS date FROM income_transactions
+         WHERE source_id = $1 ORDER BY date`,
+        [(res.body as { id: string }).id],
+      );
+      expect(txns).toHaveLength(3);
+      expect(txns.every((t) => t.status === 'DEPOSITED')).toBe(true);
+
+      const balance = await queryRows<{ current_balance: string }>(
+        ctx.dataSource,
+        'SELECT current_balance FROM savings_accounts WHERE id = $1',
+        [account],
+      );
+      expect(balance[0].current_balance).toBe('3000.00');
+    });
+
+    it('is idempotent — a second update does not re-deposit the same days', async () => {
+      const user = await createExtraUser(ctx, 'backfill2');
+      const account = await insertAccount(ctx, {
+        userId: user.userId,
+        balance: '0.00',
+      });
+      const start = new Date();
+      start.setUTCMonth(start.getUTCMonth() - 1);
+
+      const created = await request(ctx.app.getHttpServer())
+        .post('/api/v1/income/sources')
+        .set(user.auth)
+        .send({
+          name: 'Auto Salary',
+          amount: '500.00',
+          frequency: 'monthly',
+          start_date: `${start.toISOString().slice(0, 10)}T00:00:00`,
+          target_account_id: account,
+          auto_deposit: true,
+        })
+        .expect(201);
+
+      await request(ctx.app.getHttpServer())
+        .put(`/api/v1/income/sources/${(created.body as { id: string }).id}`)
+        .set(user.auth)
+        .send({ name: 'Auto Salary Renamed' })
+        .expect(200);
+
+      const txns = await queryRows<{ id: string }>(
+        ctx.dataSource,
+        'SELECT id FROM income_transactions WHERE source_id = $1',
+        [(created.body as { id: string }).id],
+      );
+      expect(txns).toHaveLength(2);
+      const balance = await queryRows<{ current_balance: string }>(
+        ctx.dataSource,
+        'SELECT current_balance FROM savings_accounts WHERE id = $1',
+        [account],
+      );
+      expect(balance[0].current_balance).toBe('1000.00');
     });
   });
 });

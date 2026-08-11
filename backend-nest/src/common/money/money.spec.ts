@@ -46,13 +46,23 @@ describe('decAdd / decSub — scale is max(scale(a), scale(b))', () => {
   });
 });
 
-describe('decDiv — 28 significant digits, like Python decimal', () => {
-  it('divides exactly when it can', () => {
-    expect(decDiv('7500.00', '2')).toBe('3750');
+describe('decDiv — Python ideal-exponent semantics', () => {
+  // Every expectation below was taken from CPython's decimal module, not derived.
+  it('pads an exact quotient to scale(a) - scale(b)', () => {
+    expect(decDiv('45000.00', '6')).toBe('7500.00');
+    expect(decDiv('7500.00', '2')).toBe('3750.00');
+    expect(decDiv('45000.000', '6')).toBe('7500.000');
+    expect(decDiv('7500', '2')).toBe('3750');
+    expect(decDiv('1.5', '0.5')).toBe('3');
   });
 
-  it('emits Python-length repeating fractions', () => {
+  it('keeps the digits an exact quotient actually needs', () => {
+    expect(decDiv('100', '8')).toBe('12.5');
+  });
+
+  it('carries an inexact quotient to 28 significant digits', () => {
     expect(decDiv('10.00', '3')).toBe('3.333333333333333333333333333');
+    expect(decDiv('45000.00', '7')).toBe('6428.571428571428571428571429');
   });
 });
 

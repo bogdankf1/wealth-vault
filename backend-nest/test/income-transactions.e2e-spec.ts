@@ -177,7 +177,9 @@ describe('Income transactions, stats and history (e2e)', () => {
       currency: 'USD',
     });
     expect(body.total_months).toBe(3);
-    expect(body.overall_average).toBe('7500');
+    // Python pads an exact quotient to scale(dividend) - scale(divisor): 22500.00 / 3 is
+    // Decimal('7500.00'), not 7500. Verified against the live FastAPI by the parity diff.
+    expect(body.overall_average).toBe('7500.00');
     expect(body.currency).toBe('USD');
   });
 });

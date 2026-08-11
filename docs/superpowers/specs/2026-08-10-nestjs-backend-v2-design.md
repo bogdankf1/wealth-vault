@@ -1,9 +1,9 @@
 # NestJS Backend v2 — Design
 
 **Date:** 2026-08-10
-**Status:** Phase 0 complete and merged to `main` (PR #20, 2026-08-10). Phase 1 not started.
-Spec and Phase 0 plan last reconciled against `backend-nest/` on 2026-08-11.
-See [Progress](#progress) for what is done, what remains, and the decisions Phase 1 must make.
+**Status:** Phases 0 and 1 complete. Phase 2 not started.
+Spec last reconciled against `backend-nest/` on 2026-08-11.
+See [Progress](#progress) for what is done, what remains, and the conventions Phase 1 settled.
 
 ## Context
 
@@ -73,8 +73,18 @@ backend-nest/src/
     middleware/           # security headers, request logging
   events/                 # event handler wiring (per-module handlers)
   jobs/                   # BullMQ queues + cron schedules
+  common/
+    money/                # decimal.js helpers with Python Decimal semantics + @IsMoneyString
+    time/                 # naive-timestamp parser and converters
+    repository/           # OwnedRepository — the only DB handle a feature service gets
+    dto/                  # PageQueryDto + the two list envelopes
+    validation/           # @IsUuidLike (pydantic-equivalent UUID acceptance)
   modules/                # income/, expenses/, savings/, ... same names as FastAPI
 ```
+
+Modules ported before their own phase (savings, goals, currency in Phase 1) land as **partial**
+modules in their final location — only the providers a caller actually needs, marked as such in a
+header comment. The owning phase grows them rather than replacing them.
 
 Each module: `*.module.ts`, `*.controller.ts`, service(s), `entities/`, `dto/`.
 Large FastAPI service packages (e.g. `expenses/service/{crud,payments,stats}.py`)
@@ -125,7 +135,7 @@ this spec covers all phases, but plans are written per phase).
   pipes/filters/interceptors/middleware, throttler, health check (DB + Redis),
   parity-diff script scaffold.
 - **Phase 1 — Template module:** `income` (18 endpoints incl. distribution
-  service), done carefully as the pattern for all other modules.
+  service), done carefully as the pattern for all other modules. **Done 2026-08-11.**
 - **Phase 2 — Payment-pattern family:** expenses, subscriptions, installments,
   taxes, debts.
 - **Phase 3 — Money & assets:** savings (incl. transaction/interest engine),
@@ -144,12 +154,12 @@ Update this section at the end of each phase.
 
 **Scope arithmetic:** 267 endpoints exist in FastAPI. 59 are deliberately deferred and stay on
 FastAPI — billing (16), AI (14), the LangGraph agent (3), admin (25), and `/auth/demo` (1). That
-leaves **208 in scope**, of which **3 are done** and **205 remain**.
+leaves **208 in scope**, of which **21 are done** and **187 remain**.
 
 | Phase | Modules | Endpoints | Python LOC | Status |
 |---|---|---:|---:|---|
 | 0 — Foundation | auth (`/auth/google`, `/auth/me`, `/auth/me/features`) + all cross-cutting infrastructure | 3 | — | **Done**, merged in PR #20 |
-| 1 — Template module | income | 18 | 2,900 | Not started |
+| 1 — Template module | income | 18 | 2,900 | **Done** (2026-08-11) |
 | 2 — Payment-pattern family | expenses, subscriptions, installments, taxes, debts | 69 | 9,500 | Not started |
 | 3 — Money & assets | savings, portfolio, goals, budgets, currency, preferences | 66 | 7,500 | Not started |
 | 4 — Aggregation & extras | dashboard, dashboard_layouts, notifications, exports, backups, support | 52 | 7,000 | Not started |
@@ -171,6 +181,31 @@ list as each module lands — it is the acceptance oracle for every port.
 Verified working: a JWT minted by FastAPI authenticates against Nest and vice versa, live, in both
 directions.
 
+### What Phase 1 delivered
+
+All 18 income endpoints, plus the partial `savings/`, `goals/` and `currency/` modules their deposit
+and distribution paths require (Phase 3 owns those properly and will grow them). 93 unit tests and
+73 e2e tests, lint clean, and **21 of 22 parity rows byte-identical to the live FastAPI** — the
+22nd being `POST /transactions`, which FastAPI 500s on and Nest implements.
+
+The seven conventions below are the real deliverable; the module is the demonstration. Four findings
+were only discoverable by measurement, and each would have been a silent data bug:
+
+1. **Naive timestamps shift a calendar day.** node-postgres reads `timestamp without time zone` in
+   the process timezone, so `2025-12-01 00:00:00` came back as `2025-11-30T22:00:00Z`. Registering
+   a raw-string parser for OID 1114 is necessary but not sufficient — TypeORM re-hydrates anything
+   it considers a date column through `new Date(value)` anyway, so those columns are declared
+   `varchar` as well.
+2. **The same row serializes differently per verb.** FastAPI's list/detail handlers cast Decimals
+   through `float()`; create/update hand the ORM object to `model_validate`. So `GET /sources`
+   answers `"1000.0"` where the `POST` that created it answered `"1000.00"`, and `display_amount` is
+   populated only on the GETs. Two mapper functions, chosen per endpoint.
+3. **Python's Decimal division pads exact quotients** to `scale(a) - scale(b)`; decimal.js
+   normalizes. `/history`'s `overall_average` was `"7500"` instead of `"7500.00"` until the parity
+   diff caught it.
+4. **class-validator's `@IsUUID()` is stricter than pydantic** — it demands a version nibble, so it
+   would 422 the seeded demo user ids (`00000000-...-0000000000d1`) that this database contains.
+
 ### Revised effort estimate
 
 The original estimate of ~12–15 sessions for phases 0–5 was optimistic. Phase 0 alone took a full
@@ -184,28 +219,29 @@ one — a single module, but it fixes the conventions the other 17 copy, so budg
 income alone. Phases 2–4 should move faster once the template exists, roughly a session per two or
 three modules.
 
-### Decisions Phase 1 must make (currently open)
+### Decisions settled in Phase 1 (apply to every module from here)
 
-Phase 1 is not really "port income" — it is "decide the conventions and demonstrate them on
-income". Getting these right once is worth more than porting three modules quickly, because each
-one multiplies by the 17 modules that follow. The conventions already settled are below under
-[Conventions established in Phase 0](#conventions-established-in-phase-0-apply-to-every-phase-1-module);
-these four are not yet decided:
+These were the open questions; the answers are in code under `backend-nest/src/common/` and are
+explained at length in the Phase 1 plan.
 
-1. **Pagination envelope.** FastAPI returns `{items, total, page, page_size}` (see
-   `backend/app/modules/income/schemas.py`). Port as-is for parity, and decide where it lives — a
-   shared DTO/generic rather than redeclared per module.
-2. **Ownership scoping.** FastAPI repeats `.where(Model.user_id == current_user.id)` by hand in
-   every service method. Repeating that across 205 handlers invites exactly one omission, which is
-   a data-leak bug. Decide whether Nest enforces it structurally (a base service, a repository
-   wrapper, or an interceptor) instead of by discipline.
-3. **Transaction boundaries.** Nothing in Phase 0 needed one — auth writes a single row. Savings
-   transfers, goal allocations, and income distribution write multiple rows and will need a
-   `dataSource.transaction()` convention that does not exist yet.
-4. **Money DTO shape.** Numeric columns stay strings end to end (see the conventions section).
-   Inbound DTOs must therefore validate numeric *strings* and must not coerce through
-   `@Type(() => Number)` — `portfolio_assets.quantity` is `numeric(18,8)`, more significant digits
-   than a JS `number` holds exactly. Decide the validator/decorator combination once.
+1. **Pagination** — a shared `PageQueryDto` (page ≥ 1 default 1, page_size 1–100 default 50) and two
+   builders, because FastAPI has two envelopes: `{items, total, page, page_size}` for sources and
+   transactions, `{items, total}` for distribution rules (where `total` is `len(items)`, not a
+   COUNT).
+2. **Ownership** — `OwnedRepository<T>`. Every method takes the owner's id first and folds
+   `user_id = :userId` into the query; services never receive a bare `Repository`. Forgetting to
+   scope now requires deliberately reaching around the API rather than merely forgetting a clause.
+3. **Transactions** — one `dataSource.transaction()` per use case, and the deposit helper takes an
+   `EntityManager` instead of committing internally. This is a deliberate improvement: FastAPI
+   commits per deposit, so a failed distribution leaves money in some targets and not others.
+4. **Money** — strings end to end. `@IsMoneyString()` inbound (never `@Type(() => Number)`),
+   `decimal.js` configured to Python's context (28 digits, ROUND_HALF_EVEN) for arithmetic, and
+   `decMul`/`decAdd`/`decDiv` reimposing Python's scale rules, which decimal.js normalizes away.
+5. **Naive timestamps** — strings end to end too, via the OID 1114 parser plus a `varchar` column
+   declaration. See finding 1 above.
+6. **Enums** — the DB stores the member NAME (`MONTHLY`), the wire carries the VALUE (`monthly`).
+   One explicit mapping object per enum; never `toLowerCase()`.
+7. **UUID validation** — `@IsUuidLike()`, matching pydantic's "any 8-4-4-4-12 hex".
 
 ## Error handling
 
@@ -257,10 +293,13 @@ billing events) are skipped until those modules are ported.
    never runs under `Test.createTestingModule`, so a suite that skips this tests an app with no route
    prefix, no validation pipe, and no CORS — i.e. not the app that ships. (`entities.e2e-spec.ts` is
    the one exception: it only resolves the `DataSource` and never makes a request.)
-6. **Decide pagination, ownership scoping, and transaction boundaries once, in Phase 1**, and reuse
-   them. FastAPI's shape is `{items, total, page, page_size}` with per-query
-   `.where(Model.user_id == current_user.id)`. Phase 1 (income) is the template the other 18 modules
-   copy — divergence there multiplies by 19.
+6. **The conventions Phase 1 settled** — pagination, ownership, transactions, money, naive
+   timestamps, enums and UUID validation — are listed under "Decisions settled in Phase 1" above and
+   implemented in `backend-nest/src/common/`. Copy them; do not re-decide them per module.
+7. **Two e2e rules learned the hard way.** Never create a second Nest app inside one Jest process
+   (they share the postgres driver, so closing one leaves the other on "Driver not Connected") —
+   create another user instead. And every suite must delete the rows it created: these run against
+   the dev DB that FastAPI also uses.
 
 ## Known deviation: feature checks are stricter than FastAPI
 
