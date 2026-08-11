@@ -9,7 +9,7 @@ import { CurrencyConverterService } from '../../currency/currency-converter.serv
 import { DateRangeQueryDto } from '../dto/income-query.dto';
 import { IncomeSource } from '../entities/income-source.entity';
 import { MONTHLY_MULTIPLIER } from '../enums';
-import { DisplayCurrencyService } from './display-currency.service';
+import { DisplayCurrencyService } from '../../../common/currency/display-currency.service';
 
 export interface IncomeStatsResponse {
   total_sources: number;

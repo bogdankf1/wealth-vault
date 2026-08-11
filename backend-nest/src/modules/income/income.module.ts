@@ -14,7 +14,7 @@ import { IncomeController } from './income.controller';
 import { DistributionService } from './services/distribution.service';
 import { IncomeBackfillService } from './services/income-backfill.service';
 import { IncomeDepositService } from './services/income-deposit.service';
-import { DisplayCurrencyService } from './services/display-currency.service';
+import { DisplayCurrencyModule } from '../../common/currency/currency.common-module';
 import { IncomeSourcesService } from './services/income-sources.service';
 import { IncomeHistoryService } from './services/income-history.service';
 import { IncomeStatsService } from './services/income-stats.service';
@@ -33,6 +33,7 @@ import { UsageLimitService } from './services/usage-limit.service';
     SavingsModule,
     GoalsModule,
     CurrencyModule,
+    DisplayCurrencyModule,
   ],
   controllers: [IncomeController, DistributionController],
   providers: [
@@ -40,7 +41,6 @@ import { UsageLimitService } from './services/usage-limit.service';
     provideOwnedRepository(IncomeSource),
     provideOwnedRepository(IncomeTransaction),
     provideOwnedRepository(IncomeDistributionRule),
-    DisplayCurrencyService,
     IncomeSourcesService,
     UsageLimitService,
     IncomeTransactionsService,
@@ -50,5 +50,6 @@ import { UsageLimitService } from './services/usage-limit.service';
     DistributionService,
     IncomeBackfillService,
   ],
+  exports: [UsageLimitService],
 })
 export class IncomeModule {}

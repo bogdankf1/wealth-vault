@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 import { toNaiveIso } from '../../../common/time/naive-timestamp';
-import { DepositService } from '../../savings/deposit.service';
+import { AccountTransactionService } from '../../savings/account-transaction.service';
 import { IncomeSource } from '../entities/income-source.entity';
 import { IncomeTransaction } from '../entities/income-transaction.entity';
 import { IncomeFrequencyName } from '../enums';
@@ -37,7 +37,11 @@ export function advance(
   timestamp: string,
   step: { months?: number; days?: number },
 ): string {
-  const [datePart, timePart = '00:00:00'] = timestamp.split('T');
+  // Accept either separator: Postgres hands back '2026-08-11 10:00:00' while our own helpers emit
+  // the ISO 'T' form, and splitting on 'T' alone turned the space form into NaN.
+  const [datePart, timePart = '00:00:00'] = timestamp
+    .replace(' ', 'T')
+    .split('T');
   const [year, month, day] = datePart.split('-').map(Number);
 
   if (step.days) {
@@ -68,7 +72,7 @@ export class IncomeBackfillService {
   private readonly logger = new Logger(IncomeBackfillService.name);
 
   constructor(
-    private readonly deposits: DepositService,
+    private readonly deposits: AccountTransactionService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 

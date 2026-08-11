@@ -11,30 +11,103 @@ Decimal.set({
   toExpPos: 9e15,
 });
 
-/** Digits after the decimal point — what Python's Decimal exponent reports. */
-export function scaleOf(value: string): number {
-  const dot = value.indexOf('.');
-  return dot === -1 ? 0 : value.length - dot - 1;
+/**
+ * Renders a plain decimal string the way Python's `str(Decimal)` would.
+ *
+ * Python switches to scientific notation once the ADJUSTED exponent (exponent + digits - 1) falls
+ * below -6, so Decimal('0.0000001') prints as '1E-7'. The case that actually bites here is zero
+ * with a large scale: Decimal(0) * Decimal(4.33) carries exponent -49 and prints as '0E-49', which
+ * is literally what /expenses/stats returns for a user with no expenses.
+ */
+export function pyDecimalString(plain: string): string {
+  const negative = plain.startsWith('-');
+  const unsigned = negative ? plain.slice(1) : plain;
+  const [intPart, fracPart = ''] = unsigned.split('.');
+  const exponent = -fracPart.length;
+  const digits = `${intPart}${fracPart}`.replace(/^0+/, '');
+  const sign = negative ? '-' : '';
+
+  // Python models zero as a single 0 digit, so its adjusted exponent is just the exponent.
+  const adjusted =
+    digits.length === 0 ? exponent : exponent + digits.length - 1;
+  if (exponent <= 0 && adjusted >= -6) return plain;
+
+  if (digits.length === 0) return `${sign}0E${adjusted}`;
+  const mantissa =
+    digits.length === 1 ? digits : `${digits[0]}.${digits.slice(1)}`;
+  return `${sign}${mantissa}E${adjusted >= 0 ? '+' : ''}${adjusted}`;
 }
 
 /**
- * Python multiplies Decimals by adding exponents: Decimal('100.50') * Decimal('0.083') is
- * Decimal('8.34150') — scale 5, trailing zero preserved. decimal.js normalizes instead, so the
- * scale has to be reimposed. Do NOT "simplify" this to .toString(): the trailing zeros are
- * observable in POST/PUT responses, which serialize the Decimal verbatim.
+ * Digits after the decimal point — what Python's Decimal exponent reports, negated.
+ *
+ * Handles exponent notation, which matters because our own helpers emit it: `0E-49` carries scale
+ * 49, and treating it as scale 0 silently collapses every sum it takes part in.
  */
-export function decMul(a: string, b: string): string {
-  return new Decimal(a).times(b).toFixed(scaleOf(a) + scaleOf(b));
+export function scaleOf(value: string): number {
+  const [mantissa, exponentPart] = value.split(/[eE]/);
+  const dot = mantissa.indexOf('.');
+  const mantissaScale = dot === -1 ? 0 : mantissa.length - dot - 1;
+  return exponentPart ? mantissaScale - Number(exponentPart) : mantissaScale;
 }
 
-/** Python addition keeps the larger scale: Decimal('1.00') + Decimal('2.5') → Decimal('3.50'). */
+/**
+ * Applies Python's context to a computed result.
+ *
+ * Python pads an exact result out to its ideal exponent, then rounds the coefficient to 28
+ * significant digits if that padding overflowed the context — and the rounded result KEEPS 28
+ * digits, trailing zeros included. That is why /expenses/stats answers
+ * "17300.40000000000000000000000" (5 + 23 digits) rather than "17300.40": one operand was a
+ * scale-49 zero, so the sum inherited scale 49 and was then rounded back to 28 digits.
+ */
+function withPythonContext(exact: Decimal, idealScale: number): string {
+  const padded = exact.toFixed(Math.max(idealScale, 0));
+  const significant = padded.replace(/[-.]/g, '').replace(/^0+/, '').length;
+  if (significant <= 28) return pyDecimalString(padded);
+
+  const rounded = exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN);
+  // decimal.js exposes the power-of-ten exponent of the leading digit as `e`.
+  const scale = 28 - rounded.e - 1;
+  return pyDecimalString(rounded.toFixed(Math.max(scale, 0)));
+}
+
+/**
+ * Exact arithmetic, unconstrained by the 28-digit context — used to decide whether Python would
+ * have rounded a result before padding it.
+ */
+const ExactDecimal = Decimal.clone({
+  precision: 1e9,
+  rounding: Decimal.ROUND_HALF_EVEN,
+  toExpNeg: -9e15,
+  toExpPos: 9e15,
+});
+
+/**
+ * Python multiplies Decimals by adding exponents — Decimal('100.50') * Decimal('0.083') is
+ * Decimal('8.34150'), scale 5 with the trailing zero preserved — but only while the exact product
+ * fits the 28-significant-digit context. Past that it rounds, and the ideal exponent is abandoned:
+ * Decimal('100.00') * Decimal(4.33) is 433.0000000000000071054273576, not a 50-decimal number.
+ * Both halves are observable — the first in POST/PUT responses, the second in /expenses/stats.
+ * decimal.js normalizes exact results and rounds inexact ones, so both rules are reimposed here.
+ */
+export function decMul(a: string, b: string): string {
+  const exact = new ExactDecimal(a).times(b);
+  return withPythonContext(exact, scaleOf(a) + scaleOf(b));
+}
+
+/**
+ * Python addition keeps the larger scale — Decimal('1.00') + Decimal('2.5') is Decimal('3.50') —
+ * subject to the same precision ceiling as multiplication.
+ */
 export function decAdd(a: string, b: string): string {
-  return new Decimal(a).plus(b).toFixed(Math.max(scaleOf(a), scaleOf(b)));
+  const exact = new ExactDecimal(a).plus(b);
+  return withPythonContext(exact, Math.max(scaleOf(a), scaleOf(b)));
 }
 
 /** Same rule as addition. */
 export function decSub(a: string, b: string): string {
-  return new Decimal(a).minus(b).toFixed(Math.max(scaleOf(a), scaleOf(b)));
+  const exact = new ExactDecimal(a).minus(b);
+  return withPythonContext(exact, Math.max(scaleOf(a), scaleOf(b)));
 }
 
 /**
@@ -52,7 +125,9 @@ export function decDiv(a: string, b: string): string {
   const isExact = quotient.times(b).equals(new Decimal(a));
   if (!isExact) return quotient.toString();
   const idealScale = Math.max(0, scaleOf(a) - scaleOf(b));
-  return quotient.toFixed(Math.max(idealScale, quotient.decimalPlaces()));
+  return pyDecimalString(
+    quotient.toFixed(Math.max(idealScale, quotient.decimalPlaces())),
+  );
 }
 
 export function decIsZero(value: string): boolean {

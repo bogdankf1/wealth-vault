@@ -23,10 +23,11 @@ import { User } from '../../users/entities/user.entity';
 import { IncomeSource } from '../entities/income-source.entity';
 import {
   IncomeSourceResponse,
+  toConvertible,
   toSourceResponseFloat,
   toSourceResponseRaw,
 } from '../mappers/income-response.mapper';
-import { DisplayCurrencyService } from './display-currency.service';
+import { DisplayCurrencyService } from '../../../common/currency/display-currency.service';
 import { IncomeBackfillService } from './income-backfill.service';
 import { UsageLimitService } from './usage-limit.service';
 
@@ -79,7 +80,11 @@ export class IncomeSourcesService {
       rows.map(async (row) =>
         toSourceResponseFloat(
           row,
-          await this.display.forSource(userId, row, displayCurrency),
+          await this.display.forRow(
+            userId,
+            toConvertible(row),
+            displayCurrency,
+          ),
         ),
       ),
     );
@@ -90,7 +95,7 @@ export class IncomeSourcesService {
     const source = await this.findOwnedOrFail(userId, sourceId);
     return toSourceResponseFloat(
       source,
-      await this.display.forSource(userId, source),
+      await this.display.forRow(userId, toConvertible(source)),
     );
   }
 

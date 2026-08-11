@@ -16,14 +16,24 @@ export function registerNaiveTimestampParser(): void {
   types.setTypeParser(TIMESTAMP_WITHOUT_TIME_ZONE, (value: string) => value);
 }
 
-/** '2025-12-01 00:00:00' → '2025-12-01T00:00:00', matching pydantic's naive isoformat(). */
+/**
+ * '2025-12-01 00:00:00' → '2025-12-01T00:00:00', matching pydantic's naive isoformat().
+ *
+ * Postgres strips trailing zeros from the fractional seconds ('.92364') while Python's isoformat()
+ * always prints exactly six digits when there are any at all ('.923640'), so the fraction has to be
+ * re-padded. Caught by the parity diff on the expenses list, where every row carries microseconds.
+ */
 export function toNaiveIso(value: string | Date | null): string | null {
   if (value === null) return null;
   // A Date only reaches here if the type parser was not registered; format it in UTC rather than
   // through toISOString()'s 'Z' suffix, which would announce a timezone the column doesn't have.
   if (value instanceof Date)
     return value.toISOString().replace(/\.\d+Z$|Z$/, '');
-  return value.replace(' ', 'T');
+  const isoish = value.replace(' ', 'T');
+  return isoish.replace(
+    /\.(\d{1,6})$/,
+    (_match, digits: string) => `.${digits.padEnd(6, '0')}`,
+  );
 }
 
 /**

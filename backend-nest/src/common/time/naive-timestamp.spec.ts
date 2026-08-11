@@ -52,3 +52,20 @@ describe('toNaiveTimestamp — inbound value → what we store', () => {
     );
   });
 });
+
+describe('toNaiveIso — microsecond padding', () => {
+  it("pads the fraction to six digits, as Python's isoformat does", () => {
+    // Postgres prints '.92364'; pydantic prints '.923640'. The parity diff on the expenses list
+    // is what surfaced this.
+    expect(toNaiveIso('2026-06-24 09:16:51.92364')).toBe(
+      '2026-06-24T09:16:51.923640',
+    );
+    expect(toNaiveIso('2026-06-24 09:16:51.5')).toBe(
+      '2026-06-24T09:16:51.500000',
+    );
+  });
+
+  it('leaves a whole-second timestamp without a fraction', () => {
+    expect(toNaiveIso('2026-06-24 09:16:51')).toBe('2026-06-24T09:16:51');
+  });
+});

@@ -40,6 +40,11 @@ export class CurrencyConverterService {
     return target ? decQuantize(converted, target.decimalPlaces) : converted;
   }
 
+  /** Public because expense payment needs the raw rate to hand to the withdrawal engine. */
+  async rateFor(from: string, to: string): Promise<string | null> {
+    return this.getRate(from, to);
+  }
+
   private async getRate(from: string, to: string): Promise<string | null> {
     if (from === to) return '1.0';
     const row = await this.rates.findOne({

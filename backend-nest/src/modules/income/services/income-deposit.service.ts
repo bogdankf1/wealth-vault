@@ -6,7 +6,7 @@ import {
   OwnedRepository,
   ownedRepositoryToken,
 } from '../../../common/repository/owned.repository';
-import { DepositService } from '../../savings/deposit.service';
+import { AccountTransactionService } from '../../savings/account-transaction.service';
 import { SavingsAccount } from '../../savings/entities/savings-account.entity';
 import { DepositIncomeDto } from '../dto/income-transaction.dto';
 import { IncomeTransaction } from '../entities/income-transaction.entity';
@@ -29,7 +29,7 @@ export class IncomeDepositService {
   constructor(
     @Inject(ownedRepositoryToken(IncomeTransaction))
     private readonly transactions: OwnedRepository<IncomeTransaction>,
-    private readonly deposits: DepositService,
+    private readonly deposits: AccountTransactionService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
