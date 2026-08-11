@@ -137,7 +137,8 @@ this spec covers all phases, but plans are written per phase).
 - **Phase 1 — Template module:** `income` (18 endpoints incl. distribution
   service), done carefully as the pattern for all other modules. **Done 2026-08-11.**
 - **Phase 2 — Payment-pattern family:** expenses, subscriptions, installments,
-  taxes, debts.
+  taxes, debts. **Slices 1-2 done 2026-08-11** (expenses; subscriptions +
+  installments, 43 of 69 endpoints); slice 3 (taxes, debts) remains.
 - **Phase 3 — Money & assets:** savings (incl. transaction/interest engine),
   portfolio, goals, budgets, currency, preferences.
 - **Phase 4 — Aggregation & extras:** dashboard, dashboard_layouts, notifications,
