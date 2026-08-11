@@ -37,7 +37,11 @@ export function advance(
   timestamp: string,
   step: { months?: number; days?: number },
 ): string {
-  const [datePart, timePart = '00:00:00'] = timestamp.split('T');
+  // Accept either separator: Postgres hands back '2026-08-11 10:00:00' while our own helpers emit
+  // the ISO 'T' form, and splitting on 'T' alone turned the space form into NaN.
+  const [datePart, timePart = '00:00:00'] = timestamp
+    .replace(' ', 'T')
+    .split('T');
   const [year, month, day] = datePart.split('-').map(Number);
 
   if (step.days) {
