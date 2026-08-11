@@ -1,0 +1,15 @@
+# Fingerprints of verified false positives, in the form commit:path:rule:line.
+# Each entry silences exactly one finding — it cannot mask a secret anywhere else.
+# Prefer this over a .gitleaks.toml allowlist, which replaces the default ruleset
+# unless `[extend] useDefault = true` is set and is far easier to over-broaden.
+#
+# Do not quote the offending literal in a comment here: gitleaks scans this file too,
+# so reproducing the string just creates a second finding.
+
+# NestJS CLI scaffold boilerplate. `nest new` generates a README whose shields.io
+# CircleCI badge URL for the upstream nestjs/nest repo carries a dummy query-string
+# placeholder that scores high enough on entropy to trip the generic-api-key rule.
+# Not a credential, and not ours. That README was replaced with real content later in
+# the same branch, but the scaffold commit remains in history, so the PR-range scan
+# keeps rediscovering it.
+f3a72c9e5ecc84ff26cf7e47029d221f13ccb526:backend-nest/README.md:generic-api-key:5

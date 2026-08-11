@@ -1,0 +1,6 @@
+[
+  { "method": "GET", "path": "/" },
+  { "method": "GET", "path": "/health" },
+  { "method": "GET", "path": "/api/v1/auth/me", "auth": true },
+  { "method": "GET", "path": "/api/v1/auth/me/features", "auth": true }
+]
