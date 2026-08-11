@@ -18,23 +18,52 @@ export function scaleOf(value: string): number {
 }
 
 /**
- * Python multiplies Decimals by adding exponents: Decimal('100.50') * Decimal('0.083') is
- * Decimal('8.34150') — scale 5, trailing zero preserved. decimal.js normalizes instead, so the
- * scale has to be reimposed. Do NOT "simplify" this to .toString(): the trailing zeros are
- * observable in POST/PUT responses, which serialize the Decimal verbatim.
+ * Exact arithmetic, unconstrained by the 28-digit context — used to decide whether Python would
+ * have rounded a result before padding it.
+ */
+const ExactDecimal = Decimal.clone({
+  precision: 1e9,
+  rounding: Decimal.ROUND_HALF_EVEN,
+  toExpNeg: -9e15,
+  toExpPos: 9e15,
+});
+
+/**
+ * Python multiplies Decimals by adding exponents — Decimal('100.50') * Decimal('0.083') is
+ * Decimal('8.34150'), scale 5 with the trailing zero preserved — but only while the exact product
+ * fits the 28-significant-digit context. Past that it rounds, and the ideal exponent is abandoned:
+ * Decimal('100.00') * Decimal(4.33) is 433.0000000000000071054273576, not a 50-decimal number.
+ * Both halves are observable — the first in POST/PUT responses, the second in /expenses/stats.
+ * decimal.js normalizes exact results and rounds inexact ones, so both rules are reimposed here.
  */
 export function decMul(a: string, b: string): string {
-  return new Decimal(a).times(b).toFixed(scaleOf(a) + scaleOf(b));
+  const exact = new ExactDecimal(a).times(b);
+  if (exact.precision() <= 28) {
+    return exact.toFixed(scaleOf(a) + scaleOf(b));
+  }
+  // Beyond the context precision Python rounds to 28 significant digits and keeps what it gets.
+  // The rounding has to be explicit: decimal.js applies its precision to operations, not to
+  // construction, so `new Decimal(exact.toString())` would carry all 50 digits through.
+  return exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN).toString();
 }
 
-/** Python addition keeps the larger scale: Decimal('1.00') + Decimal('2.5') → Decimal('3.50'). */
+/**
+ * Python addition keeps the larger scale — Decimal('1.00') + Decimal('2.5') is Decimal('3.50') —
+ * subject to the same precision ceiling as multiplication.
+ */
 export function decAdd(a: string, b: string): string {
-  return new Decimal(a).plus(b).toFixed(Math.max(scaleOf(a), scaleOf(b)));
+  const exact = new ExactDecimal(a).plus(b);
+  return exact.precision() <= 28
+    ? exact.toFixed(Math.max(scaleOf(a), scaleOf(b)))
+    : exact.toSignificantDigits(28, Decimal.ROUND_HALF_EVEN).toString();
 }
 
 /** Same rule as addition. */
 export function decSub(a: string, b: string): string {
-  return new Decimal(a).minus(b).toFixed(Math.max(scaleOf(a), scaleOf(b)));
+  const exact = new ExactDecimal(a).minus(b);
+  return exact.precision() <= 28
+    ? exact.toFixed(Math.max(scaleOf(a), scaleOf(b)))
+    : new Decimal(exact.toString()).toString();
 }
 
 /**
