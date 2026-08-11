@@ -14,6 +14,16 @@ import { GoalProgressHistory } from '../src/modules/goals/entities/goal-progress
 import { Currency } from '../src/modules/currency/entities/currency.entity';
 import { ExchangeRate } from '../src/modules/currency/entities/exchange-rate.entity';
 
+/** dataSource.query() is typed `any`; launder it through unknown rather than spreading `any`. */
+async function queryRows<T>(
+  ds: DataSource,
+  sql: string,
+  params?: unknown[],
+): Promise<T[]> {
+  const result: unknown = await ds.query(sql, params);
+  return result as T[];
+}
+
 describe('Phase 1 entity mappings against the live dev DB', () => {
   let app: INestApplication;
   let dataSource: DataSource;
@@ -74,7 +84,8 @@ describe('Phase 1 entity mappings against the live dev DB', () => {
   // unchanged, or the whole string-timestamp convention only works in one direction.
   it('round-trips a naive timestamp through an insert without shifting it', async () => {
     const repo = dataSource.getRepository(IncomeTransaction);
-    const [{ id: userId }] = await dataSource.query(
+    const [{ id: userId }] = await queryRows<{ id: string }>(
+      dataSource,
       'SELECT id FROM users LIMIT 1',
     );
     const saved = await repo.save(
@@ -89,7 +100,8 @@ describe('Phase 1 entity mappings against the live dev DB', () => {
       }),
     );
     try {
-      const [row] = await dataSource.query(
+      const [row] = await queryRows<{ d: string }>(
+        dataSource,
         'SELECT date::text AS d FROM income_transactions WHERE id = $1',
         [saved.id],
       );
