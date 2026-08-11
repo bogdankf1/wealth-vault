@@ -50,5 +50,6 @@ import { UsageLimitService } from './services/usage-limit.service';
     DistributionService,
     IncomeBackfillService,
   ],
+  exports: [UsageLimitService],
 })
 export class IncomeModule {}
