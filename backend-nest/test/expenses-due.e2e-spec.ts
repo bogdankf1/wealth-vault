@@ -189,13 +189,13 @@ describe('Expense backfill and due payments (e2e)', () => {
     expect(body.due_count).toBe(2);
     expect(body.processed).toBe(1);
     expect(body.failed_payments).toHaveLength(1);
-    expect(body.failed_payments[0]).toEqual({
-      expense_id: expect.any(String),
-      expense_name: 'Too big',
-      reason: 'insufficient_funds',
-      amount: 900, // a number, like everything in this hand-built dict
-      currency: 'USD',
-    });
+    const failure = body.failed_payments[0];
+    expect(typeof failure.expense_id).toBe('string');
+    expect(failure.expense_name).toBe('Too big');
+    expect(failure.reason).toBe('insufficient_funds');
+    // A number, like everything in this hand-built dict.
+    expect(failure.amount).toBe(900);
+    expect(failure.currency).toBe('USD');
     expect(await balanceOf(rich)).toBe('495.00');
     expect(await balanceOf(poor)).toBe('1.00');
   });
