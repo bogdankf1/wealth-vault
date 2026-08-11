@@ -5,9 +5,9 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUUID,
   MaxLength,
 } from 'class-validator';
+import { IsUuidLike } from '../../../common/validation/is-uuid-like.decorator';
 import {
   IsDecimalString,
   IsPercentageString,
@@ -19,15 +19,15 @@ import type { DistributionTypeWire } from '../enums';
 export class CreateDistributionRuleDto {
   /** null = a global rule that applies to every income source. */
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   income_source_id?: string | null;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   target_account_id?: string | null;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   target_goal_id?: string | null;
 
   @IsIn(DISTRIBUTION_TYPE_WIRE_VALUES)
@@ -60,15 +60,15 @@ export class CreateDistributionRuleDto {
 /** Mirrors IncomeDistributionRuleUpdate — all optional, no defaults (exclude_unset semantics). */
 export class UpdateDistributionRuleDto {
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   income_source_id?: string | null;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   target_account_id?: string | null;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   target_goal_id?: string | null;
 
   @IsOptional()
@@ -112,6 +112,6 @@ export class DistributionPreviewQueryDto {
   currency: string = 'USD';
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   income_source_id?: string;
 }

@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsUuidLike } from '../../../common/validation/is-uuid-like.decorator';
 import { PageQueryDto } from '../../../common/dto/page-query.dto';
 
 /** Query params arrive as strings; 'true'/'false' are the only spellings FastAPI accepts too. */
@@ -18,7 +19,7 @@ export class ListIncomeSourcesQueryDto extends PageQueryDto {
 
 export class ListIncomeTransactionsQueryDto extends PageQueryDto {
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   source_id?: string;
 
   @IsOptional()
@@ -43,7 +44,7 @@ export class DateRangeQueryDto {
 
 export class ListDistributionRulesQueryDto {
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   income_source_id?: string;
 
   @IsOptional()

@@ -12,6 +12,9 @@ import { IncomeTransaction } from './entities/income-transaction.entity';
 import { IncomeController } from './income.controller';
 import { DisplayCurrencyService } from './services/display-currency.service';
 import { IncomeSourcesService } from './services/income-sources.service';
+import { IncomeHistoryService } from './services/income-history.service';
+import { IncomeStatsService } from './services/income-stats.service';
+import { IncomeTransactionsService } from './services/income-transactions.service';
 import { UsageLimitService } from './services/usage-limit.service';
 
 @Module({
@@ -36,6 +39,9 @@ import { UsageLimitService } from './services/usage-limit.service';
     DisplayCurrencyService,
     IncomeSourcesService,
     UsageLimitService,
+    IncomeTransactionsService,
+    IncomeStatsService,
+    IncomeHistoryService,
   ],
 })
 export class IncomeModule {}

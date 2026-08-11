@@ -4,10 +4,10 @@ import {
   IsIn,
   IsOptional,
   IsString,
-  IsUUID,
   Length,
   MaxLength,
 } from 'class-validator';
+import { IsUuidLike } from '../../../common/validation/is-uuid-like.decorator';
 import { IsMoneyString } from '../../../common/money/is-money-string.decorator';
 import { toNaiveTimestamp } from '../../../common/time/naive-timestamp';
 import { INCOME_FREQUENCY_WIRE_VALUES } from '../enums';
@@ -68,7 +68,7 @@ export class CreateIncomeSourceDto {
   end_date?: string | null;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   target_account_id?: string | null;
 
   @IsOptional()
@@ -128,7 +128,7 @@ export class UpdateIncomeSourceDto {
   end_date?: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   target_account_id?: string;
 
   @IsOptional()

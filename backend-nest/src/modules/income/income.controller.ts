@@ -20,8 +20,25 @@ import {
   UpdateIncomeSourceDto,
 } from './dto/income-source.dto';
 import { BatchDeleteIncomeSourcesDto } from './dto/income-transaction.dto';
-import { IncomeSourceResponse } from './mappers/income-response.mapper';
+import {
+  IncomeSourceResponse,
+  IncomeTransactionResponse,
+} from './mappers/income-response.mapper';
+import {
+  DateRangeQueryDto,
+  ListIncomeTransactionsQueryDto,
+} from './dto/income-query.dto';
+import { CreateIncomeTransactionDto } from './dto/income-transaction.dto';
+import {
+  IncomeHistoryResponse,
+  IncomeHistoryService,
+} from './services/income-history.service';
 import { IncomeSourcesService } from './services/income-sources.service';
+import {
+  IncomeStatsResponse,
+  IncomeStatsService,
+} from './services/income-stats.service';
+import { IncomeTransactionsService } from './services/income-transactions.service';
 
 /**
  * Route order matters: Nest matches in declaration order, so any static path that could be read as
@@ -33,7 +50,12 @@ import { IncomeSourcesService } from './services/income-sources.service';
 @Controller('income')
 @RequireFeature('income_tracking')
 export class IncomeController {
-  constructor(private readonly sources: IncomeSourcesService) {}
+  constructor(
+    private readonly sources: IncomeSourcesService,
+    private readonly transactions: IncomeTransactionsService,
+    private readonly statsService: IncomeStatsService,
+    private readonly historyService: IncomeHistoryService,
+  ) {}
 
   @Get('sources')
   listSources(
@@ -76,6 +98,38 @@ export class IncomeController {
     @Body() dto: UpdateIncomeSourceDto,
   ): Promise<IncomeSourceResponse> {
     return this.sources.update(user.id, sourceId, dto);
+  }
+
+  @Get('transactions')
+  listTransactions(
+    @CurrentUser() user: User,
+    @Query() query: ListIncomeTransactionsQueryDto,
+  ): Promise<PaginatedResponse<IncomeTransactionResponse>> {
+    return this.transactions.list(user.id, query);
+  }
+
+  @Post('transactions')
+  createTransaction(
+    @CurrentUser() user: User,
+    @Body() dto: CreateIncomeTransactionDto,
+  ): Promise<IncomeTransactionResponse> {
+    return this.transactions.create(user.id, dto);
+  }
+
+  @Get('stats')
+  stats(
+    @CurrentUser() user: User,
+    @Query() query: DateRangeQueryDto,
+  ): Promise<IncomeStatsResponse> {
+    return this.statsService.stats(user.id, query);
+  }
+
+  @Get('history')
+  history(
+    @CurrentUser() user: User,
+    @Query() query: DateRangeQueryDto,
+  ): Promise<IncomeHistoryResponse> {
+    return this.historyService.history(user.id, query);
   }
 
   @Delete('sources/:sourceId')

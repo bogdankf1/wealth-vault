@@ -178,6 +178,15 @@ describe('Income sources (e2e, against live dev DB)', () => {
     expect(body.detail[0].loc).toEqual(['path', 'source_id']);
   });
 
+  // pydantic's UUID parser accepts any 8-4-4-4-12 hex, and this database contains such ids (the
+  // seeded demo users are ...0000d1/d2). A version-checking validator would 422 where FastAPI 404s.
+  it('accepts a non-v4 UUID in the path and answers 404, not 422', async () => {
+    await request(ctx.app.getHttpServer())
+      .get('/api/v1/income/sources/00000000-0000-0000-0000-0000000000d1')
+      .set(auth())
+      .expect(404);
+  });
+
   it('401s without a token', async () => {
     await request(ctx.app.getHttpServer())
       .get('/api/v1/income/sources')

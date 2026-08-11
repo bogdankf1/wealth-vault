@@ -4,10 +4,14 @@ import {
   IsArray,
   IsOptional,
   IsString,
-  IsUUID,
   Length,
+  Matches,
   MaxLength,
 } from 'class-validator';
+import {
+  IsUuidLike,
+  UUID_LIKE_PATTERN,
+} from '../../../common/validation/is-uuid-like.decorator';
 import { IsMoneyString } from '../../../common/money/is-money-string.decorator';
 import { toNaiveTimestamp } from '../../../common/time/naive-timestamp';
 
@@ -20,7 +24,7 @@ const naive = ({ value }: { value: unknown }): unknown =>
 /** Mirrors IncomeTransactionCreate. */
 export class CreateIncomeTransactionDto {
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   source_id?: string | null;
 
   @IsOptional()
@@ -59,7 +63,7 @@ export class CreateIncomeTransactionDto {
    * the API never had.
    */
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   deposit_to_account_id?: string | null;
 }
 
@@ -67,13 +71,16 @@ export class CreateIncomeTransactionDto {
 export class BatchDeleteIncomeSourcesDto {
   @IsArray()
   @ArrayMinSize(1)
-  @IsUUID('all', { each: true })
+  @Matches(UUID_LIKE_PATTERN, {
+    each: true,
+    message: 'each value must be a valid UUID',
+  })
   source_ids!: string[];
 }
 
 /** Mirrors IncomeDepositRequest. */
 export class DepositIncomeDto {
-  @IsUUID()
+  @IsUuidLike()
   account_id!: string;
 
   @IsOptional()

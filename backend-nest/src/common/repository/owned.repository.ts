@@ -3,7 +3,6 @@ import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-clas
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   EntityManager,
-  EntityTarget,
   FindOptionsOrder,
   FindOptionsWhere,
   ObjectLiteral,
