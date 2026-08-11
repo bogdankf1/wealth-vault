@@ -29,6 +29,14 @@ import {
   BatchCreateResult,
   ExpensesCrudService,
 } from './services/expenses-crud.service';
+import {
+  ExpensePaymentsService,
+  PayExpenseResponse,
+  PaymentSummary,
+} from './services/expense-payments.service';
+import { PageQueryDto } from '../../common/dto/page-query.dto';
+import { PayExpenseDto } from './dto/expense.dto';
+import { DetailException } from '../../common/exceptions/app.exception';
 
 /**
  * Route order is load-bearing. FastAPI declares GET /{expense_id} before /pending, /overdue and
@@ -39,7 +47,10 @@ import {
 @Controller('expenses')
 @RequireFeature('expense_tracking')
 export class ExpensesController {
-  constructor(private readonly crud: ExpensesCrudService) {}
+  constructor(
+    private readonly crud: ExpensesCrudService,
+    private readonly payments: ExpensePaymentsService,
+  ) {}
 
   @Get()
   list(
@@ -76,6 +87,64 @@ export class ExpensesController {
     @Body() dto: BatchDeleteExpensesDto,
   ): Promise<{ deleted_count: number; failed_ids: string[] }> {
     return this.crud.batchDelete(user.id, dto.expense_ids);
+  }
+
+  // These three are the routes FastAPI shadows behind :expense_id. Declared first here so they
+  // are reachable — the deliberate divergence approved for this slice.
+  @Get('pending')
+  pending(
+    @CurrentUser() user: User,
+    @Query() query: PageQueryDto,
+  ): Promise<PaginatedResponse<ExpenseModelResponse>> {
+    return this.payments.listByStatus(user.id, 'pending', query);
+  }
+
+  @Get('overdue')
+  overdue(
+    @CurrentUser() user: User,
+    @Query() query: PageQueryDto,
+  ): Promise<PaginatedResponse<ExpenseModelResponse>> {
+    return this.payments.listByStatus(user.id, 'overdue', query);
+  }
+
+  @Get('payment-summary')
+  paymentSummary(@CurrentUser() user: User): Promise<PaymentSummary> {
+    return this.payments.paymentSummary(user.id);
+  }
+
+  @Post(':expenseId/pay')
+  @HttpCode(200)
+  async pay(
+    @CurrentUser() user: User,
+    @Param('expenseId', uuidParam('expense_id')) expenseId: string,
+    @Body() dto: PayExpenseDto,
+  ): Promise<PayExpenseResponse> {
+    try {
+      return await this.payments.pay(user.id, expenseId, dto);
+    } catch (error) {
+      // Insufficient funds gets its own structured body, with float money fields — the one place
+      // in the module where amounts are numbers inside an error.
+      if (ExpensePaymentsService.isInsufficientFunds(error)) {
+        throw new DetailException(
+          400,
+          (await this.payments.insufficientFundsBody(
+            user.id,
+            expenseId,
+            dto,
+          )) as never,
+        );
+      }
+      throw error;
+    }
+  }
+
+  @Post(':expenseId/cancel')
+  @HttpCode(200)
+  cancel(
+    @CurrentUser() user: User,
+    @Param('expenseId', uuidParam('expense_id')) expenseId: string,
+  ): Promise<ExpenseModelResponse> {
+    return this.payments.cancel(user.id, expenseId);
   }
 
   @Get(':expenseId')

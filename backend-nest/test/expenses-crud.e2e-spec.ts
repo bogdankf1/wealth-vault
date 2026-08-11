@@ -26,7 +26,6 @@ describe('Expenses CRUD (e2e)', () => {
   });
 
   const auth = () => ({ Authorization: `Bearer ${ctx.token}` });
-  const server = () => ctx.app.getHttpServer();
 
   describe('list', () => {
     it('renders money as JSON numbers and fills payment_account_name', async () => {
@@ -35,7 +34,7 @@ describe('Expenses CRUD (e2e)', () => {
         amount: '1200.00',
         paymentAccountId: accountId,
       });
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .get('/api/v1/expenses?page=1&page_size=50')
         .set(auth())
         .expect(200);
@@ -66,7 +65,7 @@ describe('Expenses CRUD (e2e)', () => {
         name: 'Reversed',
         deletedAt: '2026-01-01T00:00:00',
       });
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .get('/api/v1/expenses?page_size=100')
         .set(auth())
         .expect(200);
@@ -80,7 +79,7 @@ describe('Expenses CRUD (e2e)', () => {
     // larger than its own contents. Faithfully wrong.
     it('reports a total that ignores the is_active and status filters', async () => {
       await insertExpense(ctx, { name: 'Paid one', status: 'paid' });
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .get('/api/v1/expenses?status=paid')
         .set(auth())
         .expect(200);
@@ -90,7 +89,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('filters by category, and the total follows that one', async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .get('/api/v1/expenses?category=Nothing')
         .set(auth())
         .expect(200);
@@ -98,7 +97,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it("never returns another user's rows", async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .get('/api/v1/expenses?page_size=100')
         .set(auth())
         .expect(200);
@@ -111,7 +110,7 @@ describe('Expenses CRUD (e2e)', () => {
 
   describe('create', () => {
     it('returns 201 with Decimal strings and null display_*', async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses')
         .set(auth())
         .send({
@@ -135,7 +134,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('stores a one-time expense with a zero equivalent, which the list then nulls', async () => {
-      const created = await request(server())
+      const created = await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses')
         .set(auth())
         .send({
@@ -149,7 +148,7 @@ describe('Expenses CRUD (e2e)', () => {
         '0.00',
       );
 
-      const list = await request(server())
+      const list = await request(ctx.app.getHttpServer())
         .get('/api/v1/expenses?page_size=100')
         .set(auth())
         .expect(200);
@@ -160,7 +159,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('422s on a zero amount (gt=0, unlike income)', async () => {
-      await request(server())
+      await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses')
         .set(auth())
         .send({ name: 'ZZ Zero', amount: '0.00', frequency: 'monthly' })
@@ -168,7 +167,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('422s when frequency is missing (required here)', async () => {
-      await request(server())
+      await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses')
         .set(auth())
         .send({ name: 'ZZ NoFreq', amount: '10.00' })
@@ -177,7 +176,7 @@ describe('Expenses CRUD (e2e)', () => {
 
     // Closes the leak: FastAPI stores a foreign account id and later renders its name.
     it("rejects another user's payment account", async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses')
         .set(auth())
         .send({
@@ -203,7 +202,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('detail returns strings and a null payment_account_name', async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .get(`/api/v1/expenses/${id}`)
         .set(auth())
         .expect(200);
@@ -215,7 +214,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it("404s on another user's expense", async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .get(`/api/v1/expenses/${otherUsersExpenseId}`)
         .set(auth())
         .expect(404);
@@ -223,7 +222,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('PUT applies only present keys and returns STALE display values', async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .put(`/api/v1/expenses/${id}`)
         .set(auth())
         .send({ amount: '400.00' })
@@ -237,7 +236,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('PUT leaves monthly_equivalent alone when neither amount nor frequency is sent', async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .put(`/api/v1/expenses/${id}`)
         .set(auth())
         .send({ category: 'Utilities' })
@@ -248,7 +247,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('DELETE hard-deletes the row', async () => {
-      await request(server())
+      await request(ctx.app.getHttpServer())
         .delete(`/api/v1/expenses/${id}`)
         .set(auth())
         .expect(204);
@@ -267,7 +266,7 @@ describe('Expenses CRUD (e2e)', () => {
     // much as here. The gate is reproduced faithfully; the handler below it is exercised by the
     // unit-level test of ExpensesCrudService.batchCreate.
     it('batch-create 403s because no tier grants batch_operations', async () => {
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses/batch-create')
         .set(auth())
         .send({
@@ -285,7 +284,7 @@ describe('Expenses CRUD (e2e)', () => {
 
     it('batch-delete returns deleted_count and failed_ids', async () => {
       const a = await insertExpense(ctx, { name: 'ZZ Del A' });
-      const res = await request(server())
+      const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses/batch-delete')
         .set(auth())
         .send({ expense_ids: [a, otherUsersExpenseId] })
@@ -297,7 +296,7 @@ describe('Expenses CRUD (e2e)', () => {
     });
 
     it('batch-delete with an empty list → 422', async () => {
-      await request(server())
+      await request(ctx.app.getHttpServer())
         .post('/api/v1/expenses/batch-delete')
         .set(auth())
         .send({ expense_ids: [] })

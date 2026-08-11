@@ -9,6 +9,8 @@ import { UsersModule } from '../users/users.module';
 import { Expense } from './entities/expense.entity';
 import { ExpensesController } from './expenses.controller';
 import { ExpensesCrudService } from './services/expenses-crud.service';
+import { ExpensePaymentsService } from './services/expense-payments.service';
+import { CurrencyModule } from '../currency/currency.module';
 
 @Module({
   imports: [
@@ -17,10 +19,15 @@ import { ExpensesCrudService } from './services/expenses-crud.service';
     TiersModule,
     SavingsModule,
     DisplayCurrencyModule,
+    CurrencyModule,
     // For UsageLimitService, which income already owns and both modules need.
     IncomeModule,
   ],
   controllers: [ExpensesController],
-  providers: [provideOwnedRepository(Expense), ExpensesCrudService],
+  providers: [
+    provideOwnedRepository(Expense),
+    ExpensesCrudService,
+    ExpensePaymentsService,
+  ],
 })
 export class ExpensesModule {}
