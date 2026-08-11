@@ -3,8 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { configureApp } from './app.setup';
+import { registerNaiveTimestampParser } from './common/time/naive-timestamp';
 
 async function bootstrap() {
+  // Before anything can open a connection: naive timestamps must arrive as raw strings.
+  registerNaiveTimestampParser();
   // bodyParser: false — configureApp() mounts json()/urlencoded() itself so its JSON
   // parse-error handler can sit right after them; see the comment there for why.
   const app = await NestFactory.create(AppModule, { bodyParser: false });

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ErrorRequestHandler, json, urlencoded } from 'express';
 import { DetailException } from './common/exceptions/app.exception';
 import { parseCorsOrigins } from './config/env.validation';
+import { registerNaiveTimestampParser } from './common/time/naive-timestamp';
 
 // Express's body-parser throws a raw SyntaxError before Nest routing when a JSON request body
 // is malformed. It is not an HttpException, so unhandled it falls into GlobalExceptionFilter's
@@ -36,6 +37,10 @@ const handleJsonParseError: ErrorRequestHandler = (
 /** Applied identically in main.ts and e2e tests. */
 export function configureApp(app: INestApplication): void {
   const config = app.get(ConfigService);
+
+  // Must run before the first query. Registering twice is harmless, and main.ts also calls it
+  // before NestFactory.create so the DataSource that connects during app.init() is covered.
+  registerNaiveTimestampParser();
 
   // Registered manually so our JSON parse-error handler can sit right after the parser in the
   // Express middleware stack — Nest only wires its own body parser up inside app.init(), which
