@@ -57,11 +57,18 @@ export class TierLimitException extends AppException {
   }
 }
 
-/** Mirrors FastAPI's HTTPException — rendered as {detail}. */
+/**
+ * Mirrors FastAPI's HTTPException — rendered as {detail}.
+ *
+ * `detail` is whatever was handed to HTTPException: a string for most errors, an array for the 422
+ * validation shape, or a plain object — which POST /taxes/{id}/pay uses to return a structured
+ * INSUFFICIENT_FUNDS body.
+ */
 export class DetailException extends Error {
   constructor(
     public readonly statusCode: number,
-    public readonly detail: string | Array<Record<string, unknown>>,
+    public readonly detail:
+      string | Array<Record<string, unknown>> | Record<string, unknown>,
   ) {
     super(typeof detail === 'string' ? detail : 'Validation error');
   }

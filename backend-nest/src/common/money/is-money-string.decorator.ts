@@ -29,6 +29,19 @@ export function IsDecimalString(): PropertyDecorator {
 }
 
 /**
+ * For fields FastAPI declares `gt=0` — tax and debt payment amounts, where a zero is a 422 rather
+ * than a no-op. The regex admits only non-negative forms, so the extra check is just "not zero";
+ * done on the string's digits rather than through Number() so a value too large for a double still
+ * decides correctly.
+ */
+export function IsPositiveDecimalString(): PropertyDecorator {
+  return applyDecorators(
+    Matches(DECIMAL, { message: 'must be a non-negative number' }),
+    Matches(/[1-9]/, { message: 'must be greater than 0' }),
+  );
+}
+
+/**
  * Range check for a numeric *string*. class-validator's @Min/@Max only accept numbers — handed a
  * string they fail outright, which would reject every valid percentage — so the bound is checked
  * here after an explicit parse. The property keeps its string value; only the comparison is numeric,
