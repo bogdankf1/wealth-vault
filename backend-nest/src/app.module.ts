@@ -14,6 +14,10 @@ import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { AuthModule } from './modules/auth/auth.module';
+import { CurrencyModule } from './modules/currency/currency.module';
+import { GoalsModule } from './modules/goals/goals.module';
+import { IncomeModule } from './modules/income/income.module';
+import { SavingsModule } from './modules/savings/savings.module';
 import { TiersModule } from './modules/tiers/tiers.module';
 import { UsersModule } from './modules/users/users.module';
 import { RedisModule } from './redis/redis.module';
@@ -28,6 +32,10 @@ import { RedisModule } from './redis/redis.module';
     TiersModule,
     UsersModule,
     AuthModule,
+    SavingsModule,
+    GoalsModule,
+    CurrencyModule,
+    IncomeModule,
   ],
   controllers: [AppController, HealthController],
   providers: [
