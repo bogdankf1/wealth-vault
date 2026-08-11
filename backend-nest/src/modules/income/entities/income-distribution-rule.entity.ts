@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
 import { BaseModel } from '../../../common/entities/base.entity';
-import { DistributionTypeName } from '../enums';
+import type { DistributionTypeName } from '../enums';
 
 /**
  * The table carries a CHECK constraint — target_account_id IS NOT NULL OR target_goal_id IS NOT NULL

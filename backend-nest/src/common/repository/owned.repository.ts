@@ -1,4 +1,5 @@
 import { Provider } from '@nestjs/common';
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   EntityManager,
@@ -37,7 +38,7 @@ export class OwnedRepository<T extends ObjectLiteral> {
     userId: string,
     where?: FindOptionsWhere<T>,
   ): FindOptionsWhere<T> {
-    return { ...(where ?? {}), userId } as FindOptionsWhere<T>;
+    return { ...(where ?? {}), userId } as unknown as FindOptionsWhere<T>;
   }
 
   findOne(userId: string, where?: FindOptionsWhere<T>): Promise<T | null> {
@@ -69,16 +70,12 @@ export class OwnedRepository<T extends ObjectLiteral> {
   }
 }
 
-export function ownedRepositoryToken(
-  entity: EntityTarget<ObjectLiteral>,
-): string {
+export function ownedRepositoryToken(entity: EntityClassOrSchema): string {
   return `OwnedRepository<${getRepositoryToken(entity).toString()}>`;
 }
 
 /** Module sugar: `providers: [provideOwnedRepository(IncomeSource), ...]`. */
-export function provideOwnedRepository(
-  entity: EntityTarget<ObjectLiteral>,
-): Provider {
+export function provideOwnedRepository(entity: EntityClassOrSchema): Provider {
   return {
     provide: ownedRepositoryToken(entity),
     inject: [getRepositoryToken(entity)],

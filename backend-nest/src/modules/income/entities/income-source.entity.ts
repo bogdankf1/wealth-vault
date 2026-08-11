@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
 import { BaseModel } from '../../../common/entities/base.entity';
-import { IncomeFrequencyName } from '../enums';
+import type { IncomeFrequencyName } from '../enums';
 
 @Entity('income_sources')
 export class IncomeSource extends BaseModel {
