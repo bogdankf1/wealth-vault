@@ -1,0 +1,96 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes?page=1&page_size=2",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes?is_active=true",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes?is_active=false",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes/stats",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes/00000000-0000-0000-0000-000000000999",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes/not-a-uuid",
+    "auth": true,
+    "expectDiff": "Both answer 422 uuid_parsing with the same shape and loc; only the message text differs, because Nest's ParseUUIDPipe does not reproduce Rust's uuid crate wording. The accepted deviation documented on uuidParam() — asserted here so the STATUS stays checked."
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes/income-summary",
+    "auth": true,
+    "expectDiff": "Shadowed in FastAPI: GET /{tax_id} is declared first (router.py:93 vs 265), so FastAPI answers 422 uuid_parsing and this endpoint has never run there. Option B — reachable in Nest, as with the three shadowed expenses routes in slice 1."
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes/payments",
+    "auth": true,
+    "expectDiff": "Shadowed in FastAPI: GET /{tax_id} is declared first (router.py:93 vs 297), so FastAPI answers 422 uuid_parsing. Reachable in Nest by the same Option B decision."
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/taxes/payments/00000000-0000-0000-0000-000000000999",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts?page=1&page_size=2",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts?is_paid=true",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts?is_paid=false",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts?is_active=true",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts/stats",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts/00000000-0000-0000-0000-000000000999",
+    "auth": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/debts/not-a-uuid",
+    "auth": true,
+    "expectDiff": "Both answer 422 uuid_parsing with the same shape and loc; only the message text differs, because Nest's ParseUUIDPipe does not reproduce Rust's uuid crate wording. The accepted deviation documented on uuidParam() — asserted here so the STATUS stays checked."
+  }
+]
